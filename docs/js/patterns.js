@@ -530,65 +530,73 @@ PATTERNS.redbuster = {
 };
 
 // ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
-PATTERNS.sneo_heads = {   // Flying Heads: destructible head copies launch at the soul in lanes
+// (rebuilt from the wiki attack GIFs in ref/spamton/)
+PATTERNS.sneo_heads = {   // Flying Heads: destructible heads stream in lanes toward the soul
   dur: 440,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(34, tier)))   // a head streaks across; SHOOT it to destroy (else it continues)
-      add({ ...bulletProps('sneohead'), x: box.x + box.w + 24, y: soul.y, vx: -(2.8 + rng() * 0.5), vy: 0, spin: 0.05, r: 9, shootable: true, hp: 2 });
-    if (every(f, rate(26, tier)))   // small word bullets fall as they cross
+    if (every(f, rate(30, tier)))   // heads launch from the right at the soul's lane + a random lane
+      for (const ly of [soul.y, box.y + 20 + rng() * (box.h - 40)])
+        add({ ...bulletProps('sneohead'), x: box.x + box.w + 22, y: ly, vx: -(2.6 + rng() * 0.5), vy: 0, spin: 0.05, r: 9, shootable: true, hp: 2 });
+    if (every(f, rate(22, tier)))   // small bullets fall as they cross
       add({ ...bulletProps('sneosound'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 14, vx: 0, vy: 2.0, r: 6 });
   },
 };
-PATTERNS.sneo_heart = {   // Heart Attack: a single shootable heart swings, spraying diamonds
+PATTERNS.sneo_heart = {   // Heart Attack: a chained shootable heart swings, scattering white diamonds
   dur: 500,
   tick(a) {
     const { f, box, tier, add } = a;
-    const amp = box.w * 0.42, cx0 = box.x + box.w / 2;
-    if (f === 0)   // ONE persistent chained heart - shoot it down to earn TP
-      add({ ...bulletProps('sneowire'), x: cx0, y: box.y + 22, vx: 0, vy: 0,
+    const amp = box.w * 0.42, cx0 = box.x + box.w / 2, cy = box.y + box.h * 0.5;
+    if (f === 0)   // ONE persistent chained heart - shoot it to earn TP
+      add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
             swing: { cx: cx0, amp, spd: 0.03 }, shootable: true, hp: 14, spin: 0.04, r: 12, life: 494 });
     const cx = cx0 + amp * Math.sin(0.03 * f);
-    if (every(f, rate(15, tier)))   // sprays a fan of diamond bullets downward from its position
-      for (let i = -1; i <= 1; i++)
-        add({ ...bulletProps('kdiamond'), x: cx, y: box.y + 36, vx: i * 0.9, vy: 2.2 + Math.abs(i) * 0.3, spin: 0.1, r: 6 });
+    if (every(f, rate(11, tier)))   // scatters diamonds outward in a slow-rotating 3-way spread
+      for (let k = 0; k < 3; k++) { const th = f * 0.15 + k * 2.094;
+        add({ ...bulletProps('kdiamond'), x: cx, y: cy, vx: Math.cos(th) * 2.0, vy: Math.sin(th) * 2.0, spin: 0.12, r: 6 }); }
   },
 };
-PATTERNS.sneo_mail = {   // Spam Mail: destructible mail towers (and heads) drive in from the right
+PATTERNS.sneo_mail = {   // Spam Mail: full-height mail towers slide left with a gap + destructible crew
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(38, tier))) {
-      const ty = box.y + 8 + rng() * (box.h - 44);
-      for (let j = 0; j < 3; j++)
-        add({ ...bulletProps('sneomail'), x: box.x + box.w + 20 + j * 16, y: ty + j * 12, vx: -(2.4 + rng() * 0.4), vy: 0, spin: 0.03, r: 7, shootable: true, hp: 1 });
+    const period = rate(46, tier), cols = 4;
+    if (f % period === 0) {
+      const gap = Math.floor(rng() * cols);
+      for (let c = 0; c < cols; c++) {
+        if (c === gap) continue;
+        const cx = box.x + box.w + 16 + c * 22;
+        for (let y = box.y + 6; y < box.y + box.h - 6; y += 16)
+          add({ ...bulletProps('sneomail'), x: cx, y, vx: -1.8, vy: 0, r: 7 });
+        add({ ...bulletProps('sneocrew'), x: cx, y: box.y + box.h * 0.5, vx: -1.8, vy: 0, r: 8, shootable: true, hp: 1 });
+      }
     }
-    if (every(f, rate(24, tier)))
-      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -(2.0 + rng()), vy: 0, spin: 0.05, r: 8, shootable: true, hp: 2 });
   },
 };
-PATTERNS.sneo_words = {   // Word Bullets: strings of letters weave across in a sine wave
+PATTERNS.sneo_phones = {   // Gripping Phones: a ring of phones fires bullets inward at the soul
   dur: 480,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(10, tier)))
-      add({ ...bulletProps('sneosound'), x: box.x + box.w + 18, y: box.y + 16 + rng() * (box.h - 32),
-            vx: -(2.6 + rng() * 0.5), vy: 0, sineA: 1.5, sineF: 0.08, spin: 0.03, r: 6 });
+    const { f, box, tier, add, soul } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.min(box.w, box.h) * 0.5 + 6;
+    if (every(f, rate(20, tier))) {
+      const N = 8;
+      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N + f * 0.02;
+        const px = cx + Math.cos(th) * R, py = cy + Math.sin(th) * R, ang = Math.atan2(soul.y - py, soul.x - px);
+        add({ ...bulletProps('sneosound'), x: px, y: py, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, r: 6 }); }
+    }
+    if (f % 4 === 0) { const th = f * 0.03, px = cx + Math.cos(th) * R, py = cy + Math.sin(th) * R;   // the phone ring itself
+      add({ ...bulletProps('sneophone'), x: px, y: py, vx: 0, vy: 0, life: 5, r: 8 }); }
   },
 };
-PATTERNS.sneo_bigshot = {   // BIG SHOT: arm-cannon bursts aimed at the soul + words + heads
+PATTERNS.sneo_bigshot = {   // BIG SHOT: the giant arm-cannon fires a spreading cone at the soul
   dur: 620,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(46, tier))) {   // big shot, bursts into a ring
-      const ox = box.x + box.w + 26, oy = box.y + box.h * 0.3 + rng() * box.h * 0.4;
-      const ang = Math.atan2(soul.y - oy, soul.x - ox);
-      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.1, r: 12, burst: 58, burstN: 6, burstSpeed: 2.4 });
-    }
-    if (every(f, rate(14, tier)))
-      add({ ...bulletProps('sneosound'), x: box.x + box.w + 16, y: box.y + 16 + rng() * (box.h - 32), vx: -(2.8 + rng()), vy: 0, sineA: 1.2, sineF: 0.09, r: 6 });
-    if (every(f, rate(30, tier)))
-      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: soul.y, vx: -3.0, vy: 0, spin: 0.05, r: 9 });
+    const ox = box.x + box.w + 30, oy = box.y + box.h * 0.5, base = Math.atan2(soul.y - oy, soul.x - ox);
+    if (every(f, rate(9, tier)))    // dense cone of bullets from the cannon
+      add({ ...bulletProps('sneosound'), x: ox, y: oy, vx: Math.cos(base + (rng() - 0.5) * 0.5) * 3.0, vy: Math.sin(base + (rng() - 0.5) * 0.5) * 3.0, r: 6 });
+    if (every(f, rate(40, tier)))   // periodic BIG shot down the middle
+      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(base) * 2.2, vy: Math.sin(base) * 2.2, spin: 0.1, r: 12 });
   },
 };
 
