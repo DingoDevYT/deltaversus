@@ -64,7 +64,7 @@ const CHARS = {
            text: 'NOELLE laughs nervously. The pressure is on!' },
   },
   lancer: {
-    name: 'LANCER', color: '#4080ff', hp: 150,
+    name: 'LANCER', color: '#4080ff', hp: 220,
     desc: 'BAD GUY. HO HO HO.\nSPADES AND MISCHIEF.',
     fight: { id: 'lancer_spade', name: 'Spade Toss', dmg: 26, dur: 420,
              text: 'LANCER throws spades! Ho ho ho!' },
@@ -96,8 +96,8 @@ const CHARS = {
            text: 'BERDLY gloats! Their box shrinks!' },
   },
   jevil: {
-    name: 'JEVIL', color: '#7a5cff', hp: 175, cost: 3, darkner: true,
-    desc: 'CHAOS, CHAOS!\nA DIFFICULT DARKNER.',
+    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true,
+    desc: 'CHAOS, CHAOS!\nSECRET BOSS - 1000 HP, NO ITEMS.',
     fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 26, dur: 440,
              text: 'JEVIL flings spinning spades!' },
     spells: [

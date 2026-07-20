@@ -591,6 +591,7 @@ function makeCombinedSim(attackers, box) {
   const subs = attackers.map(a => ({
     sim: makeDodgeSim(a.def, a.moveDef, a.tier, a.seed, box),
     dmg: Math.round(a.moveDef.dmg * TIER_MULT[a.tier == null ? 1 : a.tier]),
+    target: a.target || 0,
     rng: mulberry32(((a.seed || 1) ^ 0x9e3779b9) >>> 0),
   }));
   const dur = Math.max(...subs.map(s => s.sim.dur));
@@ -599,7 +600,7 @@ function makeCombinedSim(attackers, box) {
     tick(soul, add) {
       for (const s of subs) {
         if (this.f >= s.sim.dur) continue;
-        s.sim.tick(soul, b => { if (N === 1 || s.rng() < keep) { b.dmg = s.dmg; add(b); } });
+        s.sim.tick(soul, b => { if (N === 1 || s.rng() < keep) { b.dmg = s.dmg; b.target = s.target; add(b); } });
       }
       this.f++;
     },

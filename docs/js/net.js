@@ -185,7 +185,7 @@ const PracticeAI = {
       const N = atks.length, keep = 1 / (1 + 0.55 * Math.max(0, N - 1));
       const subs = atks.map(a => ({
         sim: makeDodgeSim({ base: a.base }, { id: a.moveId, custom: a.custom, dmg: a.perHit, dur: a.dur }, a.tier, a.seed, box),
-        perHit: a.perHit, rng: mulberry32(((a.seed || 1) ^ 0x9e3779b9) >>> 0),
+        perHit: a.perHit, target: a.target || 0, rng: mulberry32(((a.seed || 1) ^ 0x9e3779b9) >>> 0),
       }));
       // driven by the main loop (PracticeAI.tick) so it is immune to the
       // background-tab timer throttle and runs at the game's framerate.
@@ -193,8 +193,8 @@ const PracticeAI = {
         T, box, subs, N, keep,
         soul: { x: box.w / 2, y: box.h * 0.7 },
         dur: Math.max(...subs.map(s => s.sim.dur)),
-        skill: PracticeAI.skill != null ? PracticeAI.skill : 0.82,
-        bullets: [], f: 0, dmg: 0, ifr: 0, grz: 0,
+        skill: (typeof G !== 'undefined' && G.dummySkill != null) ? G.dummySkill : 0.82,
+        atks, bullets: [], f: 0, dmg: 0, ifr: 0, grz: 0,
       };
     } else if (msg.t === 'rematch') {
       PracticeAI.team = null;
@@ -209,7 +209,7 @@ const PracticeAI = {
     if (D.f < D.dur) {
       for (const s of D.subs) {
         if (D.f >= s.sim.dur) continue;
-        s.sim.tick(D.soul, b => { if (D.N === 1 || s.rng() < D.keep) { b.t = 0; b.phase0 = Math.random() * 6.28; b.dmg = s.perHit; D.bullets.push(b); } });
+        s.sim.tick(D.soul, b => { if (D.N === 1 || s.rng() < D.keep) { b.t = 0; b.phase0 = Math.random() * 6.28; b.dmg = s.perHit; b.target = s.target; D.bullets.push(b); } });
       }
       PracticeAI.moveSoul(D.soul, D.bullets, D.box, D.skill);
       for (const b of D.bullets) {
@@ -225,7 +225,7 @@ const PracticeAI = {
       if (D.grz > 0) D.grz--;
       for (const b of D.bullets) {
         const d = Math.hypot(b.x - D.soul.x, b.y - D.soul.y), rr = (b.r || 6) + 5;
-        if (d < rr) { if (D.ifr <= 0) { D.dmg += b.dmg || 10; D.ifr = 55; } }
+        if (d < rr) { if (D.ifr <= 0) { const dm = b.dmg || 10; D.dmg += dm; PracticeAI.applyDmg(D.T, dm, b.target); D.ifr = 55; } }
         else if (d < rr + 12 && D.grz <= 0) { D.T.tp = Math.min(100, D.T.tp + 2); D.grz = 10; }
       }
       D.f++;
@@ -236,9 +236,13 @@ const PracticeAI = {
       PracticeAI.dodge = null;
     }
   },
-  report(T, dmg) {
+  applyDmg(T, dmg, target) {
+    let m = (target != null && T.members[target] && !T.members[target].downed) ? T.members[target] : null;
+    if (!m) m = T.members.find(x => !x.downed);
     let d = dmg;
-    for (const m of T.members) { if (m.downed) continue; const take = Math.min(m.hp, d); m.hp -= take; d -= take; if (m.hp <= 0) m.downed = true; else break; if (d <= 0) break; }
+    while (d > 0 && m) { const take = Math.min(m.hp, d); m.hp -= take; d -= take; if (m.hp <= 0) { m.downed = true; m = T.members.find(x => !x.downed); } else break; }
+  },
+  report(T, dmg) {   // damage already applied live during tick
     Net.emitLocal({ t: 'result', dmgTaken: dmg, hp: T.members.map(m => m.hp), downed: T.members.map(m => m.downed), tp: T.tp });
   },
 };

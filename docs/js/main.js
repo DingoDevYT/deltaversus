@@ -6,6 +6,7 @@ const G = {
   selIdx: 0,
   loadout: [], loadIdx: 0,
   partySize: 1,
+  dummySkill: 0.5,
   myTeamSel: [], dummyTeamSel: [], teamPhase: 'mine',
   myCharSel: null, myItems: null,
   oppItems: null,
@@ -88,14 +89,18 @@ function update() {
       if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; Snd.play('select'); }
       break;
     case 'menu': {
-      const n = 5;   // host / join / practice / party size / volume
+      const n = 6;   // host / join / practice / party size / dummy skill / volume
       if (Input.hit.up) { G.menuIdx = (G.menuIdx + n - 1) % n; Snd.play('menumove'); }
       if (Input.hit.down) { G.menuIdx = (G.menuIdx + 1) % n; Snd.play('menumove'); }
       if (G.menuIdx === 3) {   // PARTY SIZE
         if (Input.hit.left) { G.partySize = Math.max(1, G.partySize - 1); Snd.play('menumove'); }
         if (Input.hit.right) { G.partySize = Math.min(3, G.partySize + 1); Snd.play('menumove'); }
       }
-      if (G.menuIdx === 4) {   // VOLUME
+      if (G.menuIdx === 4) {   // DUMMY SKILL
+        if (Input.hit.left) { G.dummySkill = Math.max(0, Math.round((G.dummySkill - 0.1) * 10) / 10); Snd.play('menumove'); }
+        if (Input.hit.right) { G.dummySkill = Math.min(1, Math.round((G.dummySkill + 0.1) * 10) / 10); Snd.play('menumove'); }
+      }
+      if (G.menuIdx === 5) {   // VOLUME
         if (Input.hit.left) { Snd.setMaster(Snd.master - 0.1); Snd.play('menumove'); }
         if (Input.hit.right) { Snd.setMaster(Snd.master + 0.1); Snd.play('menumove'); }
       }
@@ -221,24 +226,30 @@ function renderTitle() {
 
 function renderMenu() {
   drawText(ctx, 'big', 'DELTAVERSUS', 320, 60, { color: '#fff', align: 'center', scale: 0.9 });
-  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)', 'PARTY SIZE', 'VOLUME'];
-  const rowY = i => 176 + i * 40;
+  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)', 'PARTY SIZE', 'DUMMY SKILL', 'VOLUME'];
+  const rowY = i => 150 + i * 36;
   items.forEach((s, i) => {
     const sel = i === G.menuIdx;
-    if (sel) drawSpr(ctx, A.ui('soul'), 190, rowY(i) + 8, { scale: 1 });
-    drawText(ctx, 'main', s, 210, rowY(i), { color: sel ? '#ff0' : '#fff' });
+    if (sel) drawSpr(ctx, A.ui('soul'), 150, rowY(i) + 8, { scale: 1 });
+    drawText(ctx, 'main', s, 170, rowY(i), { color: sel ? '#ff0' : '#fff' });
   });
   // party size: < N >
   const py = rowY(3);
   drawText(ctx, 'main', '<  ' + G.partySize + '  >', 360, py, { color: G.menuIdx === 3 ? '#ff0' : '#aaa' });
   drawText(ctx, 'main', G.partySize === 1 ? '(1v1)' : 'PER TEAM', 452, py, { color: '#666' });
-  // volume slider
-  const vy = rowY(4) + 4;
-  ctx.fillStyle = '#333'; ctx.fillRect(360, vy, 110, 10);
+  // dummy skill slider
+  const sy = rowY(4) + 4;
+  ctx.fillStyle = '#333'; ctx.fillRect(360, sy, 110, 10);
   ctx.fillStyle = G.menuIdx === 4 ? '#ff0' : '#888';
+  ctx.fillRect(360, sy, Math.round(110 * G.dummySkill), 10);
+  drawText(ctx, 'main', Math.round(G.dummySkill * 100) + '%', 480, sy - 4, { color: '#aaa' });
+  // volume slider
+  const vy = rowY(5) + 4;
+  ctx.fillStyle = '#333'; ctx.fillRect(360, vy, 110, 10);
+  ctx.fillStyle = G.menuIdx === 5 ? '#ff0' : '#888';
   ctx.fillRect(360, vy, Math.round(110 * Snd.master), 10);
   drawText(ctx, 'main', Math.round(Snd.master * 100) + '%', 480, vy - 4, { color: Snd.muted ? '#f44' : '#aaa' });
-  drawText(ctx, 'main', 'M MUTE  -  ARROWS ADJUST', 320, 448, { color: '#555', align: 'center' });
+  drawText(ctx, 'main', 'M MUTE  -  ARROWS ADJUST', 320, 452, { color: '#555', align: 'center' });
   if (G.notice) drawText(ctx, 'main', G.notice, 320, 420, { color: '#f44', align: 'center' });
 }
 

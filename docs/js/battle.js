@@ -163,17 +163,30 @@ Battle.startSelect = function (fresh) {
   B.timer = SELECT_FRAMES;
   B.oppActs = null; B.oppTiers = null; B.oppResult = null; B.oppDodgeStart = null;
   B.tpSpent = 0;   // TP tentatively spent by chosen spells this turn
+  B.tpSel = 0;     // TP tentatively GAINED (DEFEND) this turn, shown live
   B.itemsUsed = [];
+  B.targeting = false; B.pendingCmd = null;
   B.phase = 'select';
   B.say('* ' + B.curMember().def.name + ', your move.');
 };
 Battle.curMember = function () { return Battle.myTeam[Battle.cmdOrder[Battle.cmdPos]]; };
+Battle.livingEnemies = function () { return Battle.oppTeam.map((m, i) => i).filter(i => !Battle.oppTeam[i].downed); };
+Battle.canUseItems = function () { return !Battle.myTeam.some(m => m.def.secretBoss); };
+function actNeedsTarget(cmd, def, move) {
+  if (cmd === 'fight' || cmd === 'act') return true;
+  if (cmd === 'magic') {
+    const d = move === def.ult.id ? def.ult : def.spells.find(s => s.id === move);
+    return !!(d && d.kind !== 'heal' && !(d.kind == null && d.heal));   // attacks + status target the enemy
+  }
+  return false;
+}
 
 Battle.updSelect = function () {
   const B = Battle;
+  if (B.targeting) { B.updTargeting(); return; }
   const scale = (B.fxOnMe && B.fxOnMe.timerScale) || 1;
   B.timer -= 1 / scale;
-  if (B.timer <= 0) { while (B.cmdPos < B.cmdOrder.length) B.choose('defend', null); return; }
+  if (B.timer <= 0) { while (B.cmdPos < B.cmdOrder.length) B.commitChoice('defend', null, 0); return; }
 
   if (!B.submenu) {
     if (Input.hit.left) { B.menuIdx = (B.menuIdx + MENU.length - 1) % MENU.length; Snd.play('menumove'); }
@@ -181,9 +194,12 @@ Battle.updSelect = function () {
     if (Input.hit.cancel && B.cmdPos > 0) { B.undoLast(); Snd.play('menumove'); }
     if (Input.hit.ok) {
       const cmd = MENU[B.menuIdx];
-      Snd.play('select');
-      if (cmd === 'fight' || cmd === 'defend') B.choose(cmd, null);
-      else { B.submenu = cmd; B.subIdx = 0; }
+      if (cmd === 'item' && !B.canUseItems()) { Snd.play('cantselect'); }
+      else {
+        Snd.play('select');
+        if (cmd === 'fight' || cmd === 'defend') B.choose(cmd, null);
+        else { B.submenu = cmd; B.subIdx = 0; }
+      }
     }
   } else {
     const opts = B.subOptions();
@@ -198,7 +214,9 @@ Battle.updSelect = function () {
   }
 };
 
-Battle.tpAvail = function () { return Battle.myTP - Battle.tpSpent; };
+// TP available now, previewing this turn's tentative spends (spells) and
+// gains (DEFEND) so you can e.g. Kris-DEFEND to fund Susie's spell.
+Battle.tpAvail = function () { return Math.min(100, Battle.myTP - Battle.tpSpent + Battle.tpSel); };
 
 Battle.subOptions = function () {
   const B = Battle, c = B.curMember().def;
@@ -209,29 +227,53 @@ Battle.subOptions = function () {
   }
   if (B.submenu === 'act') return [{ id: c.act.id, label: c.act.name, cost: 'FREE' }];
   if (B.submenu === 'item') {
+    if (!B.canUseItems()) return [{ id: null, label: 'NO ITEMS (BOSS)', disabled: true }];
     const bag = B.myItems.filter((_, i) => !B.itemsUsed.includes(i));
     if (!bag.length) return [{ id: null, label: '(empty)', disabled: true }];
-    return B.myItems.map((it, i) => ({ id: i, label: ITEMS[it].name,
-                                       disabled: B.itemsUsed.includes(i) }));
+    return B.myItems.map((it, i) => ({ id: i, label: ITEMS[it].name, disabled: B.itemsUsed.includes(i) }));
   }
   return [];
 };
 
+// route through target-select if the action needs an enemy target and there's
+// more than one living enemy; otherwise commit immediately.
 Battle.choose = function (cmd, move) {
-  const B = Battle, mem = B.curMember(), c = mem.def;
-  const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed() };
-  // tentative resource reservation (shared TP / shared bag)
-  if (cmd === 'magic') {
-    const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move);
-    if (d) B.tpSpent += d.tp;
-  } else if (cmd === 'item') {
-    B.itemsUsed.push(move); act.itemId = B.myItems[move];
+  const B = Battle, c = B.curMember().def;
+  const enemies = B.livingEnemies();
+  if (actNeedsTarget(cmd, c, move) && enemies.length > 1) {
+    B.pendingCmd = { cmd, move }; B.targetList = enemies; B.targetIdx = 0;
+    B.submenu = null; B.targeting = true;
+    B.say('* Choose a target.');
+    return;
   }
+  B.commitChoice(cmd, move, enemies.length ? enemies[0] : 0);
+};
+
+Battle.updTargeting = function () {
+  const B = Battle;
+  const n = B.targetList.length;
+  if (Input.hit.up) { B.targetIdx = (B.targetIdx + n - 1) % n; Snd.play('menumove'); }
+  if (Input.hit.down) { B.targetIdx = (B.targetIdx + 1) % n; Snd.play('menumove'); }
+  if (Input.hit.cancel) { B.targeting = false; B.pendingCmd = null; Snd.play('menumove'); }
+  if (Input.hit.ok) {
+    Snd.play('select');
+    const p = B.pendingCmd; B.targeting = false; B.pendingCmd = null;
+    B.commitChoice(p.cmd, p.move, B.targetList[B.targetIdx]);
+  }
+};
+
+Battle.commitChoice = function (cmd, move, target) {
+  const B = Battle, mem = B.curMember(), c = mem.def;
+  const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target };
+  if (cmd === 'magic') { const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move); if (d) B.tpSpent += d.tp; }
+  else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
+  else if (cmd === 'defend') B.tpSel += 16;   // instant, visible TP gain
   mem.action = act;
   B.submenu = null;
   B.cmdPos++;
   if (B.cmdPos < B.cmdOrder.length) { B.menuIdx = 0; B.say('* ' + B.curMember().def.name + ', your move.'); return; }
-  // all members chose -> send
+  // all chose -> commit shared TP (spends + defend gains) then send
+  B.myTP = Math.max(0, Math.min(100, B.myTP - B.tpSpent + B.tpSel));
   const acts = B.cmdOrder.map(i => B.myTeam[i].action);
   Battle.send({ t: 'actions', acts });
   B.phase = 'waitopp';
@@ -245,6 +287,7 @@ Battle.undoLast = function () {
   if (a) {
     if (a.cmd === 'magic') { const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move); if (d) B.tpSpent -= d.tp; }
     if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
+    if (a.cmd === 'defend') B.tpSel -= 16;
   }
   mem.action = null; B.menuIdx = 0;
   B.say('* ' + mem.def.name + ', your move.');
@@ -275,45 +318,64 @@ function actionText(def, a, mine) {
   return c.name + ' hesitates!';
 }
 
-// ---------- timing (sequential, one bar per attacking member) ----------
+// ---------- timing: only FIGHT uses the bar; spells fire at full power ----------
+// All FIGHT bars are shown at once, but their markers start staggered (Kris,
+// then Susie, then Ralsei...) and you press [Z] for each as it reaches the zone.
+const TIMING_ZONE = 22;   // half-width of the target zone (smaller = harder)
 Battle.startTiming = function () {
   const B = Battle;
-  B.timeQueue = B.myTeam.map((m, i) => i).filter(i => {
-    const m = B.myTeam[i]; return m.action && isAttack(moveDefOf(m.def, m.action));
-  });
-  B.timeI = 0;
-  B.nextTimingBar();
-};
-Battle.nextTimingBar = function () {
-  const B = Battle;
-  if (B.timeI >= B.timeQueue.length) {
-    // done: send tiers
-    const tiers = B.myTeam.map((m, i) => (m.action && isAttack(moveDefOf(m.def, m.action))) ? { mi: i, tier: m.tier } : null).filter(Boolean);
-    Battle.send({ t: 'tiers', tiers });
-    B.sendDodgeStart();
-    B.phase = 'waittier';
-    B.say('* Bracing...');
-    return;
+  // fixed 'good' tier for spell attackers (they don't time)
+  for (const m of B.myTeam) {
+    if (m.action && m.action.cmd === 'magic' && isAttack(moveDefOf(m.def, m.action))) m.tier = 1;
   }
-  B.timingBar = { x: 416, done: false, t: 0 };
+  const fighters = B.myTeam.map((m, i) => i).filter(i => B.myTeam[i].action && B.myTeam[i].action.cmd === 'fight');
+  if (!fighters.length) { B.finishAllTiming(); return; }
+  let delay = 0;
+  B.bars = fighters.map((mi, k) => {
+    delay += (k === 0 ? 20 : 24 + Math.floor(Math.random() * 22));
+    return { mi, x: 470, startDelay: delay, started: false, done: false, tier: null };
+  });
+  B.barCursor = 0;   // which bar the next [Z] resolves
+  B.timeT = 0;
   B.phase = 'timing';
-  B.say('* ' + B.myTeam[B.timeQueue[B.timeI]].def.name + ': press [Z] on the target!');
+  B.say('* Time your strikes!');
 };
-Battle.updTiming = function () {
-  const B = Battle, tb = B.timingBar;
-  tb.t++; tb.x -= 3.4;
-  if (tb.x <= -10) { B.finishTiming(0); return; }
-  if (Input.hit.ok) { const d = Math.abs(tb.x - 26); B.finishTiming(d < 4 ? 2 : d < 30 ? 1 : 0); }
+Battle.finishAllTiming = function () {
+  const B = Battle;
+  const tiers = B.myTeam.map((m, i) => (m.action && isAttack(moveDefOf(m.def, m.action))) ? { mi: i, tier: m.tier == null ? 1 : m.tier } : null).filter(Boolean);
+  Battle.send({ t: 'tiers', tiers });
+  B.sendDodgeStart();
+  B.phase = 'waittier';
+  B.say('* Bracing...');
 };
-Battle.finishTiming = function (tier) {
-  const B = Battle, mem = B.myTeam[B.timeQueue[B.timeI]];
-  mem.tier = tier;
+Battle.applyTimingResult = function (mi, tier) {
+  const B = Battle;
+  B.myTeam[mi].tier = tier;
   Snd.play(tier === 2 ? 'criticalswing' : tier === 1 ? 'bell' : 'smallswing');
   const gain = TIER_TP[tier];
   B.myTP = Math.min(100, B.myTP + gain);
   if (gain) B.dmgPops.push({ x: 46, y: 250, txt: '+' + gain, t: 0, color: '#ff8000' });
-  B.timeI++;
-  B.nextTimingBar();
+};
+Battle.updTiming = function () {
+  const B = Battle;
+  B.timeT = (B.timeT || 0) + 1;
+  for (const bar of B.bars) {
+    if (bar.done) continue;
+    if (!bar.started && B.timeT >= bar.startDelay) bar.started = true;
+    if (bar.started) {
+      bar.x -= 4.7;                             // faster than before
+      if (bar.x <= -14) { bar.done = true; B.applyTimingResult(bar.mi, 0); }   // missed
+    }
+  }
+  if (Input.hit.ok) {
+    const bar = B.bars.find(b => !b.done && b.started) || B.bars.find(b => !b.done);
+    if (bar && bar.started) {
+      const d = Math.abs(bar.x - 26);
+      const tier = d < 3 ? 2 : d < 13 ? 1 : 0;   // tight perfect zone
+      bar.done = true; B.applyTimingResult(bar.mi, tier);
+    } else Snd.play('cantselect');               // pressed before any bar started
+  }
+  if (B.bars.every(b => b.done)) B.finishAllTiming();
 };
 
 // gather attackers (member+move+tier+seed) for a team's actions
@@ -325,7 +387,8 @@ function attackersOf(team, pacifyCap) {
     if (isAttack(md)) {
       let tier = m.tier == null ? 1 : m.tier;
       if (pacifyCap) tier = 0;
-      out.push({ def: m.def, moveDef: md, tier, seed: m.action.seed, member: m });
+      out.push({ def: m.def, moveDef: md, tier, seed: m.action.seed, member: m,
+                 target: m.action.target || 0 });
     }
   }
   return out;
@@ -336,7 +399,7 @@ Battle.sendDodgeStart = function () {
   const atkers = attackersOf(B.myTeam, B.myPacified);
   const atks = atkers.map(a => ({
     base: a.def.base, moveId: a.moveDef.id, custom: a.moveDef.custom || null,
-    tier: a.tier, seed: a.seed,
+    tier: a.tier, seed: a.seed, target: a.target,
     dur: a.moveDef.dur || (PATTERNS[a.moveDef.id] || {}).dur || 480,
     perHit: Math.round(a.moveDef.dmg * TIER_MULT[a.tier]),
   }));
@@ -346,10 +409,9 @@ Battle.sendDodgeStart = function () {
 // ---------- dodge (combined) ----------
 Battle.startDodge = function () {
   const B = Battle;
-  // instant self-actions: DEFEND (+TP) and ITEM (heal the user) before dodging
+  // ITEM heals the user just before dodging (DEFEND TP was applied at select)
   for (const m of B.myTeam) {
     const a = m.action; if (!a) continue;
-    if (a.cmd === 'defend') B.myTP = Math.min(100, B.myTP + 16);
     if (a.cmd === 'item') {
       const it = ITEMS[a.itemId];
       if (it) {
@@ -403,16 +465,19 @@ Battle.startDodge = function () {
   if (!B.sim) { B.say('* Guard up...'); B.endDodge(); }
 };
 
-function applyTeamDamage(team, dmg) {
-  let d = dmg, hitMember = null;
-  while (d > 0) {
-    const m = frontLiving(team); if (!m) break;
-    if (!hitMember) hitMember = m;
+// targeted damage: a bullet damages the enemy member its attacker aimed at;
+// if that member is already down, it flows to the front living member.
+function applyTargetedDamage(team, dmg, target) {
+  let m = (target != null && team[target] && !team[target].downed) ? team[target] : frontLiving(team);
+  if (!m) return null;
+  const first = m;
+  let d = dmg;
+  while (d > 0 && m) {
     const take = Math.min(m.hp, d);
     m.hp -= take; d -= take;
-    if (m.hp <= 0) { m.downed = true; m.pose = 'downed'; m.poseT = 0; } else break;
+    if (m.hp <= 0) { m.downed = true; m.pose = 'downed'; m.poseT = 0; m = frontLiving(team); } else break;
   }
-  return hitMember;
+  return first;
 }
 
 Battle.updDodge = function () {
@@ -446,9 +511,10 @@ Battle.updDodge = function () {
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
     if (dist < (b.r || 6) + SOUL_R) {
       if (B.iframes <= 0) {
-        const dmg = Math.round((b.dmg || 10) * (defending ? 0.5 : 1) * (0.9 + Math.random() * 0.2));
+        const tgtDef = (b.target != null && B.myTeam[b.target] && B.myTeam[b.target].action && B.myTeam[b.target].action.cmd === 'defend');
+        const dmg = Math.round((b.dmg || 10) * ((defending || tgtDef) ? 0.5 : 1) * (0.9 + Math.random() * 0.2));
         B.dmgTaken += dmg;
-        const hit = applyTeamDamage(B.myTeam, dmg);
+        const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
         B.iframes = IFRAMES; B.shake = 14; B.flash = 8;
         Snd.play('hurt');
         B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '' + dmg, t: 0, color: '#f22' });
@@ -704,46 +770,57 @@ Battle.renderMirror = function (ctx) {
   drawSpr(ctx, A.hued(A.ui('head_' + od.base), od.hue), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
 };
 
-// compact team HUD entry
-function drawEntry(ctx, x, y, m, active) {
-  const def = m.def, hp = m.hp, max = m.max;
-  let head = A.ui('head_' + def.base + (m.downed ? '_gray' : ''));
-  if (!m.downed && def.hue) head = A.hued(head, def.hue);
-  drawSpr(ctx, head, x + 11, y + 11, { scale: 0.8 });
-  drawText(ctx, 'main', def.name, x + 26, y + 1, { color: m.downed ? '#666' : '#fff' });
-  ctx.fillStyle = '#3c0d0d'; ctx.fillRect(x + 26, y + 16, 92, 6);
-  ctx.fillStyle = m.downed ? '#611' : def.color;
-  ctx.fillRect(x + 26, y + 16, Math.max(0, Math.round(92 * hp / max)), 6);
-  drawText(ctx, 'main', hp + '/' + max, x + 124, y + 1, { color: m.downed ? '#666' : '#bbb' });
-  if (active) { ctx.strokeStyle = def.color; ctx.lineWidth = 1; ctx.strokeRect(x - 2, y - 2, 190, 26); }
-}
-
+// Deltarune-style bottom bar: my party's name/HP panels sit across the bottom;
+// the member whose turn it is RAISES up, revealing its 5 action buttons. Enemy
+// HP is NOT shown here - it appears on the target-select screen instead.
 Battle.renderHud = function (ctx) {
   const B = Battle;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 384, 640, 96);
-  ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, 384.5); ctx.lineTo(640, 384.5); ctx.stroke();
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 432, 640, 48);
+  ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, 432.5); ctx.lineTo(640, 432.5); ctx.stroke();
 
-  const activeMi = B.phase === 'select' ? B.cmdOrder[B.cmdPos]
-                 : B.phase === 'timing' ? B.timeQueue[B.timeI] : -1;
-  B.myTeam.forEach((m, i) => drawEntry(ctx, 66, 390 + i * 28, m, i === activeMi));
-  B.oppTeam.forEach((m, i) => drawEntry(ctx, 386, 390 + i * 28, m, false));
+  const n = B.myTeam.length;
+  const pw = Math.min(210, 620 / n);
+  const startX = 320 - (n * pw) / 2 + 4;
+  const activeMi = (B.phase === 'select' && !B.targeting) ? B.cmdOrder[B.cmdPos]
+                 : B.phase === 'timing' ? ((B.bars.find(b => !b.done && b.started) || B.bars.find(b => !b.done) || {}).mi) : -1;
 
-  // shared TP bar (left)
-  ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 70, 16, 170);
-  const tpH = Math.round(170 * B.myTP / 100);
-  ctx.fillStyle = '#ff8000'; ctx.fillRect(38, 70 + 170 - tpH, 16, tpH);
-  if (tpH > 0 && tpH < 170) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 70 + 170 - tpH, 16, 3); }
+  B.myTeam.forEach((m, i) => {
+    if (m.raise == null) m.raise = 0;
+    m.raise += ((i === activeMi ? 1 : 0) - m.raise) * 0.35;
+    const px = startX + i * pw;
+    const py = 438 - m.raise * 46;
+    const inner = pw - 12;
+    ctx.fillStyle = '#000'; ctx.fillRect(px, py - 2, inner, 42 + m.raise * 44);
+    ctx.strokeStyle = m.raise > 0.5 ? m.def.color : '#333'; ctx.lineWidth = 1; ctx.strokeRect(px, py - 2, inner, 42);
+    let head = A.ui('head_' + m.def.base + (m.downed ? '_gray' : ''));
+    if (!m.downed && m.def.hue) head = A.hued(head, m.def.hue);
+    drawSpr(ctx, head, px + 13, py + 12, { scale: 0.8 });
+    drawText(ctx, 'main', m.def.name, px + 28, py + 1, { color: m.downed ? '#666' : '#fff' });
+    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(px + 28, py + 18, inner - 68, 6);
+    ctx.fillStyle = m.downed ? '#611' : m.def.color;
+    ctx.fillRect(px + 28, py + 18, Math.max(0, Math.round((inner - 68) * m.hp / m.max)), 6);
+    drawText(ctx, 'main', '' + m.hp, px + inner - 8, py + 1, { color: m.downed ? '#666' : '#bbb', align: 'right' });
+    // action buttons revealed under the raised, active member
+    if (i === activeMi && m.raise > 0.6 && B.phase === 'select' && !B.submenu) {
+      const names = ['fight', 'magic', 'act', 'item', 'defend'];
+      const step = (inner - 16) / 5;
+      for (let k = 0; k < 5; k++) {
+        const sel = B.menuIdx === k;
+        drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
+      }
+    }
+  });
+
+  // shared TP bar (left), previewing this turn's tentative spend/gain in select
+  const dispTP = B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP;
+  ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 70, 16, 190);
+  const tpH = Math.round(190 * dispTP / 100);
+  ctx.fillStyle = '#ff8000'; ctx.fillRect(38, 70 + 190 - tpH, 16, tpH);
+  if (tpH > 0 && tpH < 190) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 70 + 190 - tpH, 16, 3); }
   drawText(ctx, 'main', 'TP', 40, 54, { color: '#ff8000', align: 'center' });
-  drawText(ctx, 'main', '' + B.myTP, 46, 244, { color: '#ff8000', align: 'center' });
+  drawText(ctx, 'main', '' + dispTP, 46, 264, { color: '#ff8000', align: 'center' });
 
   if (B.phase === 'select') {
-    // command buttons above the panel (over the empty board), labelled by member
-    const names = ['fight', 'magic', 'act', 'item', 'defend'];
-    for (let i = 0; i < names.length; i++) {
-      const sel = !B.submenu && B.menuIdx === i;
-      drawSpr(ctx, A.ui('btn_' + names[i] + (sel ? '_sel' : '')), 236 + i * 34, 352, { scale: 1.0 });
-    }
-    drawText(ctx, 'main', B.curMember().def.name, 320, 322, { color: B.curMember().def.color, align: 'center' });
     const secs = Math.ceil(B.timer / 60);
     drawText(ctx, 'big', '' + secs, 320, 18, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 });
   }
@@ -751,17 +828,37 @@ Battle.renderHud = function (ctx) {
 
   if (B.submenu) {
     const opts = B.subOptions();
-    const px = 200, py = 140, pw = 240, ph = 40 + opts.length * 26;
-    ctx.fillStyle = 'rgba(0,0,0,0.92)'; ctx.fillRect(px, py, pw, ph);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw, ph);
-    drawText(ctx, 'main', B.curMember().def.name + ' ' + B.submenu.toUpperCase(), px + pw / 2, py + 8, { color: '#ff8000', align: 'center' });
+    const px = 200, py = 150, pw2 = 240, ph = 40 + opts.length * 26;
+    ctx.fillStyle = 'rgba(0,0,0,0.92)'; ctx.fillRect(px, py, pw2, ph);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw2, ph);
+    drawText(ctx, 'main', B.curMember().def.name + ' ' + B.submenu.toUpperCase(), px + pw2 / 2, py + 8, { color: '#ff8000', align: 'center' });
     opts.forEach((o, i) => {
       const sel = i === B.subIdx;
       const col = o.disabled ? '#555' : o.ult ? '#f4a' : sel ? '#ff0' : '#fff';
       drawText(ctx, 'main', (sel ? '> ' : '  ') + o.label, px + 14, py + 32 + i * 26, { color: col });
-      if (o.cost) drawText(ctx, 'main', o.cost, px + pw - 14, py + 32 + i * 26, { color: col, align: 'right' });
+      if (o.cost) drawText(ctx, 'main', o.cost, px + pw2 - 14, py + 32 + i * 26, { color: col, align: 'right' });
     });
   }
+
+  if (B.targeting) Battle.renderTargeting(ctx);
+};
+
+// target-select overlay: shows enemy HP (Deltarune shows it here, not on the bar)
+Battle.renderTargeting = function (ctx) {
+  const B = Battle;
+  drawText(ctx, 'main', B.curMember().def.name + ' -> CHOOSE TARGET', 320, 150, { color: '#ff8000', align: 'center' });
+  B.targetList.forEach((ei, k) => {
+    const m = B.oppTeam[ei], def = m.def, sel = k === B.targetIdx;
+    const y = 176 + k * 30;
+    if (sel) drawSpr(ctx, A.ui('soul'), 190, y + 7, { scale: 1 });
+    let head = A.ui('head_' + def.base + (def.hue ? '' : '')); if (def.hue) head = A.hued(head, def.hue);
+    drawSpr(ctx, head, 214, y + 8, { scale: 0.8 });
+    drawText(ctx, 'main', def.name, 232, y, { color: sel ? '#ff0' : '#fff' });
+    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(360, y + 4, 100, 8);
+    ctx.fillStyle = def.color; ctx.fillRect(360, y + 4, Math.max(0, Math.round(100 * m.hp / m.max)), 8);
+    drawText(ctx, 'main', m.hp + '/' + m.max, 470, y, { color: sel ? '#fff' : '#999' });
+  });
+  drawText(ctx, 'main', '[Z] CONFIRM  [X] BACK', 320, 176 + B.targetList.length * 30 + 8, { color: '#555', align: 'center' });
 };
 
 Battle.renderMsg = function (ctx) {
@@ -771,16 +868,26 @@ Battle.renderMsg = function (ctx) {
 };
 
 Battle.renderTiming = function (ctx) {
-  const B = Battle, tb = B.timingBar;
-  const mem = B.myTeam[B.timeQueue[B.timeI]], def = mem.def;
-  const x = 150, y = 348, w = 416, h = 28;
-  drawSpr(ctx, A.hued(A.ui('head_' + def.base), def.hue), 60, y + h / 2, { scale: 1 });
-  drawText(ctx, 'main', 'PRESS', 80, y + 6, { color: '#fff' });
-  ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
-  ctx.fillStyle = def.color; ctx.globalAlpha = 0.85; ctx.fillRect(x + 8, y + 2, 36, h - 4); ctx.globalAlpha = 1;
-  ctx.fillStyle = '#fff'; ctx.fillRect(x + 25, y + 2, 2, h - 4);
-  if (!tb.done) { ctx.fillStyle = '#fff'; ctx.fillRect(x + Math.max(0, tb.x) - 2, y - 5, 4, h + 10); }
+  const B = Battle;
+  const x = 150, w = 416, h = 22;
+  const active = B.bars.find(b => !b.done && b.started) || B.bars.find(b => !b.done);
+  B.bars.forEach((bar, k) => {
+    const def = B.myTeam[bar.mi].def;
+    const y = 150 + k * 34;
+    drawSpr(ctx, A.hued(A.ui('head_' + def.base), def.hue), 118, y + h / 2, { scale: 0.8 });
+    ctx.globalAlpha = bar.done ? 0.4 : (bar === active ? 1 : 0.7);
+    ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = bar === active ? '#fff' : '#888'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+    // target zone (bar-local center 26, half 13)
+    ctx.fillStyle = def.color; ctx.globalAlpha = (bar.done ? 0.4 : 0.8);
+    ctx.fillRect(x + 13, y + 2, 26, h - 4);
+    ctx.globalAlpha = bar.done ? 0.4 : 1;
+    ctx.fillStyle = '#fff'; ctx.fillRect(x + 25, y + 2, 2, h - 4);   // perfect tick
+    if (bar.started && !bar.done) { ctx.fillStyle = '#fff'; ctx.fillRect(x + Math.max(0, bar.x) - 2, y - 4, 4, h + 8); }
+    if (bar.done && bar.tier != null) drawText(ctx, 'main', TIER_NAME[bar.tier], x + w + 8, y + 2, { color: bar.tier === 2 ? '#ff0' : bar.tier === 1 ? '#8f8' : '#888' });
+    ctx.globalAlpha = 1;
+  });
+  drawText(ctx, 'main', 'PRESS [Z] AS EACH REACHES THE MARK', 320, 150 + B.bars.length * 34 + 4, { color: '#888', align: 'center' });
 };
 
 Battle.renderGameover = function (ctx) {
