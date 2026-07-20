@@ -181,7 +181,12 @@ const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
 const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
 // darkners swap ACT for CHARGE and pay a discounted TP rate on spells
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
-function menuFor(mem) { return isDarkner(mem) ? ['fight', 'magic', 'charge', 'item', 'defend'] : MENU; }
+// KRIS is magicless - everything is done through ACT (his MAGIC slot becomes ACT).
+function menuFor(mem) {
+  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];
+  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'defend'];
+  return MENU;
+}
 function spellCost(mem, d) { return isDarkner(mem) ? Math.ceil(d.tp * 0.6) : d.tp; }
 Battle.startSelect = function (fresh) {
   const B = Battle;
@@ -992,8 +997,8 @@ Battle.renderHud = function (ctx) {
     // action buttons revealed under the raised, active member
     if (i === activeMi && m.raise > 0.6 && B.phase === 'select' && !B.submenu) {
       const names = menuFor(m);
-      const step = (inner - 16) / 5;
-      for (let k = 0; k < 5; k++) {
+      const step = (inner - 16) / names.length;
+      for (let k = 0; k < names.length; k++) {
         const sel = B.menuIdx === k;
         drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
       }
@@ -1008,6 +1013,11 @@ Battle.renderHud = function (ctx) {
   if (tpH > 0 && tpH < 190) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 70 + 190 - tpH, 16, 3); }
   drawText(ctx, 'main', 'TP', 40, 54, { color: '#ff8000', align: 'center' });
   drawText(ctx, 'main', '' + dispTP, 46, 264, { color: '#ff8000', align: 'center' });
+
+  // active team buffs (Northernlight / Lock In)
+  let by = 288;
+  if (B.myGuardBuff > 0) { drawText(ctx, 'main', 'GUARD ' + B.myGuardBuff, 30, by, { color: '#6cf', scale: 0.85 }); by += 16; }
+  if (B.myPowerBuff > 0) { drawText(ctx, 'main', 'POWER ' + B.myPowerBuff, 30, by, { color: '#f84', scale: 0.85 }); }
 
   if (B.phase === 'select') {
     const secs = Math.ceil(B.timer / 60);

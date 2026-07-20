@@ -180,12 +180,12 @@ PATTERNS.ralsei_scarf = {
     const { f, rng, box, tier, add } = api;
     // fire projectiles radiate in rings from the centre (Balthizard-style)
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (every(f, rate(32, tier))) {
-      const n = 10, off = (f * 0.05) % (6.28 / n);   // each ring rotates a little
+    if (every(f, rate(48, tier))) {
+      const n = 6, off = (f * 0.09) % (6.28 / n);   // sparse 6-dot ring, rotates so gaps shift
       for (let i = 0; i < n; i++) {
         const a = i / n * 6.28 + off;
         add({ ...bulletProps('ralseidot'), x: cx, y: cy,
-              vx: Math.cos(a) * 1.7, vy: Math.sin(a) * 1.7, r: 6 });
+              vx: Math.cos(a) * 1.45, vy: Math.sin(a) * 1.45, r: 6 });
       }
     }
   },
@@ -367,19 +367,15 @@ PATTERNS.lancer_ult = {
 // ---------- custom pattern factory (character creator attacks) ----------
 // spec: {ptype, bullet, speed, ult} — bullet is a library id or a shape name.
 // ---------- BERDLY (wind, A+ papers, halberd lasers) ----------
-PATTERNS.berdly_fight = {   // A+ Exam Papers: targeted spreads that accelerate
+PATTERNS.berdly_fight = {   // basic HALBERD swings: telegraphed slashes, easy (free attack)
   dur: 420,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(30, tier))) {
-      const ox = box.x + box.w + 24, oy = box.y + 14 + rng() * (box.h - 28);
-      const base = Math.atan2(soul.y - oy, soul.x - ox);
-      for (let i = -1; i <= 1; i++) {          // 3-paper spread, aimed + accelerating
-        const ang = base + i * 0.26;
-        add({ ...bulletProps('feather'), x: ox, y: oy,
-              vx: Math.cos(ang) * 1.3, vy: Math.sin(ang) * 1.3,
-              ax: Math.cos(ang) * 0.06, ay: Math.sin(ang) * 0.06, maxv: 5, rot: ang, spin: 0.03 });
-      }
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(40, tier))) {          // a slow halberd slash sweeps across at one height
+      const y = box.y + 20 + rng() * (box.h - 40);
+      for (let i = 0; i < 2; i++)
+        add({ ...bulletProps('spear'), x: box.x + box.w + 24 + i * 22, y,
+              vx: -(2.1 + rng() * 0.4), vy: 0, rot: Math.PI, r: 7 });
     }
   },
 };

@@ -8,9 +8,7 @@ const CHARS = {
     desc: 'THE LEADER. BALANCED.\nCOMMANDS THE BLADE.',
     fight: { id: 'kris_slash', name: 'Slash', dmg: 28, dur: 420,
              text: 'KRIS attacks with the sword!' },
-    spells: [],
-    ult: { id: 'kris_giga', name: 'GIGASLASH', tp: 100, dmg: 46, dur: 560, kind: 'attack',
-           text: 'KRIS unleashes GIGASLASH!!' },
+    spells: [],   // KRIS is magicless - no MAGIC, no ult; everything is an ACT
     // KRIS is the only character with the ACT menu (single acts + Kris multi-acts).
     acts: [
       { id: 'act_check', name: 'Check', kind: 'mercy', mercy: 20, text: 'KRIS sizes up the foe.' },
