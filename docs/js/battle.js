@@ -1011,23 +1011,25 @@ Battle.renderMirror = function (ctx) {
 
 // --------- bottom UI: party info panels (HP/name) + a black dialogue box that
 // holds text, command buttons, option grids and target lists (Deltarune-style).
-const PANEL_Y = 308, PANEL_H = 34, BTN_Y = 346;
-const DBOX = { x: 20, y: 404, w: 600, h: 74 };
-const BTN_LABEL = { fight: 'FIGHT', magic: 'MAGIC', act: 'ACT', item: 'ITEM', spare: 'SPARE', defend: 'DEFEND', charge: 'CHARGE' };
+const PANEL_BASE = 366, PANEL_H = 34, RAISE = 40;   // active panel raises to reveal its buttons
+const DBOX = { x: 20, y: 400, w: 600, h: 78 };      // dialogue box sits flush under the panels
 
+// panel layout: [icon] NAME  HP [ value/max over a short health bar ]
 function drawPartyPanel(ctx, m, px, py, w, active) {
-  ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, 42);
-  ctx.strokeStyle = active ? m.def.color : '#333'; ctx.lineWidth = active ? 2 : 1; ctx.strokeRect(px + 1, py + 1, w - 2, 40);
-  const out = isOut(m), bw = w - 78;
+  const out = isOut(m);
+  ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, PANEL_H);
+  ctx.strokeStyle = active ? m.def.color : '#333'; ctx.lineWidth = active ? 2 : 1; ctx.strokeRect(px + 1, py + 1, w - 2, PANEL_H - 2);
   let head = A.ui('head_' + m.def.base + (m.downed ? '_gray' : '')); if (!m.downed && m.def.hue) head = A.hued(head, m.def.hue);
-  drawSpr(ctx, head, px + 15, py + 14, { scale: 0.8, alpha: m.spared ? 0.5 : 1 });
-  drawText(ctx, 'main', m.def.name, px + 30, py + 4, { color: out ? '#666' : '#fff' });
-  ctx.fillStyle = '#3c0d0d'; ctx.fillRect(px + 30, py + 21, bw, 6);
-  ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(px + 30, py + 21, Math.max(0, Math.round(bw * m.hp / m.max)), 6);
-  drawText(ctx, 'main', m.spared ? 'SPARE' : ('' + m.hp), px + w - 8, py + 4, { color: out ? '#888' : '#bbb', align: 'right' });
+  drawSpr(ctx, head, px + 16, py + PANEL_H / 2, { scale: 0.8, alpha: m.spared ? 0.5 : 1 });
+  drawText(ctx, 'main', m.def.name, px + 32, py + 10, { color: out ? '#666' : '#fff' });
+  const barW = 82, barX = px + w - barW - 6, barY = py + 22;
+  drawText(ctx, 'main', 'HP', barX - 22, py + 10, { color: out ? '#555' : '#c8c8c8' });
+  drawText(ctx, 'main', m.spared ? 'SPARED' : (m.hp + '/' + m.max), barX, py + 4, { color: out ? '#888' : '#fff' });
+  ctx.fillStyle = '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
+  ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6);
   if (isDarkner(m) && !out) {
-    ctx.fillStyle = '#1a0a2a'; ctx.fillRect(px + 30, py + 30, bw, 4);
-    ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2'; ctx.fillRect(px + 30, py + 30, Math.round(bw * m.dark / 100), 4);
+    ctx.fillStyle = '#1a0a2a'; ctx.fillRect(barX, barY + 7, barW, 3);
+    ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2'; ctx.fillRect(barX, barY + 7, Math.round(barW * m.dark / 100), 3);
   }
 }
 
@@ -1048,11 +1050,15 @@ Battle.renderHud = function (ctx) {
   const totalW = n * pw + (n - 1) * 8, startX = 320 - totalW / 2;
   const activeMi = (B.phase === 'select' && !B.targeting && !B.submenu) ? B.cmdOrder[B.cmdPos]
                  : B.phase === 'timing' ? ((B.bars.find(x => !x.done && x.started) || B.bars.find(x => !x.done) || {}).mi) : -1;
-  B.myTeam.forEach((m, i) => drawPartyPanel(ctx, m, startX + i * (pw + 8), PANEL_Y, pw, i === activeMi));
-
-  // command buttons sit in a box directly UNDER the active member's panel
-  if (B.phase === 'select' && activeMi >= 0)
-    Battle.renderCommandButtons(ctx, B.myTeam[activeMi], startX + activeMi * (pw + 8), BTN_Y, pw);
+  // panels sit flush on the dialogue box; the ACTIVE member's panel RAISES up,
+  // revealing its command buttons in the gap (they pop up from the box).
+  B.myTeam.forEach((m, i) => {
+    if (m.raise == null) m.raise = 0;
+    m.raise += ((i === activeMi ? 1 : 0) - m.raise) * 0.4;
+    const px = startX + i * (pw + 8), py = PANEL_BASE - RAISE * m.raise;
+    if (m.raise > 0.05 && B.phase === 'select') Battle.renderCommandButtons(ctx, m, px, py + PANEL_H, pw, Math.min(1, m.raise * 1.5));
+    drawPartyPanel(ctx, m, px, py, pw, i === activeMi);
+  });
 
   // shared TP bar + buffs + turn/timer
   const dispTP = B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP;
@@ -1079,20 +1085,21 @@ Battle.renderHud = function (ctx) {
 };
 Battle.renderMsg = function () {};   // text now lives inside the dialogue box
 
-// command buttons under the active panel: icons TOP-aligned (so the shorter
-// SPARE/CHARGE icons line up), the selected one's name label drawn below the box.
-Battle.renderCommandButtons = function (ctx, mem, px, py, w) {
+// command buttons revealed under the raised active panel (icons TOP-aligned so
+// the shorter SPARE/CHARGE line up). Button labels are baked into the textures.
+Battle.renderCommandButtons = function (ctx, mem, px, py, w, alpha) {
   const B = Battle, names = menuFor(mem);
+  ctx.save();
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
   ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, 38);
   ctx.strokeStyle = mem.def.color; ctx.lineWidth = 2; ctx.strokeRect(px + 1, py + 1, w - 2, 36);
   const step = (w - 8) / names.length, top = py + 3;
   for (let k = 0; k < names.length; k++) {
-    const sel = B.menuIdx === k, name = names[k];
-    const img = A.ui('btn_' + name + (sel ? '_sel' : ''));
+    const name = names[k], img = A.ui('btn_' + name + (B.menuIdx === k ? '_sel' : ''));
     const cx = px + 4 + step * k + step / 2;
     if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1 });   // top-aligned, native size
-    if (sel) drawText(ctx, 'main', BTN_LABEL[name] || name.toUpperCase(), cx, py + 42, { color: '#ff0', align: 'center' });
   }
+  ctx.restore();
 };
 
 // 3-column layout at full font: two option columns (row-major) + info column.

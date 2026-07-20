@@ -6,8 +6,9 @@ const A = {
   ready: false,
 };
 
+const ASSET_V = 30;   // bump when sprite/manifest files change so browsers refetch
 A.load = function (done) {
-  fetch('assets/manifest.json').then(r => r.json()).then(man => {
+  fetch('assets/manifest.json?a=' + ASSET_V).then(r => r.json()).then(man => {
     A.manifest = man;
     const paths = [];
     for (const ch in man.chars)
@@ -29,8 +30,8 @@ A.load = function (done) {
     for (const p of paths) {
       const im = new Image();
       im.onload = im.onerror = () => { if (--n === 0) finish(); };
-      im.src = p;
-      A.img[p] = im;
+      im.src = p + '?a=' + ASSET_V;
+      A.img[p] = im;   // keyed by clean path; lookups are unaffected
     }
     function finish() {
       for (const k in man.fonts)
