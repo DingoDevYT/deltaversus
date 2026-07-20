@@ -106,49 +106,95 @@ const TIER_NAME = ['WEAK', 'GOOD', 'PERFECT!'];
 
 // ================= CUSTOM CHARACTER CREATOR DATA =================
 const ARCHETYPES = {
-  balanced: { name: 'BALANCED', hp: 160, mult: 1.0, desc: 'Steady all-rounder' },
-  tank:     { name: 'TANK', hp: 200, mult: 0.85, desc: 'Huge HP, softer hits' },
-  glass:    { name: 'GLASS CANNON', hp: 120, mult: 1.25, desc: 'Fragile, hits HARD' },
-  tricky:   { name: 'TRICKY', hp: 145, mult: 1.1, desc: 'Fast and mean' },
+  balanced: { name: 'BALANCED', hp: 160, pool: 40, desc: 'Even HP and power' },
+  tank:     { name: 'TANK', hp: 205, pool: 32, desc: 'Huge HP, less power' },
+  glass:    { name: 'GLASS CANNON', hp: 115, pool: 54, desc: 'Fragile but deadly' },
+  tricky:   { name: 'TRICKY', hp: 145, pool: 46, desc: 'Balanced with a big pool' },
 };
 const ARCH_IDS = Object.keys(ARCHETYPES);
 
+// which base models are enemy-facing (sprite drawn mirrored vs the party)
+const ENEMY_FACING = { lancer: true };
+
+// weapon = quick-start: default projectile + preset for your FIGHT emitter
 const WEAPONS = {
-  sword: { name: 'SWORD', pattern: 'w_sword', dmg: 28, bullet: 'sword' },
-  axe:   { name: 'AXE', pattern: 'w_axe', dmg: 34, bullet: 'axe' },
-  scarf: { name: 'SCARF', pattern: 'w_scarf', dmg: 22, bullet: 'crescent' },
-  ice:   { name: 'ICE MAGIC', pattern: 'w_ice', dmg: 24, bullet: 'icicle' },
-  spade: { name: 'SPADES', pattern: 'w_spade', dmg: 26, bullet: 'spade' },
+  sword: { name: 'SWORD', bullet: 'sword', preset: 'sweep' },
+  axe:   { name: 'AXE', bullet: 'axe', preset: 'sweep' },
+  scarf: { name: 'SCARF', bullet: 'crescent', preset: 'sweep' },
+  ice:   { name: 'ICE', bullet: 'icicle', preset: 'rain' },
+  spade: { name: 'SPADES', bullet: 'spade', preset: 'fan' },
+  wand:  { name: 'WAND', bullet: 'spark', preset: 'spiral' },
 };
 const WEAPON_IDS = Object.keys(WEAPONS);
 
-const SPELL_TYPES = {
-  rain:   { name: 'RAIN', tp: 40, dmg: 30, dur: 480, desc: 'falls from above' },
-  sweep:  { name: 'SWEEP', tp: 35, dmg: 32, dur: 460, desc: 'rows sweep across' },
-  spiral: { name: 'SPIRAL', tp: 45, dmg: 34, dur: 500, desc: 'spins from center' },
-  fan:    { name: 'FAN', tp: 30, dmg: 28, dur: 440, desc: 'aimed spreads' },
-  walls:  { name: 'WALLS', tp: 45, dmg: 34, dur: 500, desc: 'lanes with gaps' },
-  homing: { name: 'HOMING', tp: 40, dmg: 30, dur: 460, desc: 'seeks your SOUL' },
-  burst:  { name: 'BURST', tp: 35, dmg: 32, dur: 460, desc: 'exploding rings' },
-  heal:   { name: 'HEAL', tp: 32, heal: 60, kind: 'heal', desc: 'restore 60 HP' },
-  pacify: { name: 'PACIFY', tp: 16, kind: 'status', status: 'pacified', desc: 'weaken their press' },
-  sleep:  { name: 'SLEEP MIST', tp: 24, kind: 'status', status: 'drowsy', desc: 'slow drowsy soul' },
+// buildable attack presets (emitter shapes) + their skill-point cost
+const PRESETS = {
+  rain:   { name: 'RAIN', cost: 2, desc: 'falls from above' },
+  fan:    { name: 'FAN', cost: 2, desc: 'aimed spread' },
+  sweep:  { name: 'SWEEP', cost: 2, desc: 'sweeps across' },
+  spiral: { name: 'SPIRAL', cost: 3, desc: 'spins from center' },
+  walls:  { name: 'WALLS', cost: 3, desc: 'lanes with a gap' },
+  burst:  { name: 'BURST', cost: 3, desc: 'exploding rings' },
+  homing: { name: 'HOMING', cost: 4, desc: 'seeks your SOUL' },
 };
-const SPELL_TYPE_IDS = Object.keys(SPELL_TYPES);
-const ATTACK_TYPE_IDS = SPELL_TYPE_IDS.filter(t => !SPELL_TYPES[t].kind);
+const PRESET_IDS = Object.keys(PRESETS);
+
+// support (non-projectile) spell modes
+const SUPPORTS = {
+  heal:   { name: 'HEAL', tp: 32, heal: 60, kind: 'heal', desc: 'Restore 60 HP' },
+  pacify: { name: 'PACIFY', tp: 16, kind: 'status', status: 'pacified', desc: 'Weaken their attack' },
+  sleep:  { name: 'SLEEP MIST', tp: 24, kind: 'status', status: 'drowsy', desc: 'Slow, drowsy foe' },
+};
+const SUPPORT_IDS = Object.keys(SUPPORTS);
+const SPELL_MODES = ['attack'].concat(SUPPORT_IDS);
 
 const SPEEDS = {
-  light:  { name: 'LIGHT', v: 0.8, dmg: 0.85, tp: -8 },
-  normal: { name: 'NORMAL', v: 1.0, dmg: 1.0, tp: 0 },
-  heavy:  { name: 'HEAVY', v: 1.25, dmg: 1.2, tp: 10 },
+  light:  { name: 'LIGHT', v: 0.8, cost: 0 },
+  normal: { name: 'NORMAL', v: 1.05, cost: 1 },
+  heavy:  { name: 'HEAVY', v: 1.35, cost: 2 },
 };
 const SPEED_IDS = Object.keys(SPEEDS);
 
-// bullets available in the attack builder ('crescent'/'star'/'note' are shapes)
-const CC_BULLETS = ['sword', 'axe', 'flame', 'spark', 'orb_m', 'orb_l', 'diamond',
-                    'ring', 'dart', 'shuriken', 'bone', 'spade', 'spade_pink',
-                    'icicle', 'snowflake', 'shard', 'arc', 'arc_red',
-                    'crescent', 'star', 'note'];
+const QTYS = {
+  low:  { name: 'LOW', rate: 1.6, cost: 0 },
+  med:  { name: 'MED', rate: 1.0, cost: 1 },
+  high: { name: 'HIGH', rate: 0.62, cost: 3 },
+};
+const QTY_IDS = Object.keys(QTYS);
+
+// projectiles usable in the builder + their skill-point cost tier
+const BULLET_COST = {
+  spark: 0, orb_s: 0, orb_m: 0, star: 0,
+  orb_l: 1, diamond: 1, sword: 1, dart: 1, spade: 1, spade_pink: 1, note: 1, shard: 1, crescent: 1, ring: 1,
+  axe: 2, arc: 2, arc_red: 2, shuriken: 2, bone: 2, flame: 2, snowflake: 2, icicle: 2,
+};
+const CC_BULLETS = Object.keys(BULLET_COST);
+
+function emitterCost(em) {
+  return (PRESETS[em.preset] ? PRESETS[em.preset].cost : 2)
+       + (BULLET_COST[em.bullet] || 0)
+       + (SPEEDS[em.speed] ? SPEEDS[em.speed].cost : 1)
+       + (QTYS[em.qty] ? QTYS[em.qty].cost : 1);
+}
+function attackCost(emitters) {
+  return (emitters || []).reduce((sum, em) => sum + emitterCost(em), 0);
+}
+
+// skill-point budget per slot. spells scale with the TP cost you set.
+const FIGHT_SP = 6;
+const ULT_SP = 32;
+const TP_MIN = 16, TP_MAX = 64, TP_STEP = 4;
+function spellBudget(tp) { return Math.max(4, Math.round(tp / 3)); }
+function slotBudget(slot, cc) {
+  if (slot === 'fight') return FIGHT_SP;
+  if (slot === 'ult') return ULT_SP;
+  return spellBudget(cc.spells[slot].tp || 32);
+}
+function clampTP(tp) { return Math.max(TP_MIN, Math.min(TP_MAX, tp)); }
+function defEmitter(cc) {
+  const w = WEAPONS[cc && cc.weapon] || WEAPONS.sword;
+  return { preset: 'rain', bullet: 'orb_m', speed: 'normal', qty: 'med' };
+}
 
 const ACTS = {
   taunt:        { id: 'taunt', name: 'Taunt', desc: 'Shrink foe box' },
@@ -198,26 +244,32 @@ function charDef(sel) {
     return { ...c, id: sel, base: sel, hue: 0, custom: false, theme: null };
   }
   const arch = ARCHETYPES[sel.arch] || ARCHETYPES.balanced;
-  const wp = WEAPONS[sel.weapon] || WEAPONS.sword;
   const name = (sel.name || 'PLAYER').toUpperCase();
+  let atk = sel.atk != null ? sel.atk : Math.round(arch.pool / 2);
+  atk = Math.max(4, Math.min(arch.pool - 4, atk));
+  const mag = arch.pool - atk;
 
-  function mkSpell(sp, sid, ult) {
-    const t = SPELL_TYPES[sp.type];
-    if (t.kind) {   // heal / status
-      return { id: sid, name: t.name, tp: t.tp, kind: t.kind, heal: t.heal,
-               status: t.status,
-               text: name + ' casts ' + t.name + '!' };
+  function mkAttack(a, sid, opts) {
+    a = a || {};
+    opts = opts || {};
+    if (opts.spell && a.mode && a.mode !== 'attack') {
+      const sp = SUPPORTS[a.mode] || SUPPORTS.heal;
+      return { id: sid, name: (a.name || sp.name), tp: sp.tp, kind: sp.kind,
+               heal: sp.heal, status: sp.status,
+               text: name + ' casts ' + (a.name || sp.name) + '!' };
     }
-    const spd = SPEEDS[sp.speed] || SPEEDS.normal;
-    const label = (sp.bullet + ' ' + t.name).toUpperCase();
+    const stat = opts.magic ? mag : atk;
+    const ult = !!opts.ult;
+    const emitters = (a.emitters && a.emitters.length) ? a.emitters
+                     : [{ preset: 'rain', bullet: 'orb_m', speed: 'normal', qty: 'med' }];
+    const tp = opts.fight ? 0 : ult ? 100 : clampTP(a.tp || 32);
+    const dur = ult ? 560 : opts.fight ? 420 : 480;
+    const dmg = Math.max(4, Math.round(stat * (ult ? 1.3 : 1)));
+    const nm = a.name || (opts.fight ? 'ATTACK' : ult ? 'ULTIMATE' : 'SPELL');
     return {
-      id: sid, kind: 'attack',
-      name: ult ? label + ' EX' : label,
-      tp: ult ? 100 : Math.max(10, t.tp + spd.tp),
-      dmg: Math.round(t.dmg * arch.mult * spd.dmg * (ult ? 1.35 : 1)),
-      dur: Math.round(t.dur * (ult ? 1.25 : 1)),
-      text: name + ' unleashes ' + label + (ult ? '!!' : '!'),
-      custom: { ptype: sp.type, bullet: sp.bullet, speed: spd.v, ult: !!ult },
+      id: sid, kind: 'attack', name: nm, tp, dmg, dur,
+      text: name + ' uses ' + nm + (ult ? '!!' : '!'),
+      custom: { emitters, ult },
     };
   }
 
@@ -225,13 +277,12 @@ function charDef(sel) {
     id: 'custom', custom: true, base: sel.base || 'kris', hue: sel.hue || 0,
     name,
     color: rotateHue(CHARS[sel.base || 'kris'].color, sel.hue || 0),
-    hp: arch.hp, arch: sel.arch,
-    desc: arch.name + ' / ' + wp.name,
-    fight: { id: wp.pattern, name: wp.name, dmg: Math.round(wp.dmg * arch.mult),
-             dur: 420, text: name + ' attacks with the ' + wp.name + '!',
-             custom: { ptype: 'weapon_' + (sel.weapon || 'sword'), bullet: wp.bullet, speed: 1 } },
-    spells: [mkSpell(sel.spells[0], 'cs0'), mkSpell(sel.spells[1], 'cs1')],
-    ult: mkSpell(sel.ult, 'cu', true),
+    hp: arch.hp, arch: sel.arch, atk, mag,
+    desc: arch.name + ' - ATK ' + atk + ' / MAG ' + mag,
+    fight: mkAttack(sel.fight, 'cf', { fight: true }),
+    spells: [ mkAttack(sel.spells[0], 'cs0', { magic: true, spell: true }),
+              mkAttack(sel.spells[1], 'cs1', { magic: true, spell: true }) ],
+    ult: mkAttack(sel.ult, 'cu', { magic: true, ult: true }),
     act: { ...ACTS[sel.act || 'taunt'],
            text: name + ' uses ' + ACTS[sel.act || 'taunt'].name + '!' },
     theme: sel.theme || 'rude_buster_general',

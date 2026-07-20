@@ -42,16 +42,14 @@ POSES = {
         'victory': 'Noelle battle victory.gif', 'scared': 'Noelle battle scared.png',
     },
     'lancer': {
-        'idle': 'Lancer battle idle.png', 'hurt': 'Lancer battle hurt.png',
-        'bike': 'Lancer battle bike.gif',
+        'idle': 'Lancer battle bike.gif', 'hurt': 'Lancer battle bike hurt.gif',
+        'downed': 'Lancer battle bike hurt.gif',
     },
 }
 # legacy fallbacks: pose -> (workdir group frames)  [drawn from docs/assets/chars]
 LEGACY = {
     'kris':   {'downed': 'downed'},
-    'lancer': {'attack': 'spin', 'act': 'laugh', 'guard': 'hood',
-               'downed': 'hurt', 'spell': 'throw', 'item': 'idle',
-               'victory': 'laugh'},
+    'lancer': {},   # only bike sprites exist; other poses fall back to idle (bike)
     'ralsei': {},
     'susie':  {},
     'noelle': {},

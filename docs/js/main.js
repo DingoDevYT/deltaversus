@@ -117,6 +117,7 @@ function update() {
       break;
     }
     case 'creator': Creator.update(); break;
+    case 'ccatk': Creator.updAtk(); break;
     case 'ccname': break;
     case 'loadout': {
       const rows = ITEM_IDS.length + 1;  // + DONE
@@ -167,6 +168,7 @@ function render() {
     case 'join': renderJoin(); break;
     case 'select': renderSelect(); break;
     case 'creator': Creator.render(ctx); break;
+    case 'ccatk': Creator.renderAtk(ctx); break;
     case 'ccname': Creator.renderName(ctx); break;
     case 'loadout': renderLoadout(); break;
     case 'waiting':
@@ -239,7 +241,7 @@ function renderSelect() {
     }
     const an = A.anim(id, 'idle');
     const im = A.animFrame(an, G.f * (1000 / 60), true);
-    drawSpr(ctx, im, x, y, { scale: sel ? 1 : 0.8, alpha: sel ? 1 : 0.6 });
+    drawSpr(ctx, im, x, y, { scale: sel ? 1 : 0.8, alpha: sel ? 1 : 0.6, flip: !!ENEMY_FACING[id] });
     drawText(ctx, 'main', c.name, x, y + 62, { color: sel ? c.color : '#777', align: 'center' });
   });
   {
@@ -288,14 +290,14 @@ function renderVs() {
   const md = charDef(G.myCharSel);
   let my = A.animFrame(A.anim(md.base, 'idle'), G.f * (1000 / 60), true);
   if (md.hue) my = A.hued(my, md.hue);
-  drawSpr(ctx, my, 200, 220, { scale: 1.2 });
+  drawSpr(ctx, my, 200, 220, { scale: 1.2, flip: !!ENEMY_FACING[md.base] });
   drawText(ctx, 'main', md.name, 200, 300, { color: md.color, align: 'center' });
   drawText(ctx, 'big', 'VS', 320, 200, { color: '#f44', align: 'center' });
   if (G.oppHello) {
     const od = charDef(G.oppHello.char);
     let op = A.animFrame(A.anim(od.base, 'idle'), G.f * (1000 / 60), true);
     if (od.hue) op = A.hued(op, od.hue);
-    drawSpr(ctx, op, 440, 220, { scale: 1.2, flip: true });
+    drawSpr(ctx, op, 440, 220, { scale: 1.2, flip: !ENEMY_FACING[od.base] });
     drawText(ctx, 'main', od.name, 440, 300, { color: od.color, align: 'center' });
   } else {
     drawText(ctx, 'big', '?', 440, 200, { color: '#666', align: 'center' });

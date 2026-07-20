@@ -104,7 +104,8 @@ function isAttack(def) {
 // SFX for a move: explicit map for standard ids, bullet-based for customs
 function sfxFor(def) {
   if (MOVE_SFX[def.id]) return MOVE_SFX[def.id];
-  const b = def.custom && def.custom.bullet;
+  const em = def.custom && def.custom.emitters && def.custom.emitters[0];
+  const b = em && em.bullet;
   if (b === 'icicle' || b === 'snowflake' || b === 'shard') return 'icespell';
   if (b === 'flame' || b === 'spark' || b === 'star' || b === 'note') return 'spellcast';
   if (b === 'sword' || b === 'crescent' || b === 'dart') return 'swing';
@@ -317,6 +318,18 @@ Battle.startDodge = function () {
   const B = Battle;
   const oppDef = oppMoveDef();
   B.dmgTaken = 0; B.tpGained = 0;
+  // DEFEND / ITEM resolve instantly, before the dodge phase begins
+  if (B.myAction.cmd === 'defend') B.me.tp = Math.min(100, B.me.tp + 16);
+  if (B.myAction.cmd === 'item') {
+    const it = ITEMS[B.me.items[B.myAction.move]];
+    if (it) {
+      B.me.hp = Math.min(B.me.max, B.me.hp + (it.heal || 0));
+      B.me.tp = Math.min(100, B.me.tp + (it.tp || 0));
+      B.me.items.splice(B.myAction.move, 1);
+      Snd.play('cure');
+      B.dmgPops.push({ x: 110, y: 250, txt: '+' + it.heal, t: 0, color: '#2f2' });
+    }
+  }
   B.bullets = [];
   B.soul.x = BOX.x + BOX.w / 2; B.soul.y = BOX.y + BOX.h * 0.72;
   B.iframes = 0; B.grazeCd = 0;
@@ -504,19 +517,8 @@ Battle.endDodge = function () {
   B.sim = null;
   Battle.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
 
-  // apply my heals/items/defend AFTER dodging
+  // spell effects (heal / status) resolve after dodging
   const c = B.myDef, a = B.myAction;
-  if (a.cmd === 'defend') B.me.tp = Math.min(100, B.me.tp + 16);
-  if (a.cmd === 'item') {
-    const it = ITEMS[B.me.items[a.move]];
-    if (it) {
-      B.me.hp = Math.min(B.me.max, B.me.hp + (it.heal || 0));
-      B.me.tp = Math.min(100, B.me.tp + (it.tp || 0));
-      B.me.items.splice(a.move, 1);
-      Snd.play('cure');
-      B.dmgPops.push({ x: 110, y: 250, txt: '+' + it.heal, t: 0, color: '#2f2' });
-    }
-  }
   if (a.cmd === 'magic') {
     const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move);
     if (d) {
@@ -656,7 +658,8 @@ function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha) {
   let im = A.animFrame(an, ms, !!LOOP_POSES[pose]);
   if (im && im.width) {
     if (def.hue) im = A.hued(im, def.hue);
-    drawSpr(ctx, im, x, groundY - im.height / 2, { scale: 1, flip, alpha });
+    const fl = ENEMY_FACING[def.base] ? !flip : flip;
+    drawSpr(ctx, im, x, groundY - im.height / 2, { scale: 1, flip: fl, alpha });
   }
   return done;
 }
