@@ -669,7 +669,10 @@ PATTERNS.knight_slash = {   // Red Slash: giant diagonal slash-waves sweep the b
         const t = i / (n - 1);
         const x = box.x + t * box.w, y = down ? box.y + t * box.h : box.y + (1 - t) * box.h;
         const perp = down ? { x: 0.707, y: -0.707 } : { x: 0.707, y: 0.707 };
-        add({ color: '#f33', r: 6, x: x - perp.x * box.w * 0.7, y: y - perp.y * box.w * 0.7,
+        // blade lies along the diagonal (perpendicular to travel), sweeping across the box
+        const rot = Math.atan2(down ? box.h : -box.h, box.w);
+        add({ ...bulletProps('knightslash'), r: 6, rot, spin: 0,
+              x: x - perp.x * box.w * 0.7, y: y - perp.y * box.w * 0.7,
               vx: perp.x * 3.4, vy: perp.y * 3.4 });
       }
     }
