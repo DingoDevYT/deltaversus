@@ -432,25 +432,26 @@ PATTERNS.jevil_spade = {   // Five-Spade Teleport Spread: middle aimed at soul, 
   dur: 440,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(44, tier))) {
+    if (every(f, rate(38, tier))) {   // teleport, then 5-way spread w/ ±15°/±30° offsets (spec)
       const left = rng() < 0.5;
       const ox = left ? box.x - 18 : box.x + box.w + 18;
       const oy = box.y + 16 + rng() * (box.h - 32);
       const base = Math.atan2(soul.y - oy, soul.x - ox);
       for (const o of [-0.52, -0.26, 0, 0.26, 0.52])
         add({ ...bulletProps('spade'), x: ox, y: oy,
-              vx: Math.cos(base + o) * 1.8, vy: Math.sin(base + o) * 1.8, spin: 0.2, r: 7 });
+              vx: Math.cos(base + o) * 2.6, vy: Math.sin(base + o) * 2.6, spin: 0.2, r: 7 });
     }
   },
 };
-PATTERNS.jevil_diamond = {   // Diamond Shower (bottom->up) + heart bombs (burst into 4)
+PATTERNS.jevil_diamond = {   // Rising Diamond Shower: fast diamonds up near the soul's X (spec)
   dur: 500,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(20, tier)))    // diamonds fire straight up from the bottom edge
-      add({ ...bulletProps('bdiamond'), x: box.x + 8 + rng() * (box.w - 16), y: box.y + box.h + 18,
-            vx: 0, vy: -(2.2 + rng() * 0.9), spin: 0.1, r: 8 });
-    if (every(f, rate(110, tier)))    // heart bomb falls, detonates into 4 rotating hearts
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(12, tier))) {  // spawn near the soul's X, rise fast w/ slight drift
+      const x = Math.max(box.x + 6, Math.min(box.x + box.w - 6, soul.x + (rng() - 0.5) * 80));
+      add({ ...bulletProps('bdiamond'), x, y: box.y + box.h + 18, vx: 0, vy: -(3.3 + rng() * 0.8), sineA: 0.5, sineF: 0.1, spin: 0.1, r: 8 });
+    }
+    if (every(f, rate(120, tier)))    // heart bomb falls, detonates into 4 rotating hearts
       add({ ...bulletProps('bheart'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 18,
             vx: 0, vy: 1.5, r: 9, burst: 46, burstN: 4, burstSpeed: 1.7, burstRot: 0.78 });
   },
@@ -525,6 +526,137 @@ PATTERNS.redbuster = {
         add({ ...bulletProps('rudebeam'), x: left ? box.x - 46 : box.x + box.w + 46, y: soul.y + i * 15,
               vx: (left ? 1 : -1) * 3.4, vy: 0, r: 10, scale: 1.3, spin: 0.05 });
     }
+  },
+};
+
+// ---------- SPAMTON NEO (secret boss) ----------
+PATTERNS.sneo_pipis = {   // Pipis: parabolic eggs drop, then burst into a radial spread
+  dur: 440,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(48, tier)))
+      add({ ...bulletProps('egg'), x: box.x + 20 + rng() * (box.w - 40), y: box.y - 24,
+            vx: (rng() - 0.5) * 0.6, vy: 0.6, ay: 0.18, maxv: 5, spin: 0.08, r: 8, burst: 46, burstN: 5, burstSpeed: 2.6 });
+  },
+};
+PATTERNS.sneo_rings = {   // Phone hand soundwave rings from the sides, sine-weaving + expanding
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(14, tier))) {
+      const left = (Math.floor(f / rate(14, tier)) % 2) === 0;
+      add({ ...bulletProps('ring'), x: left ? box.x - 20 : box.x + box.w + 20, y: box.y + 16 + rng() * (box.h - 32),
+            vx: (left ? 1 : -1) * 2.4, vy: 0, sineA: 1.3, sineF: 0.09, spin: 0.05, r: 9 });
+    }
+  },
+};
+PATTERNS.sneo_heart = {   // Heart container: figure-8 above the board firing 8-way bursts
+  dur: 500,
+  tick(a) {
+    const { f, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + 18;
+    const hx = cx + 50 * Math.cos(0.04 * f), hy = cy + 22 * Math.sin(0.08 * f);
+    if (every(f, rate(30, tier)))
+      for (let k = 0; k < 8; k++) { const th = k * Math.PI / 4 + f * 0.02;
+        add({ ...bulletProps('sneoheart'), x: hx, y: hy, vx: Math.cos(th) * 2.0, vy: Math.sin(th) * 2.0, spin: 0.1, r: 6 }); }
+  },
+};
+PATTERNS.sneo_laser = {   // Eye lasers sweep in at the soul's height + filler shots
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(40, tier))) {
+      const left = rng() < 0.5;
+      add({ ...bulletProps('sneolaser'), x: left ? box.x - 30 : box.x + box.w + 30, y: soul.y,
+            vx: (left ? 1 : -1) * 4.4, vy: 0, scale: 2.0, r: 6 });
+    }
+    if (every(f, rate(18, tier)))
+      add({ ...bulletProps('sneoheart'), x: box.x + rng() * box.w, y: box.y - 16, vx: 0, vy: 2.2, r: 6 });
+  },
+};
+PATTERNS.sneo_vacuum = {   // BIG SHOT / Final Chaos: debris columns + rising hearts + big pipis
+  dur: 620,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(12, tier)))
+      add({ ...bulletProps('egg'), x: box.x + 10 + rng() * (box.w - 20), y: box.y - 20,
+            vx: (rng() - 0.5) * 1.0, vy: 2.4 + rng(), spin: 0.1, r: 7, sineA: 0.8, sineF: 0.06 });
+    if (every(f, rate(26, tier)))
+      add({ ...bulletProps('sneoheart'), x: box.x + rng() * box.w, y: box.y + box.h + 16, vx: 0, vy: -(2.6 + rng()), r: 6 });
+    if (every(f, rate(72, tier)))
+      add({ ...bulletProps('egg'), x: box.x + box.w / 2, y: box.y - 30, vx: (rng() - 0.5) * 2, vy: 1.8, ay: 0.05, scale: 1.8, r: 12, burst: 50, burstN: 8, burstSpeed: 2.4 });
+  },
+};
+
+// ---------- THE ROARING KNIGHT (final secret boss) ----------
+PATTERNS.knight_blade = {   // Blade hallway: giant greatswords accelerate down in lanes w/ a safe gap
+  dur: 460,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    const period = rate(50, tier), lanes = 5;
+    if (f % period === 0) {
+      const gap = Math.floor(rng() * lanes);
+      for (let i = 0; i < lanes; i++) {
+        if (i === gap) continue;
+        add({ ...bulletProps('spear'), x: box.x + 8 + (i + 0.5) * (box.w - 16) / lanes, y: box.y - 34,
+              vx: 0, vy: 0.5, ay: 0.42, maxv: 8, rot: Math.PI / 2, scale: 1.4, r: 8 });
+      }
+    }
+  },
+};
+PATTERNS.knight_crystal = {   // Fountain crystals ring in, collapsing toward the centre
+  dur: 500,
+  tick(a) {
+    const { f, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, N = 12, R = Math.max(box.w, box.h) / 2 + 30;
+    if (every(f, rate(64, tier)))
+      for (let k = 0; k < N; k++) {
+        const th = k * 2 * Math.PI / N + f * 0.03;
+        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, toC = Math.atan2(cy - y, cx - x);
+        add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(toC) * 1.8, vy: Math.sin(toC) * 1.8, spin: 0.15, r: 7 });
+      }
+  },
+};
+PATTERNS.knight_geyser = {   // Dark geysers erupt upward from the floor in columns w/ safe gap
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    const period = rate(58, tier), cols = 5;
+    if (f % period === 0) {
+      const gap = Math.floor(rng() * cols);
+      for (let i = 0; i < cols; i++) {
+        if (i === gap || i === (gap + 1) % cols) continue;
+        const x = box.x + 8 + (i + 0.5) * (box.w - 16) / cols;
+        for (let j = 0; j < 5; j++)
+          add({ ...bulletProps('knightstar'), x, y: box.y + box.h + 10 + j * 14, vx: 0, vy: -(3.5 + j * 0.2), r: 7 });
+      }
+    }
+  },
+};
+PATTERNS.knight_parry = {   // Double-strike X: energy slashes fly in from the 4 diagonal corners
+  dur: 480,
+  tick(a) {
+    const { f, box, tier, add } = a;
+    if (every(f, rate(42, tier))) {
+      const cn = [[box.x - 20, box.y - 20, 0.785], [box.x + box.w + 20, box.y - 20, 2.356],
+                  [box.x - 20, box.y + box.h + 20, -0.785], [box.x + box.w + 20, box.y + box.h + 20, -2.356]];
+      for (const [x, y, ang] of cn)
+        add({ ...bulletProps('knightcross'), x, y, vx: Math.cos(ang) * 3.0, vy: Math.sin(ang) * 3.0, spin: 0.2, r: 8 });
+    }
+  },
+};
+PATTERNS.knight_shield = {   // ECLIPSE: expanding shockwave rings from centre + greatsword rain
+  dur: 600,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (every(f, rate(48, tier))) {
+      const N = 16;
+      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N;
+        add({ ...bulletProps('knightcross'), x: cx, y: cy, vx: Math.cos(th) * 2.4, vy: Math.sin(th) * 2.4, spin: 0.1, r: 8 }); }
+    }
+    if (every(f, rate(22, tier)))
+      add({ ...bulletProps('spear'), x: box.x + rng() * box.w, y: box.y - 26, vx: 0, vy: 2.6, rot: Math.PI / 2, scale: 1.4, r: 9 });
   },
 };
 

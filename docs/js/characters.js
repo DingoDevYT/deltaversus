@@ -128,6 +128,38 @@ const CHARS = {
     act: { id: 'intimidate', name: 'Chaos', desc: 'Slow foe soul',
            text: 'JEVIL cackles! CHAOS, CHAOS!' },
   },
+  spamton: {
+    name: 'SPAMTON NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: { never: true },
+    desc: '[[BIG SHOT]] SECRET BOSS.\n1200 HP - NO ITEMS.',
+    fight: { id: 'sneo_pipis', name: 'Pipis', dmg: 26, dur: 440,
+             text: 'SPAMTON NEO drops the [[Pipis]]!' },
+    spells: [
+      { id: 'sneo_rings', name: 'Phone Waves', tp: 34, dmg: 28, dur: 480, kind: 'attack',
+        text: 'SPAMTON NEO rings up SOUNDWAVES!' },
+      { id: 'sneo_heart', name: 'Heart Pendulum', tp: 48, dmg: 32, dur: 500, kind: 'attack',
+        text: 'SPAMTON NEO swings his HEART!' },
+      { id: 'sneo_laser', name: 'Eye Lasers', tp: 60, dmg: 36, dur: 480, kind: 'attack',
+        text: 'SPAMTON NEO fires EYE LASERS!' },
+    ],
+    ult: { id: 'sneo_vacuum', name: 'BIG SHOT', tp: 100, dmg: 50, dur: 620, kind: 'attack',
+           text: 'SPAMTON NEO: [[NOW\'S YOUR CHANCE TO BE A]] BIG SHOT!!' },
+  },
+  knight: {
+    name: 'ROARING KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
+    desc: 'THE ROARING KNIGHT.\nFINAL SECRET BOSS - 1500 HP.',
+    fight: { id: 'knight_blade', name: 'Blade Sweep', dmg: 28, dur: 460,
+             text: 'THE KNIGHT drops GREATSWORDS!' },
+    spells: [
+      { id: 'knight_crystal', name: 'Crystal Barrage', tp: 36, dmg: 30, dur: 500, kind: 'attack',
+        text: 'THE KNIGHT calls FOUNTAIN CRYSTALS!' },
+      { id: 'knight_geyser', name: 'Dark Geyser', tp: 44, dmg: 34, dur: 480, kind: 'attack',
+        text: 'THE KNIGHT erupts DARK GEYSERS!' },
+      { id: 'knight_parry', name: 'Parry Wave', tp: 55, dmg: 38, dur: 480, kind: 'attack',
+        text: 'THE KNIGHT slashes an X of energy!' },
+    ],
+    ult: { id: 'knight_shield', name: 'ECLIPSE STRIKE', tp: 100, dmg: 52, dur: 600, kind: 'attack',
+           text: 'THE KNIGHT unleashes the ECLIPSE!!' },
+  },
 };
 // party-cost + darkner + level/spare defaults
 for (const id in CHARS) {
@@ -173,7 +205,7 @@ const ARCH_IDS = Object.keys(ARCHETYPES);
 // which base models are enemy-facing (sprite drawn mirrored vs the party)
 // bases whose battle sprites were ripped as ENEMIES (facing left by default),
 // so they must be flipped relative to the party members.
-const ENEMY_FACING = { lancer: true, berdly: true, jevil: true };
+const ENEMY_FACING = { lancer: true, berdly: true, jevil: true, spamton: true, knight: true };
 
 // weapon = quick-start: default projectile + preset for your FIGHT emitter
 const WEAPONS = {

@@ -6,7 +6,7 @@ const A = {
   ready: false,
 };
 
-const ASSET_V = 30;   // bump when sprite/manifest files change so browsers refetch
+const ASSET_V = 31;   // bump when sprite/manifest files change so browsers refetch
 A.load = function (done) {
   fetch('assets/manifest.json?a=' + ASSET_V).then(r => r.json()).then(man => {
     A.manifest = man;
@@ -17,7 +17,7 @@ A.load = function (done) {
     for (const b of ['fight', 'act', 'item', 'spare', 'defend', 'magic', 'charge'])
       paths.push(`assets/ui/btn_${b}.png`, `assets/ui/btn_${b}_sel.png`);
     paths.push('assets/ui/soul.png');
-    for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil'])
+    for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil', 'spamton', 'knight'])
       paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
     for (const b in (man.bullets || {})) paths.push(`assets/bullets/${man.bullets[b].f}`);

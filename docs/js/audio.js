@@ -24,6 +24,8 @@ Snd.THEME = {
   lancer: 'vs_lancer_lancer',
   berdly: 'smart_race_berdly',
   jevil: 'the_world_revolving_jevil',
+  spamton: 'big_shot_spamton_neo',
+  knight: 'black_knife_the_roaring_knight',
 };
 
 Snd.sfxPath = k => 'assets/audio/sfx/' + A.manifest.sfx[k];

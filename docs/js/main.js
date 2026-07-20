@@ -14,7 +14,7 @@ const G = {
   notice: '',
   f: 0,
 };
-const CHAR_IDS = ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil'];
+const CHAR_IDS = ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil', 'spamton', 'knight'];
 const ITEM_IDS = Object.keys(ITEMS);
 
 const canvas = document.getElementById('game');
