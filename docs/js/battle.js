@@ -12,6 +12,7 @@ const Battle = {};
 
 Battle.init = function (opts) {
   const B = Battle;
+  B.matchN = opts.matchN || 1;
   B.myChar = opts.myChar; B.oppChar = opts.oppChar;
   B.myName = CHARS[B.myChar].name; B.oppName = CHARS[B.oppChar].name;
   B.me = { hp: CHARS[B.myChar].hp, max: CHARS[B.myChar].hp, tp: 0,
@@ -46,8 +47,19 @@ Battle.init = function (opts) {
   Net.on(Battle.onMsg);
 };
 
+// send a battle message tagged with the current match number
+Battle.send = function (m) { m.n = Battle.matchN; Net.send(m); };
+
 Battle.onMsg = function (m) {
   const B = Battle;
+  if (m.t === 'startMatch') {
+    // host started the next match; joiner follows
+    if (!Net.isHost && m.n !== B.matchN)
+      Battle.init({ myChar: B.myChar, oppChar: B.oppChar,
+                    myItems: G.myItems, oppItems: G.oppItems, matchN: m.n });
+    return;
+  }
+  if (m.n != null && m.n !== B.matchN) return;   // stale cross-match message
   if (m.t === 'action') { B.oppAction = m; }
   else if (m.t === 'tier') { B.oppTier = m.tier; }
   else if (m.t === 'result') { B.oppResult = m; }
@@ -115,11 +127,14 @@ Battle.update = function () {
     case 'gameover':
       if (Input.hit.ok && !B.rematchMe) {
         B.rematchMe = true;
-        Net.send({ t: 'rematch' });
+        Battle.send({ t: 'rematch' });
       }
-      if (B.rematchMe && B.rematchOpp) {
+      if (B.rematchMe && B.rematchOpp && Net.isHost) {
+        // host authority: announce the new match, then start it
+        const n = B.matchN + 1;
+        Net.send({ t: 'startMatch', n });
         Battle.init({ myChar: B.myChar, oppChar: B.oppChar,
-                      myItems: G.myItems, oppItems: G.oppItems });
+                      myItems: G.myItems, oppItems: G.oppItems, matchN: n });
       }
       break;
   }
@@ -177,7 +192,7 @@ Battle.subOptions = function () {
 Battle.choose = function (cmd, move) {
   const B = Battle;
   B.myAction = { t: 'action', cmd, move, seed: randSeed() };
-  Net.send(B.myAction);
+  Battle.send(B.myAction);
   B.submenu = null;
   B.phase = 'waitopp';
   B.say('* Waiting for ' + B.oppName + '...');
@@ -220,7 +235,7 @@ Battle.startTiming = function () {
     B.say('* Press [Z] in the center!');
   } else {
     B.myTier = 1;
-    Net.send({ t: 'tier', tier: 1 });
+    Battle.send({ t: 'tier', tier: 1 });
     B.phase = 'waittier';
     B.say('* Waiting...');
   }
@@ -247,7 +262,7 @@ Battle.finishTiming = function (tier) {
   B.myTier = tier;
   B.timingBar.done = true;
   B.timingBar.result = tier;
-  Net.send({ t: 'tier', tier });
+  Battle.send({ t: 'tier', tier });
   B.phase = 'waittier';
   B.say('* ' + TIER_NAME[tier]);
 };
@@ -293,7 +308,7 @@ Battle.startDodge = function () {
 
   // tell the (practice) opponent how strong our attack is
   const myDef = myMoveDef();
-  Net.send({ t: 'dodgeStart',
+  Battle.send({ t: 'dodgeStart',
              potential: isAttack(myDef) ? Math.round(myDef.dmg * TIER_MULT[B.myTier] * 3) : 0,
              dur: isAttack(myDef) ? PATTERNS[myDef.id].dur : 0 });
 
@@ -381,7 +396,7 @@ Battle.updDodge = function () {
 
   // stream my soul position for the opponent's mini-cam (10Hz)
   if (B.anim.f % 6 === 0)
-    Net.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, done: false });
+    Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, done: false });
 
   if (--B.dodgeT <= 0 || B.me.hp <= 0) B.endDodge();
 };
@@ -390,7 +405,7 @@ Battle.endDodge = function () {
   const B = Battle;
   B.bullets = [];
   B.sim = null;
-  Net.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
+  Battle.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
 
   // apply my heals/items/defend AFTER dodging
   const c = CHARS[B.myChar], a = B.myAction;
@@ -419,7 +434,7 @@ Battle.endDodge = function () {
 
   B.myResult = { t: 'result', dmgTaken: B.dmgTaken, tpGained: B.tpGained,
                  hp: B.me.hp, tp: B.me.tp };
-  Net.send(B.myResult);
+  Battle.send(B.myResult);
   B.phase = 'waitresult';
   B.say('* Waiting for result...');
 };

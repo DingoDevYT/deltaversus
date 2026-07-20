@@ -79,7 +79,7 @@ function update() {
       if (Input.hit.down) G.menuIdx = (G.menuIdx + 1) % n;
       if (Input.hit.ok) {
         G.notice = '';
-        if (G.menuIdx === 0) { wireNet(); Net.host(); G.screen = 'host'; }
+        if (G.menuIdx === 0) { Net.host(); wireNet(); G.screen = 'host'; }
         else if (G.menuIdx === 1) { G.joinCode = ''; G.screen = 'join'; }
         else { Net.startPractice(); wireNet(); toSelect(); }
       }
@@ -91,7 +91,7 @@ function update() {
     case 'join':
       if (Input.hit.cancel) { Net.reset(); G.screen = 'menu'; }
       if (Input.hit.ok && G.joinCode.length === 4 && !Net.peer) {
-        wireNet(); Net.join(G.joinCode);
+        Net.join(G.joinCode); wireNet();
       }
       break;
     case 'select': {
@@ -278,3 +278,15 @@ function frame(t) {
 
 A.load(() => { G.screen = 'title'; });
 requestAnimationFrame(frame);
+
+// rAF stops in background tabs and setInterval gets throttled to ~1Hz,
+// so a hidden tab would stall the match (e.g. alt-tabbing to Discord).
+// Web Worker timers are exempt from throttling — use one as the ticker.
+try {
+  const src = URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),16)'],
+                                           { type: 'text/javascript' }));
+  const ticker = new Worker(src);
+  ticker.onmessage = () => { if (document.hidden && A.ready) update(); };
+} catch (e) {
+  setInterval(() => { if (document.hidden && A.ready) update(); }, 1000 / 60);
+}
