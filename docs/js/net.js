@@ -94,6 +94,38 @@ const PracticeAI = {
     // reply asynchronously so the game loop treats it like network data
     setTimeout(() => PracticeAI.handle(msg), 60 + Math.random() * 500);
   },
+  // greedy bullet-avoidance: steer away from nearby threats, hug open space,
+  // avoid corners. `skill` 0..1 adds jitter/reaction lag when lower.
+  moveSoul(soul, bullets, box, skill) {
+    const sp = 2.2;
+    let fx = 0, fy = 0;
+    const reach = 52 + skill * 22;
+    for (const b of bullets) {
+      const dx = soul.x - b.x, dy = soul.y - b.y;
+      const d = Math.hypot(dx, dy) || 1;
+      if (d < reach) {
+        let w = (reach - d) / reach; w *= w;
+        // weight bullets heading toward us more heavily
+        const vlen = Math.hypot(b.vx || 0, b.vy || 0) || 1;
+        const approach = -((b.vx || 0) * dx + (b.vy || 0) * dy) / (vlen * d);
+        if (approach > 0) w *= 1 + approach * 1.5;
+        fx += dx / d * w; fy += dy / d * w;
+      }
+    }
+    // anti-corner drift, but ONLY when few threats are near (else it walks
+    // straight into center-converging patterns like X-slash / spirals)
+    const threat = Math.hypot(fx, fy);
+    const calm = Math.max(0, 1 - threat * 4);
+    fx += (box.w / 2 - soul.x) * 0.004 * calm;
+    fy += (box.h / 2 - soul.y) * 0.004 * calm;
+    // lower skill -> shakier aim
+    fx += (Math.random() - 0.5) * (1 - skill) * 1.2;
+    fy += (Math.random() - 0.5) * (1 - skill) * 1.2;
+    const m = Math.hypot(fx, fy);
+    if (m > 0.0001) { soul.x += fx / m * sp; soul.y += fy / m * sp; }
+    soul.x = Math.min(box.w - 5, Math.max(5, soul.x));
+    soul.y = Math.min(box.h - 5, Math.max(5, soul.y));
+  },
   handle(msg) {
     if (msg.t === 'hello') {
       const ids = Object.keys(CHARS);
@@ -124,26 +156,56 @@ const PracticeAI = {
       // report plausible damage when the player's attack lands.
       PracticeAI.pendingTier = msg.tier;
     } else if (msg.t === 'dodgeStart') {
-      const dmg = msg.potential != null ? Math.round(msg.potential * (0.25 + Math.random() * 0.45)) : 0;
       const st = PracticeAI.state;
-      const durMs = (msg.dur || 480) / 60 * 1000 * (0.9 + Math.random() * 0.2);
-      // stream a wandering soul so the spectator mirror box has something to show
-      if (msg.dur > 0) {
-        let f = 0, sx = 0.5, sy = 0.7, vx = 0, vy = 0;
-        const iv = setInterval(() => {
-          f += 4;
-          vx += (Math.random() - 0.5) * 0.06; vy += (Math.random() - 0.5) * 0.06;
-          vx *= 0.8; vy *= 0.8;
-          sx = Math.min(0.95, Math.max(0.05, sx + vx));
-          sy = Math.min(0.95, Math.max(0.05, sy + vy));
-          if (f >= msg.dur) { clearInterval(iv); Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true }); }
-          else Net.emitLocal({ t: 'soul', x: sx, y: sy, f, done: false });
-        }, 66);
+      const atk = msg.atk;
+      if (!atk) {                              // nothing to dodge this turn
+        setTimeout(() => Net.emitLocal({ t: 'result', dmgTaken: 0, tpGained: 0,
+                                         hp: st.hp, tp: st.tp }), 250);
+        return;
       }
-      setTimeout(() => {
-        if (st) { st.hp = Math.max(0, st.hp - dmg); st.tp = Math.min(100, st.tp + 20 + Math.random() * 15 | 0); }
-        Net.emitLocal({ t: 'result', dmgTaken: dmg, tpGained: 25, hp: st ? st.hp : 1, tp: st ? st.tp : 0 });
-      }, durMs);
+      // rebuild the REAL attack and dodge it with an avoidance AI
+      const box = { x: 0, y: 0, w: 224, h: 176 };
+      const moveDef = { id: atk.moveId, custom: atk.custom, dmg: atk.perHit, dur: atk.dur };
+      const sim = makeDodgeSim({ base: atk.base }, moveDef, atk.tier, atk.seed, box);
+      const soul = { x: box.w / 2, y: box.h * 0.7 };
+      const skill = PracticeAI.skill != null ? PracticeAI.skill : 0.82;  // 0..1 competence
+      let bullets = [], f = 0, dmg = 0, tp0 = st.tp, tp = st.tp, ifr = 0, grz = 0;
+
+      const iv = setInterval(() => {
+        for (let step = 0; step < 3 && f < atk.dur; step++, f++) {
+          sim.tick(soul, b => { b.t = 0; b.phase0 = Math.random() * 6.28; bullets.push(b); });
+          PracticeAI.moveSoul(soul, bullets, box, skill);
+          for (const b of bullets) {
+            b.t++;
+            if (b.homing) {
+              const d = Math.hypot(soul.x - b.x, soul.y - b.y) || 1;
+              b.vx += (soul.x - b.x) / d * b.homing; b.vy += (soul.y - b.y) / d * b.homing;
+            }
+            b.vx += b.ax || 0; b.vy += b.ay || 0;
+            if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
+            b.x += b.vx; b.y += b.vy;
+            if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+          }
+          bullets = bullets.filter(b => b.x > -50 && b.x < box.w + 50 && b.y > -50 && b.y < box.h + 50 && (!b.life || b.t < b.life));
+          if (ifr > 0) ifr--;
+          if (grz > 0) grz--;
+          for (const b of bullets) {
+            const d = Math.hypot(b.x - soul.x, b.y - soul.y), rr = (b.r || 6) + 5;
+            if (d < rr) { if (ifr <= 0) { dmg += atk.perHit; ifr = 55; } }
+            else if (d < rr + 12 && grz <= 0) { tp = Math.min(100, tp + 2); grz = 10; }
+          }
+        }
+        if (f % 2 === 0)
+          Net.emitLocal({ t: 'soul', x: soul.x / box.w, y: soul.y / box.h, f, done: false });
+        if (f >= atk.dur) {
+          clearInterval(iv);
+          st.hp = Math.max(0, st.hp - Math.round(dmg));
+          st.tp = Math.min(100, tp + 8);       // small defend-ish trickle
+          Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true });
+          Net.emitLocal({ t: 'result', dmgTaken: Math.round(dmg),
+                          tpGained: st.tp - tp0, hp: st.hp, tp: st.tp });
+        }
+      }, 30);
     } else if (msg.t === 'rematch') {
       PracticeAI.state = null;
       Net.emitLocal({ t: 'rematch' });

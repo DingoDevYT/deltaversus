@@ -388,10 +388,16 @@ Battle.startDodge = function () {
     };
   }
 
-  // tell the (practice) opponent how strong our attack is
-  Battle.send({ t: 'dodgeStart',
-             potential: isAttack(myDef) ? Math.round(myDef.dmg * TIER_MULT[B.myTier] * 3) : 0,
-             dur: isAttack(myDef) ? (myDef.dur || (PATTERNS[myDef.id] || {}).dur || 480) : 0 });
+  // hand the (practice) opponent everything it needs to REALLY dodge my attack
+  const eff = B.myPacified ? 0 : B.myTier;
+  const atk = isAttack(myDef) ? {
+    base: B.myDef.base, moveId: myDef.id, custom: myDef.custom || null,
+    tier: eff, seed: B.myAction.seed,
+    dur: myDef.dur || (PATTERNS[myDef.id] || {}).dur || 480,
+    perHit: Math.round(myDef.dmg * TIER_MULT[eff]),
+  } : null;
+  Battle.send({ t: 'dodgeStart', atk,
+             potential: atk ? atk.perHit * 3 : 0, dur: atk ? atk.dur : 0 });
 
   B.phase = 'dodge';
   if (!B.sim) {
