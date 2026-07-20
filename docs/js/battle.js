@@ -906,8 +906,19 @@ Battle.renderChars = function (ctx) {
       m.poseT++;
       const hurtFlash = m.pose === 'hurt' && (m.poseT % 8 < 4);
       const alpha = m.downed ? 0.35 : (hurtFlash ? 0.4 : 1);
-      const sc = n >= 3 ? 1.3 : 1.7;   // ripped sprites read small; scale them up
-      const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, teamGroundY(i, n), flip, alpha, sc);
+      const sc = (n >= 3 ? 1.3 : 1.7) * (m.def.dscale || 1);   // per-char scale override
+      const bob = (m.def.bob && !isOut(m)) ? Math.sin(m.poseT * 0.09) * 7 : 0;   // Knight hovers
+      const gy = teamGroundY(i, n) + bob;
+      // afterimage trail (Roaring Knight): fading copies streaming backward
+      if (m.def.afterimage && !isOut(m)) {
+        if (!m.trail) m.trail = [];
+        m.trail.unshift(gy);
+        if (m.trail.length > m.def.afterimage) m.trail.pop();
+        const back = flip ? 1 : -1;   // "backward" = away from the enemy the boss faces
+        for (let k = m.trail.length - 1; k >= 1; k--)
+          drawCharAnim(ctx, m.def, 'idle', m.poseT, x + back * k * 3, m.trail[k], flip, 0.06 + 0.14 * (1 - k / m.trail.length), sc);
+      }
+      const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, gy, flip, alpha, sc);
       if (done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
       else if (done && m.pose === 'hurt' && m.poseT > 50) { m.pose = 'idle'; m.poseT = 0; }
     });

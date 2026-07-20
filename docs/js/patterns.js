@@ -529,134 +529,138 @@ PATTERNS.redbuster = {
   },
 };
 
-// ---------- SPAMTON NEO (secret boss) ----------
-PATTERNS.sneo_pipis = {   // Pipis: parabolic eggs drop, then burst into a radial spread
+// ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
+PATTERNS.sneo_heads = {   // Flying Heads: copies of his head launch at the soul in lanes
   dur: 440,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(48, tier)))
-      add({ ...bulletProps('egg'), x: box.x + 20 + rng() * (box.w - 40), y: box.y - 24,
-            vx: (rng() - 0.5) * 0.6, vy: 0.6, ay: 0.18, maxv: 5, spin: 0.08, r: 8, burst: 46, burstN: 5, burstSpeed: 2.6 });
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(34, tier)))   // a head streaks across from the right at the soul's lane
+      add({ ...bulletProps('sneohead'), x: box.x + box.w + 24, y: soul.y, vx: -(3.0 + rng() * 0.6), vy: 0, spin: 0.05, r: 9 });
+    if (every(f, rate(26, tier)))   // heads spit small word bullets as they cross
+      add({ ...bulletProps('sneosound'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 14, vx: 0, vy: 2.0, r: 6 });
   },
 };
-PATTERNS.sneo_rings = {   // Phone hand soundwave rings from the sides, sine-weaving + expanding
-  dur: 480,
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(14, tier))) {
-      const left = (Math.floor(f / rate(14, tier)) % 2) === 0;
-      add({ ...bulletProps('ring'), x: left ? box.x - 20 : box.x + box.w + 20, y: box.y + 16 + rng() * (box.h - 32),
-            vx: (left ? 1 : -1) * 2.4, vy: 0, sineA: 1.3, sineF: 0.09, spin: 0.05, r: 9 });
-    }
-  },
-};
-PATTERNS.sneo_heart = {   // Heart container: figure-8 above the board firing 8-way bursts
+PATTERNS.sneo_heart = {   // Heart Attack: the chained heart swings across the top spraying diamonds
   dur: 500,
   tick(a) {
     const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + 18;
-    const hx = cx + 50 * Math.cos(0.04 * f), hy = cy + 22 * Math.sin(0.08 * f);
-    if (every(f, rate(30, tier)))
-      for (let k = 0; k < 8; k++) { const th = k * Math.PI / 4 + f * 0.02;
-        add({ ...bulletProps('sneoheart'), x: hx, y: hy, vx: Math.cos(th) * 2.0, vy: Math.sin(th) * 2.0, spin: 0.1, r: 6 }); }
+    const cx = box.x + box.w / 2 + box.w * 0.42 * Math.sin(0.03 * f), cy = box.y + 22;
+    if (every(f, rate(4, tier)))    // the heart itself (short-lived spawns trace its path = a hazard)
+      add({ ...bulletProps('sneowire'), x: cx, y: cy, vx: 0, vy: 0, life: 6, spin: 0.04, r: 11 });
+    if (every(f, rate(15, tier)))   // sprays a fan of diamond bullets downward
+      for (let i = -1; i <= 1; i++)
+        add({ ...bulletProps('kdiamond'), x: cx, y: cy + 10, vx: i * 0.9, vy: 2.2 + Math.abs(i) * 0.3, spin: 0.1, r: 6 });
   },
 };
-PATTERNS.sneo_laser = {   // Eye lasers sweep in at the soul's height + filler shots
+PATTERNS.sneo_mail = {   // Spam Mail: towers of mail (and stray heads) drive in from the right
   dur: 480,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(40, tier))) {
-      const left = rng() < 0.5;
-      add({ ...bulletProps('sneolaser'), x: left ? box.x - 30 : box.x + box.w + 30, y: soul.y,
-            vx: (left ? 1 : -1) * 4.4, vy: 0, scale: 2.0, r: 6 });
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(38, tier))) {
+      const ty = box.y + 8 + rng() * (box.h - 44);
+      for (let j = 0; j < 3; j++)
+        add({ ...bulletProps('sneomail'), x: box.x + box.w + 20 + j * 16, y: ty + j * 12, vx: -(2.4 + rng() * 0.4), vy: 0, spin: 0.03, r: 7 });
     }
-    if (every(f, rate(18, tier)))
-      add({ ...bulletProps('sneoheart'), x: box.x + rng() * box.w, y: box.y - 16, vx: 0, vy: 2.2, r: 6 });
+    if (every(f, rate(24, tier)))
+      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -(2.0 + rng()), vy: 0, spin: 0.05, r: 8 });
   },
 };
-PATTERNS.sneo_vacuum = {   // BIG SHOT / Final Chaos: debris columns + rising hearts + big pipis
-  dur: 620,
+PATTERNS.sneo_words = {   // Word Bullets: strings of letters weave across in a sine wave
+  dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(12, tier)))
-      add({ ...bulletProps('egg'), x: box.x + 10 + rng() * (box.w - 20), y: box.y - 20,
-            vx: (rng() - 0.5) * 1.0, vy: 2.4 + rng(), spin: 0.1, r: 7, sineA: 0.8, sineF: 0.06 });
-    if (every(f, rate(26, tier)))
-      add({ ...bulletProps('sneoheart'), x: box.x + rng() * box.w, y: box.y + box.h + 16, vx: 0, vy: -(2.6 + rng()), r: 6 });
-    if (every(f, rate(72, tier)))
-      add({ ...bulletProps('egg'), x: box.x + box.w / 2, y: box.y - 30, vx: (rng() - 0.5) * 2, vy: 1.8, ay: 0.05, scale: 1.8, r: 12, burst: 50, burstN: 8, burstSpeed: 2.4 });
+    if (every(f, rate(10, tier)))
+      add({ ...bulletProps('sneosound'), x: box.x + box.w + 18, y: box.y + 16 + rng() * (box.h - 32),
+            vx: -(2.6 + rng() * 0.5), vy: 0, sineA: 1.5, sineF: 0.08, spin: 0.03, r: 6 });
+  },
+};
+PATTERNS.sneo_bigshot = {   // BIG SHOT: arm-cannon bursts aimed at the soul + words + heads
+  dur: 620,
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(46, tier))) {   // big shot, bursts into a ring
+      const ox = box.x + box.w + 26, oy = box.y + box.h * 0.3 + rng() * box.h * 0.4;
+      const ang = Math.atan2(soul.y - oy, soul.x - ox);
+      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.1, r: 12, burst: 58, burstN: 6, burstSpeed: 2.4 });
+    }
+    if (every(f, rate(14, tier)))
+      add({ ...bulletProps('sneosound'), x: box.x + box.w + 16, y: box.y + 16 + rng() * (box.h - 32), vx: -(2.8 + rng()), vy: 0, sineA: 1.2, sineF: 0.09, r: 6 });
+    if (every(f, rate(30, tier)))
+      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: soul.y, vx: -3.0, vy: 0, spin: 0.05, r: 9 });
   },
 };
 
-// ---------- THE ROARING KNIGHT (final secret boss) ----------
-PATTERNS.knight_blade = {   // Blade hallway: giant greatswords accelerate down in lanes w/ a safe gap
+// ---------- THE ROARING KNIGHT (Ch3 secret boss - real moveset) ----------
+PATTERNS.knight_stars = {   // Star Barrage (EarthBound-style): stars converge from every edge
   dur: 460,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const period = rate(50, tier), lanes = 5;
-    if (f % period === 0) {
-      const gap = Math.floor(rng() * lanes);
-      for (let i = 0; i < lanes; i++) {
-        if (i === gap) continue;
-        add({ ...bulletProps('spear'), x: box.x + 8 + (i + 0.5) * (box.w - 16) / lanes, y: box.y - 34,
-              vx: 0, vy: 0.5, ay: 0.42, maxv: 8, rot: Math.PI / 2, scale: 1.4, r: 8 });
-      }
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(10, tier))) {
+      const side = Math.floor(rng() * 4); let x, y;
+      if (side === 0) { x = box.x - 20; y = box.y + rng() * box.h; }
+      else if (side === 1) { x = box.x + box.w + 20; y = box.y + rng() * box.h; }
+      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 20; }
+      else { x = box.x + rng() * box.w; y = box.y + box.h + 20; }
+      const ang = Math.atan2(soul.y - y, soul.x - x) + (rng() - 0.5) * 0.4;
+      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(ang) * 2.6, vy: Math.sin(ang) * 2.6, spin: 0.12, r: 8 });
     }
   },
 };
-PATTERNS.knight_crystal = {   // Fountain crystals ring in, collapsing toward the centre
+PATTERNS.knight_corridor = {   // Sword Corridor: sword walls with a wavy roller-coaster safe path
   dur: 500,
   tick(a) {
     const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, N = 12, R = Math.max(box.w, box.h) / 2 + 30;
-    if (every(f, rate(64, tier)))
-      for (let k = 0; k < N; k++) {
-        const th = k * 2 * Math.PI / N + f * 0.03;
-        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, toC = Math.atan2(cy - y, cx - x);
-        add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(toC) * 1.8, vy: Math.sin(toC) * 1.8, spin: 0.15, r: 7 });
-      }
-  },
-};
-PATTERNS.knight_geyser = {   // Dark geysers erupt upward from the floor in columns w/ safe gap
-  dur: 480,
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const period = rate(58, tier), cols = 5;
-    if (f % period === 0) {
-      const gap = Math.floor(rng() * cols);
-      for (let i = 0; i < cols; i++) {
-        if (i === gap || i === (gap + 1) % cols) continue;
-        const x = box.x + 8 + (i + 0.5) * (box.w - 16) / cols;
-        for (let j = 0; j < 5; j++)
-          add({ ...bulletProps('knightstar'), x, y: box.y + box.h + 10 + j * 14, vx: 0, vy: -(3.5 + j * 0.2), r: 7 });
+    if (every(f, rate(11, tier))) {
+      const midY = box.y + box.h / 2 + Math.sin(f * 0.06) * box.h * 0.32, gapH = 46;
+      for (let y = box.y + 4; y < box.y + box.h - 4; y += 22) {
+        if (y > midY - gapH / 2 && y < midY + gapH / 2) continue;   // the corridor gap
+        add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y, vx: -3.0, vy: 0, rot: -Math.PI / 2, r: 8 });
       }
     }
   },
 };
-PATTERNS.knight_parry = {   // Double-strike X: energy slashes fly in from the 4 diagonal corners
-  dur: 480,
+PATTERNS.knight_circle = {   // Circle of Swords: a ring coils round the soul then homes in
+  dur: 500,
   tick(a) {
-    const { f, box, tier, add } = a;
-    if (every(f, rate(42, tier))) {
-      const cn = [[box.x - 20, box.y - 20, 0.785], [box.x + box.w + 20, box.y - 20, 2.356],
-                  [box.x - 20, box.y + box.h + 20, -0.785], [box.x + box.w + 20, box.y + box.h + 20, -2.356]];
-      for (const [x, y, ang] of cn)
-        add({ ...bulletProps('knightcross'), x, y, vx: Math.cos(ang) * 3.0, vy: Math.sin(ang) * 3.0, spin: 0.2, r: 8 });
+    const { f, box, tier, add, soul } = a;
+    if (every(f, rate(52, tier))) {
+      const N = 10, R = 72;
+      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N + f * 0.02;
+        add({ ...bulletProps('knightsword'), x: soul.x + Math.cos(th) * R, y: soul.y + Math.sin(th) * R,
+              vx: 0, vy: 0, homing: 0.05, maxv: 2.4, spin: 0.12, rot: th + Math.PI, r: 7 }); }
     }
   },
 };
-PATTERNS.knight_shield = {   // ECLIPSE: expanding shockwave rings from centre + greatsword rain
-  dur: 600,
+PATTERNS.knight_crescents = {   // Crescent Slash: fast crescent blades sweep in from the sides
+  dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (every(f, rate(48, tier))) {
-      const N = 16;
-      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N;
-        add({ ...bulletProps('knightcross'), x: cx, y: cy, vx: Math.cos(th) * 2.4, vy: Math.sin(th) * 2.4, spin: 0.1, r: 8 }); }
+    if (every(f, rate(20, tier))) {
+      const left = rng() < 0.5;
+      for (let i = 0; i < 3; i++)
+        add({ ...bulletProps('knightcross'), x: left ? box.x - 20 : box.x + box.w + 20, y: box.y + 20 + rng() * (box.h - 40),
+              vx: (left ? 1 : -1) * (3.0 + rng() * 0.5), vy: (rng() - 0.5) * 0.6, spin: left ? 0.2 : -0.2, r: 8 });
     }
-    if (every(f, rate(22, tier)))
-      add({ ...bulletProps('spear'), x: box.x + rng() * box.w, y: box.y - 26, vx: 0, vy: 2.6, rot: Math.PI / 2, scale: 1.4, r: 9 });
+  },
+};
+PATTERNS.knight_roar = {   // ROARING SLASH: converging stars + homing swords + crescent sweeps
+  dur: 620,
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(16, tier))) {
+      const side = Math.floor(rng() * 4); let x, y;
+      if (side === 0) { x = box.x - 20; y = box.y + rng() * box.h; }
+      else if (side === 1) { x = box.x + box.w + 20; y = box.y + rng() * box.h; }
+      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 20; }
+      else { x = box.x + rng() * box.w; y = box.y + box.h + 20; }
+      const ang = Math.atan2(soul.y - y, soul.x - x);
+      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(ang) * 2.8, vy: Math.sin(ang) * 2.8, spin: 0.12, r: 8 });
+    }
+    if (every(f, rate(40, tier)))
+      add({ ...bulletProps('knightsword'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -2.0, vy: 0, homing: 0.04, maxv: 3.0, spin: 0.1, r: 8 });
+    if (every(f, rate(72, tier)))
+      for (let i = 0; i < 4; i++)
+        add({ ...bulletProps('knightcross'), x: box.x - 20, y: box.y + 30 + i * (box.h - 60) / 3, vx: 3.2, vy: 0, spin: 0.2, r: 8 });
   },
 };
 

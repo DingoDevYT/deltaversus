@@ -6,7 +6,7 @@ const A = {
   ready: false,
 };
 
-const ASSET_V = 31;   // bump when sprite/manifest files change so browsers refetch
+const ASSET_V = 32;   // bump when sprite/manifest files change so browsers refetch
 A.load = function (done) {
   fetch('assets/manifest.json?a=' + ASSET_V).then(r => r.json()).then(man => {
     A.manifest = man;
