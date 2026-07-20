@@ -26,19 +26,26 @@ function rate(base, tier) { return Math.max(2, Math.round(base * [1.25, 1.0, 0.7
 
 // ---------- KRIS ----------
 PATTERNS.kris_slash = {
-  dur: 420,
+  dur: 440,
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(34, tier))) {
-      // sword wave sweeping horizontally, sine wobble
+    const { f, rng, box, tier, add } = api;
+    // horizontal sword waves with sine wobble
+    if (every(f, rate(30, tier))) {
       const fromLeft = rng() < 0.5;
-      const y = box.y + 10 + rng() * (box.h - 20);
       add({
-        x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
-        vx: (fromLeft ? 1 : -1) * (1.7 + rng() * 0.8), vy: 0,
-        shape: 'crescent', color: '#fff', r: 9,
-        rot: fromLeft ? 0 : Math.PI, spin: fromLeft ? 0.09 : -0.09,
-        sineA: 0.7, sineF: 0.05 + rng() * 0.04,
+        x: fromLeft ? box.x - 30 : box.x + box.w + 30, y: box.y + 10 + rng() * (box.h - 20),
+        vx: (fromLeft ? 1 : -1) * (1.9 + rng() * 0.9), vy: 0,
+        shape: 'crescent', color: '#fff', r: 8,
+        rot: fromLeft ? 0 : Math.PI, spin: fromLeft ? 0.1 : -0.1,
+        sineA: 0.8, sineF: 0.06,
+      });
+    }
+    // vertical guillotine drop aimed near the soul — keeps you moving off-axis
+    if (every(f, rate(58, tier))) {
+      add({
+        x: api.soul.x + (rng() - 0.5) * 70, y: box.y - 26,
+        vx: 0, vy: 0.6, ay: 0.07, maxv: 4,
+        shape: 'crescent', color: '#fff', r: 8, rot: Math.PI / 2, spin: 0.14,
       });
     }
   },
@@ -46,17 +53,19 @@ PATTERNS.kris_slash = {
 PATTERNS.kris_cross = {
   dur: 480,
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(52, tier))) {
-      // X burst: 4 diagonal waves from the corners aimed through center
+    const { f, rng, box, tier, add } = api;
+    // rotating X: the 4 arms sweep around over time, so safe gaps keep moving
+    if (every(f, rate(44, tier))) {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const jx = (rng() - 0.5) * 60, jy = (rng() - 0.5) * 40;
-      for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-        const x = cx + sx * (box.w / 2 + 34) + jx, y = cy + sy * (box.h / 2 + 34) + jy;
-        const ang = Math.atan2(cy + jy - y, cx + jx - x);
+      const R = Math.max(box.w, box.h) / 2 + 40;
+      const base = f * 0.055;
+      for (let k = 0; k < 4; k++) {
+        const a = base + k * (Math.PI / 2);
+        const x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
+        const toC = Math.atan2(cy - y, cx - x);
         add({
-          x, y, vx: Math.cos(ang) * 2.1, vy: Math.sin(ang) * 2.1,
-          shape: 'crescent', color: '#fff', r: 9, rot: ang, spin: 0.12,
+          x, y, vx: Math.cos(toC) * 2.3, vy: Math.sin(toC) * 2.3,
+          shape: 'crescent', color: '#fff', r: 8, rot: toC, spin: 0.14,
         });
       }
     }
@@ -88,20 +97,19 @@ PATTERNS.kris_giga = {
 };
 
 // ---------- SUSIE ----------
+// (hitboxes are deliberately smaller than the big arc visuals -> graze-friendly)
 PATTERNS.susie_axe = {
   dur: 420,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(40, tier))) {
-      // giant arcs boomeranging across the box
+    // arcs sweep clean across (no boomerang trap), fast but dodgeable
+    if (every(f, rate(36, tier))) {
       const fromLeft = rng() < 0.5;
-      const y = box.y + 14 + rng() * (box.h - 28);
       add({
-        x: fromLeft ? box.x - 36 : box.x + box.w + 36, y,
-        vx: (fromLeft ? 1 : -1) * 2.6, vy: (rng() - 0.5) * 0.8,
-        ax: (fromLeft ? -1 : 1) * 0.028,             // boomerang back
-        img: pick(rng, imgs.arc), scale: 1.5, r: 11,
-        rot: 0, spin: fromLeft ? 0.14 : -0.14, life: 220,
+        x: fromLeft ? box.x - 40 : box.x + box.w + 40, y: box.y + 14 + rng() * (box.h - 28),
+        vx: (fromLeft ? 1 : -1) * (2.6 + rng() * 0.5), vy: (rng() - 0.5) * 0.5,
+        img: pick(rng, imgs.arc), scale: 1.4, r: 7,
+        rot: 0, spin: fromLeft ? 0.14 : -0.14,
       });
     }
   },
@@ -110,25 +118,27 @@ PATTERNS.susie_rude = {
   dur: 500,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    // beam sweep: a column of arcs marches across; telegraphed by spacing
-    const period = rate(90, tier);
+    // beam sweep with a 2-lane SAFE CORRIDOR you have to find (was an unavoidable wall)
+    const lanes = 6;
+    const period = rate(80, tier);
     if (every(f, period)) {
       const fromLeft = (Math.floor(f / period) % 2) === 0;
-      for (let i = 0; i < 5; i++) {
+      const gap = Math.floor(rng() * lanes);
+      for (let i = 0; i < lanes; i++) {
+        if (i === gap || i === (gap + 1) % lanes) continue;   // safe corridor
         add({
-          x: (fromLeft ? box.x - 40 : box.x + box.w + 40) - (fromLeft ? 1 : -1) * i * 26,
-          y: box.y + (i + 0.5) * (box.h / 5),
-          vx: (fromLeft ? 1 : -1) * 3.4, vy: 0,
-          img: pick(rng, imgs.arc), scale: 1.6, r: 12, spin: 0.18,
+          x: (fromLeft ? box.x - 40 : box.x + box.w + 40) - (fromLeft ? 1 : -1) * i * 22,
+          y: box.y + (i + 0.5) * (box.h / lanes),
+          vx: (fromLeft ? 1 : -1) * 3.2, vy: 0,
+          img: pick(rng, imgs.arc), scale: 1.3, r: 8, spin: 0.18,
         });
       }
     }
-    if (every(f, rate(48, tier))) {
-      // shockwave shards off the floor
+    if (every(f, rate(52, tier))) {
       add({
-        x: box.x + rng() * box.w, y: box.y + box.h + 20,
-        vx: (rng() - 0.5) * 1.4, vy: -(2.6 + rng() * 1.4), ay: 0.05,
-        img: pick(rng, imgs.arc), scale: 0.9, r: 8, spin: 0.2,
+        x: box.x + rng() * box.w, y: box.y + box.h + 18,
+        vx: (rng() - 0.5) * 1.2, vy: -(2.4 + rng() * 1.2), ay: 0.05,
+        img: pick(rng, imgs.arc), scale: 0.8, r: 6, spin: 0.2,
       });
     }
   },
@@ -137,24 +147,23 @@ PATTERNS.susie_ult = {
   dur: 560,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(30, tier))) {
+    if (every(f, rate(28, tier))) {
       const fromLeft = rng() < 0.5;
       add({
-        x: fromLeft ? box.x - 40 : box.x + box.w + 40,
-        y: box.y + rng() * box.h,
-        vx: (fromLeft ? 1 : -1) * (2.8 + rng() * 1.6), vy: (rng() - 0.5) * 1.2,
-        img: pick(rng, imgs.arc), scale: 1.4 + rng() * 0.6, r: 11, spin: 0.2,
+        x: fromLeft ? box.x - 40 : box.x + box.w + 40, y: box.y + rng() * box.h,
+        vx: (fromLeft ? 1 : -1) * (2.8 + rng() * 1.4), vy: (rng() - 0.5) * 1.0,
+        img: pick(rng, imgs.arc), scale: 1.3 + rng() * 0.4, r: 8, spin: 0.2,
       });
     }
-    if (every(f, rate(110, tier))) {
-      // the BIG crescent: slow, huge, unmissable-looking
+    if (every(f, rate(96, tier))) {
+      // the BIG crescent: slow and telegraphed, hitbox well under the visual
       const fromLeft = rng() < 0.5;
       add({
         x: fromLeft ? box.x - 70 : box.x + box.w + 70,
-        y: box.y + box.h / 2 + (rng() - 0.5) * 60,
+        y: box.y + box.h / 2 + (rng() - 0.5) * 70,
         vx: (fromLeft ? 1 : -1) * 1.5, vy: 0,
-        ...bulletProps('arc_red'), scale: 2.6, r: 24, flip: !fromLeft,
-        sineA: 1.1, sineF: 0.03,
+        ...bulletProps('arc_red'), scale: 2.4, r: 14, flip: !fromLeft,
+        sineA: 1.0, sineF: 0.03,
       });
     }
   },
@@ -373,7 +382,8 @@ function bulletProps(bid, r) {
   }
   const info = (A.manifest.bullets || {})[bid];
   const img = A.img['assets/bullets/' + (info ? info.f : '')];
-  const rad = info ? Math.max(5, Math.min(16, Math.max(info.w, info.h) * 0.55)) : 6;
+  // hitbox kept below the visual so bullets are graze-friendly, not "bullshit"
+  const rad = info ? Math.max(4, Math.min(12, Math.max(info.w, info.h) * 0.42)) : 6;
   return { img, r: r || rad, scale: 1.0 };
 }
 

@@ -292,12 +292,20 @@ Battle.updTiming = function () {
   }
 };
 
+// TP gained from a FIGHT/attack press, by accuracy (Deltarune builds TP by
+// attacking well): perfect > good > miss. Darkners are handled elsewhere.
+const TIER_TP = [4, 10, 18];
+
 Battle.finishTiming = function (tier) {
   const B = Battle;
   B.myTier = tier;
   B.timingBar.done = true;
   B.timingBar.result = tier;
   Snd.play(tier === 2 ? 'criticalswing' : tier === 1 ? 'bell' : 'smallswing');
+  // accuracy-based TP: acing the swing rewards Tension
+  const gain = TIER_TP[tier];
+  B.me.tp = Math.min(100, B.me.tp + gain);
+  if (gain) B.dmgPops.push({ x: 46, y: 250, txt: '+' + gain + ' TP', t: 0, color: '#ff8000' });
   Battle.send({ t: 'tier', tier });
   B.phase = 'waittier';
   B.say('* ' + TIER_NAME[tier]);
