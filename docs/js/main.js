@@ -5,6 +5,8 @@ const G = {
   joinCode: '',
   selIdx: 0,
   loadout: [], loadIdx: 0,
+  partySize: 1,
+  myTeamSel: [], dummyTeamSel: [], teamPhase: 'mine',
   myCharSel: null, myItems: null,
   oppItems: null,
   myHelloSent: false, oppHello: null,
@@ -37,33 +39,44 @@ addEventListener('keydown', e => {
 
 // ---------- net glue ----------
 function wireNet() {
-  Net.onOpen = () => { toSelect(); };
+  Net.onOpen = () => {
+    if (Net.isHost) { Net.send({ t: 'config', size: G.partySize }); startTeamSelect('mine'); }
+    else G.screen = 'waitcfg';           // wait for host's party size
+  };
   Net.onClose = () => {
     G.screen = 'menu';
     G.notice = 'CONNECTION LOST';
     Snd.playMusic('menu');
   };
   Net.on(m => {
-    if (m.t === 'hello') {
-      G.oppHello = m;
-      maybeStartBattle();
-    }
+    if (m.t === 'config') { G.partySize = m.size; if (G.screen === 'waitcfg') startTeamSelect('mine'); }
+    if (m.t === 'hello') { G.oppHello = m; maybeStartBattle(); }
   });
 }
 
-function toSelect() {
+function startTeamSelect(phase) {
+  G.teamPhase = phase;
   G.screen = 'select';
   G.selIdx = 0;
-  G.loadout = [];
-  G.myHelloSent = false;
-  G.oppHello = null;
+  if (phase === 'mine') { G.myTeamSel = []; G.myHelloSent = false; G.oppHello = null; }
+  else G.dummyTeamSel = [];
+}
+function curTeam() { return G.teamPhase === 'mine' ? G.myTeamSel : G.dummyTeamSel; }
+function teamCost(team) { return team.reduce((s, sel) => s + (typeof sel === 'string' ? CHARS[sel].cost : 1), 0); }
+function teamRemaining() { return G.partySize - teamCost(curTeam()); }
+
+function finishTeam() {
+  if (!curTeam().length) { Snd.play('cantselect'); return; }
+  Snd.play('shineselect' in A.manifest.sfx ? 'shineselect' : 'select');
+  if (G.teamPhase === 'mine' && Net.practice) { startTeamSelect('dummy'); return; }
+  G.screen = 'loadout'; G.loadout = []; G.loadIdx = 0;
 }
 
 function maybeStartBattle() {
   if (!G.myHelloSent || !G.oppHello) return;
   G.oppItems = G.oppHello.items || [];
-  Battle.init({ mySel: G.myCharSel, oppSel: G.oppHello.char,
-                myItems: G.myItems, oppItems: G.oppItems });
+  Battle.init({ myTeam: G.myTeamSel, oppTeam: G.oppHello.team || [G.oppHello.char],
+                size: G.partySize, myItems: G.myItems, oppItems: G.oppItems });
   G.screen = 'battle';
 }
 
@@ -75,10 +88,14 @@ function update() {
       if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; Snd.play('select'); }
       break;
     case 'menu': {
-      const n = 4;   // host / join / practice / volume
+      const n = 5;   // host / join / practice / party size / volume
       if (Input.hit.up) { G.menuIdx = (G.menuIdx + n - 1) % n; Snd.play('menumove'); }
       if (Input.hit.down) { G.menuIdx = (G.menuIdx + 1) % n; Snd.play('menumove'); }
-      if (G.menuIdx === 3) {
+      if (G.menuIdx === 3) {   // PARTY SIZE
+        if (Input.hit.left) { G.partySize = Math.max(1, G.partySize - 1); Snd.play('menumove'); }
+        if (Input.hit.right) { G.partySize = Math.min(3, G.partySize + 1); Snd.play('menumove'); }
+      }
+      if (G.menuIdx === 4) {   // VOLUME
         if (Input.hit.left) { Snd.setMaster(Snd.master - 0.1); Snd.play('menumove'); }
         if (Input.hit.right) { Snd.setMaster(Snd.master + 0.1); Snd.play('menumove'); }
       }
@@ -87,13 +104,16 @@ function update() {
         G.notice = '';
         if (G.menuIdx === 0) { Net.host(); wireNet(); G.screen = 'host'; }
         else if (G.menuIdx === 1) { G.joinCode = ''; G.screen = 'join'; }
-        else { Net.startPractice(); wireNet(); toSelect(); }
+        else { Net.startPractice(); wireNet(); startTeamSelect('mine'); }
       }
       break;
     }
     case 'host':
       if (Input.hit.cancel) { Net.reset(); G.screen = 'menu'; }
+      if (Input.hit.left) { G.partySize = Math.max(1, G.partySize - 1); Snd.play('menumove'); }
+      if (Input.hit.right) { G.partySize = Math.min(3, G.partySize + 1); Snd.play('menumove'); }
       break;
+    case 'waitcfg': break;
     case 'join':
       if (Input.hit.cancel) { Net.reset(); G.screen = 'menu'; }
       if (Input.hit.ok && G.joinCode.length === 4 && !Net.peer) {
@@ -101,18 +121,25 @@ function update() {
       }
       break;
     case 'select': {
-      const nTiles = CHAR_IDS.length + 1;   // + CREATE
+      const nTiles = CHAR_IDS.length + 2;   // + CREATE + DONE
       if (Input.hit.left) { G.selIdx = (G.selIdx + nTiles - 1) % nTiles; Snd.play('menumove'); }
       if (Input.hit.right) { G.selIdx = (G.selIdx + 1) % nTiles; Snd.play('menumove'); }
+      if (Input.hit.cancel) {
+        if (curTeam().length) { curTeam().pop(); Snd.play('menumove'); }
+        else if (!Net.practice && Net.conn) { /* stay */ }
+        else { Snd.play('menumove'); Net.reset(); G.screen = 'menu'; }
+      }
       if (Input.hit.ok) {
-        Snd.play('select');
         if (G.selIdx < CHAR_IDS.length) {
-          G.myCharSel = CHAR_IDS[G.selIdx];
-          G.screen = 'loadout';
-          G.loadout = []; G.loadIdx = 0;
-        } else {
-          Creator.open();
-        }
+          const id = CHAR_IDS[G.selIdx], cost = CHARS[id].cost;
+          if (cost <= teamRemaining()) {
+            curTeam().push(id); Snd.play('select');
+            if (teamRemaining() <= 0) finishTeam();
+          } else Snd.play('cantselect');
+        } else if (G.selIdx === CHAR_IDS.length) {
+          if (teamRemaining() >= 1) { Snd.play('select'); Creator.open(); }
+          else Snd.play('cantselect');
+        } else { finishTeam(); }
       }
       break;
     }
@@ -136,7 +163,7 @@ function update() {
           Snd.play('shineselect' in A.manifest.sfx ? 'shineselect' : 'select');
           G.myItems = G.loadout.slice();
           G.myHelloSent = true;
-          Net.send({ t: 'hello', char: G.myCharSel, items: G.myItems });
+          Net.send({ t: 'hello', team: G.myTeamSel, items: G.myItems, size: G.partySize });
           Net.send({ t: 'ready' });
           G.screen = 'waiting';
           maybeStartBattle();
@@ -151,6 +178,7 @@ function update() {
       Battle.update();
       break;
   }
+  if (Net.practice && PracticeAI.dodge) PracticeAI.tick();   // drive dummy dodge
   Input.flush();
 }
 
@@ -165,6 +193,7 @@ function render() {
     case 'title': renderTitle(); break;
     case 'menu': renderMenu(); break;
     case 'host': renderHost(); break;
+    case 'waitcfg': renderWaitcfg(); break;
     case 'join': renderJoin(); break;
     case 'select': renderSelect(); break;
     case 'creator': Creator.render(ctx); break;
@@ -191,32 +220,39 @@ function renderTitle() {
 }
 
 function renderMenu() {
-  drawText(ctx, 'big', 'DELTAVERSUS', 320, 70, { color: '#fff', align: 'center', scale: 0.9 });
-  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)', 'VOLUME'];
+  drawText(ctx, 'big', 'DELTAVERSUS', 320, 60, { color: '#fff', align: 'center', scale: 0.9 });
+  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)', 'PARTY SIZE', 'VOLUME'];
+  const rowY = i => 176 + i * 40;
   items.forEach((s, i) => {
     const sel = i === G.menuIdx;
-    if (sel) drawSpr(ctx, A.ui('soul'), 210, 208 + i * 44, { scale: 1 });
-    drawText(ctx, 'main', s, 232, 200 + i * 44, { color: sel ? '#ff0' : '#fff', scale: 1 });
+    if (sel) drawSpr(ctx, A.ui('soul'), 190, rowY(i) + 8, { scale: 1 });
+    drawText(ctx, 'main', s, 210, rowY(i), { color: sel ? '#ff0' : '#fff' });
   });
+  // party size: < N >
+  const py = rowY(3);
+  drawText(ctx, 'main', '<  ' + G.partySize + '  >', 360, py, { color: G.menuIdx === 3 ? '#ff0' : '#aaa' });
+  drawText(ctx, 'main', G.partySize === 1 ? '(1v1)' : 'PER TEAM', 452, py, { color: '#666' });
   // volume slider
-  const vy = 200 + 3 * 44 + 4;
-  ctx.fillStyle = '#333'; ctx.fillRect(340, vy, 120, 10);
-  ctx.fillStyle = G.menuIdx === 3 ? '#ff0' : '#888';
-  ctx.fillRect(340, vy, Math.round(120 * Snd.master), 10);
-  drawText(ctx, 'main', Math.round(Snd.master * 100) + '%', 472, vy - 4,
-           { color: Snd.muted ? '#f44' : '#aaa' });
-  if (Snd.muted) drawText(ctx, 'main', 'MUTED (M)', 340, vy + 16, { color: '#f44' });
-  drawText(ctx, 'main', 'M MUTE  +/- VOLUME', 320, 440, { color: '#555', align: 'center' });
-  if (G.notice)
-    drawText(ctx, 'main', G.notice, 320, 408, { color: '#f44', align: 'center' });
+  const vy = rowY(4) + 4;
+  ctx.fillStyle = '#333'; ctx.fillRect(360, vy, 110, 10);
+  ctx.fillStyle = G.menuIdx === 4 ? '#ff0' : '#888';
+  ctx.fillRect(360, vy, Math.round(110 * Snd.master), 10);
+  drawText(ctx, 'main', Math.round(Snd.master * 100) + '%', 480, vy - 4, { color: Snd.muted ? '#f44' : '#aaa' });
+  drawText(ctx, 'main', 'M MUTE  -  ARROWS ADJUST', 320, 448, { color: '#555', align: 'center' });
+  if (G.notice) drawText(ctx, 'main', G.notice, 320, 420, { color: '#f44', align: 'center' });
 }
 
 function renderHost() {
-  drawText(ctx, 'main', 'ROOM CODE', 320, 130, { color: '#888', align: 'center' });
-  drawText(ctx, 'big', Net.code || '....', 320, 170, { color: '#ff0', align: 'center', scale: 1.5 });
-  drawText(ctx, 'main', Net.status, 320, 280, { color: '#fff', align: 'center' });
-  drawText(ctx, 'main', 'Send this code to your challenger!', 320, 320, { color: '#888', align: 'center' });
-  drawText(ctx, 'main', '[X] CANCEL', 320, 430, { color: '#555', align: 'center' });
+  drawText(ctx, 'main', 'ROOM CODE', 320, 120, { color: '#888', align: 'center' });
+  drawText(ctx, 'big', Net.code || '....', 320, 160, { color: '#ff0', align: 'center', scale: 1.5 });
+  drawText(ctx, 'main', 'PARTY SIZE  <  ' + G.partySize + '  >', 320, 250, { color: '#ff0', align: 'center' });
+  drawText(ctx, 'main', Net.status, 320, 300, { color: '#fff', align: 'center' });
+  drawText(ctx, 'main', 'Send this code to your challenger!', 320, 336, { color: '#888', align: 'center' });
+  drawText(ctx, 'main', 'ARROWS SET SIZE  -  [X] CANCEL', 320, 430, { color: '#555', align: 'center' });
+}
+function renderWaitcfg() {
+  drawText(ctx, 'main', Net.status, 320, 220, { color: '#fff', align: 'center' });
+  drawText(ctx, 'main', 'Waiting for host settings...', 320, 256, { color: '#888', align: 'center' });
 }
 
 function renderJoin() {
@@ -230,47 +266,58 @@ function renderJoin() {
 }
 
 function renderSelect() {
-  drawText(ctx, 'main', 'CHOOSE YOUR FIGHTER', 320, 24, { color: '#fff', align: 'center' });
-  const nTiles = CHAR_IDS.length + 1;
-  const sp = Math.min(96, 600 / nTiles);              // fit all tiles across
-  const startX = 320 - (nTiles - 1) * sp / 2, y = 118;
-  const hw = Math.min(42, sp * 0.46);
+  const solo = G.partySize === 1;
+  const header = G.teamPhase === 'dummy' ? 'PICK THE DUMMY TEAM'
+               : solo ? 'CHOOSE YOUR FIGHTER' : 'BUILD YOUR TEAM';
+  drawText(ctx, 'main', header, 320, 20, { color: G.teamPhase === 'dummy' ? '#f88' : '#fff', align: 'center' });
+  if (!solo) drawText(ctx, 'main', 'BUDGET ' + teamCost(curTeam()) + ' / ' + G.partySize, 320, 40, { color: '#ff8000', align: 'center' });
+
+  const nTiles = CHAR_IDS.length + 2;   // chars + CREATE + DONE
+  const sp = Math.min(84, 600 / nTiles);
+  const startX = 320 - (nTiles - 1) * sp / 2, y = 108;
+  const hw = Math.min(40, sp * 0.46);
+  const rem = teamRemaining();
   CHAR_IDS.forEach((id, i) => {
-    const x = startX + i * sp;
-    const c = CHARS[id];
-    const sel = i === G.selIdx;
-    if (sel) {
-      ctx.strokeStyle = c.color; ctx.lineWidth = 2;
-      ctx.strokeRect(x - hw, y - 52, hw * 2, 104);
-    }
-    const an = A.anim(id, 'idle');
-    const im = A.animFrame(an, G.f * (1000 / 60), true);
-    drawSpr(ctx, im, x, y, { scale: sel ? 0.9 : 0.7, alpha: sel ? 1 : 0.6, flip: !!ENEMY_FACING[id] });
-    drawText(ctx, 'main', c.name, x, y + 60, { color: sel ? c.color : '#777', align: 'center' });
-    if (c.cost > 1) drawText(ctx, 'main', 'x' + c.cost, x + hw - 12, y - 50, { color: '#f80', align: 'center' });
+    const x = startX + i * sp, c = CHARS[id], sel = i === G.selIdx;
+    const afford = c.cost <= rem;
+    if (sel) { ctx.strokeStyle = c.color; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 48, hw * 2, 96); }
+    const im = A.animFrame(A.anim(id, 'idle'), G.f * (1000 / 60), true);
+    drawSpr(ctx, im, x, y, { scale: sel ? 0.85 : 0.65, alpha: sel ? (afford ? 1 : 0.5) : (afford ? 0.6 : 0.3), flip: !!ENEMY_FACING[id] });
+    drawText(ctx, 'main', c.name, x, y + 54, { color: sel ? c.color : '#777', align: 'center' });
+    if (c.cost > 1) drawText(ctx, 'main', 'x' + c.cost, x + hw - 12, y - 46, { color: afford ? '#f80' : '#844', align: 'center' });
   });
-  {
-    const x = startX + CHAR_IDS.length * sp;
-    const sel = G.selIdx === CHAR_IDS.length;
-    if (sel) { ctx.strokeStyle = '#ff8000'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 52, hw * 2, 104); }
-    drawText(ctx, 'big', '+', x, y - 24, { color: sel ? '#ff8000' : '#666', align: 'center', scale: 0.8 });
-    drawText(ctx, 'main', 'CREATE', x, y + 60, { color: sel ? '#ff8000' : '#777', align: 'center' });
+  { const x = startX + CHAR_IDS.length * sp, sel = G.selIdx === CHAR_IDS.length;
+    if (sel) { ctx.strokeStyle = '#ff8000'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 48, hw * 2, 96); }
+    drawText(ctx, 'big', '+', x, y - 20, { color: sel ? '#ff8000' : '#666', align: 'center', scale: 0.7 });
+    drawText(ctx, 'main', 'CREATE', x, y + 54, { color: sel ? '#ff8000' : '#777', align: 'center' });
   }
+  { const x = startX + (CHAR_IDS.length + 1) * sp, sel = G.selIdx === CHAR_IDS.length + 1;
+    if (sel) { ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 48, hw * 2, 96); }
+    drawSpr(ctx, A.ui('soul'), x, y - 10, { scale: 1 });
+    drawText(ctx, 'main', 'DONE', x, y + 54, { color: sel ? '#0f0' : (curTeam().length ? '#8f8' : '#555'), align: 'center' });
+  }
+
+  // info for the highlighted fighter
   if (G.selIdx < CHAR_IDS.length) {
     const c = CHARS[CHAR_IDS[G.selIdx]];
-    drawText(ctx, 'main', 'HP ' + c.hp, 320, 220, { color: '#ff0', align: 'center' });
-    c.desc.split('\n').forEach((l, i) =>
-      drawText(ctx, 'main', l, 320, 250 + i * 20, { color: '#aaa', align: 'center' }));
-    const kit = ['FIGHT: ' + c.fight.name]
-      .concat(c.spells.map(s => s.name + ' (' + s.tp + '%)'))
-      .concat([c.ult.name + ' (100%)', 'ACT: ' + c.act.name]);
-    kit.forEach((l, i) =>
-      drawText(ctx, 'main', l, 320, 310 + i * 20, { color: '#6cf', align: 'center' }));
-  } else {
-    drawText(ctx, 'main', 'BUILD YOUR OWN FIGHTER', 320, 240, { color: '#ff8000', align: 'center' });
-    drawText(ctx, 'main', 'base + color + weapon + custom attacks + theme', 320, 266, { color: '#aaa', align: 'center' });
+    drawText(ctx, 'main', c.name + '   HP ' + c.hp + (c.darkner ? '   (DARKNER)' : ''), 320, 188, { color: c.color, align: 'center' });
+    c.desc.split('\n').forEach((l, i) => drawText(ctx, 'main', l, 320, 210 + i * 18, { color: '#aaa', align: 'center' }));
+    const kit = ['FIGHT: ' + c.fight.name].concat(c.spells.map(s => s.name + ' (' + s.tp + '%)')).concat([c.ult.name + ' (100%)']);
+    kit.forEach((l, i) => drawText(ctx, 'main', l, 320, 258 + i * 18, { color: '#6cf', align: 'center' }));
   }
-  drawText(ctx, 'main', '[Z] SELECT', 320, 448, { color: '#ff0', align: 'center' });
+
+  // current team roster
+  const team = curTeam();
+  drawText(ctx, 'main', G.teamPhase === 'dummy' ? 'DUMMY:' : 'TEAM:', 150, 356, { color: '#fc0' });
+  team.forEach((sel, i) => {
+    const d = charDef(sel);
+    let head = A.ui('head_' + d.base); if (d.hue) head = A.hued(head, d.hue);
+    drawSpr(ctx, head, 210 + i * 60, 362, { scale: 1 });
+    drawText(ctx, 'main', d.name.slice(0, 6), 210 + i * 60, 380, { color: d.color, align: 'center' });
+  });
+  if (!team.length) drawText(ctx, 'main', '(empty)', 210, 356, { color: '#555' });
+
+  drawText(ctx, 'main', solo ? '[Z] PICK  [X] BACK' : '[Z] ADD/DONE   [X] REMOVE', 320, 448, { color: '#555', align: 'center' });
 }
 
 function renderLoadout() {
@@ -291,21 +338,28 @@ function renderLoadout() {
 }
 
 function renderVs() {
-  if (!G.myCharSel) return;
-  const md = charDef(G.myCharSel);
-  let my = A.animFrame(A.anim(md.base, 'idle'), G.f * (1000 / 60), true);
-  if (md.hue) my = A.hued(my, md.hue);
-  drawSpr(ctx, my, 200, 220, { scale: 1.2, flip: !!ENEMY_FACING[md.base] });
-  drawText(ctx, 'main', md.name, 200, 300, { color: md.color, align: 'center' });
+  if (!G.myTeamSel || !G.myTeamSel.length) return;
   drawText(ctx, 'big', 'VS', 320, 200, { color: '#f44', align: 'center' });
-  if (G.oppHello) {
-    const od = charDef(G.oppHello.char);
-    let op = A.animFrame(A.anim(od.base, 'idle'), G.f * (1000 / 60), true);
-    if (od.hue) op = A.hued(op, od.hue);
-    drawSpr(ctx, op, 440, 220, { scale: 1.2, flip: !ENEMY_FACING[od.base] });
-    drawText(ctx, 'main', od.name, 440, 300, { color: od.color, align: 'center' });
+  G.myTeamSel.forEach((sel, i) => {
+    const d = charDef(sel), n = G.myTeamSel.length;
+    let im = A.animFrame(A.anim(d.base, 'idle'), G.f * (1000 / 60), true);
+    if (d.hue) im = A.hued(im, d.hue);
+    const y = 220 + (i - (n - 1) / 2) * 70;
+    drawSpr(ctx, im, 190, y, { scale: 1.1, flip: !!ENEMY_FACING[d.base] });
+    drawText(ctx, 'main', d.name, 190, y + 40, { color: d.color, align: 'center' });
+  });
+  const oppTeam = G.oppHello && G.oppHello.team;
+  if (oppTeam) {
+    oppTeam.forEach((sel, i) => {
+      const d = charDef(sel), n = oppTeam.length;
+      let im = A.animFrame(A.anim(d.base, 'idle'), G.f * (1000 / 60), true);
+      if (d.hue) im = A.hued(im, d.hue);
+      const y = 220 + (i - (n - 1) / 2) * 70;
+      drawSpr(ctx, im, 450, y, { scale: 1.1, flip: !ENEMY_FACING[d.base] });
+      drawText(ctx, 'main', d.name, 450, y + 40, { color: d.color, align: 'center' });
+    });
   } else {
-    drawText(ctx, 'big', '?', 440, 200, { color: '#666', align: 'center' });
+    drawText(ctx, 'big', '?', 450, 200, { color: '#666', align: 'center' });
   }
 }
 

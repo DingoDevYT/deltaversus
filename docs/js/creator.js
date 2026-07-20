@@ -93,10 +93,10 @@ Creator.update = function () {
       if (!cc.name.trim()) { Snd.play('cantselect'); return; }
       Snd.play('shineselect');
       Creator.saveDraft();
-      G.myCharSel = JSON.parse(JSON.stringify(cc));
+      const custom = JSON.parse(JSON.stringify(cc));
+      if (typeof curTeam === 'function' && teamRemaining() >= 1) curTeam().push(custom);
       Snd.playMusic('menu');
-      G.screen = 'loadout';
-      G.loadout = []; G.loadIdx = 0;
+      G.screen = 'select';
     }
   }
 };

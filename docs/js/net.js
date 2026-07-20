@@ -126,89 +126,119 @@ const PracticeAI = {
     soul.x = Math.min(box.w - 5, Math.max(5, soul.x));
     soul.y = Math.min(box.h - 5, Math.max(5, soul.y));
   },
+  buildTeam(size) {
+    let sels = (typeof G !== 'undefined' && G.dummyTeamSel && G.dummyTeamSel.length)
+      ? G.dummyTeamSel.slice() : null;
+    if (!sels || !sels.length) {                 // random team within the cost budget
+      const ids = Object.keys(CHARS);
+      sels = []; let budget = size;
+      while (budget > 0) {
+        const pick = ids.filter(id => CHARS[id].cost <= budget);
+        if (!pick.length) break;
+        sels.push(pick[Math.floor(Math.random() * pick.length)]);
+        budget -= CHARS[sels[sels.length - 1]].cost;
+      }
+      if (!sels.length) sels = ['kris'];
+    }
+    return {
+      sels,
+      members: sels.map(s => { const d = charDef(s); return { def: d, hp: d.hp, max: d.hp, downed: false }; }),
+      tp: 0, items: ['darkburger', 'cdbagel', 'chocodiamond'],
+    };
+  },
   handle(msg) {
     if (msg.t === 'hello') {
-      const ids = Object.keys(CHARS);
-      PracticeAI.char = ids[Math.floor(Math.random() * ids.length)];
-      Net.emitLocal({ t: 'hello', name: 'DUMMY', char: PracticeAI.char,
-                      items: ['darkburger', 'cdbagel', 'chocodiamond'] });
+      const size = msg.size || 1;
+      const T = PracticeAI.team = PracticeAI.buildTeam(size);
+      Net.emitLocal({ t: 'hello', team: T.sels.slice(), items: T.items.slice(), size });
       Net.emitLocal({ t: 'ready' });
-    } else if (msg.t === 'action') {
-      const me = CHARS[PracticeAI.char];
-      const st = PracticeAI.state = PracticeAI.state ||
-        { hp: me.hp, tp: 0, items: ['darkburger', 'cdbagel', 'chocodiamond'] };
-      // pick: mostly fight, spell if TP, item if hurt
-      let cmd = 'fight', move = null;
-      const r = Math.random();
-      if (st.hp < me.hp * 0.35 && st.items.length && r < 0.5) {
-        cmd = 'item'; move = st.items.pop();
-      } else if (r < 0.15) {
-        cmd = 'defend';
-      } else {
-        const afford = me.spells.filter(s => s.tp <= st.tp);
-        if (afford.length && r < 0.55) { cmd = 'magic'; move = afford[Math.floor(Math.random() * afford.length)].id; }
-      }
-      Net.emitLocal({ t: 'action', cmd, move, seed: randSeed() });
-      setTimeout(() => Net.emitLocal({ t: 'tier', tier: Math.floor(Math.random() * 3) }),
-                 400 + Math.random() * 1200);
-    } else if (msg.t === 'tier') {
-      // after both tiers, the real player dodges; dummy "dodges" too:
-      // report plausible damage when the player's attack lands.
-      PracticeAI.pendingTier = msg.tier;
+    } else if (msg.t === 'actions') {
+      // the human's actions arrived; the dummy team now picks its own
+      const T = PracticeAI.team;
+      const acts = [];
+      T.members.forEach((m, i) => {
+        if (m.downed) return;
+        let cmd = 'fight', move = null;
+        const r = Math.random();
+        if (m.hp < m.max * 0.35 && T.items.length && r < 0.5) {
+          cmd = 'item'; move = 0;
+          const it = ITEMS[T.items.shift()]; if (it) m.hp = Math.min(m.max, m.hp + (it.heal || 0));
+        } else if (r < 0.12) { cmd = 'defend'; T.tp = Math.min(100, T.tp + 16); }
+        else {
+          const afford = m.def.spells.filter(s => s.tp <= T.tp);
+          if (afford.length && r < 0.5) { const s = afford[Math.floor(Math.random() * afford.length)]; cmd = 'magic'; move = s.id; T.tp = Math.max(0, T.tp - s.tp); }
+        }
+        acts.push({ mi: i, cmd, move, seed: randSeed() });
+      });
+      Net.emitLocal({ t: 'actions', acts });
+      setTimeout(() => {
+        const tiers = acts.filter(a => a.cmd === 'fight' || a.cmd === 'magic')
+          .map(a => ({ mi: a.mi, tier: 1 + (Math.random() < 0.4 ? 1 : 0) }));
+        T.tp = Math.min(100, T.tp + tiers.reduce((s, t) => s + [4, 10, 18][t.tier], 0));
+        Net.emitLocal({ t: 'tiers', tiers });
+      }, 500 + Math.random() * 700);
     } else if (msg.t === 'dodgeStart') {
-      const st = PracticeAI.state;
-      const atk = msg.atk;
-      if (!atk) {                              // nothing to dodge this turn
-        setTimeout(() => Net.emitLocal({ t: 'result', dmgTaken: 0, tpGained: 0,
-                                         hp: st.hp, tp: st.tp }), 250);
-        return;
-      }
-      // rebuild the REAL attack and dodge it with an avoidance AI
+      const T = PracticeAI.team;
+      const atks = msg.atks || [];
+      if (!atks.length) { setTimeout(() => PracticeAI.report(T, 0), 250); return; }
       const box = { x: 0, y: 0, w: 224, h: 176 };
-      const moveDef = { id: atk.moveId, custom: atk.custom, dmg: atk.perHit, dur: atk.dur };
-      const sim = makeDodgeSim({ base: atk.base }, moveDef, atk.tier, atk.seed, box);
-      const soul = { x: box.w / 2, y: box.h * 0.7 };
-      const skill = PracticeAI.skill != null ? PracticeAI.skill : 0.82;  // 0..1 competence
-      let bullets = [], f = 0, dmg = 0, tp0 = st.tp, tp = st.tp, ifr = 0, grz = 0;
-
-      const iv = setInterval(() => {
-        for (let step = 0; step < 3 && f < atk.dur; step++, f++) {
-          sim.tick(soul, b => { b.t = 0; b.phase0 = Math.random() * 6.28; bullets.push(b); });
-          PracticeAI.moveSoul(soul, bullets, box, skill);
-          for (const b of bullets) {
-            b.t++;
-            if (b.homing) {
-              const d = Math.hypot(soul.x - b.x, soul.y - b.y) || 1;
-              b.vx += (soul.x - b.x) / d * b.homing; b.vy += (soul.y - b.y) / d * b.homing;
-            }
-            b.vx += b.ax || 0; b.vy += b.ay || 0;
-            if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
-            b.x += b.vx; b.y += b.vy;
-            if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
-          }
-          bullets = bullets.filter(b => b.x > -50 && b.x < box.w + 50 && b.y > -50 && b.y < box.h + 50 && (!b.life || b.t < b.life));
-          if (ifr > 0) ifr--;
-          if (grz > 0) grz--;
-          for (const b of bullets) {
-            const d = Math.hypot(b.x - soul.x, b.y - soul.y), rr = (b.r || 6) + 5;
-            if (d < rr) { if (ifr <= 0) { dmg += atk.perHit; ifr = 55; } }
-            else if (d < rr + 12 && grz <= 0) { tp = Math.min(100, tp + 2); grz = 10; }
-          }
-        }
-        if (f % 2 === 0)
-          Net.emitLocal({ t: 'soul', x: soul.x / box.w, y: soul.y / box.h, f, done: false });
-        if (f >= atk.dur) {
-          clearInterval(iv);
-          st.hp = Math.max(0, st.hp - Math.round(dmg));
-          st.tp = Math.min(100, tp + 8);       // small defend-ish trickle
-          Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true });
-          Net.emitLocal({ t: 'result', dmgTaken: Math.round(dmg),
-                          tpGained: st.tp - tp0, hp: st.hp, tp: st.tp });
-        }
-      }, 30);
+      const N = atks.length, keep = 1 / (1 + 0.55 * Math.max(0, N - 1));
+      const subs = atks.map(a => ({
+        sim: makeDodgeSim({ base: a.base }, { id: a.moveId, custom: a.custom, dmg: a.perHit, dur: a.dur }, a.tier, a.seed, box),
+        perHit: a.perHit, rng: mulberry32(((a.seed || 1) ^ 0x9e3779b9) >>> 0),
+      }));
+      // driven by the main loop (PracticeAI.tick) so it is immune to the
+      // background-tab timer throttle and runs at the game's framerate.
+      PracticeAI.dodge = {
+        T, box, subs, N, keep,
+        soul: { x: box.w / 2, y: box.h * 0.7 },
+        dur: Math.max(...subs.map(s => s.sim.dur)),
+        skill: PracticeAI.skill != null ? PracticeAI.skill : 0.82,
+        bullets: [], f: 0, dmg: 0, ifr: 0, grz: 0,
+      };
     } else if (msg.t === 'rematch') {
-      PracticeAI.state = null;
+      PracticeAI.team = null;
       Net.emitLocal({ t: 'rematch' });
     }
+  },
+  // advanced once per main-loop frame (throttle-immune). Runs the dummy's
+  // combined dodge and reports its result when done.
+  tick() {
+    const D = PracticeAI.dodge;
+    if (!D) return;
+    if (D.f < D.dur) {
+      for (const s of D.subs) {
+        if (D.f >= s.sim.dur) continue;
+        s.sim.tick(D.soul, b => { if (D.N === 1 || s.rng() < D.keep) { b.t = 0; b.phase0 = Math.random() * 6.28; b.dmg = s.perHit; D.bullets.push(b); } });
+      }
+      PracticeAI.moveSoul(D.soul, D.bullets, D.box, D.skill);
+      for (const b of D.bullets) {
+        b.t++;
+        if (b.homing) { const d = Math.hypot(D.soul.x - b.x, D.soul.y - b.y) || 1; b.vx += (D.soul.x - b.x) / d * b.homing; b.vy += (D.soul.y - b.y) / d * b.homing; }
+        b.vx += b.ax || 0; b.vy += b.ay || 0;
+        if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
+        b.x += b.vx; b.y += b.vy;
+        if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+      }
+      D.bullets = D.bullets.filter(b => b.x > -50 && b.x < D.box.w + 50 && b.y > -50 && b.y < D.box.h + 50 && (!b.life || b.t < b.life));
+      if (D.ifr > 0) D.ifr--;
+      if (D.grz > 0) D.grz--;
+      for (const b of D.bullets) {
+        const d = Math.hypot(b.x - D.soul.x, b.y - D.soul.y), rr = (b.r || 6) + 5;
+        if (d < rr) { if (D.ifr <= 0) { D.dmg += b.dmg || 10; D.ifr = 55; } }
+        else if (d < rr + 12 && D.grz <= 0) { D.T.tp = Math.min(100, D.T.tp + 2); D.grz = 10; }
+      }
+      D.f++;
+      if (D.f % 4 === 0) Net.emitLocal({ t: 'soul', x: D.soul.x / D.box.w, y: D.soul.y / D.box.h, f: D.f, done: false });
+    } else {
+      Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true });
+      PracticeAI.report(D.T, Math.round(D.dmg));
+      PracticeAI.dodge = null;
+    }
+  },
+  report(T, dmg) {
+    let d = dmg;
+    for (const m of T.members) { if (m.downed) continue; const take = Math.min(m.hp, d); m.hp -= take; d -= take; if (m.hp <= 0) m.downed = true; else break; if (d <= 0) break; }
+    Net.emitLocal({ t: 'result', dmgTaken: dmg, hp: T.members.map(m => m.hp), downed: T.members.map(m => m.downed), tp: T.tp });
   },
 };

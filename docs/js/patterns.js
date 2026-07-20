@@ -582,6 +582,30 @@ function customPattern(spec) {
   };
 }
 
+// combined dodge: overlay several attackers' patterns in one box, thinned so
+// a 3-way volley is fair (~1.6x a single, not 3x). Each bullet is tagged with
+// its source attacker's per-hit damage (b.dmg). attackers: [{def,moveDef,tier,seed}]
+function makeCombinedSim(attackers, box) {
+  const N = attackers.length;
+  const keep = 1 / (1 + 0.55 * Math.max(0, N - 1));
+  const subs = attackers.map(a => ({
+    sim: makeDodgeSim(a.def, a.moveDef, a.tier, a.seed, box),
+    dmg: Math.round(a.moveDef.dmg * TIER_MULT[a.tier == null ? 1 : a.tier]),
+    rng: mulberry32(((a.seed || 1) ^ 0x9e3779b9) >>> 0),
+  }));
+  const dur = Math.max(...subs.map(s => s.sim.dur));
+  return {
+    f: 0, dur,
+    tick(soul, add) {
+      for (const s of subs) {
+        if (this.f >= s.sim.dur) continue;
+        s.sim.tick(soul, b => { if (N === 1 || s.rng() < keep) { b.dmg = s.dmg; add(b); } });
+      }
+      this.f++;
+    },
+  };
+}
+
 // ---------- bullet simulation ----------
 function makeDodgeSim(attackerDef, moveDef, tier, seed, box) {
   const rng = mulberry32(seed);
