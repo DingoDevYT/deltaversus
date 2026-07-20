@@ -84,6 +84,7 @@ function maybeStartBattle() {
 // ---------- update ----------
 function update() {
   G.f++;
+  Input.textMode = (G.screen === 'join');   // typing a room code: letters, not OK/CANCEL
   switch (G.screen) {
     case 'title':
       if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; Snd.play('select'); }
@@ -272,8 +273,8 @@ function renderJoin() {
   for (let i = 0; i < 4; i++) disp += (G.joinCode[i] || '_') + ' ';
   drawText(ctx, 'big', disp.trim(), 320, 190, { color: '#ff0', align: 'center' });
   drawText(ctx, 'main', Net.status, 320, 290, { color: '#fff', align: 'center' });
-  drawText(ctx, 'main', 'Type letters, then [Z] to connect', 320, 330, { color: '#888', align: 'center' });
-  drawText(ctx, 'main', '[X] BACK', 320, 430, { color: '#555', align: 'center' });
+  drawText(ctx, 'main', 'Type the 4 letters, then [ENTER] to connect', 320, 330, { color: '#888', align: 'center' });
+  drawText(ctx, 'main', '[BKSP] edit   [ESC] back', 320, 430, { color: '#555', align: 'center' });
 }
 
 function renderSelect() {
