@@ -1,11 +1,18 @@
 // Music + SFX. Browsers block audio until a user gesture, so the first
 // keypress unlocks and starts whatever music was requested.
 const Snd = {
-  muted: false,
+  muted: localStorage.getItem('dv_muted') === '1',
+  master: (() => { const v = parseFloat(localStorage.getItem('dv_vol')); return isNaN(v) ? 0.6 : v; })(),
   unlocked: false,
   music: null, musicKey: null, pendingMusic: null,
   cache: {},
   MVOL: 0.45, SVOL: 0.55,
+};
+
+Snd.setMaster = function (v) {
+  Snd.master = Math.min(1, Math.max(0, v));
+  localStorage.setItem('dv_vol', '' + Snd.master);
+  if (Snd.music) Snd.music.volume = Snd.MVOL * Snd.master;
 };
 
 // which track plays while FIGHTING this character (opponent's theme)
@@ -25,7 +32,7 @@ Snd.play = function (k, vol) {
   let base = Snd.cache[k];
   if (!base) { base = Snd.cache[k] = new Audio(Snd.sfxPath(k)); }
   const a = base.cloneNode();
-  a.volume = vol != null ? vol : Snd.SVOL;
+  a.volume = (vol != null ? vol : Snd.SVOL) * Snd.master;
   a.play().catch(() => {});
 };
 
@@ -43,7 +50,7 @@ Snd._startMusic = function (key) {
   if (Snd.muted) return;
   const m = new Audio(Snd.musPath(key));
   m.loop = true;
-  m.volume = Snd.MVOL;
+  m.volume = Snd.MVOL * Snd.master;
   m.play().catch(() => {});
   Snd.music = m;
 };
@@ -61,6 +68,7 @@ Snd.unlock = function () {
 
 Snd.toggleMute = function () {
   Snd.muted = !Snd.muted;
+  localStorage.setItem('dv_muted', Snd.muted ? '1' : '0');
   if (Snd.muted) { if (Snd.music) Snd.music.pause(); }
   else if (Snd.musicKey) Snd._startMusic(Snd.musicKey);
   else if (Snd.pendingMusic) Snd._startMusic(Snd.pendingMusic);
@@ -68,6 +76,8 @@ Snd.toggleMute = function () {
 
 window.addEventListener('keydown', () => Snd.unlock(), { once: false });
 window.addEventListener('keydown', e => {
-  if ((e.key === 'm' || e.key === 'M') &&
-      !(typeof G !== 'undefined' && G.screen === 'join')) Snd.toggleMute();
+  if (typeof G !== 'undefined' && G.screen === 'join') return;
+  if (e.key === 'm' || e.key === 'M') Snd.toggleMute();
+  if (e.key === '+' || e.key === '=') { Snd.setMaster(Snd.master + 0.1); Snd.play('menumove'); }
+  if (e.key === '-' || e.key === '_') { Snd.setMaster(Snd.master - 0.1); Snd.play('menumove'); }
 });

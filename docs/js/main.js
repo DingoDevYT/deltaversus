@@ -75,10 +75,14 @@ function update() {
       if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; Snd.play('select'); }
       break;
     case 'menu': {
-      const n = 3;
+      const n = 4;   // host / join / practice / volume
       if (Input.hit.up) { G.menuIdx = (G.menuIdx + n - 1) % n; Snd.play('menumove'); }
       if (Input.hit.down) { G.menuIdx = (G.menuIdx + 1) % n; Snd.play('menumove'); }
-      if (Input.hit.ok) {
+      if (G.menuIdx === 3) {
+        if (Input.hit.left) { Snd.setMaster(Snd.master - 0.1); Snd.play('menumove'); }
+        if (Input.hit.right) { Snd.setMaster(Snd.master + 0.1); Snd.play('menumove'); }
+      }
+      if (Input.hit.ok && G.menuIdx < 3) {
         Snd.play('select');
         G.notice = '';
         if (G.menuIdx === 0) { Net.host(); wireNet(); G.screen = 'host'; }
@@ -177,14 +181,23 @@ function renderTitle() {
 
 function renderMenu() {
   drawText(ctx, 'big', 'DELTAVERSUS', 320, 70, { color: '#fff', align: 'center', scale: 0.9 });
-  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)'];
+  const items = ['HOST GAME', 'JOIN GAME', 'PRACTICE (VS DUMMY)', 'VOLUME'];
   items.forEach((s, i) => {
     const sel = i === G.menuIdx;
     if (sel) drawSpr(ctx, A.ui('soul'), 210, 208 + i * 44, { scale: 1 });
     drawText(ctx, 'main', s, 232, 200 + i * 44, { color: sel ? '#ff0' : '#fff', scale: 1 });
   });
+  // volume slider
+  const vy = 200 + 3 * 44 + 4;
+  ctx.fillStyle = '#333'; ctx.fillRect(340, vy, 120, 10);
+  ctx.fillStyle = G.menuIdx === 3 ? '#ff0' : '#888';
+  ctx.fillRect(340, vy, Math.round(120 * Snd.master), 10);
+  drawText(ctx, 'main', Math.round(Snd.master * 100) + '%', 472, vy - 4,
+           { color: Snd.muted ? '#f44' : '#aaa' });
+  if (Snd.muted) drawText(ctx, 'main', 'MUTED (M)', 340, vy + 16, { color: '#f44' });
+  drawText(ctx, 'main', 'M MUTE  +/- VOLUME', 320, 440, { color: '#555', align: 'center' });
   if (G.notice)
-    drawText(ctx, 'main', G.notice, 320, 400, { color: '#f44', align: 'center' });
+    drawText(ctx, 'main', G.notice, 320, 408, { color: '#f44', align: 'center' });
 }
 
 function renderHost() {
