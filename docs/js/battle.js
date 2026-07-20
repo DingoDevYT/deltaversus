@@ -588,6 +588,15 @@ Battle.startDodge = function () {
   // incoming pattern from all OPP attackers
   if (B.oppTiers) for (const t of B.oppTiers) { const m = B.oppTeam[t.mi]; if (m) m.tier = t.tier; }
   const oppAtkers = attackersOf(B.oppTeam, B.pacifyOpp);
+  // per-attack box shape: a solo boss attack can reshape the box (wide/tall/square)
+  if (oppAtkers.length === 1 && !(B.fxOnMe && B.fxOnMe.boxScale)) {
+    const pb = (PATTERNS[oppAtkers[0].moveDef.id] || {}).box;
+    if (pb) {
+      const cxC = BOX.x + BOX.w / 2, cyC = BOX.y + BOX.h / 2;
+      B.dodgeBox = { w: pb.w, h: pb.h, x: Math.round(cxC - pb.w / 2), y: Math.round(cyC - pb.h / 2) };
+      B.soul = { x: B.dodgeBox.x + B.dodgeBox.w / 2, y: B.dodgeBox.y + B.dodgeBox.h * 0.72 };
+    }
+  }
   if (oppAtkers.length) {
     B.sim = makeCombinedSim(oppAtkers, B.dodgeBox);
     B.dodgeT = B.sim.dur;
@@ -979,9 +988,9 @@ Battle.renderBoxAndBullets = function (ctx) {
   const bx = B.dodgeBox; if (!bx) return;
   const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
   if (anim) {   // afterimage trail + the scaling/rotating box
-    for (const g of (B.boxGhosts || [])) drawBoxRect(ctx, cx, cy, bx.w * g.s, bx.w * g.s, g.rot, g.alpha);
+    for (const g of (B.boxGhosts || [])) drawBoxRect(ctx, cx, cy, bx.w * g.s, bx.h * g.s, g.rot, g.alpha);
     const s = B.boxScaleCur || 0;
-    drawBoxRect(ctx, cx, cy, bx.w * s, bx.w * s, B.boxRotCur || 0, 1);
+    drawBoxRect(ctx, cx, cy, bx.w * s, bx.h * s, B.boxRotCur || 0, 1);
     return;
   }
   drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);

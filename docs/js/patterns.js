@@ -532,7 +532,7 @@ PATTERNS.redbuster = {
 // ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
 // (rebuilt from the wiki attack GIFs in ref/spamton/)
 PATTERNS.sneo_heads = {   // Flying Heads: destructible heads stream in lanes toward the soul
-  dur: 440,
+  dur: 440, box: { w: 288, h: 150 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
     if (every(f, rate(30, tier)))   // heads launch from the right at the soul's lane + a random lane
@@ -543,7 +543,7 @@ PATTERNS.sneo_heads = {   // Flying Heads: destructible heads stream in lanes to
   },
 };
 PATTERNS.sneo_heart = {   // Heart Attack: a chained shootable heart swings, scattering white diamonds
-  dur: 500,
+  dur: 500, box: { w: 180, h: 180 },   // square box
   tick(a) {
     const { f, box, tier, add } = a;
     const amp = box.w * 0.42, cx0 = box.x + box.w / 2, cy = box.y + box.h * 0.5;
@@ -557,7 +557,7 @@ PATTERNS.sneo_heart = {   // Heart Attack: a chained shootable heart swings, sca
   },
 };
 PATTERNS.sneo_mail = {   // Spam Mail: full-height mail towers slide left with a gap + destructible crew
-  dur: 480,
+  dur: 480, box: { w: 200, h: 230 },   // tall box
   tick(a) {
     const { f, rng, box, tier, add } = a;
     const period = rate(46, tier), cols = 4;
@@ -574,7 +574,7 @@ PATTERNS.sneo_mail = {   // Spam Mail: full-height mail towers slide left with a
   },
 };
 PATTERNS.sneo_phones = {   // Gripping Phones: a ring of phones fires bullets inward at the soul
-  dur: 480,
+  dur: 480, box: { w: 190, h: 190 },   // square box
   tick(a) {
     const { f, box, tier, add, soul } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.min(box.w, box.h) * 0.5 + 6;
@@ -589,7 +589,7 @@ PATTERNS.sneo_phones = {   // Gripping Phones: a ring of phones fires bullets in
   },
 };
 PATTERNS.sneo_bigshot = {   // BIG SHOT: the giant arm-cannon fires a spreading cone at the soul
-  dur: 620,
+  dur: 620, box: { w: 290, h: 170 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
     const ox = box.x + box.w + 30, oy = box.y + box.h * 0.5, base = Math.atan2(soul.y - oy, soul.x - ox);
