@@ -142,7 +142,7 @@ const PracticeAI = {
     }
     return {
       sels,
-      members: sels.map(s => { const d = charDef(s); return { def: d, hp: d.hp, max: d.hp, downed: false }; }),
+      members: sels.map(s => { const d = charDef(s); return { def: d, hp: d.hp, max: d.hp, downed: false, spared: false, dark: 0 }; }),
       tp: 0, items: ['darkburger', 'cdbagel', 'chocodiamond'],
     };
   },
@@ -157,7 +157,7 @@ const PracticeAI = {
       const T = PracticeAI.team;
       const acts = [];
       T.members.forEach((m, i) => {
-        if (m.downed) return;
+        if (m.downed || m.spared) return;
         let cmd = 'fight', move = null;
         const r = Math.random();
         const dk = !!m.def.darkner;
@@ -201,6 +201,10 @@ const PracticeAI = {
         skill: (typeof G !== 'undefined' && G.dummySkill != null) ? G.dummySkill : 0.82,
         atks, bullets: [], f: 0, dmg: 0, ifr: 0, grz: 0,
       };
+    } else if (msg.t === 'spare') {
+      const T = PracticeAI.team; if (T && T.members[msg.mi]) T.members[msg.mi].spared = true;
+    } else if (msg.t === 'snowgrave') {
+      const T = PracticeAI.team; if (T) T.members.forEach(m => { m.hp = 0; m.downed = true; });
     } else if (msg.t === 'rematch') {
       PracticeAI.team = null;
       Net.emitLocal({ t: 'rematch' });
@@ -242,10 +246,11 @@ const PracticeAI = {
     }
   },
   applyDmg(T, dmg, target) {
-    let m = (target != null && T.members[target] && !T.members[target].downed) ? T.members[target] : null;
-    if (!m) m = T.members.find(x => !x.downed);
+    const alive = x => !x.downed && !x.spared;
+    let m = (target != null && T.members[target] && alive(T.members[target])) ? T.members[target] : null;
+    if (!m) m = T.members.find(alive);
     let d = dmg;
-    while (d > 0 && m) { const take = Math.min(m.hp, d); m.hp -= take; d -= take; if (m.hp <= 0) { m.downed = true; m = T.members.find(x => !x.downed); } else break; }
+    while (d > 0 && m) { const take = Math.min(m.hp, d); m.hp -= take; d -= take; if (m.hp <= 0) { m.downed = true; m = T.members.find(alive); } else break; }
   },
   report(T, dmg) {   // damage already applied live during tick
     Net.emitLocal({ t: 'result', dmgTaken: dmg, hp: T.members.map(m => m.hp), downed: T.members.map(m => m.downed), tp: T.tp });

@@ -14,20 +14,39 @@ const Battle = {};
 // ---------- team helpers ----------
 function mkMember(sel) {
   const def = charDef(sel);
-  return { sel, def, hp: def.hp, max: def.hp, downed: false,
+  return { sel, def, hp: def.hp, max: def.hp, downed: false, spared: false,
+           mercy: 0, tiredFlag: false,   // mercy = how close YOU are to sparing this foe
            action: null, tier: null, pose: 'idle', poseT: 0,
            dark: 0 };   // darkness/CHARGE meter (darkners only)
 }
-function living(team) { return team.filter(m => !m.downed); }
-function teamDead(team) { return team.every(m => m.downed); }
-function frontLiving(team) { for (const m of team) if (!m.downed) return m; return null; }
+// a member is "out" if downed OR spared; a team is done when all are out.
+function isOut(m) { return m.downed || m.spared; }
+function living(team) { return team.filter(m => !isOut(m)); }
+function teamDead(team) { return team.every(isOut); }
+function frontLiving(team) { for (const m of team) if (!isOut(m)) return m; return null; }
+function isTired(m) { return !isOut(m) && (m.tiredFlag || m.hp <= m.max * 0.30); }
+function oppMaxLevel() { return Battle.oppTeam.reduce((mx, m) => isOut(m) ? mx : Math.max(mx, m.def.level || 1), 1); }
+// can this enemy member currently be SPARED? returns true/false (mercy + condition)
+function canSpare(m) {
+  if (isOut(m)) return false;
+  const sp = m.def.spare || {};
+  if (sp.never) return false;
+  if (m.mercy < 100) return false;
+  if (sp.alone && living(Battle.oppTeam).length > 1) return false;
+  if (sp.downed && !m.downed) return false;   // (unreachable via normal flow; kept for intent)
+  if (sp.fullHp && m.hp < m.max) return false;
+  if (sp.noKris && Battle.oppTeam.some(o => !isOut(o) && o.def.base === 'kris')) return false;
+  return true;
+}
 function moveDefOf(def, a) {
   if (!a) return null;
   if (a.cmd === 'fight') return def.fight;
-  if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult : def.spells.find(s => s.id === a.move);
+  if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult : (def.spells || []).find(s => s.id === a.move);
+  if (a.cmd === 'act') return (def.acts || []).find(s => s.id === a.move);
   return null;
 }
-function isAttack(def) { return !!(def && def.dmg && (def.custom || PATTERNS[def.id])); }
+function patternIdOf(d) { return d && (d.pattern || d.id); }
+function isAttack(def) { return !!(def && def.dmg && (def.custom || PATTERNS[patternIdOf(def)])); }
 
 function sfxFor(def) {
   if (MOVE_SFX[def.id]) return MOVE_SFX[def.id];
@@ -86,6 +105,8 @@ Battle.init = function (opts) {
   B.fxOnMeQueued = null; B.fxOnMe = null;
   B.pacifyOppNext = false; B.pacifyOpp = false;
   B.myPacifiedNext = false; B.myPacified = false;
+  B.proceedCount = 0;                 // Kris+Noelle PROCEED streak (3 -> SNOWGRAVE)
+  B.myGuardBuff = 0; B.myPowerBuff = 0;   // Northernlight / Lock In turn counters
   B.mirror = null; B.oppSoul = null; B.oppDodging = false;
   Net.handlers = Net.handlers.filter(h => h !== Battle.onMsg);
   Net.on(Battle.onMsg);
@@ -113,7 +134,9 @@ Battle.onMsg = function (m) {
     B.oppSoul = m; B.oppDodging = !m.done;
     if (m.done) B.mirror = null;
     else if (B.mirror) B.mirror.target = Math.max(B.mirror.target, m.f || 0);
-  } else if (m.t === 'rematch') B.rematchOpp = true;
+  } else if (m.t === 'spare') { const mm = B.myTeam[m.mi]; if (mm && !isOut(mm)) { mm.spared = true; mm.pose = 'idle'; mm.poseT = 0; } }
+  else if (m.t === 'snowgrave') { for (const mm of B.myTeam) { mm.hp = 0; mm.downed = true; mm.pose = 'downed'; mm.poseT = 0; } }
+  else if (m.t === 'rematch') B.rematchOpp = true;
 };
 
 Battle.say = function (lines) {
@@ -177,17 +200,29 @@ Battle.startSelect = function (fresh) {
   B.say('* ' + B.curMember().def.name + ', your move.');
 };
 Battle.curMember = function () { return Battle.myTeam[Battle.cmdOrder[Battle.cmdPos]]; };
-Battle.livingEnemies = function () { return Battle.oppTeam.map((m, i) => i).filter(i => !Battle.oppTeam[i].downed); };
+Battle.livingEnemies = function () { return Battle.oppTeam.map((m, i) => i).filter(i => !isOut(Battle.oppTeam[i])); };
 Battle.canUseItems = function () { return !Battle.myTeam.some(m => m.def.secretBoss); };
 function isHealMove(d) { return !!(d && (d.kind === 'heal' || (d.kind == null && d.heal))); }
-// which team an action targets: 'enemy' (attacks/act), 'ally' (items + heal
-// spells - can be aimed at any party member), or null (defend/charge/self).
+function moveById(def, id) {
+  if (!id) return null;
+  if (def.ult && id === def.ult.id) return def.ult;
+  return (def.spells || []).find(s => s.id === id) || (def.acts || []).find(s => s.id === id) || null;
+}
+// which team an action targets: 'enemy', 'ally', or null (self/party/no target).
 function targetSide(cmd, def, move) {
-  if (cmd === 'fight' || cmd === 'act') return 'enemy';
+  if (cmd === 'fight' || cmd === 'spare') return 'enemy';
   if (cmd === 'item') return 'ally';
+  if (cmd === 'act') {
+    const ad = (def.acts || []).find(s => s.id === move);
+    if (!ad) return null;
+    return (ad.kind === 'attack' || ad.kind === 'mercy') ? 'enemy' : null;
+  }
   if (cmd === 'magic') {
-    const d = move === def.ult.id ? def.ult : def.spells.find(s => s.id === move);
-    return isHealMove(d) ? 'ally' : 'enemy';
+    const d = moveById(def, move);
+    if (!d) return null;
+    if (d.kind === 'heal' || d.kind === 'revive') return 'ally';
+    if (d.kind === 'spareTired') return d.scope === 'all' ? null : 'enemy';
+    return 'enemy';   // mercy + attack
   }
   return null;
 }
@@ -222,7 +257,7 @@ Battle.updSelect = function () {
     if (Input.hit.ok && opts.length) {
       const o = opts[B.subIdx];
       if (o.disabled) Snd.play('cantselect');
-      else { Snd.play('select'); B.choose(B.submenu, o.id); }
+      else { Snd.play('select'); B.choose(o.spare ? 'spare' : B.submenu, o.spare ? null : o.id); }
     }
   }
 };
@@ -237,15 +272,34 @@ Battle.subOptions = function () {
     const opt = (s, ult) => {
       const cost = spellCost(mem, s);
       const gated = s.darkReq && mem.dark < s.darkReq;
+      const snowLock = s.snowgrave && B.proceedCount < 3;   // SNOWGRAVE needs Proceed x3
       return { id: s.id, label: s.name, ult,
-               cost: gated ? '🌑x' + Math.ceil(s.darkReq / CHARGE_GAIN) : cost + '%',
-               disabled: gated || B.tpAvail() < cost };
+               cost: snowLock ? 'NEEDx3' : gated ? '🌑x' + Math.ceil(s.darkReq / CHARGE_GAIN) : cost + '%',
+               disabled: snowLock || gated || B.tpAvail() < cost };
     };
     const list = c.spells.map(s => opt(s, false));
     list.push(opt(c.ult, true));
     return list;
   }
-  if (B.submenu === 'act') return [{ id: c.act.id, label: c.act.name, cost: 'FREE' }];
+  if (B.submenu === 'act') {
+    const opts = [];
+    const lvl3 = oppMaxLevel() >= 3;
+    const remaining = new Set(B.cmdOrder.slice(B.cmdPos + 1));   // allies not yet acted
+    for (const ad of (c.acts || [])) {
+      if (ad.lvl3 && !lvl3) continue;                            // level-3-only acts hidden otherwise
+      let disabled = false, cost = ad.tp ? ad.tp + '%' : 'FREE';
+      if (ad.tp && B.tpAvail() < ad.tp) disabled = true;
+      if (ad.ally) {
+        const ai = B.myTeam.findIndex((m, i) => !isOut(m) && m.def.base === ad.ally && remaining.has(i) && !m.action);
+        if (ai < 0) { disabled = true; cost = 'need ' + ad.ally.toUpperCase(); }
+      }
+      if (ad.id === 'act_proceed') cost = B.proceedCount >= 2 ? 'x3->SNOW' : 'x' + (B.proceedCount + 1);
+      opts.push({ id: ad.id, label: ad.name, cost, disabled });
+    }
+    const anyFoe = B.oppTeam.some(m => !isOut(m));
+    opts.push({ id: '__spare__', label: 'SPARE', cost: '', spare: true, disabled: !anyFoe });
+    return opts;
+  }
   if (B.submenu === 'item') {
     if (!B.canUseItems()) return [{ id: null, label: 'NO ITEMS (BOSS)', disabled: true }];
     const bag = B.myItems.filter((_, i) => !B.itemsUsed.includes(i));
@@ -261,18 +315,26 @@ Battle.choose = function (cmd, move) {
   const B = Battle, c = B.curMember().def;
   const side = targetSide(cmd, c, move);
   if (side) {
-    const cand = side === 'ally'
-      ? B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed)
-      : B.livingEnemies();
+    const md = cmd === 'magic' ? moveById(c, move) : null;
+    let cand;
+    if (side === 'ally') {
+      const revive = md && md.kind === 'revive';
+      cand = B.myTeam.map((m, i) => i).filter(i => revive ? B.myTeam[i].downed : !isOut(B.myTeam[i]));
+    } else if (md && md.kind === 'spareTired') {
+      cand = B.oppTeam.map((m, i) => i).filter(i => isTired(B.oppTeam[i]) && !(B.oppTeam[i].def.spare || {}).never);
+    } else {
+      cand = B.livingEnemies();
+    }
+    if (!cand.length) { Snd.play('cantselect'); B.say('* No valid target!'); B.submenu = null; return; }
     if (cand.length > 1) {
       B.pendingCmd = { cmd, move, side }; B.targetList = cand; B.targetIdx = 0;
       B.targetSideCur = side;
       if (side === 'ally') { const k = cand.indexOf(B.cmdOrder[B.cmdPos]); if (k >= 0) B.targetIdx = k; }
       B.submenu = null; B.targeting = true;
-      B.say(side === 'ally' ? '* Use it on whom?' : '* Choose a target.');
+      B.say(side === 'ally' ? '* Use it on whom?' : cmd === 'spare' ? '* Spare whom?' : '* Choose a target.');
       return;
     }
-    B.commitChoice(cmd, move, cand.length ? cand[0] : 0);
+    B.commitChoice(cmd, move, cand[0]);
     return;
   }
   B.commitChoice(cmd, move, 0);
@@ -294,17 +356,30 @@ Battle.updTargeting = function () {
 Battle.commitChoice = function (cmd, move, target) {
   const B = Battle, mem = B.curMember(), c = mem.def;
   const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target, tside: targetSide(cmd, c, move) };
-  if (cmd === 'magic') { const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move); if (d) B.tpSpent += spellCost(mem, d); }
+  if (cmd === 'magic') { const d = moveById(c, move); if (d) B.tpSpent += spellCost(mem, d); }
+  else if (cmd === 'act') {
+    const ad = (c.acts || []).find(s => s.id === move);
+    if (ad && ad.tp) B.tpSpent += ad.tp;
+    if (ad && ad.ally) {   // multi-act: consume a not-yet-acted ally's turn as an assist
+      const ai = B.cmdOrder.slice(B.cmdPos + 1).find(i => !isOut(B.myTeam[i]) && B.myTeam[i].def.base === ad.ally && !B.myTeam[i].action);
+      if (ai != null) { B.myTeam[ai].action = { mi: ai, cmd: 'assist', of: act.mi, seed: randSeed() }; act.assistMi = ai; }
+    }
+  }
   else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
   else if (cmd === 'defend') B.tpSel += 16;   // instant, visible TP gain
-  else if (cmd === 'charge') { mem.dark = Math.min(100, mem.dark + CHARGE_GAIN); B.tpSel += 8; }   // build darkness, small TP
+  else if (cmd === 'charge') { mem.dark = Math.min(100, mem.dark + CHARGE_GAIN); B.tpSel += 8; }
   mem.action = act;
   B.submenu = null;
+  B.advanceCmd();
+};
+
+Battle.advanceCmd = function () {
+  const B = Battle;
   B.cmdPos++;
+  while (B.cmdPos < B.cmdOrder.length && B.myTeam[B.cmdOrder[B.cmdPos]].action) B.cmdPos++;   // skip assists
   if (B.cmdPos < B.cmdOrder.length) { B.menuIdx = 0; B.say('* ' + B.curMember().def.name + ', your move.'); return; }
-  // all chose -> commit shared TP (spends + defend gains) then send
   B.myTP = Math.max(0, Math.min(100, B.myTP - B.tpSpent + B.tpSel));
-  const acts = B.cmdOrder.map(i => B.myTeam[i].action);
+  const acts = B.cmdOrder.map(i => B.myTeam[i].action).filter(Boolean);
   Battle.send({ t: 'actions', acts });
   B.phase = 'waitopp';
   B.say('* Waiting for the enemy team...');
@@ -313,12 +388,17 @@ Battle.commitChoice = function (cmd, move, target) {
 Battle.undoLast = function () {
   const B = Battle;
   B.cmdPos--;
+  while (B.cmdPos > 0) { const a = B.myTeam[B.cmdOrder[B.cmdPos]].action; if (a && a.cmd === 'assist') B.cmdPos--; else break; }
   const mem = B.curMember(), a = mem.action, c = mem.def;
   if (a) {
-    if (a.cmd === 'magic') { const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move); if (d) B.tpSpent -= spellCost(mem, d); }
-    if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
-    if (a.cmd === 'defend') B.tpSel -= 16;
-    if (a.cmd === 'charge') { mem.dark = Math.max(0, mem.dark - CHARGE_GAIN); B.tpSel -= 8; }
+    if (a.cmd === 'magic') { const d = moveById(c, a.move); if (d) B.tpSpent -= spellCost(mem, d); }
+    else if (a.cmd === 'act') {
+      const ad = (c.acts || []).find(s => s.id === a.move); if (ad && ad.tp) B.tpSpent -= ad.tp;
+      if (a.assistMi != null && B.myTeam[a.assistMi]) B.myTeam[a.assistMi].action = null;
+    }
+    else if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
+    else if (a.cmd === 'defend') B.tpSel -= 16;
+    else if (a.cmd === 'charge') { mem.dark = Math.max(0, mem.dark - CHARGE_GAIN); B.tpSel -= 8; }
   }
   mem.action = null; B.menuIdx = 0;
   B.say('* ' + mem.def.name + ', your move.');
@@ -342,8 +422,10 @@ Battle.startReveal = function () {
 function actionText(def, a, mine) {
   const c = def;
   if (a.cmd === 'fight') return c.fight.text;
-  if (a.cmd === 'magic') { const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move); return d ? d.text : c.name + ' casts magic!'; }
-  if (a.cmd === 'act') return c.act.text;
+  if (a.cmd === 'magic') { const d = moveById(c, a.move); return d ? d.text : c.name + ' casts magic!'; }
+  if (a.cmd === 'act') { const d = (c.acts || []).find(s => s.id === a.move); return d ? d.text : c.name + ' ACTs.'; }
+  if (a.cmd === 'spare') return c.name + ' spares the foe!';
+  if (a.cmd === 'assist') return c.name + ' joins the ACT!';
   if (a.cmd === 'item') return c.name + ' uses ' + (a.itemId ? ITEMS[a.itemId].name.toUpperCase() : 'an item') + '!';
   if (a.cmd === 'defend') return c.name + ' braces for impact!';
   if (a.cmd === 'charge') return c.name + ' draws in the DARKNESS!';
@@ -415,10 +497,12 @@ function attackersOf(team, pacifyCap) {
   const out = [];
   for (const m of team) {
     if (!m.action) continue;
-    const md = moveDefOf(m.def, m.action);
-    if (isAttack(md)) {
+    const md0 = moveDefOf(m.def, m.action);
+    if (isAttack(md0)) {
+      const md = { ...md0, id: patternIdOf(md0) };   // acts carry .pattern; sim keys off .id
       let tier = m.tier == null ? 1 : m.tier;
       if (pacifyCap) tier = 0;
+      if (Battle.myPowerBuff && team === Battle.myTeam) md.dmg = Math.round(md.dmg * 2);   // Lock In
       out.push({ def: m.def, moveDef: md, tier, seed: m.action.seed, member: m,
                  target: m.action.target || 0 });
     }
@@ -558,7 +642,8 @@ Battle.updDodge = function () {
     if (dist < (b.r || 6) + SOUL_R) {
       if (B.iframes <= 0) {
         const tgtDef = (b.target != null && B.myTeam[b.target] && B.myTeam[b.target].action && B.myTeam[b.target].action.cmd === 'defend');
-        const dmg = Math.round((b.dmg || 10) * ((defending || tgtDef) ? 0.5 : 1) * (0.9 + Math.random() * 0.2));
+        const guard = B.myGuardBuff > 0 ? 0.5 : 1;   // Northernlight damage shield
+        const dmg = Math.max(1, Math.round((b.dmg || 10) * ((defending || tgtDef) ? 0.5 : 1) * guard * (0.9 + Math.random() * 0.2)));
         B.dmgTaken += dmg;
         const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
         B.iframes = IFRAMES; B.shake = 14; B.flash = 8;
@@ -617,18 +702,30 @@ Battle.endDodge = function () {
   const B = Battle;
   B.bullets = []; B.sim = null;
   Battle.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
-  // spell heal/status effects resolve after dodging
+  // spell heals / revive / dual-heal resolve after dodging
+  const healMember = (tgt, amt) => {
+    if (!tgt || !amt) return;
+    tgt.hp = Math.min(tgt.max, tgt.hp + amt); Snd.play('cure');
+    B.dmgPops.push({ x: 96, y: teamGroundY(B.myTeam.indexOf(tgt), B.myTeam.length) - 30, txt: '+' + amt, t: 0, color: '#2f2' });
+  };
+  B.usedSnowgrave = false;
   for (const m of B.myTeam) {
-    const a = m.action; if (!a || a.cmd !== 'magic') continue;
-    const d = moveDefOf(m.def, a) || (a.move === m.def.ult.id ? m.def.ult : m.def.spells.find(s => s.id === a.move));
-    if (!d) continue;
-    if (isHealMove(d)) {
-      const tgt = (a.tside === 'ally' && B.myTeam[a.target] && !B.myTeam[a.target].downed) ? B.myTeam[a.target] : m;
-      tgt.hp = Math.min(tgt.max, tgt.hp + (d.heal || 0));
-      if (d.heal) { Snd.play('cure'); const ti = B.myTeam.indexOf(tgt); B.dmgPops.push({ x: 96, y: teamGroundY(ti, B.myTeam.length) - 30, txt: '+' + d.heal, t: 0, color: '#2f2' }); }
+    const a = m.action; if (!a) continue;
+    if (a.cmd === 'magic') {
+      const d = moveById(m.def, a.move); if (!d) continue;
+      if (isHealMove(d)) healMember((a.tside === 'ally' && B.myTeam[a.target] && !isOut(B.myTeam[a.target])) ? B.myTeam[a.target] : m, d.heal);
+      else if (d.heal) healMember(m, d.heal);           // attack+heal ult (DREAM CHORUS)
+      if (d.kind === 'revive') {
+        const t = B.myTeam[a.target];
+        if (t && t.downed) { t.downed = false; t.hp = Math.round(t.max * (d.revive || 0.5)); t.pose = 'idle'; t.poseT = 0; Snd.play('cure'); B.dmgPops.push({ x: 96, y: teamGroundY(a.target, B.myTeam.length) - 30, txt: 'REVIVE', t: 0, color: '#2f2' }); }
+      }
+      if (d.snowgrave) B.usedSnowgrave = true;
+    } else if (a.cmd === 'act') {
+      const ad = (m.def.acts || []).find(s => s.id === a.move);
+      if (ad && ad.kind === 'healAll') for (const tm of B.myTeam) if (!isOut(tm)) healMember(tm, ad.heal);
     }
-    if (d.kind === 'status') { Snd.play(d.status === 'pacified' ? 'pacify' : 'spellcast'); if (d.status === 'pacified') B.pacifyOppNext = true; B.statusOnOpp = d.status; }
   }
+  if (B.usedSnowgrave) Battle.send({ t: 'snowgrave' });
   B.myResult = { t: 'result', dmgTaken: B.dmgTaken,
                  hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP };
   Battle.send(B.myResult);
@@ -651,21 +748,16 @@ Battle.resolve = function () {
     B.shake = Math.max(B.shake, 8);
   }
 
-  // queue sabotage for next turn (from opp acts / status spells)
-  B.fxOnMeQueued = null;
-  const oppActMem = B.oppTeam.find(m => m.action && m.action.cmd === 'act');
-  if (oppActMem) B.fxOnMeQueued = { ...ACT_FX[oppActMem.def.act.id] };
-  B.myPacifiedNext = false;
-  for (const m of B.oppTeam) {
-    const a = m.action; if (!a || a.cmd !== 'magic') continue;
-    const d = moveDefOf(m.def, a) || (a.move === m.def.ult.id ? m.def.ult : m.def.spells.find(s => s.id === a.move));
-    if (d && d.kind === 'status') { B.fxOnMeQueued = { ...ACT_FX[d.status] }; if (d.status === 'pacified') B.myPacifiedNext = true; }
-  }
-  B.pacifyOpp = !!B.pacifyOppNext; B.pacifyOppNext = false;
+  B.fxOnMeQueued = null; B.myPacifiedNext = false; B.pacifyOpp = false;
+
+  // resolve MY mercy / spare / buff / proceed effects (SNOWGRAVE forces a wipe)
+  Battle.applyMyEffects();
+  if (B.usedSnowgrave) for (const m of B.oppTeam) { m.hp = 0; m.downed = true; m.pose = 'downed'; }
 
   const lines = [];
   if (r.dmgTaken > 0) lines.push('* Enemy team took ' + r.dmgTaken + ' damage!');
   if (B.dmgTaken > 0) lines.push('* Your team took ' + B.dmgTaken + ' damage!');
+  if (B.mercyMsg) { lines.push(B.mercyMsg); B.mercyMsg = null; }
   if (!lines.length) lines.push('* The tension rises...');
   B.say(lines);
 
@@ -673,8 +765,8 @@ Battle.resolve = function () {
   if (myDead || oppDead) {
     B.result = myDead ? (oppDead ? 'draw' : 'lose') : 'win';
     B.phase = 'gameover';
-    for (const m of B.myTeam) if (!m.downed) { m.pose = B.result === 'win' ? 'victory' : 'idle'; m.poseT = 0; }
-    for (const m of B.oppTeam) if (!m.downed) { m.pose = B.result === 'lose' ? 'victory' : 'idle'; m.poseT = 0; }
+    for (const m of B.myTeam) if (!isOut(m)) { m.pose = B.result === 'win' ? 'victory' : 'idle'; m.poseT = 0; }
+    for (const m of B.oppTeam) if (!isOut(m)) { m.pose = B.result === 'lose' ? 'victory' : 'idle'; m.poseT = 0; }
     if (B.result === 'win') { Snd.stopMusic(); Snd.play('won'); }
     else if (B.result === 'lose') Snd.playMusic('game_over');
     else Snd.stopMusic();
@@ -683,11 +775,45 @@ Battle.resolve = function () {
   B.resolveT = 110; B.phase = 'resolve';
 };
 
+// resolve MY team's non-attack support actions (mercy / spare / spareTired /
+// buffs / proceed). Mercy is a LOCAL view of the enemy; spares are synced.
+Battle.applyMyEffects = function () {
+  const B = Battle;
+  const grantMercy = (i, amt) => { const o = B.oppTeam[i]; if (o && !isOut(o)) o.mercy = Math.min(100, o.mercy + amt); };
+  const doSpare = (i, tiredOnly) => {
+    const o = B.oppTeam[i]; if (!o || isOut(o)) return false;
+    if ((o.def.spare || {}).never) return false;
+    if (tiredOnly ? isTired(o) : canSpare(o)) { o.spared = true; o.pose = 'idle'; o.poseT = 0; Battle.send({ t: 'spare', mi: i }); Snd.play('spare'); B.mercyMsg = '* ' + o.def.name + ' was SPARED!'; return true; }
+    return false;
+  };
+  let usedProceed = false;
+  for (const m of B.myTeam) {
+    const a = m.action; if (!a) continue;
+    if (a.cmd === 'magic') {
+      const d = moveById(m.def, a.move); if (!d) continue;
+      if (d.kind === 'mercy') grantMercy(a.target, d.mercy || 15);
+      else if (d.kind === 'spareTired') { if (d.scope === 'all') B.oppTeam.forEach((o, i) => doSpare(i, true)); else doSpare(a.target, true); }
+    } else if (a.cmd === 'act') {
+      const ad = (m.def.acts || []).find(s => s.id === a.move); if (!ad) continue;
+      if (ad.mercy) grantMercy(a.target, ad.mercy);
+      if (ad.kind === 'buff') { if (ad.buff === 'guard') B.myGuardBuff = 3; if (ad.buff === 'power') B.myPowerBuff = 3; }
+      if (ad.kind === 'proceed') usedProceed = true;
+    } else if (a.cmd === 'spare') { doSpare(a.target, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.'); }
+  }
+  // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
+  const anyDown = B.myTeam.some(m => m.downed);
+  if (B.usedSnowgrave || anyDown) B.proceedCount = 0;
+  else if (usedProceed) B.proceedCount = Math.min(3, B.proceedCount + 1);
+  else B.proceedCount = 0;
+};
+
 Battle.nextTurn = function () {
   const B = Battle;
   B.turn++;
   B.fxOnMe = B.fxOnMeQueued; B.fxOnMeQueued = null;
   B.myPacified = B.myPacifiedNext; B.myPacifiedNext = false;
+  if (B.myGuardBuff > 0) B.myGuardBuff--;
+  if (B.myPowerBuff > 0) B.myPowerBuff--;
   B.mirror = null; B.oppDodging = false; B.oppSoul = null;
   B.startSelect(false);
 };
@@ -919,11 +1045,17 @@ Battle.renderTargeting = function (ctx) {
     let head = A.ui('head_' + def.base + (def.hue ? '' : '')); if (def.hue) head = A.hued(head, def.hue);
     drawSpr(ctx, head, 214, y + 8, { scale: 0.8 });
     drawText(ctx, 'main', def.name, 232, y, { color: sel ? '#ff0' : '#fff' });
-    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(360, y + 4, 100, 8);
-    ctx.fillStyle = def.color; ctx.fillRect(360, y + 4, Math.max(0, Math.round(100 * m.hp / m.max)), 8);
-    drawText(ctx, 'main', m.hp + '/' + m.max, 470, y, { color: sel ? '#fff' : '#999' });
+    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(360, y + 3, 100, 7);
+    ctx.fillStyle = def.color; ctx.fillRect(360, y + 3, Math.max(0, Math.round(100 * m.hp / m.max)), 7);
+    drawText(ctx, 'main', m.hp + '/' + m.max, 470, y - 2, { color: sel ? '#fff' : '#999' });
+    if (!ally) {   // enemy: show MERCY meter + SPARE readiness
+      ctx.fillStyle = '#3a3000'; ctx.fillRect(360, y + 13, 100, 5);
+      ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(360, y + 13, Math.round(100 * m.mercy / 100), 5);
+      const tag = (m.def.spare || {}).never ? '' : canSpare(m) ? 'SPARE!' : isTired(m) ? 'tired' : m.mercy + '%';
+      drawText(ctx, 'main', tag, 470, y + 11, { color: canSpare(m) ? '#ff0' : '#aa8', align: 'left', scale: 0.8 });
+    }
   });
-  drawText(ctx, 'main', '[Z] CONFIRM  [X] BACK', 320, 176 + B.targetList.length * 30 + 8, { color: '#555', align: 'center' });
+  drawText(ctx, 'main', '[Z] CONFIRM  [X] BACK', 320, 176 + B.targetList.length * 30 + 14, { color: '#555', align: 'center' });
 };
 
 Battle.renderMsg = function (ctx) {

@@ -501,6 +501,37 @@ PATTERNS.jevil_ult = {   // DEVILSKNIFE / Final Chaos: orbiting scythes + spade 
   },
 };
 
+// A++++ : dense A+ exam papers, aimed and accelerating (Berdly spell)
+PATTERNS.berdly_papers = {
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(20, tier))) {
+      const ox = box.x + box.w + 24, oy = box.y + 12 + rng() * (box.h - 24);
+      const base = Math.atan2(soul.y - oy, soul.x - ox);
+      for (let i = -1; i <= 1; i++) {
+        const ang = base + i * 0.22;
+        add({ ...bulletProps('feather'), x: ox, y: oy, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2,
+              ax: Math.cos(ang) * 0.05, ay: Math.sin(ang) * 0.05, maxv: 5, rot: ang, spin: 0.03 });
+      }
+    }
+  },
+};
+// RED BUSTER : Kris+Susie multi-act - wide straight beams toward the soul's height
+PATTERNS.redbuster = {
+  dur: 460,
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    const period = rate(32, tier);
+    if (f % period === 0) {
+      const left = (Math.floor(f / period) % 2) === 0;
+      for (let i = -1; i <= 1; i++)
+        add({ ...bulletProps('rudebeam'), x: left ? box.x - 46 : box.x + box.w + 46, y: soul.y + i * 15,
+              vx: (left ? 1 : -1) * 3.4, vy: 0, r: 10, scale: 1.3, spin: 0.05 });
+    }
+  },
+};
+
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';

@@ -4,67 +4,84 @@
 
 const CHARS = {
   kris: {
-    name: 'KRIS', color: '#00c0ff', hp: 160,
+    name: 'KRIS', color: '#00c0ff', hp: 160, level: 1, spare: { never: true },
     desc: 'THE LEADER. BALANCED.\nCOMMANDS THE BLADE.',
     fight: { id: 'kris_slash', name: 'Slash', dmg: 28, dur: 420,
              text: 'KRIS attacks with the sword!' },
-    spells: [
-      { id: 'kris_cross', name: 'X-Slash', tp: 30, dmg: 34, dur: 480, kind: 'attack',
-        text: 'KRIS carves an X into the air!' },
-    ],
+    spells: [],
     ult: { id: 'kris_giga', name: 'GIGASLASH', tp: 100, dmg: 46, dur: 560, kind: 'attack',
            text: 'KRIS unleashes GIGASLASH!!' },
-    act: { id: 'taunt', name: 'Taunt', desc: 'Shrink foe box',
-           text: 'KRIS taunted! The enemy box shrinks next turn!' },
+    // KRIS is the only character with the ACT menu (single acts + Kris multi-acts).
+    acts: [
+      { id: 'act_check', name: 'Check', kind: 'mercy', mercy: 20, text: 'KRIS sizes up the foe.' },
+      { id: 'act_xslash', name: 'X-Slash', tp: 25, dmg: 34, dur: 480, kind: 'attack', pattern: 'kris_cross',
+        mercy: 8, lvl3: true, text: 'KRIS carves an X into the air!' },
+      { id: 'act_redbuster', name: 'Red-Buster', tp: 60, dmg: 46, dur: 500, kind: 'attack', pattern: 'redbuster',
+        ally: 'susie', lvl3: true, text: 'KRIS & SUSIE fire the RED BUSTER!' },
+      { id: 'act_dualheal', name: 'Dual-Heal', tp: 50, kind: 'healAll', heal: 70,
+        ally: 'ralsei', lvl3: true, text: 'KRIS & RALSEI heal the party!' },
+      { id: 'act_northern', name: 'Northernlight', tp: 50, kind: 'buff', buff: 'guard',
+        ally: 'noelle', lvl3: true, text: 'KRIS & NOELLE raise the NORTHERN LIGHT!' },
+      { id: 'act_lockin', name: 'Lock In', tp: 75, kind: 'buff', buff: 'power',
+        ally: 'berdly', lvl3: true, text: 'KRIS & BERDLY LOCK IN!' },
+      { id: 'act_proceed', name: 'Proceed', tp: 0, kind: 'proceed', mercy: 20,
+        ally: 'noelle', lvl3: true, text: 'KRIS says: ...proceed.' },
+    ],
   },
   susie: {
-    name: 'SUSIE', color: '#ff00ff', hp: 190,
+    name: 'SUSIE', color: '#ff00ff', hp: 190, level: 1, spare: { alone: true },
     desc: 'RECKLESS POWERHOUSE.\nHITS LIKE A TRUCK.',
     fight: { id: 'susie_axe', name: 'Axe Swing', dmg: 34, dur: 420,
              text: 'SUSIE swings the axe wildly!' },
     spells: [
+      { id: 'susie_saction', name: 'S-Action', tp: 8, kind: 'mercy', mercy: 15,
+        text: 'SUSIE does her thing. (+MERCY)' },
       { id: 'susie_rude', name: 'Rude Buster', tp: 50, dmg: 40, dur: 500, kind: 'attack',
         text: 'SUSIE fires RUDE BUSTER!' },
+      { id: 'susie_betterheal', name: 'Better Heal', tp: 80, heal: 120, kind: 'heal',
+        text: 'SUSIE heals... surprisingly gently!' },
     ],
     ult: { id: 'susie_ult', name: 'BUSTER RAMPAGE', tp: 100, dmg: 50, dur: 560, kind: 'attack',
            text: 'SUSIE goes on a RAMPAGE!!' },
-    act: { id: 'intimidate', name: 'Intimidate', desc: 'Slow foe soul',
-           text: 'SUSIE glares... the enemy SOUL feels heavy!' },
   },
   ralsei: {
-    name: 'RALSEI', color: '#00ff80', hp: 140,
+    name: 'RALSEI', color: '#00ff80', hp: 140, level: 1, spare: { downed: true },
     desc: 'FLUFFY PRINCE OF DARK.\nHEALS AND SOOTHES.',
     fight: { id: 'ralsei_scarf', name: 'Scarf Whip', dmg: 22, dur: 420,
              text: 'RALSEI whips the scarf!' },
     spells: [
+      { id: 'ralsei_raction', name: 'R-Action', tp: 8, kind: 'mercy', mercy: 15,
+        text: 'RALSEI encourages the foe. (+MERCY)' },
       { id: 'heal', name: 'Heal Prayer', tp: 32, heal: 60, kind: 'heal',
         text: 'RALSEI prays... HP recovered!' },
-      { id: 'pacify', name: 'Pacify', tp: 16, kind: 'status', status: 'pacified',
-        text: 'RALSEI casts PACIFY! The enemy attack weakens!' },
+      { id: 'pacify', name: 'Pacify', tp: 16, kind: 'spareTired', scope: 'one',
+        text: 'RALSEI casts PACIFY!' },
+      { id: 'ralsei_revive', name: 'Revive Song', tp: 85, kind: 'revive', revive: 0.5,
+        text: 'RALSEI sings a REVIVE SONG!' },
     ],
     ult: { id: 'ralsei_ult', name: 'DREAM CHORUS', tp: 100, dmg: 36, dur: 560, kind: 'attack',
            heal: 50, text: 'RALSEI sings a DREAM CHORUS!!' },
-    act: { id: 'compliment', name: 'Compliment', desc: 'Distract with love',
-           text: 'RALSEI compliments you so sweetly it is distracting!' },
   },
   noelle: {
-    name: 'NOELLE', color: '#ffff00', hp: 130,
+    name: 'NOELLE', color: '#ffff00', hp: 130, level: 1, spare: { noKris: true },
     desc: 'FRAGILE ICE MAGE.\nTERRIFYING POTENTIAL.',
     fight: { id: 'noelle_snow', name: 'Snow Toss', dmg: 24, dur: 420,
              text: 'NOELLE tosses snow... sorry!' },
     spells: [
-      { id: 'noelle_ice', name: 'IceShock', tp: 40, dmg: 38, dur: 500, kind: 'attack',
-        text: 'NOELLE casts ICESHOCK!' },
-      { id: 'sleepmist', name: 'Sleep Mist', tp: 24, kind: 'status', status: 'drowsy',
-        text: 'NOELLE breathes SLEEP MIST... so sleepy...' },
+      { id: 'noelle_naction', name: 'N-Action', tp: 8, kind: 'mercy', mercy: 15,
+        text: 'NOELLE hesitates... (+MERCY)' },
+      { id: 'heal', name: 'Heal Prayer', tp: 32, heal: 30, kind: 'heal',
+        text: 'NOELLE prays... a little HP back.' },
+      { id: 'sleepmist', name: 'Sleep Mist', tp: 32, kind: 'spareTired', scope: 'all',
+        text: 'NOELLE breathes SLEEP MIST...' },
+      { id: 'noelle_ice', name: 'Ice Shock', tp: 8, dmg: 22, dur: 460, kind: 'attack',
+        text: 'NOELLE casts ICE SHOCK!' },
     ],
     ult: { id: 'snowgrave', name: 'SNOWGRAVE', tp: 100, dmg: 60, dur: 600, kind: 'attack',
-           text: 'NOELLE casts the forbidden SNOWGRAVE...' },
-    act: { id: 'nervouslaugh', name: 'NervousLaugh', desc: 'Rush foe timer',
-           text: 'NOELLE laughs nervously. The pressure is on!' },
+           snowgrave: true, text: 'NOELLE casts the forbidden SNOWGRAVE...' },
   },
   lancer: {
-    name: 'LANCER', color: '#4080ff', hp: 220,
+    name: 'LANCER', color: '#4080ff', hp: 220, level: 2, spare: {},
     desc: 'BAD GUY. HO HO HO.\nSPADES AND MISCHIEF.',
     fight: { id: 'lancer_spade', name: 'Spade Toss', dmg: 26, dur: 420,
              text: 'LANCER throws spades! Ho ho ho!' },
@@ -80,23 +97,25 @@ const CHARS = {
            text: 'LANCER giggles! Something feels backwards...' },
   },
   berdly: {
-    name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1,
+    name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1, level: 3, spare: { fullHp: true, easyMercy: true },
     desc: 'THE SMART ONE.\nHIGH PROJECTILE VARIETY.',
-    fight: { id: 'berdly_fight', name: 'Feather Toss', dmg: 26, dur: 420,
-             text: 'BERDLY flings feathers, smartly!' },
+    fight: { id: 'berdly_fight', name: 'Halberd', dmg: 26, dur: 420,
+             text: 'BERDLY swings his halberd!' },
     spells: [
-      { id: 'berdly_bolt', name: 'Blue Bolt', tp: 34, dmg: 30, dur: 480, kind: 'attack',
-        text: 'BERDLY strikes with BLUE BOLTS!' },
-      { id: 'berdly_books', name: 'Smart Rain', tp: 42, dmg: 30, dur: 480, kind: 'attack',
-        text: 'BERDLY rains down SMART bullets!' },
+      { id: 'berdly_baction', name: 'B-Action', tp: 8, kind: 'mercy', mercy: 15,
+        text: 'BERDLY monologues. (+MERCY)' },
+      { id: 'berdly_bolt', name: 'Winged Saviour', tp: 16, dmg: 24, dur: 460, kind: 'attack',
+        text: 'BERDLY summons the WINGED SAVIOUR!' },
+      { id: 'berdly_books', name: 'Halberdly', tp: 32, dmg: 32, dur: 480, kind: 'attack',
+        text: 'BERDLY strikes with HALBERDLY!' },
+      { id: 'berdly_papers', name: 'A++++', tp: 50, dmg: 34, dur: 480, kind: 'attack',
+        text: 'BERDLY grades you: A++++!' },
     ],
     ult: { id: 'berdly_ult', name: 'SMART RACE', tp: 100, dmg: 40, dur: 560, kind: 'attack',
            text: 'BERDLY goes ALL OUT!!' },
-    act: { id: 'taunt', name: 'Gloat', desc: 'Shrink foe box',
-           text: 'BERDLY gloats! Their box shrinks!' },
   },
   jevil: {
-    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true,
+    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: { never: true },
     desc: 'CHAOS, CHAOS!\nSECRET BOSS - 1000 HP, NO ITEMS.',
     fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 26, dur: 440,
              text: 'JEVIL flings spinning spades!' },
@@ -112,10 +131,12 @@ const CHARS = {
            text: 'JEVIL cackles! CHAOS, CHAOS!' },
   },
 };
-// party-cost + darkner defaults (used by party-size + darkness systems)
+// party-cost + darkner + level/spare defaults
 for (const id in CHARS) {
   if (CHARS[id].cost == null) CHARS[id].cost = 1;
   if (CHARS[id].darkner == null) CHARS[id].darkner = false;
+  if (CHARS[id].level == null) CHARS[id].level = 1;
+  if (CHARS[id].spare == null) CHARS[id].spare = {};
 }
 CHARS.lancer.cost = 2; CHARS.lancer.darkner = true;
 
@@ -320,7 +341,7 @@ function charDef(sel) {
 
   return {
     id: 'custom', custom: true, base: sel.base || 'kris', hue: sel.hue || 0,
-    name,
+    name, level: 1, spare: {},
     color: rotateHue(CHARS[sel.base || 'kris'].color, sel.hue || 0),
     hp: arch.hp, arch: sel.arch, atk, mag,
     desc: arch.name + ' - ATK ' + atk + ' / MAG ' + mag,
