@@ -530,39 +530,41 @@ PATTERNS.redbuster = {
 };
 
 // ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
-PATTERNS.sneo_heads = {   // Flying Heads: copies of his head launch at the soul in lanes
+PATTERNS.sneo_heads = {   // Flying Heads: destructible head copies launch at the soul in lanes
   dur: 440,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(34, tier)))   // a head streaks across from the right at the soul's lane
-      add({ ...bulletProps('sneohead'), x: box.x + box.w + 24, y: soul.y, vx: -(3.0 + rng() * 0.6), vy: 0, spin: 0.05, r: 9 });
-    if (every(f, rate(26, tier)))   // heads spit small word bullets as they cross
+    if (every(f, rate(34, tier)))   // a head streaks across; SHOOT it to destroy (else it continues)
+      add({ ...bulletProps('sneohead'), x: box.x + box.w + 24, y: soul.y, vx: -(2.8 + rng() * 0.5), vy: 0, spin: 0.05, r: 9, shootable: true, hp: 2 });
+    if (every(f, rate(26, tier)))   // small word bullets fall as they cross
       add({ ...bulletProps('sneosound'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 14, vx: 0, vy: 2.0, r: 6 });
   },
 };
-PATTERNS.sneo_heart = {   // Heart Attack: the chained heart swings across the top spraying diamonds
+PATTERNS.sneo_heart = {   // Heart Attack: a single shootable heart swings, spraying diamonds
   dur: 500,
   tick(a) {
     const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2 + box.w * 0.42 * Math.sin(0.03 * f), cy = box.y + 22;
-    if (every(f, rate(4, tier)))    // the heart itself (short-lived spawns trace its path = a hazard)
-      add({ ...bulletProps('sneowire'), x: cx, y: cy, vx: 0, vy: 0, life: 6, spin: 0.04, r: 11 });
-    if (every(f, rate(15, tier)))   // sprays a fan of diamond bullets downward
+    const amp = box.w * 0.42, cx0 = box.x + box.w / 2;
+    if (f === 0)   // ONE persistent chained heart - shoot it down to earn TP
+      add({ ...bulletProps('sneowire'), x: cx0, y: box.y + 22, vx: 0, vy: 0,
+            swing: { cx: cx0, amp, spd: 0.03 }, shootable: true, hp: 14, spin: 0.04, r: 12, life: 494 });
+    const cx = cx0 + amp * Math.sin(0.03 * f);
+    if (every(f, rate(15, tier)))   // sprays a fan of diamond bullets downward from its position
       for (let i = -1; i <= 1; i++)
-        add({ ...bulletProps('kdiamond'), x: cx, y: cy + 10, vx: i * 0.9, vy: 2.2 + Math.abs(i) * 0.3, spin: 0.1, r: 6 });
+        add({ ...bulletProps('kdiamond'), x: cx, y: box.y + 36, vx: i * 0.9, vy: 2.2 + Math.abs(i) * 0.3, spin: 0.1, r: 6 });
   },
 };
-PATTERNS.sneo_mail = {   // Spam Mail: towers of mail (and stray heads) drive in from the right
+PATTERNS.sneo_mail = {   // Spam Mail: destructible mail towers (and heads) drive in from the right
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
     if (every(f, rate(38, tier))) {
       const ty = box.y + 8 + rng() * (box.h - 44);
       for (let j = 0; j < 3; j++)
-        add({ ...bulletProps('sneomail'), x: box.x + box.w + 20 + j * 16, y: ty + j * 12, vx: -(2.4 + rng() * 0.4), vy: 0, spin: 0.03, r: 7 });
+        add({ ...bulletProps('sneomail'), x: box.x + box.w + 20 + j * 16, y: ty + j * 12, vx: -(2.4 + rng() * 0.4), vy: 0, spin: 0.03, r: 7, shootable: true, hp: 1 });
     }
     if (every(f, rate(24, tier)))
-      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -(2.0 + rng()), vy: 0, spin: 0.05, r: 8 });
+      add({ ...bulletProps('sneohead'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -(2.0 + rng()), vy: 0, spin: 0.05, r: 8, shootable: true, hp: 2 });
   },
 };
 PATTERNS.sneo_words = {   // Word Bullets: strings of letters weave across in a sine wave

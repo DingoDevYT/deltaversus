@@ -595,6 +595,10 @@ Battle.startDodge = function () {
     B.say('* DODGE!');
   } else { B.sim = null; B.dodgeT = 0; }
 
+  // YELLOW SOUL: dodging a boss with soulYellow lets you shoot RIGHT (toward them)
+  B.soulYellow = oppAtkers.some(a => a.def.soulYellow);
+  B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false;
+
   // mirror = combined MY attackers (spectator box)
   const myAtkers = attackersOf(B.myTeam, B.myPacified);
   if (myAtkers.length) {
@@ -653,6 +657,22 @@ Battle.updDodge = function () {
   B.soul.y = Math.max(bx.y + 4, Math.min(bx.y + bx.h - 4, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
+  // ---- YELLOW SOUL: fire shots to the RIGHT (toward the boss); hold to charge a BIG SHOT ----
+  if (B.soulYellow) {
+    const ok = Input.down.ok;
+    if (B.shootCd > 0) B.shootCd--;
+    if (ok) {
+      B.charge = Math.min(70, B.charge + 1);
+      if (B.shootCd <= 0) { B.shots.push({ x: B.soul.x + 6, y: B.soul.y, vx: 8, r: 4, big: false }); B.shootCd = 11; Snd.play('shoot', 0.35); }
+    } else {
+      if (B._okPrev && B.charge >= 45) { B.shots.push({ x: B.soul.x + 6, y: B.soul.y, vx: 9, r: 13, big: true, pierce: 8 }); Snd.play('shoot', 0.7); }
+      B.charge = 0;
+    }
+    B._okPrev = ok;
+    for (const s of B.shots) s.x += s.vx;
+    B.shots = B.shots.filter(s => !s.dead && s.x < bx.x + bx.w + 60);
+  }
+
   B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); });
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
@@ -665,8 +685,21 @@ Battle.updDodge = function () {
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
     if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
+    if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
+    // yellow-soul shots destroy shootable boss bullets (heads / mail / heart)
+    if (B.soulYellow && b.shootable) {
+      for (const s of B.shots) {
+        if (Math.hypot(b.x - s.x, b.y - s.y) < (b.r || 8) + s.r) {
+          b.hp = (b.hp || 1) - (s.big ? 4 : 1);
+          if (!s.big || --s.pierce <= 0) s.dead = true;
+          if (b.hp <= 0) { b.dead = true; B.myTP = Math.min(100, B.myTP + 2); Snd.play('graze', 0.3); }
+          break;
+        }
+      }
+      if (b.dead) continue;
+    }
     if (b.burst && b.t >= b.burst) {
       b.dead = true;
       const n = b.burstN || 8, bsp = b.burstSpeed || 2.2;
@@ -722,6 +755,7 @@ Battle.tickMirror = function () {
       if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
       b.x += b.vx; b.y += b.vy;
       if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
+      if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
       if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
       if (b.burst && b.t >= b.burst) {
@@ -960,10 +994,23 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.restore();
   }
   for (const b of B.bullets) drawBullet(ctx, b, b.x, b.y, 1);
+  // yellow-soul player shots + charge glow
+  if (B.soulYellow) {
+    for (const s of B.shots) {
+      ctx.fillStyle = s.big ? '#ffea00' : '#fff36b';
+      if (s.big) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
+      else ctx.fillRect(s.x - 5, s.y - 2, 10, 4);
+    }
+    if (B.charge >= 45) {   // charged & ready: pulsing ring around the soul
+      ctx.strokeStyle = 'rgba(255,234,0,' + (0.5 + 0.4 * Math.sin(B.anim.f * 0.4)) + ')';
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B.soul.x, B.soul.y, 11, 0, 7); ctx.stroke();
+    }
+  }
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
-  if (!blink) drawSpr(ctx, A.ui('soul'), B.soul.x, B.soul.y, { scale: 1 });
+  if (!blink) drawSpr(ctx, B.soulYellow ? tintedSoul('#ffe100') : A.ui('soul'), B.soul.x, B.soul.y, { scale: 1 });
   if (B.grazeFx) { ctx.strokeStyle = 'rgba(255,255,150,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B.grazeFx.x, B.grazeFx.y, 14 - B.grazeFx.t, 0, 7); ctx.stroke(); }
   ctx.restore();
+  if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - [Z] SHOOT / HOLD = BIG SHOT', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.fxOnMe) {
     const tags = [];
     if (B.fxOnMe.boxScale) tags.push('CRAMPED');

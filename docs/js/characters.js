@@ -130,6 +130,7 @@ const CHARS = {
   },
   spamton: {
     name: 'SPAMTON NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: { never: true },
+    soulYellow: true,   // dodging his attacks uses the yellow SOUL (shoots right)
     desc: '[[BIG SHOT]] SECRET BOSS.\n1200 HP - NO ITEMS.',
     fight: { id: 'sneo_heads', name: 'Flying Heads', dmg: 26, dur: 440,
              text: 'SPAMTON NEO launches his HEADS!' },
