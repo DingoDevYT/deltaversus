@@ -155,7 +155,7 @@ Battle.update = function () {
 
 // ---------- select (per living member) ----------
 const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
-const CHARGE_GAIN = 34;   // darkness per CHARGE turn (~3 charges to full)
+const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
 // darkners swap ACT for CHARGE and pay a discounted TP rate on spells
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
 function menuFor(mem) { return isDarkner(mem) ? ['fight', 'magic', 'charge', 'item', 'defend'] : MENU; }
@@ -179,14 +179,19 @@ Battle.startSelect = function (fresh) {
 Battle.curMember = function () { return Battle.myTeam[Battle.cmdOrder[Battle.cmdPos]]; };
 Battle.livingEnemies = function () { return Battle.oppTeam.map((m, i) => i).filter(i => !Battle.oppTeam[i].downed); };
 Battle.canUseItems = function () { return !Battle.myTeam.some(m => m.def.secretBoss); };
-function actNeedsTarget(cmd, def, move) {
-  if (cmd === 'fight' || cmd === 'act') return true;
+function isHealMove(d) { return !!(d && (d.kind === 'heal' || (d.kind == null && d.heal))); }
+// which team an action targets: 'enemy' (attacks/act), 'ally' (items + heal
+// spells - can be aimed at any party member), or null (defend/charge/self).
+function targetSide(cmd, def, move) {
+  if (cmd === 'fight' || cmd === 'act') return 'enemy';
+  if (cmd === 'item') return 'ally';
   if (cmd === 'magic') {
     const d = move === def.ult.id ? def.ult : def.spells.find(s => s.id === move);
-    return !!(d && d.kind !== 'heal' && !(d.kind == null && d.heal));   // attacks + status target the enemy
+    return isHealMove(d) ? 'ally' : 'enemy';
   }
-  return false;
+  return null;
 }
+function actNeedsTarget(cmd, def, move) { return targetSide(cmd, def, move) != null; }
 
 Battle.updSelect = function () {
   const B = Battle;
@@ -233,7 +238,7 @@ Battle.subOptions = function () {
       const cost = spellCost(mem, s);
       const gated = s.darkReq && mem.dark < s.darkReq;
       return { id: s.id, label: s.name, ult,
-               cost: gated ? '🌑' + s.darkReq : cost + '%',
+               cost: gated ? '🌑x' + Math.ceil(s.darkReq / CHARGE_GAIN) : cost + '%',
                disabled: gated || B.tpAvail() < cost };
     };
     const list = c.spells.map(s => opt(s, false));
@@ -254,14 +259,23 @@ Battle.subOptions = function () {
 // more than one living enemy; otherwise commit immediately.
 Battle.choose = function (cmd, move) {
   const B = Battle, c = B.curMember().def;
-  const enemies = B.livingEnemies();
-  if (actNeedsTarget(cmd, c, move) && enemies.length > 1) {
-    B.pendingCmd = { cmd, move }; B.targetList = enemies; B.targetIdx = 0;
-    B.submenu = null; B.targeting = true;
-    B.say('* Choose a target.');
+  const side = targetSide(cmd, c, move);
+  if (side) {
+    const cand = side === 'ally'
+      ? B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed)
+      : B.livingEnemies();
+    if (cand.length > 1) {
+      B.pendingCmd = { cmd, move, side }; B.targetList = cand; B.targetIdx = 0;
+      B.targetSideCur = side;
+      if (side === 'ally') { const k = cand.indexOf(B.cmdOrder[B.cmdPos]); if (k >= 0) B.targetIdx = k; }
+      B.submenu = null; B.targeting = true;
+      B.say(side === 'ally' ? '* Use it on whom?' : '* Choose a target.');
+      return;
+    }
+    B.commitChoice(cmd, move, cand.length ? cand[0] : 0);
     return;
   }
-  B.commitChoice(cmd, move, enemies.length ? enemies[0] : 0);
+  B.commitChoice(cmd, move, 0);
 };
 
 Battle.updTargeting = function () {
@@ -279,7 +293,7 @@ Battle.updTargeting = function () {
 
 Battle.commitChoice = function (cmd, move, target) {
   const B = Battle, mem = B.curMember(), c = mem.def;
-  const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target };
+  const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target, tside: targetSide(cmd, c, move) };
   if (cmd === 'magic') { const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move); if (d) B.tpSpent += spellCost(mem, d); }
   else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
   else if (cmd === 'defend') B.tpSel += 16;   // instant, visible TP gain
@@ -433,10 +447,12 @@ Battle.startDodge = function () {
     if (a.cmd === 'item') {
       const it = ITEMS[a.itemId];
       if (it) {
-        m.hp = Math.min(m.max, m.hp + (it.heal || 0));
+        const tgt = (a.tside === 'ally' && B.myTeam[a.target] && !B.myTeam[a.target].downed) ? B.myTeam[a.target] : m;
+        tgt.hp = Math.min(tgt.max, tgt.hp + (it.heal || 0));
         B.myTP = Math.min(100, B.myTP + (it.tp || 0));
         Snd.play('cure');
-        B.dmgPops.push({ x: 110, y: 250, txt: '+' + it.heal, t: 0, color: '#2f2' });
+        const ti = B.myTeam.indexOf(tgt);
+        if (it.heal) B.dmgPops.push({ x: 96, y: teamGroundY(ti, B.myTeam.length) - 30, txt: '+' + it.heal, t: 0, color: '#2f2' });
       }
     }
     m.pose = poseForAction(a); m.poseT = 0;
@@ -603,9 +619,10 @@ Battle.endDodge = function () {
     const a = m.action; if (!a || a.cmd !== 'magic') continue;
     const d = moveDefOf(m.def, a) || (a.move === m.def.ult.id ? m.def.ult : m.def.spells.find(s => s.id === a.move));
     if (!d) continue;
-    if (d.kind === 'heal' || d.heal) {
-      m.hp = Math.min(m.max, m.hp + (d.heal || 0));
-      if (d.heal) { Snd.play('cure'); B.dmgPops.push({ x: 110, y: 250, txt: '+' + d.heal, t: 0, color: '#2f2' }); }
+    if (isHealMove(d)) {
+      const tgt = (a.tside === 'ally' && B.myTeam[a.target] && !B.myTeam[a.target].downed) ? B.myTeam[a.target] : m;
+      tgt.hp = Math.min(tgt.max, tgt.hp + (d.heal || 0));
+      if (d.heal) { Snd.play('cure'); const ti = B.myTeam.indexOf(tgt); B.dmgPops.push({ x: 96, y: teamGroundY(ti, B.myTeam.length) - 30, txt: '+' + d.heal, t: 0, color: '#2f2' }); }
     }
     if (d.kind === 'status') { Snd.play(d.status === 'pacified' ? 'pacify' : 'spellcast'); if (d.status === 'pacified') B.pacifyOppNext = true; B.statusOnOpp = d.status; }
   }
@@ -889,9 +906,11 @@ Battle.renderHud = function (ctx) {
 // target-select overlay: shows enemy HP (Deltarune shows it here, not on the bar)
 Battle.renderTargeting = function (ctx) {
   const B = Battle;
-  drawText(ctx, 'main', B.curMember().def.name + ' -> CHOOSE TARGET', 320, 150, { color: '#ff8000', align: 'center' });
+  const ally = B.targetSideCur === 'ally';
+  const team = ally ? B.myTeam : B.oppTeam;
+  drawText(ctx, 'main', B.curMember().def.name + (ally ? ' -> HELP WHO?' : ' -> CHOOSE TARGET'), 320, 150, { color: ally ? '#2f2' : '#ff8000', align: 'center' });
   B.targetList.forEach((ei, k) => {
-    const m = B.oppTeam[ei], def = m.def, sel = k === B.targetIdx;
+    const m = team[ei], def = m.def, sel = k === B.targetIdx;
     const y = 176 + k * 30;
     if (sel) drawSpr(ctx, A.ui('soul'), 190, y + 7, { scale: 1 });
     let head = A.ui('head_' + def.base + (def.hue ? '' : '')); if (def.hue) head = A.hued(head, def.hue);

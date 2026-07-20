@@ -166,8 +166,8 @@ const PracticeAI = {
         if (m.hp < m.max * 0.35 && T.items.length && r < 0.5 && !m.def.secretBoss) {
           cmd = 'item'; move = 0;
           const it = ITEMS[T.items.shift()]; if (it) m.hp = Math.min(m.max, m.hp + (it.heal || 0));
-        } else if (dk && m.dark < 68 && r < 0.3) {   // darkner charges up
-          cmd = 'charge'; m.dark = Math.min(100, m.dark + 34); T.tp = Math.min(100, T.tp + 8);
+        } else if (dk && m.dark < 85 && r < 0.4) {   // darkner charges up (need ~5 to unlock ult)
+          cmd = 'charge'; m.dark = Math.min(100, m.dark + 17); T.tp = Math.min(100, T.tp + 8);
         } else if (r < 0.12) { cmd = 'defend'; T.tp = Math.min(100, T.tp + 16); }
         else {
           const afford = m.def.spells.filter(s => disc(s) <= T.tp && (!s.darkReq || m.dark >= s.darkReq));
