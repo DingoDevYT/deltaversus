@@ -600,77 +600,96 @@ PATTERNS.sneo_bigshot = {   // BIG SHOT: the giant arm-cannon fires a spreading 
   },
 };
 
-// ---------- THE ROARING KNIGHT (Ch3 secret boss - real moveset) ----------
-PATTERNS.knight_stars = {   // Star Barrage (EarthBound-style): stars converge from every edge
+// ---------- THE ROARING KNIGHT (Ch3 secret boss) ----------
+// Rebuilt from gameplay footage (ref/knight/attack_guide.mp4): frame-mapped
+// at 82-90s, 114-120s, 122-128s, 164-170s, 180-188s, 222-230s, 240-248s.
+PATTERNS.knight_stars = {   // Shard Burst: star clusters detonate into triangle sprays ("find the gaps")
   dur: 460,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(10, tier))) {
-      const side = Math.floor(rng() * 4); let x, y;
-      if (side === 0) { x = box.x - 20; y = box.y + rng() * box.h; }
-      else if (side === 1) { x = box.x + box.w + 20; y = box.y + rng() * box.h; }
-      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 20; }
-      else { x = box.x + rng() * box.w; y = box.y + box.h + 20; }
-      const ang = Math.atan2(soul.y - y, soul.x - x) + (rng() - 0.5) * 0.4;
-      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(ang) * 2.6, vy: Math.sin(ang) * 2.6, spin: 0.12, r: 8 });
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(34, tier))) {   // a star drifts in, then bursts into a radial spray of shards
+      const x = box.x + 20 + rng() * (box.w - 40), y = box.y + 20 + rng() * (box.h - 40);
+      add({ ...bulletProps('knightstar'), x, y: box.y - 20, vx: (x - (box.x + box.w / 2)) * 0.004, vy: 1.8,
+            spin: 0.1, r: 8, burst: 34, burstN: 8, burstSpeed: 2.2 });
     }
+    // late phase (per footage): remaining shards turn hostile and home to your location
+    if (f > 300 && every(f, rate(30, tier)))
+      add({ ...bulletProps('knighttri'), x: box.x + rng() * box.w, y: box.y - 16, vx: 0, vy: 1.2,
+            homing: 0.05, maxv: 2.6, spin: 0.15, r: 6 });
   },
 };
-PATTERNS.knight_corridor = {   // Sword Corridor: sword walls with a wavy roller-coaster safe path
+PATTERNS.knight_corridor = {   // Sword Corridor: sword columns march left, gap to follow; radial burst finale
   dur: 500,
   tick(a) {
-    const { f, box, tier, add } = a;
-    if (every(f, rate(11, tier))) {
-      const midY = box.y + box.h / 2 + Math.sin(f * 0.06) * box.h * 0.32, gapH = 46;
-      for (let y = box.y + 4; y < box.y + box.h - 4; y += 22) {
-        if (y > midY - gapH / 2 && y < midY + gapH / 2) continue;   // the corridor gap
-        add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y, vx: -3.0, vy: 0, rot: -Math.PI / 2, r: 8 });
+    const { f, box, tier, add, soul, rng } = a;
+    if (f < 380 && every(f, rate(13, tier))) {
+      const midY = box.y + box.h / 2 + Math.sin(f * 0.05) * box.h * 0.30, gapH = 50;
+      for (let y = box.y + 4; y < box.y + box.h - 4; y += 20) {
+        if (y > midY - gapH / 2 && y < midY + gapH / 2) continue;   // the traveling gap
+        add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y, vx: -2.6, vy: 0, rot: -Math.PI / 2, r: 8 });
+      }
+    }
+    if (f >= 400 && every(f, rate(46, tier))) {   // finale: angled swords burst in from all directions
+      for (let k = 0; k < 8; k++) {
+        const th = k * Math.PI / 4 + rng() * 0.3, R = Math.max(box.w, box.h) * 0.75;
+        const x = box.x + box.w / 2 + Math.cos(th) * R, y = box.y + box.h / 2 + Math.sin(th) * R;
+        const ang = Math.atan2(soul.y - y, soul.x - x);
+        add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.4, vy: Math.sin(ang) * 3.4, rot: ang + Math.PI / 2, r: 8 });
       }
     }
   },
 };
-PATTERNS.knight_circle = {   // Circle of Swords: a ring coils round the soul then homes in
+PATTERNS.knight_circle = {   // Spinning Swords: ~10 swords orbit the box edge, lunging at you one by one
   dur: 500,
   tick(a) {
     const { f, box, tier, add, soul } = a;
-    if (every(f, rate(52, tier))) {
-      const N = 10, R = 72;
-      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N + f * 0.02;
-        add({ ...bulletProps('knightsword'), x: soul.x + Math.cos(th) * R, y: soul.y + Math.sin(th) * R,
-              vx: 0, vy: 0, homing: 0.05, maxv: 2.4, spin: 0.12, rot: th + Math.PI, r: 7 }); }
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.min(box.w, box.h) * 0.52;
+    if (f === 0)   // the persistent orbiting ring (10 spinning swords)
+      for (let k = 0; k < 10; k++)
+        add({ ...bulletProps('knightsword'), x: cx, y: cy, vx: 0, vy: 0, spin: 0.25, r: 7, life: 470,
+              orbit: { cx, cy, R, w: 0.016, ang: k * Math.PI / 5 } });
+    if (f > 40 && every(f, rate(38, tier))) {   // one sword peels off and lunges at the soul
+      const th = f * 0.016;
+      const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+      const ang = Math.atan2(soul.y - y, soul.x - x);
+      add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.0, vy: Math.sin(ang) * 3.0, rot: ang + Math.PI / 2, spin: 0, r: 7 });
     }
   },
 };
-PATTERNS.knight_crescents = {   // Crescent Slash: fast crescent blades sweep in from the sides
+PATTERNS.knight_slash = {   // Red Slash: giant diagonal slash-waves sweep the box, alternating diagonals
   dur: 480,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(20, tier))) {
-      const left = rng() < 0.5;
-      for (let i = 0; i < 3; i++)
-        add({ ...bulletProps('knightcross'), x: left ? box.x - 20 : box.x + box.w + 20, y: box.y + 20 + rng() * (box.h - 40),
-              vx: (left ? 1 : -1) * (3.0 + rng() * 0.5), vy: (rng() - 0.5) * 0.6, spin: left ? 0.2 : -0.2, r: 8 });
+    const { f, box, tier, add } = a;
+    const period = rate(90, tier);
+    if (f % period === 0) {
+      const k = Math.floor(f / period), down = (k % 2) === 0;   // alternate the diagonal
+      // a wall of red slash-energy along one diagonal, sweeping perpendicular across the box
+      const n = 12;
+      for (let i = 0; i < n; i++) {
+        const t = i / (n - 1);
+        const x = box.x + t * box.w, y = down ? box.y + t * box.h : box.y + (1 - t) * box.h;
+        const perp = down ? { x: 0.707, y: -0.707 } : { x: 0.707, y: 0.707 };
+        add({ color: '#f33', r: 6, x: x - perp.x * box.w * 0.7, y: y - perp.y * box.w * 0.7,
+              vx: perp.x * 3.4, vy: perp.y * 3.4 });
+      }
     }
   },
 };
-PATTERNS.knight_roar = {   // ROARING SLASH: converging stars + homing swords + crescent sweeps
+PATTERNS.knight_roar = {   // FINAL ATTACK: shards converge on the Knight, then spiral back out
   dur: 620,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(16, tier))) {
-      const side = Math.floor(rng() * 4); let x, y;
-      if (side === 0) { x = box.x - 20; y = box.y + rng() * box.h; }
-      else if (side === 1) { x = box.x + box.w + 20; y = box.y + rng() * box.h; }
-      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 20; }
-      else { x = box.x + rng() * box.w; y = box.y + box.h + 20; }
-      const ang = Math.atan2(soul.y - y, soul.x - x);
-      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(ang) * 2.8, vy: Math.sin(ang) * 2.8, spin: 0.12, r: 8 });
+    const { f, rng, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f < 260 && every(f, rate(9, tier))) {   // phase 1: stars converge from outside toward the centre
+      const th = rng() * 6.28, R = Math.max(box.w, box.h) * 0.9;
+      const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+      add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.012, vy: (cy - y) * 0.012, spin: 0.12, r: 8 });
     }
-    if (every(f, rate(40, tier)))
-      add({ ...bulletProps('knightsword'), x: box.x + box.w + 20, y: box.y + rng() * box.h, vx: -2.0, vy: 0, homing: 0.04, maxv: 3.0, spin: 0.1, r: 8 });
-    if (every(f, rate(72, tier)))
-      for (let i = 0; i < 4; i++)
-        add({ ...bulletProps('knightcross'), x: box.x - 20, y: box.y + 30 + i * (box.h - 60) / 3, vx: 3.2, vy: 0, spin: 0.2, r: 8 });
+    if (f >= 280 && every(f, rate(7, tier))) {   // phase 2: spinning spiral outward from the centre
+      const th = f * 0.19;
+      add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.3, vy: Math.sin(th) * 2.3, spin: 0.12, r: 7 });
+      add({ ...bulletProps('knighttri'), x: cx, y: cy, vx: Math.cos(th + 3.14) * 1.7, vy: Math.sin(th + 3.14) * 1.7, spin: 0.15, r: 6 });
+    }
   },
 };
 

@@ -149,17 +149,17 @@ const CHARS = {
     name: 'ROARING KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
     dscale: 0.82, bob: true, afterimage: 12,   // hovers + trails ghost afterimages
     desc: 'THE ROARING KNIGHT.\nFINAL SECRET BOSS - 1500 HP.',
-    fight: { id: 'knight_stars', name: 'Star Barrage', dmg: 28, dur: 460,
-             text: 'THE KNIGHT rains down STARS!' },
+    fight: { id: 'knight_stars', name: 'Shard Burst', dmg: 28, dur: 460,
+             text: 'THE KNIGHT detonates SHARDS!' },
     spells: [
       { id: 'knight_corridor', name: 'Sword Corridor', tp: 38, dmg: 30, dur: 500, kind: 'attack',
         text: 'THE KNIGHT opens a SWORD CORRIDOR!' },
-      { id: 'knight_circle', name: 'Circle of Swords', tp: 46, dmg: 34, dur: 500, kind: 'attack',
+      { id: 'knight_circle', name: 'Spinning Swords', tp: 46, dmg: 34, dur: 500, kind: 'attack',
         text: 'THE KNIGHT coils SWORDS around you!' },
-      { id: 'knight_crescents', name: 'Crescent Slash', tp: 55, dmg: 38, dur: 480, kind: 'attack',
-        text: 'THE KNIGHT slashes CRESCENTS!' },
+      { id: 'knight_slash', name: 'Red Slash', tp: 55, dmg: 38, dur: 480, kind: 'attack',
+        text: 'THE KNIGHT carves RED SLASHES!' },
     ],
-    ult: { id: 'knight_roar', name: 'ROARING SLASH', tp: 100, dmg: 52, dur: 620, kind: 'attack',
+    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 52, dur: 620, kind: 'attack',
            text: 'THE KNIGHT lets out a ROAR!!' },
   },
 };
