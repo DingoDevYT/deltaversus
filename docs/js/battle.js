@@ -896,7 +896,7 @@ function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha, scale) {
   }
   return done;
 }
-function teamGroundY(i, n) { return 250 + (i - (n - 1) / 2) * 62; }
+function teamGroundY(i, n) { return 214 + (i - (n - 1) / 2) * 58; }
 
 Battle.renderChars = function (ctx) {
   const B = Battle;
@@ -1011,7 +1011,9 @@ Battle.renderMirror = function (ctx) {
 
 // --------- bottom UI: party info panels (HP/name) + a black dialogue box that
 // holds text, command buttons, option grids and target lists (Deltarune-style).
-const PANEL_Y = 338, DBOX = { x: 24, y: 386, w: 592, h: 88 };
+const PANEL_Y = 308, PANEL_H = 34, BTN_Y = 346;
+const DBOX = { x: 20, y: 404, w: 600, h: 74 };
+const BTN_LABEL = { fight: 'FIGHT', magic: 'MAGIC', act: 'ACT', item: 'ITEM', spare: 'SPARE', defend: 'DEFEND', charge: 'CHARGE' };
 
 function drawPartyPanel(ctx, m, px, py, w, active) {
   ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, 42);
@@ -1048,118 +1050,128 @@ Battle.renderHud = function (ctx) {
                  : B.phase === 'timing' ? ((B.bars.find(x => !x.done && x.started) || B.bars.find(x => !x.done) || {}).mi) : -1;
   B.myTeam.forEach((m, i) => drawPartyPanel(ctx, m, startX + i * (pw + 8), PANEL_Y, pw, i === activeMi));
 
+  // command buttons sit in a box directly UNDER the active member's panel
+  if (B.phase === 'select' && activeMi >= 0)
+    Battle.renderCommandButtons(ctx, B.myTeam[activeMi], startX + activeMi * (pw + 8), BTN_Y, pw);
+
   // shared TP bar + buffs + turn/timer
   const dispTP = B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP;
   ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 70, 16, 190);
   const tpH = Math.round(190 * dispTP / 100);
   ctx.fillStyle = '#ff8000'; ctx.fillRect(38, 70 + 190 - tpH, 16, tpH);
   if (tpH > 0 && tpH < 190) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 70 + 190 - tpH, 16, 3); }
-  drawText(ctx, 'main', 'TP', 40, 54, { color: '#ff8000', align: 'center' });
+  drawText(ctx, 'main', 'TP', 40, 52, { color: '#ff8000', align: 'center' });
   drawText(ctx, 'main', '' + dispTP, 46, 264, { color: '#ff8000', align: 'center' });
-  let by = 288;
-  if (B.myGuardBuff > 0) { drawText(ctx, 'main', 'GUARD ' + B.myGuardBuff, 30, by, { color: '#6cf', scale: 0.85 }); by += 16; }
-  if (B.myPowerBuff > 0) { drawText(ctx, 'main', 'POWER ' + B.myPowerBuff, 30, by, { color: '#f84', scale: 0.85 }); }
-  if (B.phase === 'select') { const secs = Math.ceil(B.timer / 60); drawText(ctx, 'big', '' + secs, 320, 18, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 }); }
-  drawText(ctx, 'main', 'TURN ' + B.turn, 30, 18, { color: '#666' });
+  let by = 286;
+  if (B.myGuardBuff > 0) { drawText(ctx, 'main', 'GUARD ' + B.myGuardBuff, 26, by, { color: '#6cf' }); by += 18; }
+  if (B.myPowerBuff > 0) { drawText(ctx, 'main', 'POWER ' + B.myPowerBuff, 26, by, { color: '#f84' }); }
+  if (B.phase === 'select') { const secs = Math.ceil(B.timer / 60); drawText(ctx, 'big', '' + secs, 320, 16, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 }); }
+  drawText(ctx, 'main', 'TURN ' + B.turn, 26, 16, { color: '#666' });
 
-  // bottom dialogue box + state-driven content
+  // bottom dialogue box + state-driven content (full-size font, no shrinking)
   const d = DBOX;
   ctx.fillStyle = '#000'; ctx.fillRect(d.x, d.y, d.w, d.h);
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, d.y + 1, d.w - 2, d.h - 2);
-  if (B.targeting) Battle.renderTargetList(ctx, d);
+  if (B.phase === 'timing') { /* renderTiming draws the bars over this box */ }
+  else if (B.targeting) Battle.renderTargetList(ctx, d);
   else if (B.submenu) Battle.renderOptionGrid(ctx, d);
-  else if (B.phase === 'select') Battle.renderCommandButtons(ctx, d);
-  else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 14, d.y + 14 + i * 20, { color: '#fff' }));
+  else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 16, d.y + 12 + i * 20, { color: '#fff' }));
 };
 Battle.renderMsg = function () {};   // text now lives inside the dialogue box
 
-Battle.renderCommandButtons = function (ctx, d) {
-  const B = Battle, mem = B.curMember(); if (!mem) return;
-  drawText(ctx, 'main', '* ' + mem.def.name + "'S TURN", d.x + 14, d.y + 8, { color: mem.def.color, scale: 0.9 });
-  const names = menuFor(mem), bw = 42, gap = 16;
-  const total = names.length * bw + (names.length - 1) * gap, x0 = d.x + (d.w - total) / 2, cy = d.y + d.h / 2 + 8;
-  for (let k = 0; k < names.length; k++)
-    drawSpr(ctx, A.ui('btn_' + names[k] + (B.menuIdx === k ? '_sel' : '')), x0 + k * (bw + gap) + bw / 2, cy, { scale: bw / 32 });
+// command buttons under the active panel: icons TOP-aligned (so the shorter
+// SPARE/CHARGE icons line up), the selected one's name label drawn below the box.
+Battle.renderCommandButtons = function (ctx, mem, px, py, w) {
+  const B = Battle, names = menuFor(mem);
+  ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, 38);
+  ctx.strokeStyle = mem.def.color; ctx.lineWidth = 2; ctx.strokeRect(px + 1, py + 1, w - 2, 36);
+  const step = (w - 8) / names.length, top = py + 3;
+  for (let k = 0; k < names.length; k++) {
+    const sel = B.menuIdx === k, name = names[k];
+    const img = A.ui('btn_' + name + (sel ? '_sel' : ''));
+    const cx = px + 4 + step * k + step / 2;
+    if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1 });   // top-aligned, native size
+    if (sel) drawText(ctx, 'main', BTN_LABEL[name] || name.toUpperCase(), cx, py + 42, { color: '#ff0', align: 'center' });
+  }
 };
 
-// 3-column layout: two option columns (aligned with the party lines) + info box.
+// 3-column layout at full font: two option columns (row-major) + info column.
 Battle.renderOptionGrid = function (ctx, d) {
   const B = Battle;
   const opts = B.subOptions();
   const perPage = 6, page = Math.floor(B.subIdx / perPage), pages = Math.ceil(opts.length / perPage);
-  const optW = Math.round(d.w * 0.60), infoX = d.x + optW + 10, infoW = d.w - optW - 20;
-  drawText(ctx, 'main', B.submenu.toUpperCase(), d.x + 12, d.y + 6, { color: '#ff8000', scale: 0.8 });
-  if (pages > 1) drawText(ctx, 'main', '< PAGE ' + (page + 1) + '/' + pages + ' >', d.x + optW / 2, d.y + 6, { color: '#888', align: 'center', scale: 0.75 });
-  const colX = [d.x + 20, d.x + optW / 2 + 6], rowY = [d.y + 26, d.y + 47, d.y + 68];
+  const optW = Math.round(d.w * 0.56), infoX = d.x + optW + 14, infoW = d.w - optW - 28;
+  const colX = [d.x + 14, d.x + optW / 2 + 6], rowY = [d.y + 10, d.y + 32, d.y + 54];
   for (let j = 0; j < perPage; j++) {
     const gi = page * perPage + j; if (gi >= opts.length) break;
     const o = opts[gi], sel = gi === B.subIdx;
     const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
-    const color = o.disabled ? '#555' : o.ult ? '#f6a' : sel ? '#ff0' : '#fff';
-    drawText(ctx, 'main', (sel ? '>' : ' ') + o.label, x, y, { color, scale: 0.9 });
+    const color = o.disabled ? '#666' : o.ult ? '#f6a' : sel ? '#ff0' : '#fff';
+    drawText(ctx, 'main', (sel ? '> ' : '  ') + o.label, x, y, { color });
   }
-  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 8, d.y + 6); ctx.lineTo(infoX - 8, d.y + d.h - 6); ctx.stroke();
+  if (pages > 1) drawText(ctx, 'main', 'PG ' + (page + 1) + '/' + pages, d.x + optW - 56, d.y + d.h - 18, { color: '#888' });
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 10, d.y + 8); ctx.lineTo(infoX - 10, d.y + d.h - 8); ctx.stroke();
   const cur = opts[B.subIdx];
   if (cur) {
-    if (cur.ally) { const h = A.ui('head_' + cur.ally); if (h) { drawText(ctx, 'main', 'NEEDS', infoX, d.y + 12, { color: '#8cf', scale: 0.75 }); drawSpr(ctx, h, infoX + 44, d.y + 18, { scale: 0.7 }); } }
-    wrapText(ctx, cur.info || '', infoX, d.y + (cur.ally ? 32 : 14), infoW, 11, '#cfcfcf', 0.72);
-    const bottom = cur.item ? 'ITEM' : (cur.cost ? 'COST ' + cur.cost : 'FREE');
-    drawText(ctx, 'main', bottom, infoX, d.y + d.h - 14, { color: '#ff8000', scale: 0.85 });
+    let ty = d.y + 10;
+    if (cur.ally) { const h = A.ui('head_' + cur.ally); if (h) drawSpr(ctx, h, infoX + 9, d.y + 16, { scale: 0.8 }); drawText(ctx, 'main', '+ ' + cur.ally.toUpperCase(), infoX + 22, d.y + 10, { color: '#8cf' }); ty = d.y + 32; }
+    wrapText(ctx, cur.info || '', infoX, ty, infoW, 18, '#cfcfcf', 1);
+    const bottom = cur.item ? '' : (cur.cost ? cur.cost : 'FREE');
+    if (bottom) drawText(ctx, 'main', bottom, d.x + d.w - 14, d.y + d.h - 18, { color: '#ff8000', align: 'right' });
   }
 };
 
 Battle.renderTargetList = function (ctx, d) {
   const B = Battle, ally = B.targetSideCur === 'ally', team = ally ? B.myTeam : B.oppTeam;
-  const optW = Math.round(d.w * 0.60), infoX = d.x + optW + 10, infoW = d.w - optW - 20;
-  drawText(ctx, 'main', ally ? 'HELP WHO?' : 'TARGET WHO?', d.x + 12, d.y + 6, { color: ally ? '#2f2' : '#ff8000', scale: 0.8 });
+  const optW = Math.round(d.w * 0.56), infoX = d.x + optW + 14, infoW = d.w - optW - 28;
+  const colX = [d.x + 14, d.x + optW / 2 + 6], rowY = [d.y + 10, d.y + 32, d.y + 54];
   const perPage = 6, page = Math.floor(B.targetIdx / perPage), pages = Math.ceil(B.targetList.length / perPage);
-  if (pages > 1) drawText(ctx, 'main', '< PAGE ' + (page + 1) + '/' + pages + ' >', d.x + optW / 2, d.y + 6, { color: '#888', align: 'center', scale: 0.75 });
-  const colX = [d.x + 18, d.x + optW / 2 + 6], rowY = [d.y + 26, d.y + 47, d.y + 68];
   for (let j = 0; j < perPage; j++) {
     const gi = page * perPage + j; if (gi >= B.targetList.length) break;
     const m = team[B.targetList[gi]], sel = gi === B.targetIdx;
     const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
     let head = A.ui('head_' + m.def.base); if (m.def.hue) head = A.hued(head, m.def.hue);
-    drawSpr(ctx, head, x + 10, y + 5, { scale: 0.55 });
-    drawText(ctx, 'main', (sel ? '>' : ' ') + m.def.name, x + 20, y, { color: sel ? '#ff0' : '#fff', scale: 0.9 });
+    drawSpr(ctx, head, x + 24, y + 8, { scale: 0.7 });
+    drawText(ctx, 'main', (sel ? '> ' : '  ') + m.def.name, x + 36, y, { color: sel ? '#ff0' : '#fff' });
   }
-  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 8, d.y + 6); ctx.lineTo(infoX - 8, d.y + d.h - 6); ctx.stroke();
+  if (pages > 1) drawText(ctx, 'main', 'PG ' + (page + 1) + '/' + pages, d.x + optW - 56, d.y + d.h - 18, { color: '#888' });
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 10, d.y + 8); ctx.lineTo(infoX - 10, d.y + d.h - 8); ctx.stroke();
   const tm = team[B.targetList[B.targetIdx]];
   if (tm) {
-    drawText(ctx, 'main', tm.def.name, infoX, d.y + 12, { color: '#fff', scale: 0.9 });
-    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(infoX, d.y + 28, infoW, 6);
-    ctx.fillStyle = tm.def.color; ctx.fillRect(infoX, d.y + 28, Math.max(0, Math.round(infoW * tm.hp / tm.max)), 6);
-    drawText(ctx, 'main', tm.hp + '/' + tm.max, infoX, d.y + 38, { color: '#bbb', scale: 0.75 });
+    drawText(ctx, 'main', tm.def.name, infoX, d.y + 8, { color: '#fff' });
+    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(infoX, d.y + 30, infoW, 7);
+    ctx.fillStyle = tm.def.color; ctx.fillRect(infoX, d.y + 30, Math.max(0, Math.round(infoW * tm.hp / tm.max)), 7);
+    drawText(ctx, 'main', tm.hp + '/' + tm.max, infoX + infoW, d.y + 28, { color: '#bbb', align: 'right' });
     if (!ally) {
-      ctx.fillStyle = '#3a3000'; ctx.fillRect(infoX, d.y + 52, infoW, 5);
-      ctx.fillStyle = canSpare(tm) ? '#ffd000' : '#c8a000'; ctx.fillRect(infoX, d.y + 52, Math.round(infoW * tm.mercy / 100), 5);
+      ctx.fillStyle = '#3a3000'; ctx.fillRect(infoX, d.y + 50, infoW, 6);
+      ctx.fillStyle = canSpare(tm) ? '#ffd000' : '#c8a000'; ctx.fillRect(infoX, d.y + 50, Math.round(infoW * tm.mercy / 100), 6);
       const tag = (tm.def.spare || {}).never ? 'CANT SPARE' : canSpare(tm) ? 'SPARE READY!' : isTired(tm) ? 'TIRED' : 'MERCY ' + tm.mercy + '%';
-      drawText(ctx, 'main', tag, infoX, d.y + d.h - 13, { color: canSpare(tm) ? '#ff0' : '#aa8', scale: 0.75 });
+      drawText(ctx, 'main', tag, infoX, d.y + d.h - 16, { color: canSpare(tm) ? '#ff0' : '#aa8' });
     }
   }
 };
 
 Battle.renderTiming = function (ctx) {
-  const B = Battle;
-  const x = 150, w = 416, h = 22;
+  const B = Battle, d = DBOX;
+  // the FIGHT timing bars live inside the bottom dialogue box
+  const x = d.x + 54, w = d.w - 118, h = 15;
   const active = B.bars.find(b => !b.done && b.started) || B.bars.find(b => !b.done);
+  drawText(ctx, 'main', 'TIME YOUR STRIKES!', d.x + 12, d.y + 3, { color: '#ff8000' });
   B.bars.forEach((bar, k) => {
     const def = B.myTeam[bar.mi].def;
-    const y = 150 + k * 34;
-    drawSpr(ctx, A.hued(A.ui('head_' + def.base), def.hue), 118, y + h / 2, { scale: 0.8 });
+    const y = d.y + 22 + k * 17;
+    drawSpr(ctx, A.hued(A.ui('head_' + def.base), def.hue), d.x + 28, y + h / 2, { scale: 0.6 });
     ctx.globalAlpha = bar.done ? 0.4 : (bar === active ? 1 : 0.7);
     ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = bar === active ? '#fff' : '#888'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
-    // target zone (bar-local center 26, half 13)
     ctx.fillStyle = def.color; ctx.globalAlpha = (bar.done ? 0.4 : 0.8);
     ctx.fillRect(x + 13, y + 2, 26, h - 4);
     ctx.globalAlpha = bar.done ? 0.4 : 1;
     ctx.fillStyle = '#fff'; ctx.fillRect(x + 25, y + 2, 2, h - 4);   // perfect tick
-    if (bar.started && !bar.done) { ctx.fillStyle = '#fff'; ctx.fillRect(x + Math.max(0, bar.x) - 2, y - 4, 4, h + 8); }
-    if (bar.done && bar.tier != null) drawText(ctx, 'main', TIER_NAME[bar.tier], x + w + 8, y + 2, { color: bar.tier === 2 ? '#ff0' : bar.tier === 1 ? '#8f8' : '#888' });
+    if (bar.started && !bar.done) { ctx.fillStyle = '#fff'; ctx.fillRect(x + Math.max(0, bar.x) - 2, y - 3, 4, h + 6); }
+    if (bar.done && bar.tier != null) drawText(ctx, 'main', TIER_NAME[bar.tier], x + w + 6, y, { color: bar.tier === 2 ? '#ff0' : bar.tier === 1 ? '#8f8' : '#888' });
     ctx.globalAlpha = 1;
   });
-  drawText(ctx, 'main', 'PRESS [Z] AS EACH REACHES THE MARK', 320, 150 + B.bars.length * 34 + 4, { color: '#888', align: 'center' });
 };
 
 Battle.renderGameover = function (ctx) {
