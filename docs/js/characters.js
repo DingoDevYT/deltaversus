@@ -71,10 +71,10 @@ const CHARS = {
     spells: [
       { id: 'lancer_storm', name: 'Spade Storm', tp: 35, dmg: 32, dur: 480, kind: 'attack',
         text: 'LANCER summons a SPADE STORM!' },
-      { id: 'lancer_bike', name: 'Bike Charge', tp: 45, dmg: 42, dur: 480, kind: 'attack',
+      { id: 'lancer_bike', name: 'Bike Charge', tp: 45, dmg: 42, dur: 480, kind: 'attack', darkReq: 34,
         text: 'LANCER rides through on his hog!' },
     ],
-    ult: { id: 'lancer_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 48, dur: 560, kind: 'attack',
+    ult: { id: 'lancer_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 48, dur: 560, kind: 'attack', darkReq: 68,
            text: 'LANCER spins like the DEVILSKNIFE!!' },
     act: { id: 'hohoho', name: 'Ho Ho Ho!', desc: 'Flip foe controls',
            text: 'LANCER giggles! Something feels backwards...' },
@@ -103,10 +103,10 @@ const CHARS = {
     spells: [
       { id: 'jevil_diamond', name: 'Diamond Rain', tp: 38, dmg: 30, dur: 500, kind: 'attack',
         text: 'JEVIL scatters DIAMONDS!' },
-      { id: 'jevil_carousel', name: 'Carousel', tp: 48, dmg: 34, dur: 520, kind: 'attack',
+      { id: 'jevil_carousel', name: 'Carousel', tp: 48, dmg: 34, dur: 520, kind: 'attack', darkReq: 34,
         text: 'JEVIL spins the CAROUSEL!' },
     ],
-    ult: { id: 'jevil_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 50, dur: 600, kind: 'attack',
+    ult: { id: 'jevil_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 50, dur: 600, kind: 'attack', darkReq: 68,
            text: 'JEVIL unleashes DEVILSKNIFE!! Metamorphosis!' },
     act: { id: 'intimidate', name: 'Chaos', desc: 'Slow foe soul',
            text: 'JEVIL cackles! CHAOS, CHAOS!' },
@@ -208,6 +208,8 @@ const BULLET_COST = {
   redring: 1, bell: 1, dice: 1, dice4: 1, umbrella2: 1, trash: 1, lamp: 1, ring2: 1,
   axe: 2, arc: 2, arc_red: 2, shuriken: 2, bone: 2, flame: 2, snowflake: 2, icicle: 2,
   umbrella: 2, scissors: 2, gflame: 2, ghostfire: 2, lightning: 2, flame_m: 2,
+  sparkle: 0, healspark: 0, knife: 1, bspade: 1, bdiamond: 1, bheart: 1, bclub: 1,
+  feather: 1, icehex: 1, icesnow: 1, scythe: 2, tornado: 2, spear: 2, rudebeam: 2,
 };
 const CC_BULLETS = Object.keys(BULLET_COST);
 

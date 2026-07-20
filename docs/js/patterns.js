@@ -24,28 +24,27 @@ function every(f, n) { return f % n === 0; }
 // density: higher tier = more frequent spawns
 function rate(base, tier) { return Math.max(2, Math.round(base * [1.25, 1.0, 0.72][tier])); }
 
-// ---------- KRIS ----------
+// ---------- KRIS (knife techniques) ----------
 PATTERNS.kris_slash = {
   dur: 440,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    // horizontal sword waves with sine wobble
+    // knives fly across, blade-first, spinning
     if (every(f, rate(30, tier))) {
       const fromLeft = rng() < 0.5;
       add({
-        x: fromLeft ? box.x - 30 : box.x + box.w + 30, y: box.y + 10 + rng() * (box.h - 20),
-        vx: (fromLeft ? 1 : -1) * (1.9 + rng() * 0.9), vy: 0,
-        shape: 'crescent', color: '#fff', r: 8,
-        rot: fromLeft ? 0 : Math.PI, spin: fromLeft ? 0.1 : -0.1,
-        sineA: 0.8, sineF: 0.06,
+        ...bulletProps('knife'), x: fromLeft ? box.x - 30 : box.x + box.w + 30,
+        y: box.y + 10 + rng() * (box.h - 20),
+        vx: (fromLeft ? 1 : -1) * (2.0 + rng() * 0.9), vy: 0,
+        rot: fromLeft ? Math.PI / 2 : -Math.PI / 2, spin: 0.35, r: 7,
+        sineA: 0.7, sineF: 0.06,
       });
     }
-    // vertical guillotine drop aimed near the soul — keeps you moving off-axis
+    // thrown knife dropping toward the soul
     if (every(f, rate(58, tier))) {
       add({
-        x: api.soul.x + (rng() - 0.5) * 70, y: box.y - 26,
-        vx: 0, vy: 0.6, ay: 0.07, maxv: 4,
-        shape: 'crescent', color: '#fff', r: 8, rot: Math.PI / 2, spin: 0.14,
+        ...bulletProps('knife'), x: api.soul.x + (rng() - 0.5) * 70, y: box.y - 26,
+        vx: 0, vy: 0.6, ay: 0.08, maxv: 4.2, rot: 0, spin: 0.3, r: 7,
       });
     }
   },
@@ -54,19 +53,17 @@ PATTERNS.kris_cross = {
   dur: 480,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    // rotating X: the 4 arms sweep around over time, so safe gaps keep moving
-    if (every(f, rate(44, tier))) {
+    // rotating cross of knives converging on center — safe gaps keep moving
+    if (every(f, rate(42, tier))) {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
       const R = Math.max(box.w, box.h) / 2 + 40;
-      const base = f * 0.055;
+      const base = f * 0.06;
       for (let k = 0; k < 4; k++) {
         const a = base + k * (Math.PI / 2);
         const x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
         const toC = Math.atan2(cy - y, cx - x);
-        add({
-          x, y, vx: Math.cos(toC) * 2.3, vy: Math.sin(toC) * 2.3,
-          shape: 'crescent', color: '#fff', r: 8, rot: toC, spin: 0.14,
-        });
+        add({ ...bulletProps('knife'), x, y, vx: Math.cos(toC) * 2.4, vy: Math.sin(toC) * 2.4,
+              rot: toC + Math.PI / 2, spin: 0.28, r: 7 });
       }
     }
   },
@@ -75,22 +72,21 @@ PATTERNS.kris_giga = {
   dur: 560,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(26, tier))) {
+    if (every(f, rate(24, tier))) {
       const y = box.y + 8 + rng() * (box.h - 16);
       const fromLeft = rng() < 0.5;
       add({
-        x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
-        vx: (fromLeft ? 1 : -1) * (2.3 + rng() * 1.2), vy: 0,
-        shape: 'crescent', color: '#fff', r: 10,
-        rot: fromLeft ? 0 : Math.PI, spin: 0.16,
+        ...bulletProps('knife'), x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
+        vx: (fromLeft ? 1 : -1) * (2.4 + rng() * 1.2), vy: 0,
+        rot: fromLeft ? Math.PI / 2 : -Math.PI / 2, spin: 0.4, r: 8,
       });
     }
-    if (every(f, rate(60, tier))) {
-      // vertical guillotine drops aimed near soul
+    if (every(f, rate(56, tier))) {
+      // guillotine knife drops near the soul
       const x = api.soul.x + (rng() - 0.5) * 90;
       add({
-        x, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.09, maxv: 4.5,
-        shape: 'crescent', color: '#fff', r: 11, rot: Math.PI / 2, spin: 0,
+        ...bulletProps('knife'), x, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.1, maxv: 4.8,
+        rot: 0, spin: 0.2, r: 8,
       });
     }
   },
@@ -108,7 +104,7 @@ PATTERNS.susie_axe = {
       add({
         x: fromLeft ? box.x - 40 : box.x + box.w + 40, y: box.y + 14 + rng() * (box.h - 28),
         vx: (fromLeft ? 1 : -1) * (2.6 + rng() * 0.5), vy: (rng() - 0.5) * 0.5,
-        img: pick(rng, imgs.arc), scale: 1.4, r: 7,
+        ...bulletProps('axe'), r: 8,
         rot: 0, spin: fromLeft ? 0.14 : -0.14,
       });
     }
@@ -130,7 +126,7 @@ PATTERNS.susie_rude = {
           x: (fromLeft ? box.x - 40 : box.x + box.w + 40) - (fromLeft ? 1 : -1) * i * 22,
           y: box.y + (i + 0.5) * (box.h / lanes),
           vx: (fromLeft ? 1 : -1) * 3.2, vy: 0,
-          img: pick(rng, imgs.arc), scale: 1.3, r: 8, spin: 0.18,
+          ...bulletProps('rudebeam'), r: 9, spin: 0.08,
         });
       }
     }
@@ -138,7 +134,7 @@ PATTERNS.susie_rude = {
       add({
         x: box.x + rng() * box.w, y: box.y + box.h + 18,
         vx: (rng() - 0.5) * 1.2, vy: -(2.4 + rng() * 1.2), ay: 0.05,
-        img: pick(rng, imgs.arc), scale: 0.8, r: 6, spin: 0.2,
+        ...bulletProps('axe'), scale: 0.7, r: 6, spin: 0.2,
       });
     }
   },
@@ -152,7 +148,7 @@ PATTERNS.susie_ult = {
       add({
         x: fromLeft ? box.x - 40 : box.x + box.w + 40, y: box.y + rng() * box.h,
         vx: (fromLeft ? 1 : -1) * (2.8 + rng() * 1.4), vy: (rng() - 0.5) * 1.0,
-        img: pick(rng, imgs.arc), scale: 1.3 + rng() * 0.4, r: 8, spin: 0.2,
+        ...bulletProps('rudebeam'), r: 8, spin: 0.08,
       });
     }
     if (every(f, rate(96, tier))) {
@@ -162,36 +158,33 @@ PATTERNS.susie_ult = {
         x: fromLeft ? box.x - 70 : box.x + box.w + 70,
         y: box.y + box.h / 2 + (rng() - 0.5) * 70,
         vx: (fromLeft ? 1 : -1) * 1.5, vy: 0,
-        ...bulletProps('arc_red'), scale: 2.4, r: 14, flip: !fromLeft,
+        ...bulletProps('rudebeam'), scale: 2.2, r: 16, flip: !fromLeft,
         sineA: 1.0, sineF: 0.03,
       });
     }
   },
 };
 
-// ---------- RALSEI ----------
+// ---------- RALSEI (magic sparkles & dots) ----------
 PATTERNS.ralsei_scarf = {
   dur: 420,
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(38, tier))) {
-      // scarf ribbons snake across with strong sine
+    const { f, rng, box, tier, add } = api;
+    // drifting sparkle dots that gently home, weaving in from the sides
+    if (every(f, rate(26, tier))) {
       const fromLeft = rng() < 0.5;
       add({
-        x: fromLeft ? box.x - 34 : box.x + box.w + 34,
+        ...bulletProps('sparkle'), x: fromLeft ? box.x - 20 : box.x + box.w + 20,
         y: box.y + 12 + rng() * (box.h - 24),
-        vx: (fromLeft ? 1 : -1) * 1.9, vy: 0,
-        shape: 'crescent', color: '#ff9fdf', r: 8,
-        rot: fromLeft ? 0 : Math.PI,
-        sineA: 1.6, sineF: 0.07,
+        vx: (fromLeft ? 1 : -1) * (1.3 + rng() * 0.6), vy: 0,
+        sineA: 1.4, sineF: 0.06, spin: 0.1, r: 6,
       });
     }
-    if (every(f, rate(70, tier))) {
-      // soft star pellets that drift down
+    // heal-stars fall from above
+    if (every(f, rate(50, tier))) {
       add({
-        x: box.x + rng() * box.w, y: box.y - 20,
-        vx: (rng() - 0.5) * 0.8, vy: 1.1 + rng() * 0.5,
-        shape: 'star', color: '#7fff9f', r: 5,
+        ...bulletProps('healspark'), x: box.x + rng() * box.w, y: box.y - 18,
+        vx: (rng() - 0.5) * 0.7, vy: 1.1 + rng() * 0.6, spin: 0.12, r: 6,
       });
     }
   },
@@ -200,17 +193,14 @@ PATTERNS.ralsei_ult = {
   dur: 560,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    if (every(f, rate(16, tier))) {
-      // spiraling music notes from center
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const ang = f * 0.35;
+    // spiral galaxy of sparkles from the center
+    if (every(f, rate(9, tier))) {
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.3;
       for (let k = 0; k < 2; k++) {
         const a = ang + k * Math.PI;
-        add({
-          x: cx, y: cy, vx: Math.cos(a) * 1.5, vy: Math.sin(a) * 1.5,
-          ax: Math.cos(a) * 0.012, ay: Math.sin(a) * 0.012,
-          shape: 'note', color: k ? '#ff9fff' : '#9fffb7', r: 6,
-        });
+        add({ ...bulletProps(k ? 'healspark' : 'sparkle'), x: cx, y: cy,
+              vx: Math.cos(a) * 1.5, vy: Math.sin(a) * 1.5,
+              ax: Math.cos(a) * 0.012, ay: Math.sin(a) * 0.012, spin: 0.14, r: 6 });
       }
     }
   },
@@ -225,7 +215,7 @@ PATTERNS.noelle_snow = {
       add({
         x: box.x + rng() * box.w, y: box.y - 24,
         vx: (rng() - 0.5) * 1.2, vy: 0.8 + rng() * 0.9, ay: 0.012,
-        img: pick(rng, imgs.orb), scale: 0.9, r: 7,
+        ...bulletProps('icehex'), r: 7,
         sineA: 0.5, sineF: 0.05,
       });
     }
@@ -233,7 +223,7 @@ PATTERNS.noelle_snow = {
       add({
         x: rng() < 0.5 ? box.x - 26 : box.x + box.w + 26, y: box.y + rng() * box.h,
         vx: 0, vy: 0, homing: 0.045, maxv: 2.0,
-        img: imgs.snowflake[0], scale: 0.5, r: 8, spin: 0.05,
+        ...bulletProps('icesnow'), r: 9, spin: 0.05,
       });
     }
   },
@@ -247,7 +237,7 @@ PATTERNS.noelle_ice = {
       const x = rng() < 0.4 ? api.soul.x + (rng() - 0.5) * 70 : box.x + rng() * box.w;
       add({
         x, y: box.y - 34, vx: 0, vy: 0.5, ay: 0.11, maxv: 5,
-        ...bulletProps('icicle'), scale: 1.0,
+        ...bulletProps('icehex'),
       });
     }
     if (every(f, rate(46, tier))) {
@@ -255,7 +245,7 @@ PATTERNS.noelle_ice = {
       add({
         x: box.x + rng() * box.w, y: box.y + box.h + 12,
         vx: (rng() - 0.5) * 2.0, vy: -(1.8 + rng() * 1.4), ay: 0.06,
-        img: pick(rng, imgs.shard), scale: 1.1, r: 5, spin: 0.15,
+        ...bulletProps('icehex'), scale: 0.8, r: 5, spin: 0.15,
       });
     }
   },
@@ -270,13 +260,13 @@ PATTERNS.snowgrave = {
       add({
         x: box.x + box.w + 30, y: box.y + (lane + 0.5) * (box.h / 6),
         vx: -(2.2 + rng() * 1.4), vy: 0,
-        img: pick(rng, imgs.sparkle), scale: 1.3, r: 6,
+        ...bulletProps('icesnow'), scale: 0.8, r: 6,
       });
     }
     if (every(f, rate(50, tier))) {
       add({
         x: box.x + rng() * box.w, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.1, maxv: 5.5,
-        ...bulletProps('icicle'), scale: 1.25, r: 10,
+        ...bulletProps('icehex'), scale: 1.1, r: 9,
       });
     }
     if (every(f, rate(120, tier))) {
@@ -284,7 +274,7 @@ PATTERNS.snowgrave = {
       add({
         x: rng() < 0.5 ? box.x - 50 : box.x + box.w + 50,
         y: box.y - 40, homing: 0.03, maxv: 1.6, vx: 0, vy: 0.8,
-        img: imgs.snowflake[0], scale: 1.1, r: 16, spin: 0.03,
+        ...bulletProps('icesnow'), scale: 1.5, r: 14, spin: 0.03,
       });
     }
   },
@@ -375,113 +365,134 @@ PATTERNS.lancer_ult = {
 
 // ---------- custom pattern factory (character creator attacks) ----------
 // spec: {ptype, bullet, speed, ult} — bullet is a library id or a shape name.
-// ---------- BERDLY (medium attack, high projectile variety) ----------
-PATTERNS.berdly_fight = {
+// ---------- BERDLY (ice / feathers / "smart" projectiles) ----------
+PATTERNS.berdly_fight = {   // feathers flung from the right, spreading
   dur: 420,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(30, tier)))
-      add({ ...bulletProps('spark'), x: box.x + rng() * box.w, y: box.y - 20,
-            vx: (rng() - 0.5) * 1.2, vy: 1.6 + rng() * 0.8, spin: 0.1 });
-  },
-};
-PATTERNS.berdly_bolt = {   // blue bolts strike down + side sparks
-  dur: 480,
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(44, tier)))
-      add({ ...bulletProps('lightning'), x: box.x + 18 + rng() * (box.w - 36), y: box.y - 30,
-            vx: 0, vy: 0.6, ay: 0.42, maxv: 7, scale: 1.4 });
-    if (every(f, rate(30, tier)))
-      add({ ...bulletProps('spark'), x: box.x + box.w + 20, y: box.y + rng() * box.h,
-            vx: -(2 + rng()), vy: 0 });
-  },
-};
-PATTERNS.berdly_books = {   // "high projectile variety" rain
-  dur: 480,
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(22, tier))) {
-      const bs = ['diamond', 'kstar', 'snowflake', 'spark'];
-      add({ ...bulletProps(bs[Math.floor(rng() * bs.length)]),
-            x: box.x + rng() * box.w, y: box.y - 22,
-            vx: (rng() - 0.5) * 0.9, vy: 1.4 + rng() * 1.1, spin: 0.12 });
+    if (every(f, rate(26, tier))) {
+      const oy = box.y + box.h / 2 + (rng() - 0.5) * box.h;
+      const ang = Math.PI + (rng() - 0.5) * 0.7;
+      add({ ...bulletProps('feather'), x: box.x + box.w + 24, y: oy,
+            vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, rot: ang, spin: 0.05 });
     }
   },
 };
-PATTERNS.berdly_ult = {
+PATTERNS.berdly_bolt = {   // tornado icons rush in from every side (round 1)
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(30, tier))) {
+      const side = Math.floor(rng() * 4);
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      let x, y;
+      if (side === 0) { x = box.x - 24; y = box.y + rng() * box.h; }
+      else if (side === 1) { x = box.x + box.w + 24; y = box.y + rng() * box.h; }
+      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 24; }
+      else { x = box.x + rng() * box.w; y = box.y + box.h + 24; }
+      const ang = Math.atan2(cy - y, cx - x) + (rng() - 0.5) * 0.5;
+      add({ ...bulletProps('tornado'), x, y, vx: Math.cos(ang) * 2.0, vy: Math.sin(ang) * 2.0, spin: 0.25 });
+    }
+  },
+};
+PATTERNS.berdly_books = {   // answer-papers spread from the right + ice shards
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(30, tier))) {
+      for (let i = -1; i <= 1; i++)
+        add({ ...bulletProps('spear'), x: box.x + box.w + 24, y: box.y + box.h / 2,
+              vx: -(2.4 + rng() * 0.6), vy: i * (0.7 + rng() * 0.5), rot: Math.PI, spin: 0 });
+    }
+    if (every(f, rate(40, tier))) {
+      const top = rng() < 0.5;
+      add({ ...bulletProps('icehex'), x: box.x + rng() * box.w, y: top ? box.y - 18 : box.y + box.h + 18,
+            vx: 0, vy: (top ? 1 : -1) * (1.6 + rng()), spin: 0.15 });
+    }
+  },
+};
+PATTERNS.berdly_ult = {   // SMART RACE: laser lanes + paper planes + tornados
   dur: 560,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(17, tier))) {
-      const bs = ['lightning', 'snowflake', 'spark', 'kstar'];
-      add({ ...bulletProps(bs[Math.floor(rng() * bs.length)]),
-            x: box.x + rng() * box.w, y: box.y - 24,
-            vx: (rng() - 0.5) * 1.4, vy: 1.8 + rng() * 1.2, spin: 0.12 });
-    }
-    if (every(f, rate(38, tier))) {
-      const L = rng() < 0.5;
-      add({ ...bulletProps('lightning'), x: L ? box.x - 20 : box.x + box.w + 20,
-            y: box.y + rng() * box.h, vx: (L ? 1 : -1) * 3.2, vy: 0 });
-    }
+    if (every(f, rate(16, tier)))   // wavy laser lane from the right
+      add({ ...bulletProps('spear'), x: box.x + box.w + 20, y: box.y + 20 + rng() * (box.h - 40),
+            vx: -(3.2 + rng()), vy: 0, rot: Math.PI, sineA: 1.2, sineF: 0.06 });
+    if (every(f, rate(34, tier)))   // tornado sweeping down
+      add({ ...bulletProps('tornado'), x: box.x + rng() * box.w, y: box.y - 22,
+            vx: (rng() - 0.5) * 1.2, vy: 1.8 + rng(), spin: 0.25 });
+    if (every(f, rate(60, tier)))   // feather from a side
+      add({ ...bulletProps('feather'), x: box.x - 20, y: box.y + rng() * box.h,
+            vx: 2.6 + rng(), vy: 0, rot: 0, sineA: 0.8, sineF: 0.05 });
   },
 };
 
-// ---------- JEVIL (darkner boss - Difficult) ----------
-PATTERNS.jevil_spade = {   // spinning spade fans aimed at the soul
+// ---------- JEVIL (darkner secret boss - Difficult) ----------
+PATTERNS.jevil_spade = {   // teleport + 5-spade fan aimed at the soul
   dur: 440,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(26, tier))) {
-      const L = rng() < 0.5, ox = L ? box.x - 16 : box.x + box.w + 16, oy = box.y - 14;
-      for (let i = -1; i <= 1; i++) {
-        const ang = Math.atan2(soul.y - oy, soul.x - ox) + i * 0.4;
+    if (every(f, rate(24, tier))) {
+      const ox = box.x + 20 + rng() * (box.w - 40), oy = box.y + 20 + rng() * (box.h - 40);
+      const base = Math.atan2(soul.y - oy, soul.x - ox);
+      for (let i = -2; i <= 2; i++)
         add({ ...bulletProps('spade'), x: ox, y: oy,
-              vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, spin: 0.2 });
-      }
+              vx: Math.cos(base + i * 0.32) * 2.2, vy: Math.sin(base + i * 0.32) * 2.2, spin: 0.2, r: 7 });
     }
   },
 };
-PATTERNS.jevil_diamond = {   // zig-zagging diamonds rain (hard to read)
+PATTERNS.jevil_diamond = {   // Ring of Spades: spiral inward, CW or CCW
   dur: 500,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(30, tier)))
-      add({ ...bulletProps('diamond'), x: box.x + rng() * box.w, y: box.y - 20,
-            vx: 0, vy: 1.6 + rng() * 0.8, sineA: 1.6, sineF: 0.08, spin: 0.15 });
+    if (every(f, rate(14, tier))) {
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) / 2 + 34;
+      const dir = (Math.floor(f / 140) % 2) ? 1 : -1;      // alternates rotation
+      const ang = f * 0.16 * dir;
+      const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
+      const toC = Math.atan2(cy - y, cx - x);
+      // curve the velocity so it spirals rather than going straight in
+      add({ ...bulletProps('bspade'), x, y,
+            vx: Math.cos(toC + dir * 0.5) * 1.8, vy: Math.sin(toC + dir * 0.5) * 1.8, spin: 0.2, r: 8 });
+    }
   },
 };
-PATTERNS.jevil_carousel = {   // clones circle the box firing inward (rotates)
+PATTERNS.jevil_carousel = {   // 3 clones circle the box firing in + heart bombs
   dur: 520,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(10, tier))) {
+    if (every(f, rate(11, tier))) {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) / 2 + 30;
       const ang = f * 0.06;
       for (let k = 0; k < 3; k++) {
         const a2 = ang + k * 2.094;
         const x = cx + Math.cos(a2) * R, y = cy + Math.sin(a2) * R;
         const toC = Math.atan2(cy - y, cx - x);
-        add({ ...bulletProps('spade'), x, y,
-              vx: Math.cos(toC) * 2.0, vy: Math.sin(toC) * 2.0, spin: 0.2 });
+        add({ ...bulletProps('spade'), x, y, vx: Math.cos(toC) * 2.0, vy: Math.sin(toC) * 2.0, spin: 0.2, r: 7 });
       }
     }
+    // heart bomb: drifts in, then bursts into a ring (life-timed spawn handled by pop below)
+    if (every(f, rate(90, tier)))
+      add({ ...bulletProps('bheart'), x: box.x + 30 + rng() * (box.w - 60), y: box.y + 20 + rng() * (box.h - 40),
+            vx: (rng() - 0.5) * 0.6, vy: 0.4, spin: 0.05, r: 9, burst: 60 });
   },
 };
-PATTERNS.jevil_ult = {   // DEVILSKNIFE: spinning scythe spiral + homing chaos
+PATTERNS.jevil_ult = {   // DEVILSKNIFE / Final Chaos: scythe rain + homing diamonds
   dur: 600,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(11, tier))) {
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.2;
-      add({ ...bulletProps('shuriken'), x: cx, y: cy,
-            vx: Math.cos(ang) * 2.6, vy: Math.sin(ang) * 2.6, spin: 0.3, scale: 1.3 });
+    if (every(f, rate(30, tier)))   // giant scythes rain down
+      add({ ...bulletProps('scythe'), x: box.x + rng() * box.w, y: box.y - 34,
+            vx: (rng() - 0.5) * 0.8, vy: 2.0 + rng() * 1.2, spin: 0.18, r: 12 });
+    if (every(f, rate(12, tier))) {  // spinning spade spiral from center
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.22;
+      add({ ...bulletProps('bspade'), x: cx, y: cy, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, spin: 0.2, r: 7 });
     }
-    if (every(f, rate(44, tier))) {
+    if (every(f, rate(55, tier))) {
       const side = Math.floor(rng() * 4);
       const x = side === 0 ? box.x - 20 : side === 1 ? box.x + box.w + 20 : box.x + rng() * box.w;
       const y = side === 2 ? box.y - 20 : side === 3 ? box.y + box.h + 20 : box.y + rng() * box.h;
-      add({ ...bulletProps('diamond'), x, y, vx: 0, vy: 0, homing: 0.04, maxv: 2.2, spin: 0.2 });
+      add({ ...bulletProps('bdiamond'), x, y, vx: 0, vy: 0, homing: 0.045, maxv: 2.2, spin: 0.2, r: 8 });
     }
   },
 };

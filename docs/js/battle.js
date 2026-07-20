@@ -15,7 +15,8 @@ const Battle = {};
 function mkMember(sel) {
   const def = charDef(sel);
   return { sel, def, hp: def.hp, max: def.hp, downed: false,
-           action: null, tier: null, pose: 'idle', poseT: 0 };
+           action: null, tier: null, pose: 'idle', poseT: 0,
+           dark: 0 };   // darkness/CHARGE meter (darkners only)
 }
 function living(team) { return team.filter(m => !m.downed); }
 function teamDead(team) { return team.every(m => m.downed); }
@@ -46,6 +47,7 @@ function poseForAction(a) {
   if (a.cmd === 'fight') return 'attack';
   if (a.cmd === 'magic') return SPELL_POSE[a.move] || 'spell';
   if (a.cmd === 'act') return 'act';
+  if (a.cmd === 'charge') return 'spell';
   if (a.cmd === 'item') return 'item';
   if (a.cmd === 'defend') return 'guard';
   return 'idle';
@@ -153,6 +155,11 @@ Battle.update = function () {
 
 // ---------- select (per living member) ----------
 const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
+const CHARGE_GAIN = 34;   // darkness per CHARGE turn (~3 charges to full)
+// darkners swap ACT for CHARGE and pay a discounted TP rate on spells
+function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
+function menuFor(mem) { return isDarkner(mem) ? ['fight', 'magic', 'charge', 'item', 'defend'] : MENU; }
+function spellCost(mem, d) { return isDarkner(mem) ? Math.ceil(d.tp * 0.6) : d.tp; }
 Battle.startSelect = function (fresh) {
   const B = Battle;
   B.cmdOrder = B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed);
@@ -189,15 +196,16 @@ Battle.updSelect = function () {
   if (B.timer <= 0) { while (B.cmdPos < B.cmdOrder.length) B.commitChoice('defend', null, 0); return; }
 
   if (!B.submenu) {
-    if (Input.hit.left) { B.menuIdx = (B.menuIdx + MENU.length - 1) % MENU.length; Snd.play('menumove'); }
-    if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % MENU.length; Snd.play('menumove'); }
+    const menu = menuFor(B.curMember());
+    if (Input.hit.left) { B.menuIdx = (B.menuIdx + menu.length - 1) % menu.length; Snd.play('menumove'); }
+    if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % menu.length; Snd.play('menumove'); }
     if (Input.hit.cancel && B.cmdPos > 0) { B.undoLast(); Snd.play('menumove'); }
     if (Input.hit.ok) {
-      const cmd = MENU[B.menuIdx];
+      const cmd = menu[B.menuIdx];
       if (cmd === 'item' && !B.canUseItems()) { Snd.play('cantselect'); }
       else {
         Snd.play('select');
-        if (cmd === 'fight' || cmd === 'defend') B.choose(cmd, null);
+        if (cmd === 'fight' || cmd === 'defend' || cmd === 'charge') B.choose(cmd, null);
         else { B.submenu = cmd; B.subIdx = 0; }
       }
     }
@@ -219,10 +227,17 @@ Battle.updSelect = function () {
 Battle.tpAvail = function () { return Math.min(100, Battle.myTP - Battle.tpSpent + Battle.tpSel); };
 
 Battle.subOptions = function () {
-  const B = Battle, c = B.curMember().def;
+  const B = Battle, mem = B.curMember(), c = mem.def;
   if (B.submenu === 'magic') {
-    const list = c.spells.map(s => ({ id: s.id, label: s.name, cost: s.tp + '%', disabled: B.tpAvail() < s.tp }));
-    list.push({ id: c.ult.id, label: c.ult.name, cost: c.ult.tp + '%', disabled: B.tpAvail() < c.ult.tp, ult: true });
+    const opt = (s, ult) => {
+      const cost = spellCost(mem, s);
+      const gated = s.darkReq && mem.dark < s.darkReq;
+      return { id: s.id, label: s.name, ult,
+               cost: gated ? '🌑' + s.darkReq : cost + '%',
+               disabled: gated || B.tpAvail() < cost };
+    };
+    const list = c.spells.map(s => opt(s, false));
+    list.push(opt(c.ult, true));
     return list;
   }
   if (B.submenu === 'act') return [{ id: c.act.id, label: c.act.name, cost: 'FREE' }];
@@ -265,9 +280,10 @@ Battle.updTargeting = function () {
 Battle.commitChoice = function (cmd, move, target) {
   const B = Battle, mem = B.curMember(), c = mem.def;
   const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target };
-  if (cmd === 'magic') { const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move); if (d) B.tpSpent += d.tp; }
+  if (cmd === 'magic') { const d = move === c.ult.id ? c.ult : c.spells.find(s => s.id === move); if (d) B.tpSpent += spellCost(mem, d); }
   else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
   else if (cmd === 'defend') B.tpSel += 16;   // instant, visible TP gain
+  else if (cmd === 'charge') { mem.dark = Math.min(100, mem.dark + CHARGE_GAIN); B.tpSel += 8; }   // build darkness, small TP
   mem.action = act;
   B.submenu = null;
   B.cmdPos++;
@@ -285,9 +301,10 @@ Battle.undoLast = function () {
   B.cmdPos--;
   const mem = B.curMember(), a = mem.action, c = mem.def;
   if (a) {
-    if (a.cmd === 'magic') { const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move); if (d) B.tpSpent -= d.tp; }
+    if (a.cmd === 'magic') { const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move); if (d) B.tpSpent -= spellCost(mem, d); }
     if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
     if (a.cmd === 'defend') B.tpSel -= 16;
+    if (a.cmd === 'charge') { mem.dark = Math.max(0, mem.dark - CHARGE_GAIN); B.tpSel -= 8; }
   }
   mem.action = null; B.menuIdx = 0;
   B.say('* ' + mem.def.name + ', your move.');
@@ -315,6 +332,7 @@ function actionText(def, a, mine) {
   if (a.cmd === 'act') return c.act.text;
   if (a.cmd === 'item') return c.name + ' uses ' + (a.itemId ? ITEMS[a.itemId].name.toUpperCase() : 'an item') + '!';
   if (a.cmd === 'defend') return c.name + ' braces for impact!';
+  if (a.cmd === 'charge') return c.name + ' draws in the DARKNESS!';
   return c.name + ' hesitates!';
 }
 
@@ -508,6 +526,17 @@ Battle.updDodge = function () {
     b.x += b.vx; b.y += b.vy;
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
+    if (b.burst && b.t >= b.burst) {
+      b.dead = true;
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        const ang = i / n * 6.28;
+        B.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
+          dmg: b.dmg, target: b.target, x: b.x, y: b.y,
+          vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.2, t: 0, phase0: 0 });
+      }
+      continue;
+    }
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
     if (dist < (b.r || 6) + SOUL_R) {
       if (B.iframes <= 0) {
@@ -527,7 +556,7 @@ Battle.updDodge = function () {
     }
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
-  B.bullets = B.bullets.filter(b => b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
+  B.bullets = B.bullets.filter(b => !b.dead && b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
 
   if (B.anim.f % 4 === 0)
     Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, f: B.sim ? B.sim.f : 0, done: false });
@@ -552,8 +581,16 @@ Battle.tickMirror = function () {
       b.x += b.vx; b.y += b.vy;
       if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
+      if (b.burst && b.t >= b.burst) {
+        b.dead = true;
+        for (let i = 0; i < 8; i++) {
+          const ang = i / 8 * 6.28;
+          M.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
+            x: b.x, y: b.y, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.2, t: 0, phase0: 0 });
+        }
+      }
     }
-    M.bullets = M.bullets.filter(b => b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 && (!b.life || b.t < b.life));
+    M.bullets = M.bullets.filter(b => !b.dead && b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 && (!b.life || b.t < b.life));
   }
 };
 
@@ -800,13 +837,27 @@ Battle.renderHud = function (ctx) {
     ctx.fillStyle = m.downed ? '#611' : m.def.color;
     ctx.fillRect(px + 28, py + 18, Math.max(0, Math.round((inner - 68) * m.hp / m.max)), 6);
     drawText(ctx, 'main', '' + m.hp, px + inner - 8, py + 1, { color: m.downed ? '#666' : '#bbb', align: 'right' });
+    // darkness meter for darkners (purple bar under the HP bar)
+    if (isDarkner(m) && !m.downed) {
+      ctx.fillStyle = '#1a0a2a'; ctx.fillRect(px + 28, py + 27, inner - 68, 4);
+      ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2';
+      ctx.fillRect(px + 28, py + 27, Math.max(0, Math.round((inner - 68) * m.dark / 100)), 4);
+    }
     // action buttons revealed under the raised, active member
     if (i === activeMi && m.raise > 0.6 && B.phase === 'select' && !B.submenu) {
-      const names = ['fight', 'magic', 'act', 'item', 'defend'];
+      const names = menuFor(m);
       const step = (inner - 16) / 5;
       for (let k = 0; k < 5; k++) {
         const sel = B.menuIdx === k;
-        drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
+        if (names[k] === 'charge') {
+          const bx = px + 16 + k * step, by = py + 48, bw = step * 0.86, bh = 22;
+          ctx.fillStyle = sel ? '#8a2be2' : '#20112f';
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.strokeStyle = '#c060ff'; ctx.lineWidth = 1; ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+          drawText(ctx, 'main', 'CHARGE', bx + bw / 2, by + 6, { color: sel ? '#fff' : '#c060ff', align: 'center', scale: 0.7 });
+        } else {
+          drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
+        }
       }
     }
   });
