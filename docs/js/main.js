@@ -228,9 +228,9 @@ function renderSelect() {
       ctx.strokeStyle = c.color; ctx.lineWidth = 2;
       ctx.strokeRect(x - 44, y - 52, 88, 104);
     }
-    const frames = A.chrFrames(id, 'idle');
-    const im = frames[Math.floor(G.f / 14) % frames.length];
-    drawSpr(ctx, im, x, y, { scale: sel ? 2 : 1.6, alpha: sel ? 1 : 0.6 });
+    const an = A.anim(id, 'idle');
+    const im = A.animFrame(an, G.f * (1000 / 60), true);
+    drawSpr(ctx, im, x, y, { scale: sel ? 1 : 0.8, alpha: sel ? 1 : 0.6 });
     drawText(ctx, 'main', c.name, x, y + 62, { color: sel ? c.color : '#777', align: 'center' });
   });
   const c = CHARS[CHAR_IDS[G.selIdx]];
@@ -264,13 +264,13 @@ function renderLoadout() {
 
 function renderVs() {
   if (!G.myChar) return;
-  const my = A.chrFrames(G.myChar, 'idle')[0];
-  drawSpr(ctx, my, 200, 220, { scale: 2.4 });
+  const my = A.animFrame(A.anim(G.myChar, 'idle'), G.f * (1000 / 60), true);
+  drawSpr(ctx, my, 200, 220, { scale: 1.2 });
   drawText(ctx, 'main', CHARS[G.myChar].name, 200, 300, { color: CHARS[G.myChar].color, align: 'center' });
   drawText(ctx, 'big', 'VS', 320, 200, { color: '#f44', align: 'center' });
   if (G.oppHello) {
-    const op = A.chrFrames(G.oppHello.char, 'idle')[0];
-    drawSpr(ctx, op, 440, 220, { scale: 2.4, flip: true });
+    const op = A.animFrame(A.anim(G.oppHello.char, 'idle'), G.f * (1000 / 60), true);
+    drawSpr(ctx, op, 440, 220, { scale: 1.2, flip: true });
     drawText(ctx, 'main', CHARS[G.oppHello.char].name, 440, 300,
              { color: CHARS[G.oppHello.char].color, align: 'center' });
   } else {

@@ -19,6 +19,9 @@ A.load = function (done) {
     for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer'])
       paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
+    for (const ch in (man.anims || {}))
+      for (const pose in man.anims[ch])
+        for (const f of man.anims[ch][pose].frames) paths.push(`assets/anims/${ch}/${f}`);
     // background: load every 2nd frame (50 is plenty smooth)
     for (let i = 0; i < man.bg_frames; i += 2) paths.push(`assets/bg/${i}.png`);
     let n = paths.length;
@@ -47,6 +50,33 @@ A.chrFrames = function (ch, group) {
   return list.map(f => A.img[`assets/chars/${ch}/${f}`]);
 };
 A.ui = p => A.img[`assets/ui/${p}.png`];
+
+// wiki-based animation: {frames: [Image], durs: [ms], total}
+// falls back through poses so a missing pose never crashes.
+A.anim = function (ch, pose) {
+  const chAnims = (A.manifest.anims || {})[ch] || {};
+  let e = chAnims[pose];
+  if (!e) e = chAnims.idle;
+  if (!e) return null;
+  if (!e._c) {
+    e._c = {
+      frames: e.frames.map(f => A.img[`assets/anims/${ch}/${f}`]),
+      durs: e.durs,
+      total: e.durs.reduce((a, b) => a + b, 0),
+    };
+  }
+  return e._c;
+};
+// frame for elapsed ms; loop or clamp to last frame
+A.animFrame = function (an, ms, loop) {
+  if (!an) return null;
+  let t = loop ? ms % an.total : Math.min(ms, an.total - 1);
+  for (let i = 0; i < an.frames.length; i++) {
+    t -= an.durs[i];
+    if (t < 0) return an.frames[i];
+  }
+  return an.frames[an.frames.length - 1];
+};
 A.bgFrame = function (t) {
   const n = Math.floor(A.manifest.bg_frames / 2);
   return A.img[`assets/bg/${(Math.floor(t / 4) % n) * 2}.png`];

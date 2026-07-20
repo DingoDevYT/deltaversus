@@ -97,6 +97,19 @@ function oppMoveDef() {
 }
 function isAttack(def) { return def && def.id && PATTERNS[def.id] && def.dmg; }
 
+// which animation pose an action plays at dodge start
+const SPELL_POSE = { susie_rude: 'rudebuster', susie_ult: 'rudebuster',
+                     snowgrave: 'snowgrave', pacify: 'pacify' };
+function poseForAction(a) {
+  if (!a) return 'idle';
+  if (a.cmd === 'fight') return 'attack';
+  if (a.cmd === 'magic') return SPELL_POSE[a.move] || 'spell';
+  if (a.cmd === 'act') return 'act';
+  if (a.cmd === 'item') return 'item';
+  if (a.cmd === 'defend') return 'guard';
+  return 'idle';
+}
+
 Battle.say = function (lines) {
   Battle.msg = Array.isArray(lines) ? lines : [lines];
   Battle.msgT = 130;
@@ -259,7 +272,7 @@ Battle.updTiming = function () {
   if (tb.x <= -10) { B.finishTiming(0); return; }   // sailed past -> miss
   if (Input.hit.ok) {
     const d = Math.abs(tb.x - 26);                  // zone center (bar-local)
-    B.finishTiming(d < 11 ? 2 : d < 42 ? 1 : 0);
+    B.finishTiming(d < 4 ? 2 : d < 30 ? 1 : 0);     // perfect is TIGHT
   }
 };
 
@@ -315,16 +328,16 @@ Battle.startDodge = function () {
     B.oppEffTier = tier;
     B.sim = makeDodgeSim(B.oppChar, oppDef, tier, B.oppAction.seed, B.dodgeBox);
     B.dodgeT = B.sim.dur;
-    B.anim.oppPose = 'attack'; B.anim.oppT = 0;
     Snd.play(MOVE_SFX[oppDef.id] || 'swing');
     B.say('* DODGE!');
   } else {
     B.sim = null;
     B.dodgeT = 0;
   }
+  B.anim.oppPose = poseForAction(B.oppAction); B.anim.oppT = 0;
+  B.anim.myPose = poseForAction(B.myAction); B.anim.myT = 0;
   const myDef = myMoveDef();
   if (isAttack(myDef)) {
-    B.anim.myPose = 'attack'; B.anim.myT = 0;
     if (B.sim == null) Snd.play(MOVE_SFX[myDef.id] || 'swing');
     // spectator mirror: re-simulate MY attack pattern (same seed) so we can
     // watch the opponent's streamed soul dodge it in the side box
@@ -552,7 +565,9 @@ Battle.resolve = function () {
   if (B.me.hp <= 0 || B.opp.hp <= 0) {
     B.result = B.me.hp <= 0 ? (B.opp.hp <= 0 ? 'draw' : 'lose') : 'win';
     B.phase = 'gameover';
-    B.anim[B.result === 'win' ? 'oppPose' : 'myPose'] = 'downed';
+    B.anim.myPose = B.result === 'win' ? 'victory' : 'downed';
+    B.anim.oppPose = B.result === 'lose' ? 'victory' : 'downed';
+    B.anim.myT = 0; B.anim.oppT = 0;
     if (B.result === 'win') { Snd.stopMusic(); Snd.play('won'); }
     else if (B.result === 'lose') Snd.playMusic('game_over');
     else Snd.stopMusic();
@@ -613,29 +628,40 @@ Battle.render = function (ctx) {
   ctx.restore();
 };
 
-function poseFrames(ch, pose) {
-  const groups = { idle: 'idle', attack: 'attack', hurt: 'hurt', downed: 'downed' };
-  let fr = A.chrFrames(ch, groups[pose] || 'idle');
-  if (!fr.length) fr = A.chrFrames(ch, 'idle');
-  return fr;
+// poses that loop forever; everything else plays once then returns to idle
+const LOOP_POSES = { idle: 1, guard: 1 };
+// poses that play once and hold their last frame
+const HOLD_POSES = { downed: 1, victory: 1, hurt: 1 };
+
+function drawCharAnim(ctx, ch, pose, tFrames, x, groundY, flip, alpha) {
+  const an = A.anim(ch, pose) || A.anim(ch, 'idle');
+  if (!an) return true;
+  const ms = tFrames * (1000 / 60);
+  const done = !LOOP_POSES[pose] && ms >= an.total;
+  const im = A.animFrame(an, ms, !!LOOP_POSES[pose]);
+  if (im && im.width)
+    drawSpr(ctx, im, x, groundY - im.height / 2, { scale: 1, flip, alpha });
+  return done;
 }
 
 Battle.renderChars = function (ctx) {
   const B = Battle;
   B.anim.myT++; B.anim.oppT++;
-  if (B.anim.myPose === 'hurt' && B.anim.myT > 40) B.anim.myPose = 'idle';
-  if (B.anim.oppPose === 'hurt' && B.anim.oppT > 40) B.anim.oppPose = 'idle';
-  if (B.anim.myPose === 'attack' && B.anim.myT > 60) B.anim.myPose = 'idle';
-  if (B.anim.oppPose === 'attack' && B.anim.oppT > 60) B.anim.oppPose = 'idle';
-
-  const mf = poseFrames(B.myChar, B.anim.myPose);
-  const of = poseFrames(B.oppChar, B.anim.oppPose);
-  const mi = mf[Math.floor(B.anim.myT / 12) % mf.length];
-  const oi = of[Math.floor(B.anim.oppT / 12) % of.length];
+  const GROUND_MY = 290, GROUND_OPP = 290;
   const hurtFlashMe = B.anim.myPose === 'hurt' && (B.anim.myT % 8 < 4);
-  drawSpr(ctx, mi, 100, 250, { scale: 2, alpha: hurtFlashMe ? 0.4 : 1 });
   const hurtFlashOpp = B.anim.oppPose === 'hurt' && (B.anim.oppT % 8 < 4);
-  drawSpr(ctx, oi, 540, 230, { scale: 2, flip: true, alpha: hurtFlashOpp ? 0.4 : 1 });
+  const doneMy = drawCharAnim(ctx, B.myChar, B.anim.myPose, B.anim.myT,
+                              100, GROUND_MY, false, hurtFlashMe ? 0.4 : 1);
+  const doneOpp = drawCharAnim(ctx, B.oppChar, B.anim.oppPose, B.anim.oppT,
+                               540, GROUND_OPP, true, hurtFlashOpp ? 0.4 : 1);
+  if (doneMy && !LOOP_POSES[B.anim.myPose] && !HOLD_POSES[B.anim.myPose])
+    { B.anim.myPose = 'idle'; B.anim.myT = 0; }
+  else if (doneMy && B.anim.myPose === 'hurt' && B.anim.myT > 50)
+    { B.anim.myPose = 'idle'; B.anim.myT = 0; }
+  if (doneOpp && !LOOP_POSES[B.anim.oppPose] && !HOLD_POSES[B.anim.oppPose])
+    { B.anim.oppPose = 'idle'; B.anim.oppT = 0; }
+  else if (doneOpp && B.anim.oppPose === 'hurt' && B.anim.oppT > 50)
+    { B.anim.oppPose = 'idle'; B.anim.oppT = 0; }
 };
 
 Battle.renderBoxAndBullets = function (ctx) {
@@ -658,23 +684,7 @@ Battle.renderBoxAndBullets = function (ctx) {
       ctx.fillRect(-4, 0, 8, 3); ctx.fillRect(-2, 3, 4, 2);
       ctx.restore();
     }
-    for (const b of B.bullets) {
-      if (b.img && b.img.width) {
-        drawSpr(ctx, b.img, b.x, b.y, { scale: (b.scale || 1) * 1.6, rot: b.rot || 0, flip: b.flip });
-      } else {
-        ctx.fillStyle = b.color || '#fff';
-        if (b.shape === 'star') {
-          ctx.save(); ctx.translate(b.x, b.y); ctx.rotate((b.t || 0) * 0.1);
-          for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-1, -6, 2, 12); }
-          ctx.restore();
-        } else if (b.shape === 'note') {
-          ctx.fillRect(b.x - 2, b.y - 6, 3, 10);
-          ctx.beginPath(); ctx.arc(b.x - 3, b.y + 4, 4, 0, 7); ctx.fill();
-        } else {
-          ctx.beginPath(); ctx.arc(b.x, b.y, b.r || 5, 0, 7); ctx.fill();
-        }
-      }
-    }
+    for (const b of B.bullets) drawBullet(ctx, b, b.x, b.y, 1);
     // soul
     const soulImg = A.ui('soul');
     const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
@@ -698,6 +708,37 @@ Battle.renderBoxAndBullets = function (ctx) {
     }
   }
 };
+
+// draw one bullet at (px,py) at overall scale s (mirror box uses s=0.5)
+function drawBullet(ctx, b, px, py, s) {
+  if (b.img && b.img.width) {
+    drawSpr(ctx, b.img, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip });
+    return;
+  }
+  ctx.fillStyle = b.color || '#fff';
+  if (b.shape === 'crescent') {
+    // white arc slash: the visual IS the hitbox (radius r)
+    const r = (b.r || 8) * 1.5 * s;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate((b.rot || 0));
+    ctx.strokeStyle = b.color || '#fff';
+    ctx.lineWidth = Math.max(2, 4 * s);
+    ctx.beginPath(); ctx.arc(-r * 0.35, 0, r, -1.1, 1.1); ctx.stroke();
+    ctx.lineWidth = Math.max(1, 2 * s);
+    ctx.beginPath(); ctx.arc(-r * 0.15, 0, r * 0.7, -1.0, 1.0); ctx.stroke();
+    ctx.restore();
+  } else if (b.shape === 'star') {
+    ctx.save(); ctx.translate(px, py); ctx.rotate((b.t || 0) * 0.1);
+    for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-1 * s, -6 * s, 2 * s, 12 * s); }
+    ctx.restore();
+  } else if (b.shape === 'note') {
+    ctx.fillRect(px - 2 * s, py - 6 * s, 3 * s, 10 * s);
+    ctx.beginPath(); ctx.arc(px - 3 * s, py + 4 * s, 4 * s, 0, 7); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(px, py, (b.r || 5) * s, 0, 7); ctx.fill();
+  }
+}
 
 // tinted soul sprite cache (per css color)
 const soulTints = {};
@@ -729,15 +770,7 @@ Battle.renderMirror = function (ctx) {
   ctx.strokeStyle = '#8a8a8a'; ctx.lineWidth = 2;
   ctx.strokeRect(mx - 1, my - 1, mw + 2, mh + 2);
   ctx.beginPath(); ctx.rect(mx - 20, my - 20, mw + 40, mh + 40); ctx.clip();
-  for (const b of M.bullets) {
-    if (b.img && b.img.width) {
-      drawSpr(ctx, b.img, mx + b.x * s, my + b.y * s,
-              { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip });
-    } else {
-      ctx.fillStyle = b.color || '#aaa';
-      ctx.beginPath(); ctx.arc(mx + b.x * s, my + b.y * s, (b.r || 5) * s, 0, 7); ctx.fill();
-    }
-  }
+  for (const b of M.bullets) drawBullet(ctx, b, mx + b.x * s, my + b.y * s, s);
   ctx.globalAlpha = 0.95;
   drawSpr(ctx, tintedSoul(CHARS[B.oppChar].color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
   ctx.restore();
@@ -833,6 +866,8 @@ Battle.renderTiming = function (ctx) {
   ctx.globalAlpha = 0.85;
   ctx.fillRect(x + 8, y + 2, 36, h - 4);            // target zone
   ctx.globalAlpha = 1;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x + 25, y + 2, 2, h - 4);            // perfect center tick
   if (!tb.done) {
     ctx.fillStyle = '#fff';
     ctx.fillRect(x + Math.max(0, tb.x) - 2, y - 5, 4, h + 10);

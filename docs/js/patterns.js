@@ -36,8 +36,8 @@ PATTERNS.kris_slash = {
       add({
         x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
         vx: (fromLeft ? 1 : -1) * (1.7 + rng() * 0.8), vy: 0,
-        img: pick(rng, imgs.slash), scale: 1.2, r: 9,
-        rot: fromLeft ? 0.6 : -2.5, spin: fromLeft ? 0.09 : -0.09,
+        shape: 'crescent', color: '#fff', r: 9,
+        rot: fromLeft ? 0 : Math.PI, spin: fromLeft ? 0.09 : -0.09,
         sineA: 0.7, sineF: 0.05 + rng() * 0.04,
       });
     }
@@ -56,7 +56,7 @@ PATTERNS.kris_cross = {
         const ang = Math.atan2(cy + jy - y, cx + jx - x);
         add({
           x, y, vx: Math.cos(ang) * 2.1, vy: Math.sin(ang) * 2.1,
-          img: pick(rng, imgs.slash), scale: 1.1, r: 9, rot: ang, spin: 0.12,
+          shape: 'crescent', color: '#fff', r: 9, rot: ang, spin: 0.12,
         });
       }
     }
@@ -72,8 +72,8 @@ PATTERNS.kris_giga = {
       add({
         x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
         vx: (fromLeft ? 1 : -1) * (2.3 + rng() * 1.2), vy: 0,
-        img: pick(rng, imgs.slash), scale: 1.35, r: 10,
-        rot: fromLeft ? 0.6 : -2.5, spin: 0.16,
+        shape: 'crescent', color: '#fff', r: 10,
+        rot: fromLeft ? 0 : Math.PI, spin: 0.16,
       });
     }
     if (every(f, rate(60, tier))) {
@@ -81,7 +81,7 @@ PATTERNS.kris_giga = {
       const x = api.soul.x + (rng() - 0.5) * 90;
       add({
         x, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.09, maxv: 4.5,
-        img: pick(rng, imgs.slash), scale: 1.5, r: 11, rot: Math.PI / 2, spin: 0,
+        shape: 'crescent', color: '#fff', r: 11, rot: Math.PI / 2, spin: 0,
       });
     }
   },
@@ -172,7 +172,8 @@ PATTERNS.ralsei_scarf = {
         x: fromLeft ? box.x - 34 : box.x + box.w + 34,
         y: box.y + 12 + rng() * (box.h - 24),
         vx: (fromLeft ? 1 : -1) * 1.9, vy: 0,
-        img: pick(rng, imgs.scarf), scale: 1.3, r: 8, flip: !fromLeft,
+        shape: 'crescent', color: '#ff9fdf', r: 8,
+        rot: fromLeft ? 0 : Math.PI,
         sineA: 1.6, sineF: 0.07,
       });
     }
