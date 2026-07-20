@@ -170,21 +170,21 @@ PATTERNS.ralsei_scarf = {
   dur: 420,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    // drifting sparkle dots that gently home, weaving in from the sides
+    // drifting dot bullets that weave in from the sides
     if (every(f, rate(26, tier))) {
       const fromLeft = rng() < 0.5;
       add({
-        ...bulletProps('sparkle'), x: fromLeft ? box.x - 20 : box.x + box.w + 20,
+        ...bulletProps('ralseidot'), x: fromLeft ? box.x - 20 : box.x + box.w + 20,
         y: box.y + 12 + rng() * (box.h - 24),
         vx: (fromLeft ? 1 : -1) * (1.3 + rng() * 0.6), vy: 0,
-        sineA: 1.4, sineF: 0.06, spin: 0.1, r: 6,
+        sineA: 1.4, sineF: 0.06, r: 6,
       });
     }
-    // heal-stars fall from above
+    // dots fall from above
     if (every(f, rate(50, tier))) {
       add({
-        ...bulletProps('healspark'), x: box.x + rng() * box.w, y: box.y - 18,
-        vx: (rng() - 0.5) * 0.7, vy: 1.1 + rng() * 0.6, spin: 0.12, r: 6,
+        ...bulletProps('ralseidot'), x: box.x + rng() * box.w, y: box.y - 18,
+        vx: (rng() - 0.5) * 0.7, vy: 1.1 + rng() * 0.6, r: 6,
       });
     }
   },
@@ -198,9 +198,9 @@ PATTERNS.ralsei_ult = {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.3;
       for (let k = 0; k < 2; k++) {
         const a = ang + k * Math.PI;
-        add({ ...bulletProps(k ? 'healspark' : 'sparkle'), x: cx, y: cy,
+        add({ ...bulletProps('ralseidot'), x: cx, y: cy,
               vx: Math.cos(a) * 1.5, vy: Math.sin(a) * 1.5,
-              ax: Math.cos(a) * 0.012, ay: Math.sin(a) * 0.012, spin: 0.14, r: 6 });
+              ax: Math.cos(a) * 0.012, ay: Math.sin(a) * 0.012, r: 6 });
       }
     }
   },
@@ -365,134 +365,137 @@ PATTERNS.lancer_ult = {
 
 // ---------- custom pattern factory (character creator attacks) ----------
 // spec: {ptype, bullet, speed, ult} — bullet is a library id or a shape name.
-// ---------- BERDLY (ice / feathers / "smart" projectiles) ----------
-PATTERNS.berdly_fight = {   // feathers flung from the right, spreading
+// ---------- BERDLY (wind, A+ papers, halberd lasers) ----------
+PATTERNS.berdly_fight = {   // A+ Exam Papers: targeted spreads that accelerate
   dur: 420,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(26, tier))) {
-      const oy = box.y + box.h / 2 + (rng() - 0.5) * box.h;
-      const ang = Math.PI + (rng() - 0.5) * 0.7;
-      add({ ...bulletProps('feather'), x: box.x + box.w + 24, y: oy,
-            vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, rot: ang, spin: 0.05 });
+    const { f, rng, box, tier, add, soul } = a;
+    if (every(f, rate(30, tier))) {
+      const ox = box.x + box.w + 24, oy = box.y + 14 + rng() * (box.h - 28);
+      const base = Math.atan2(soul.y - oy, soul.x - ox);
+      for (let i = -1; i <= 1; i++) {          // 3-paper spread, aimed + accelerating
+        const ang = base + i * 0.26;
+        add({ ...bulletProps('feather'), x: ox, y: oy,
+              vx: Math.cos(ang) * 1.3, vy: Math.sin(ang) * 1.3,
+              ax: Math.cos(ang) * 0.06, ay: Math.sin(ang) * 0.06, maxv: 5, rot: ang, spin: 0.03 });
+      }
     }
   },
 };
-PATTERNS.berdly_bolt = {   // tornado icons rush in from every side (round 1)
+PATTERNS.berdly_bolt = {   // Tornado 1: walls of 4 stacked tornadoes sweep left in set orders
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(30, tier))) {
-      const side = Math.floor(rng() * 4);
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      let x, y;
-      if (side === 0) { x = box.x - 24; y = box.y + rng() * box.h; }
-      else if (side === 1) { x = box.x + box.w + 24; y = box.y + rng() * box.h; }
-      else if (side === 2) { x = box.x + rng() * box.w; y = box.y - 24; }
-      else { x = box.x + rng() * box.w; y = box.y + box.h + 24; }
-      const ang = Math.atan2(cy - y, cx - x) + (rng() - 0.5) * 0.5;
-      add({ ...bulletProps('tornado'), x, y, vx: Math.cos(ang) * 2.0, vy: Math.sin(ang) * 2.0, spin: 0.25 });
+    const period = rate(64, tier);
+    if (f % period === 0) {
+      const order = Math.floor(rng() * 4);
+      // 4 fixed orderings: top->bottom, alt pairs, bottom->top, reversed alt pairs
+      const seq = order === 0 ? [0, 1, 2, 3] : order === 1 ? [0, 2, 1, 3]
+                : order === 2 ? [3, 2, 1, 0] : [1, 3, 0, 2];
+      seq.forEach((slot, idx) => {                 // stagger entry so the order reads
+        add({ ...bulletProps('tornado'), x: box.x + box.w + 24 + idx * 30,
+              y: box.y + 16 + (box.h - 32) * (slot / 3), vx: -1.9, vy: 0, spin: 0.28, r: 9 });
+      });
     }
   },
 };
-PATTERNS.berdly_books = {   // answer-papers spread from the right + ice shards
+PATTERNS.berdly_books = {   // Halberd Laser: wavy energy beam + perpendicular scatter
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(30, tier))) {
-      for (let i = -1; i <= 1; i++)
-        add({ ...bulletProps('spear'), x: box.x + box.w + 24, y: box.y + box.h / 2,
-              vx: -(2.4 + rng() * 0.6), vy: i * (0.7 + rng() * 0.5), rot: Math.PI, spin: 0 });
-    }
-    if (every(f, rate(40, tier))) {
-      const top = rng() < 0.5;
-      add({ ...bulletProps('icehex'), x: box.x + rng() * box.w, y: top ? box.y - 18 : box.y + box.h + 18,
-            vx: 0, vy: (top ? 1 : -1) * (1.6 + rng()), spin: 0.15 });
-    }
+    if (every(f, rate(16, tier)))       // curved energy beam sweeps in from the right
+      add({ ...bulletProps('spear'), x: box.x + box.w + 20, y: box.y + 18 + rng() * (box.h - 36),
+            vx: -(2.6 + rng()), vy: 0, rot: Math.PI, sineA: 1.4, sineF: 0.06, r: 7 });
+    if (every(f, rate(46, tier)))       // scattered energy shards perpendicular to the trail
+      add({ ...bulletProps('spear'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 16,
+            vx: (rng() - 0.5) * 0.6, vy: 1.9 + rng(), rot: Math.PI / 2, r: 7 });
   },
 };
-PATTERNS.berdly_ult = {   // SMART RACE: laser lanes + paper planes + tornados
+PATTERNS.berdly_ult = {   // SMART RACE: center-converging tornadoes + doubled papers
   dur: 560,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(16, tier)))   // wavy laser lane from the right
-      add({ ...bulletProps('spear'), x: box.x + box.w + 20, y: box.y + 20 + rng() * (box.h - 40),
-            vx: -(3.2 + rng()), vy: 0, rot: Math.PI, sineA: 1.2, sineF: 0.06 });
-    if (every(f, rate(34, tier)))   // tornado sweeping down
-      add({ ...bulletProps('tornado'), x: box.x + rng() * box.w, y: box.y - 22,
-            vx: (rng() - 0.5) * 1.2, vy: 1.8 + rng(), spin: 0.25 });
-    if (every(f, rate(60, tier)))   // feather from a side
-      add({ ...bulletProps('feather'), x: box.x - 20, y: box.y + rng() * box.h,
-            vx: 2.6 + rng(), vy: 0, rot: 0, sineA: 0.8, sineF: 0.05 });
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (every(f, rate(50, tier))) {     // 4 corner tornadoes collapse to center + cross
+      const cn = [[box.x - 24, box.y - 24], [box.x + box.w + 24, box.y - 24],
+                  [box.x - 24, box.y + box.h + 24], [box.x + box.w + 24, box.y + box.h + 24]];
+      for (const [x, y] of cn) {
+        const ang = Math.atan2(cy - y, cx - x);
+        add({ ...bulletProps('tornado'), x, y, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.3, r: 9 });
+      }
+    }
+    if (every(f, rate(18, tier)))       // doubled A+ papers streaming from the right
+      add({ ...bulletProps('feather'), x: box.x + box.w + 20, y: box.y + 14 + rng() * (box.h - 28),
+            vx: -(3 + rng()), vy: (rng() - 0.5) * 1.2, rot: Math.PI, spin: 0.03, r: 7 });
   },
 };
 
 // ---------- JEVIL (darkner secret boss - Difficult) ----------
-PATTERNS.jevil_spade = {   // teleport + 5-spade fan aimed at the soul
+PATTERNS.jevil_spade = {   // Five-Spade Teleport Spread: middle aimed at soul, ±15°/±30°
   dur: 440,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(24, tier))) {
-      const ox = box.x + 20 + rng() * (box.w - 40), oy = box.y + 20 + rng() * (box.h - 40);
+    if (every(f, rate(26, tier))) {
+      const left = rng() < 0.5;
+      const ox = left ? box.x - 18 : box.x + box.w + 18;
+      const oy = box.y + 16 + rng() * (box.h - 32);
       const base = Math.atan2(soul.y - oy, soul.x - ox);
-      for (let i = -2; i <= 2; i++)
+      for (const o of [-0.52, -0.26, 0, 0.26, 0.52])
         add({ ...bulletProps('spade'), x: ox, y: oy,
-              vx: Math.cos(base + i * 0.32) * 2.2, vy: Math.sin(base + i * 0.32) * 2.2, spin: 0.2, r: 7 });
+              vx: Math.cos(base + o) * 2.3, vy: Math.sin(base + o) * 2.3, spin: 0.2, r: 7 });
     }
   },
 };
-PATTERNS.jevil_diamond = {   // Ring of Spades: spiral inward, CW or CCW
+PATTERNS.jevil_diamond = {   // Diamond Shower (bottom->up) + heart bombs (burst into 4)
   dur: 500,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(14, tier))) {
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) / 2 + 34;
-      const dir = (Math.floor(f / 140) % 2) ? 1 : -1;      // alternates rotation
-      const ang = f * 0.16 * dir;
-      const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
-      const toC = Math.atan2(cy - y, cx - x);
-      // curve the velocity so it spirals rather than going straight in
-      add({ ...bulletProps('bspade'), x, y,
-            vx: Math.cos(toC + dir * 0.5) * 1.8, vy: Math.sin(toC + dir * 0.5) * 1.8, spin: 0.2, r: 8 });
-    }
+    if (every(f, rate(10, tier)))    // diamonds fire straight up from the bottom edge
+      add({ ...bulletProps('bdiamond'), x: box.x + 8 + rng() * (box.w - 16), y: box.y + box.h + 18,
+            vx: 0, vy: -(3.2 + rng() * 1.2), spin: 0.1, r: 8 });
+    if (every(f, rate(90, tier)))    // heart bomb falls, detonates into 4 rotating hearts
+      add({ ...bulletProps('bheart'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 18,
+            vx: 0, vy: 1.5, r: 9, burst: 46, burstN: 4, burstSpeed: 1.7, burstRot: 0.78 });
   },
 };
-PATTERNS.jevil_carousel = {   // 3 clones circle the box firing in + heart bombs
+PATTERNS.jevil_carousel = {   // The Carousel: 3 rows L->R, sine bob w/ alternating phase + club bombs
   dur: 520,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(11, tier))) {
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) / 2 + 30;
-      const ang = f * 0.06;
-      for (let k = 0; k < 3; k++) {
-        const a2 = ang + k * 2.094;
-        const x = cx + Math.cos(a2) * R, y = cy + Math.sin(a2) * R;
-        const toC = Math.atan2(cy - y, cx - x);
-        add({ ...bulletProps('spade'), x, y, vx: Math.cos(toC) * 2.0, vy: Math.sin(toC) * 2.0, spin: 0.2, r: 7 });
+    const spawn = rate(20, tier);
+    if (f % spawn === 0) {
+      const col = f / spawn;
+      for (let row = 0; row < 3; row++) {
+        const baseY = box.y + 22 + row * (box.h - 44) / 2;
+        const phase = ((row + col) % 2) * Math.PI;   // adjacent horses/ducks bob opposite
+        add({ ...bulletProps('carousel'), x: box.x - 22, y: baseY,
+              vx: 1.7, vy: 0, sineA: 9, sineF: 0.05, phase0: phase, r: 10 });
       }
     }
-    // heart bomb: drifts in, then bursts into a ring (life-timed spawn handled by pop below)
-    if (every(f, rate(90, tier)))
-      add({ ...bulletProps('bheart'), x: box.x + 30 + rng() * (box.w - 60), y: box.y + 20 + rng() * (box.h - 40),
-            vx: (rng() - 0.5) * 0.6, vy: 0.4, spin: 0.05, r: 9, burst: 60 });
+    if (every(f, rate(120, tier)))   // club bomb drops + bursts into a spread
+      add({ ...bulletProps('bclub'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 16,
+            vx: 0, vy: 1.6, r: 9, burst: 40, burstN: 6, burstSpeed: 2.0 });
   },
 };
-PATTERNS.jevil_ult = {   // DEVILSKNIFE / Final Chaos: scythe rain + homing diamonds
-  dur: 600,
+PATTERNS.jevil_ult = {   // DEVILSKNIFE / Final Chaos: orbiting scythes + spade spiral + giant scythe rain
+  dur: 620,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(30, tier)))   // giant scythes rain down
-      add({ ...bulletProps('scythe'), x: box.x + rng() * box.w, y: box.y - 34,
-            vx: (rng() - 0.5) * 0.8, vy: 2.0 + rng() * 1.2, spin: 0.18, r: 12 });
-    if (every(f, rate(12, tier))) {  // spinning spade spiral from center
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.22;
-      add({ ...bulletProps('bspade'), x: cx, y: cy, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, spin: 0.2, r: 7 });
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f === 0 || f === 200 || f === 400) {   // 4 grey scythes orbit the center
+      for (let k = 0; k < 4; k++)
+        add({ ...bulletProps('scythe'), x: cx, y: cy, r: 10, spin: 0.3, vx: 0, vy: 0,
+              orbit: { cx, cy, R: 46, w: 0.05 * (k % 2 ? 1 : -1), ang: k * Math.PI / 2 }, life: 200 });
     }
-    if (every(f, rate(55, tier))) {
-      const side = Math.floor(rng() * 4);
-      const x = side === 0 ? box.x - 20 : side === 1 ? box.x + box.w + 20 : box.x + rng() * box.w;
-      const y = side === 2 ? box.y - 20 : side === 3 ? box.y + box.h + 20 : box.y + rng() * box.h;
-      add({ ...bulletProps('bdiamond'), x, y, vx: 0, vy: 0, homing: 0.045, maxv: 2.2, spin: 0.2, r: 8 });
+    if (f < 320 && every(f, rate(16, tier))) {   // Ring of Spades spiral collapses inward
+      const dir = (Math.floor(f / 120) % 2) ? 1 : -1, ang = f * 0.16 * dir, R = Math.max(box.w, box.h) / 2 + 34;
+      const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R, toC = Math.atan2(cy - y, cx - x);
+      add({ ...bulletProps('bspade'), x, y, vx: Math.cos(toC + dir * 0.5) * 1.8, vy: Math.sin(toC + dir * 0.5) * 1.8, spin: 0.2, r: 8 });
+    }
+    if (f >= 300 && every(f, rate(26, tier))) {  // Final Chaos: giant scythes rain, edges->center
+      const seqPos = [0.06, 0.94, 0.22, 0.78, 0.5][Math.floor(f / rate(26, tier)) % 5];
+      add({ ...bulletProps('scythebig'), x: box.x + 10 + seqPos * (box.w - 20), y: box.y - 40,
+            vx: 0, vy: 2.4 + rng() * 0.8, spin: 0.12, r: 13 });
     }
   },
 };

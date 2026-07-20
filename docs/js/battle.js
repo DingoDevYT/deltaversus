@@ -529,7 +529,7 @@ Battle.updDodge = function () {
   B.soul.y = Math.max(bx.y + 4, Math.min(bx.y + bx.h - 4, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
-  B.sim.tick(B.soul, b => { b.t = 0; b.phase0 = Math.random() * 6.28; B.bullets.push(b); });
+  B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); });
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
   const front = frontLiving(B.myTeam);
@@ -540,16 +540,17 @@ Battle.updDodge = function () {
     b.vx += b.ax || 0; b.vy += b.ay || 0;
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
+    if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.burst && b.t >= b.burst) {
       b.dead = true;
-      const n = 8;
+      const n = b.burstN || 8, bsp = b.burstSpeed || 2.2;
       for (let i = 0; i < n; i++) {
-        const ang = i / n * 6.28;
+        const ang = i / n * 6.28 + (b.burstRot || 0);
         B.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
           dmg: b.dmg, target: b.target, x: b.x, y: b.y,
-          vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.2, t: 0, phase0: 0 });
+          vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp, spin: 0.2, t: 0, phase0: 0 });
       }
       continue;
     }
@@ -587,7 +588,7 @@ Battle.tickMirror = function () {
   let steps = Math.min(3, M.target - M.f, M.sim.dur - M.f);
   if (B.oppSoul) { M.soul.x = B.oppSoul.x * M.box.w; M.soul.y = B.oppSoul.y * M.box.h; }
   while (steps-- > 0) {
-    M.sim.tick(M.soul, b => { b.t = 0; b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
+    M.sim.tick(M.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
     M.f++;
     for (const b of M.bullets) {
       b.t++;
@@ -595,14 +596,16 @@ Battle.tickMirror = function () {
       b.vx += b.ax || 0; b.vy += b.ay || 0;
       if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
       b.x += b.vx; b.y += b.vy;
+      if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
       if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
       if (b.burst && b.t >= b.burst) {
         b.dead = true;
-        for (let i = 0; i < 8; i++) {
-          const ang = i / 8 * 6.28;
+        const n = b.burstN || 8, bsp = b.burstSpeed || 2.2;
+        for (let i = 0; i < n; i++) {
+          const ang = i / n * 6.28 + (b.burstRot || 0);
           M.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
-            x: b.x, y: b.y, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.2, t: 0, phase0: 0 });
+            x: b.x, y: b.y, vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp, spin: 0.2, t: 0, phase0: 0 });
         }
       }
     }
