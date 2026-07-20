@@ -319,6 +319,8 @@ const MOVE_SFX = {
   susie_axe: 'heavyswing', ralsei_scarf: 'smallswing', ralsei_ult: 'spellcast',
   lancer_spade: 'swing', lancer_storm: 'spellcast', lancer_bike: 'heavyswing',
   lancer_ult: 'ultraswing',
+  berdly_fight: 'swing', berdly_bolt: 'icespell', berdly_books: 'spellcast', berdly_ult: 'ultraswing',
+  jevil_spade: 'swing', jevil_diamond: 'spellcast', jevil_carousel: 'spellcast', jevil_ult: 'ultraswing',
 };
 
 // ---------- dodge ----------

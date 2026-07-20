@@ -11,7 +11,7 @@ const G = {
   notice: '',
   f: 0,
 };
-const CHAR_IDS = ['kris', 'susie', 'ralsei', 'noelle', 'lancer'];
+const CHAR_IDS = ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil'];
 const ITEM_IDS = Object.keys(ITEMS);
 
 const canvas = document.getElementById('game');
@@ -230,26 +230,31 @@ function renderJoin() {
 }
 
 function renderSelect() {
-  drawText(ctx, 'main', 'CHOOSE YOUR FIGHTER', 320, 30, { color: '#fff', align: 'center' });
+  drawText(ctx, 'main', 'CHOOSE YOUR FIGHTER', 320, 24, { color: '#fff', align: 'center' });
+  const nTiles = CHAR_IDS.length + 1;
+  const sp = Math.min(96, 600 / nTiles);              // fit all tiles across
+  const startX = 320 - (nTiles - 1) * sp / 2, y = 118;
+  const hw = Math.min(42, sp * 0.46);
   CHAR_IDS.forEach((id, i) => {
-    const x = 66 + i * 96, y = 120;
+    const x = startX + i * sp;
     const c = CHARS[id];
     const sel = i === G.selIdx;
     if (sel) {
       ctx.strokeStyle = c.color; ctx.lineWidth = 2;
-      ctx.strokeRect(x - 42, y - 52, 84, 104);
+      ctx.strokeRect(x - hw, y - 52, hw * 2, 104);
     }
     const an = A.anim(id, 'idle');
     const im = A.animFrame(an, G.f * (1000 / 60), true);
-    drawSpr(ctx, im, x, y, { scale: sel ? 1 : 0.8, alpha: sel ? 1 : 0.6, flip: !!ENEMY_FACING[id] });
-    drawText(ctx, 'main', c.name, x, y + 62, { color: sel ? c.color : '#777', align: 'center' });
+    drawSpr(ctx, im, x, y, { scale: sel ? 0.9 : 0.7, alpha: sel ? 1 : 0.6, flip: !!ENEMY_FACING[id] });
+    drawText(ctx, 'main', c.name, x, y + 60, { color: sel ? c.color : '#777', align: 'center' });
+    if (c.cost > 1) drawText(ctx, 'main', 'x' + c.cost, x + hw - 12, y - 50, { color: '#f80', align: 'center' });
   });
   {
-    const x = 66 + CHAR_IDS.length * 96, y = 120;
+    const x = startX + CHAR_IDS.length * sp;
     const sel = G.selIdx === CHAR_IDS.length;
-    if (sel) { ctx.strokeStyle = '#ff8000'; ctx.lineWidth = 2; ctx.strokeRect(x - 42, y - 52, 84, 104); }
-    drawText(ctx, 'big', '+', x, y - 24, { color: sel ? '#ff8000' : '#666', align: 'center', scale: 0.9 });
-    drawText(ctx, 'main', 'CREATE', x, y + 62, { color: sel ? '#ff8000' : '#777', align: 'center' });
+    if (sel) { ctx.strokeStyle = '#ff8000'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 52, hw * 2, 104); }
+    drawText(ctx, 'big', '+', x, y - 24, { color: sel ? '#ff8000' : '#666', align: 'center', scale: 0.8 });
+    drawText(ctx, 'main', 'CREATE', x, y + 60, { color: sel ? '#ff8000' : '#777', align: 'center' });
   }
   if (G.selIdx < CHAR_IDS.length) {
     const c = CHARS[CHAR_IDS[G.selIdx]];

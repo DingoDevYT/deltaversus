@@ -79,7 +79,45 @@ const CHARS = {
     act: { id: 'hohoho', name: 'Ho Ho Ho!', desc: 'Flip foe controls',
            text: 'LANCER giggles! Something feels backwards...' },
   },
+  berdly: {
+    name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1,
+    desc: 'THE SMART ONE.\nHIGH PROJECTILE VARIETY.',
+    fight: { id: 'berdly_fight', name: 'Feather Toss', dmg: 26, dur: 420,
+             text: 'BERDLY flings feathers, smartly!' },
+    spells: [
+      { id: 'berdly_bolt', name: 'Blue Bolt', tp: 34, dmg: 30, dur: 480, kind: 'attack',
+        text: 'BERDLY strikes with BLUE BOLTS!' },
+      { id: 'berdly_books', name: 'Smart Rain', tp: 42, dmg: 30, dur: 480, kind: 'attack',
+        text: 'BERDLY rains down SMART bullets!' },
+    ],
+    ult: { id: 'berdly_ult', name: 'SMART RACE', tp: 100, dmg: 40, dur: 560, kind: 'attack',
+           text: 'BERDLY goes ALL OUT!!' },
+    act: { id: 'taunt', name: 'Gloat', desc: 'Shrink foe box',
+           text: 'BERDLY gloats! Their box shrinks!' },
+  },
+  jevil: {
+    name: 'JEVIL', color: '#7a5cff', hp: 175, cost: 3, darkner: true,
+    desc: 'CHAOS, CHAOS!\nA DIFFICULT DARKNER.',
+    fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 26, dur: 440,
+             text: 'JEVIL flings spinning spades!' },
+    spells: [
+      { id: 'jevil_diamond', name: 'Diamond Rain', tp: 38, dmg: 30, dur: 500, kind: 'attack',
+        text: 'JEVIL scatters DIAMONDS!' },
+      { id: 'jevil_carousel', name: 'Carousel', tp: 48, dmg: 34, dur: 520, kind: 'attack',
+        text: 'JEVIL spins the CAROUSEL!' },
+    ],
+    ult: { id: 'jevil_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 50, dur: 600, kind: 'attack',
+           text: 'JEVIL unleashes DEVILSKNIFE!! Metamorphosis!' },
+    act: { id: 'intimidate', name: 'Chaos', desc: 'Slow foe soul',
+           text: 'JEVIL cackles! CHAOS, CHAOS!' },
+  },
 };
+// party-cost + darkner defaults (used by party-size + darkness systems)
+for (const id in CHARS) {
+  if (CHARS[id].cost == null) CHARS[id].cost = 1;
+  if (CHARS[id].darkner == null) CHARS[id].darkner = false;
+}
+CHARS.lancer.cost = 2; CHARS.lancer.darkner = true;
 
 // ACT effects: statuses applied to the opponent, active during their next dodge
 // (and/or their next select phase). One turn only.

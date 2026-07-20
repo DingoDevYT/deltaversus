@@ -16,7 +16,7 @@ A.load = function (done) {
     for (const b of ['fight', 'act', 'item', 'spare', 'defend', 'magic'])
       paths.push(`assets/ui/btn_${b}.png`, `assets/ui/btn_${b}_sel.png`);
     paths.push('assets/ui/soul.png');
-    for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer'])
+    for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil'])
       paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
     for (const b in (man.bullets || {})) paths.push(`assets/bullets/${man.bullets[b].f}`);
@@ -47,7 +47,8 @@ A.chr = function (ch, group, i) {
   return A.img[`assets/chars/${ch}/${list[i % list.length]}`];
 };
 A.chrFrames = function (ch, group) {
-  const list = A.manifest.chars[ch][group] || [];
+  const c = A.manifest.chars[ch];
+  const list = (c && c[group]) || [];
   return list.map(f => A.img[`assets/chars/${ch}/${f}`]);
 };
 A.ui = p => A.img[`assets/ui/${p}.png`];
