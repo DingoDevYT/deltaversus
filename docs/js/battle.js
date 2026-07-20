@@ -2,9 +2,10 @@
 // Phases: select -> waitopp -> reveal -> timing -> waittier -> dodge
 //         -> waitresult -> resolve -> (select | gameover)
 
-const BOX = { x: 208, y: 128, w: 224, h: 176 };   // dodge box (game px)
+const BOX = { x: 220, y: 116, w: 200, h: 200 };   // dodge box (square by default)
 const SOUL_R = 5;
 const GRAZE_R = 15;
+const BOX_ANIM = 16;   // frames for the box open/close spin-in animation
 const SELECT_FRAMES = 24 * 60;
 const IFRAMES = 55;
 const TIER_TP = [4, 10, 18];   // accuracy -> TP
@@ -161,7 +162,9 @@ Battle.update = function () {
     case 'reveal': if (--B.revealT <= 0) B.startTiming(); break;
     case 'timing': B.updTiming(); break;
     case 'waittier': if (B.oppTiers != null) B.startDodge(); break;
+    case 'boxin': B.tickBoxAnim(1); if (B.boxT >= BOX_ANIM) { B.boxT = 0; B.boxGhosts = []; B.phase = 'dodge'; } break;
     case 'dodge': B.updDodge(); break;
+    case 'boxout': B.tickBoxAnim(-1); if (B.boxT >= BOX_ANIM) { B.boxGhosts = []; B.endDodge(); } break;
     case 'waitresult': if (B.oppResult) B.resolve(); break;
     case 'resolve': if (--B.resolveT <= 0) B.nextTurn(); break;
     case 'gameover':
@@ -181,11 +184,12 @@ const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
 const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
 // darkners swap ACT for CHARGE and pay a discounted TP rate on spells
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
-// KRIS is magicless - everything is done through ACT (his MAGIC slot becomes ACT).
+// Every lightner can SPARE. Only KRIS can ACT (his MAGIC slot becomes ACT); the
+// other fun-gang members have no ACT (they only ACT via Kris's dual-acts).
 function menuFor(mem) {
   if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];
-  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'defend'];
-  return MENU;
+  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'spare', 'defend'];
+  return ['fight', 'magic', 'item', 'spare', 'defend'];
 }
 function spellCost(mem, d) { return isDarkner(mem) ? Math.ceil(d.tp * 0.6) : d.tp; }
 Battle.startSelect = function (fresh) {
@@ -250,14 +254,13 @@ Battle.updSelect = function () {
       if (cmd === 'item' && !B.canUseItems()) { Snd.play('cantselect'); }
       else {
         Snd.play('select');
-        if (cmd === 'fight' || cmd === 'defend' || cmd === 'charge') B.choose(cmd, null);
+        if (cmd === 'fight' || cmd === 'defend' || cmd === 'charge' || cmd === 'spare') B.choose(cmd, null);
         else { B.submenu = cmd; B.subIdx = 0; }
       }
     }
   } else {
     const opts = B.subOptions();
-    if (Input.hit.up) { B.subIdx = (B.subIdx + opts.length - 1) % opts.length; Snd.play('menumove'); }
-    if (Input.hit.down) { B.subIdx = (B.subIdx + 1) % opts.length; Snd.play('menumove'); }
+    B.subIdx = gridNav(B.subIdx, opts.length);
     if (Input.hit.cancel) { B.submenu = null; Snd.play('menumove'); }
     if (Input.hit.ok && opts.length) {
       const o = opts[B.subIdx];
@@ -266,6 +269,17 @@ Battle.updSelect = function () {
     }
   }
 };
+
+// navigation for a 2-column grid (row-major): left/right within a row, up/down by row.
+function gridNav(idx, n) {
+  if (!n) return 0;
+  let ni = idx;
+  if (Input.hit.left) { ni = idx - 1; Snd.play('menumove'); }
+  else if (Input.hit.right) { ni = idx + 1; Snd.play('menumove'); }
+  else if (Input.hit.up) { ni = idx - 2; Snd.play('menumove'); }
+  else if (Input.hit.down) { ni = idx + 2; Snd.play('menumove'); }
+  return Math.max(0, Math.min(n - 1, ni));
+}
 
 // TP available now, previewing this turn's tentative spends (spells) and
 // gains (DEFEND) so you can e.g. Kris-DEFEND to fund Susie's spell.
@@ -278,9 +292,15 @@ Battle.subOptions = function () {
       const cost = spellCost(mem, s);
       const gated = s.darkReq && mem.dark < s.darkReq;
       const snowLock = s.snowgrave && B.proceedCount < 3;   // SNOWGRAVE needs Proceed x3
+      let eff = '';
+      if (s.kind === 'attack') eff = 'Deals ' + s.dmg + ' damage.';
+      else if (s.kind === 'heal') eff = 'Heals ' + s.heal + ' HP.';
+      else if (s.kind === 'mercy') eff = 'Raises the foe\'s MERCY.';
+      else if (s.kind === 'spareTired') eff = s.scope === 'all' ? 'Spares all TIRED foes.' : 'Spares a TIRED foe.';
+      else if (s.kind === 'revive') eff = 'Revives a downed ally.';
       return { id: s.id, label: s.name, ult,
                cost: snowLock ? 'NEEDx3' : gated ? '🌑x' + Math.ceil(s.darkReq / CHARGE_GAIN) : cost + '%',
-               disabled: snowLock || gated || B.tpAvail() < cost };
+               costTP: cost, disabled: snowLock || gated || B.tpAvail() < cost, info: eff };
     };
     const list = c.spells.map(s => opt(s, false));
     list.push(opt(c.ult, true));
@@ -299,17 +319,19 @@ Battle.subOptions = function () {
         if (ai < 0) { disabled = true; cost = 'need ' + ad.ally.toUpperCase(); }
       }
       if (ad.id === 'act_proceed') cost = B.proceedCount >= 2 ? 'x3->SNOW' : 'x' + (B.proceedCount + 1);
-      opts.push({ id: ad.id, label: ad.name, cost, disabled });
+      opts.push({ id: ad.id, label: ad.name, cost, disabled, ally: ad.ally, info: ad.text });
     }
-    const anyFoe = B.oppTeam.some(m => !isOut(m));
-    opts.push({ id: '__spare__', label: 'SPARE', cost: '', spare: true, disabled: !anyFoe });
     return opts;
   }
   if (B.submenu === 'item') {
     if (!B.canUseItems()) return [{ id: null, label: 'NO ITEMS (BOSS)', disabled: true }];
     const bag = B.myItems.filter((_, i) => !B.itemsUsed.includes(i));
     if (!bag.length) return [{ id: null, label: '(empty)', disabled: true }];
-    return B.myItems.map((it, i) => ({ id: i, label: ITEMS[it].name, disabled: B.itemsUsed.includes(i) }));
+    return B.myItems.map((it, i) => {
+      const d = ITEMS[it];
+      const eff = 'Heals ' + (d.heal || 0) + ' HP' + (d.tp ? ' +' + d.tp + ' TP' : '') + '.';
+      return { id: i, label: d.name, disabled: B.itemsUsed.includes(i), info: eff, costTP: 0, item: true };
+    });
   }
   return [];
 };
@@ -347,9 +369,7 @@ Battle.choose = function (cmd, move) {
 
 Battle.updTargeting = function () {
   const B = Battle;
-  const n = B.targetList.length;
-  if (Input.hit.up) { B.targetIdx = (B.targetIdx + n - 1) % n; Snd.play('menumove'); }
-  if (Input.hit.down) { B.targetIdx = (B.targetIdx + 1) % n; Snd.play('menumove'); }
+  B.targetIdx = gridNav(B.targetIdx, B.targetList.length);
   if (Input.hit.cancel) { B.targeting = false; B.pendingCmd = null; Snd.play('menumove'); }
   if (Input.hit.ok) {
     Snd.play('select');
@@ -584,8 +604,23 @@ Battle.startDodge = function () {
                  soul: { x: mbox.w / 2, y: mbox.h * 0.72 } };
   }
 
-  B.phase = 'dodge';
-  if (!B.sim) { B.say('* Guard up...'); B.endDodge(); }
+  // spin the box open, then dodge (endDodge is deferred to the boxout animation)
+  B.boxT = 0; B.boxGhosts = [];
+  if (!B.sim) { B.say('* Guard up...'); B.phase = 'boxout'; }
+  else B.phase = 'boxin';
+};
+
+Battle.tickBoxAnim = function (dir) {
+  const B = Battle;
+  B.boxT++;
+  const p = dir > 0 ? (B.boxT / BOX_ANIM) : (1 - B.boxT / BOX_ANIM);
+  const pc = Math.max(0, Math.min(1, p));
+  B.boxScaleCur = 1 - Math.pow(1 - pc, 3);                 // easeOut scale
+  B.boxRotCur = (B.boxT / BOX_ANIM) * Math.PI * 2 * (dir > 0 ? 1 : -1);
+  if (!B.boxGhosts) B.boxGhosts = [];
+  B.boxGhosts.push({ s: B.boxScaleCur, rot: B.boxRotCur, alpha: 0.4 });
+  for (const g of B.boxGhosts) g.alpha -= 0.08;
+  B.boxGhosts = B.boxGhosts.filter(g => g.alpha > 0.03);
 };
 
 // targeted damage: a bullet damages the enemy member its attacker aimed at;
@@ -668,7 +703,7 @@ Battle.updDodge = function () {
   if (B.anim.f % 4 === 0)
     Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, f: B.sim ? B.sim.f : 0, done: false });
 
-  if (--B.dodgeT <= 0 || teamDead(B.myTeam)) B.endDodge();
+  if (--B.dodgeT <= 0 || teamDead(B.myTeam)) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; }
 };
 
 Battle.tickMirror = function () {
@@ -881,14 +916,30 @@ Battle.renderChars = function (ctx) {
   drawTeam(B.oppTeam, 544, true);
 };
 
+function drawBoxRect(ctx, cx, cy, w, h, rot, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cx, cy); if (rot) ctx.rotate(rot);
+  ctx.fillStyle = '#000'; ctx.fillRect(-w / 2, -h / 2, w, h);
+  ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3;
+  ctx.strokeRect(-w / 2 - 1.5, -h / 2 - 1.5, w + 3, h + 3);
+  ctx.restore();
+}
+// The battle box only exists during the dodge (and its spin-in / spin-out).
 Battle.renderBoxAndBullets = function (ctx) {
   const B = Battle;
+  const anim = B.phase === 'boxin' || B.phase === 'boxout';
   const inDodge = B.phase === 'dodge';
-  const bx = inDodge ? B.dodgeBox : BOX;
-  ctx.fillStyle = '#000'; ctx.fillRect(bx.x, bx.y, bx.w, bx.h);
-  ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3;
-  ctx.strokeRect(bx.x - 1.5, bx.y - 1.5, bx.w + 3, bx.h + 3);
-  if (!inDodge) return;
+  if (!anim && !inDodge) return;
+  const bx = B.dodgeBox; if (!bx) return;
+  const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
+  if (anim) {   // afterimage trail + the scaling/rotating box
+    for (const g of (B.boxGhosts || [])) drawBoxRect(ctx, cx, cy, bx.w * g.s, bx.w * g.s, g.rot, g.alpha);
+    const s = B.boxScaleCur || 0;
+    drawBoxRect(ctx, cx, cy, bx.w * s, bx.w * s, B.boxRotCur || 0, 1);
+    return;
+  }
+  drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);
   ctx.save();
   ctx.beginPath(); ctx.rect(bx.x - 40, bx.y - 40, bx.w + 80, bx.h + 80); ctx.clip();
   for (const h of B.hearts) {
@@ -958,54 +1009,46 @@ Battle.renderMirror = function (ctx) {
   drawSpr(ctx, A.hued(A.ui('head_' + od.base), od.hue), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
 };
 
-// Deltarune-style bottom bar: my party's name/HP panels sit across the bottom;
-// the member whose turn it is RAISES up, revealing its 5 action buttons. Enemy
-// HP is NOT shown here - it appears on the target-select screen instead.
+// --------- bottom UI: party info panels (HP/name) + a black dialogue box that
+// holds text, command buttons, option grids and target lists (Deltarune-style).
+const PANEL_Y = 338, DBOX = { x: 24, y: 386, w: 592, h: 88 };
+
+function drawPartyPanel(ctx, m, px, py, w, active) {
+  ctx.fillStyle = '#000'; ctx.fillRect(px, py, w, 42);
+  ctx.strokeStyle = active ? m.def.color : '#333'; ctx.lineWidth = active ? 2 : 1; ctx.strokeRect(px + 1, py + 1, w - 2, 40);
+  const out = isOut(m), bw = w - 78;
+  let head = A.ui('head_' + m.def.base + (m.downed ? '_gray' : '')); if (!m.downed && m.def.hue) head = A.hued(head, m.def.hue);
+  drawSpr(ctx, head, px + 15, py + 14, { scale: 0.8, alpha: m.spared ? 0.5 : 1 });
+  drawText(ctx, 'main', m.def.name, px + 30, py + 4, { color: out ? '#666' : '#fff' });
+  ctx.fillStyle = '#3c0d0d'; ctx.fillRect(px + 30, py + 21, bw, 6);
+  ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(px + 30, py + 21, Math.max(0, Math.round(bw * m.hp / m.max)), 6);
+  drawText(ctx, 'main', m.spared ? 'SPARE' : ('' + m.hp), px + w - 8, py + 4, { color: out ? '#888' : '#bbb', align: 'right' });
+  if (isDarkner(m) && !out) {
+    ctx.fillStyle = '#1a0a2a'; ctx.fillRect(px + 30, py + 30, bw, 4);
+    ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2'; ctx.fillRect(px + 30, py + 30, Math.round(bw * m.dark / 100), 4);
+  }
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH, color, scale) {
+  scale = scale || 0.8;
+  const maxChars = Math.max(6, Math.floor(maxW / (7 * scale)));
+  const words = ('' + (text || '')).split(' '); const lines = []; let line = '';
+  for (const w of words) { if ((line + ' ' + w).trim().length > maxChars && line) { lines.push(line); line = w; } else line = line ? line + ' ' + w : w; }
+  if (line) lines.push(line);
+  lines.slice(0, 4).forEach((ln, i) => drawText(ctx, 'main', ln, x, y + i * lineH, { color, scale }));
+}
+
 Battle.renderHud = function (ctx) {
   const B = Battle;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 432, 640, 48);
-  ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, 432.5); ctx.lineTo(640, 432.5); ctx.stroke();
-
+  // party info panels
   const n = B.myTeam.length;
-  const pw = Math.min(210, 620 / n);
-  const startX = 320 - (n * pw) / 2 + 4;
-  const activeMi = (B.phase === 'select' && !B.targeting) ? B.cmdOrder[B.cmdPos]
-                 : B.phase === 'timing' ? ((B.bars.find(b => !b.done && b.started) || B.bars.find(b => !b.done) || {}).mi) : -1;
+  const pw = Math.min(196, (600 - (n - 1) * 8) / n);
+  const totalW = n * pw + (n - 1) * 8, startX = 320 - totalW / 2;
+  const activeMi = (B.phase === 'select' && !B.targeting && !B.submenu) ? B.cmdOrder[B.cmdPos]
+                 : B.phase === 'timing' ? ((B.bars.find(x => !x.done && x.started) || B.bars.find(x => !x.done) || {}).mi) : -1;
+  B.myTeam.forEach((m, i) => drawPartyPanel(ctx, m, startX + i * (pw + 8), PANEL_Y, pw, i === activeMi));
 
-  B.myTeam.forEach((m, i) => {
-    if (m.raise == null) m.raise = 0;
-    m.raise += ((i === activeMi ? 1 : 0) - m.raise) * 0.35;
-    const px = startX + i * pw;
-    const py = 438 - m.raise * 46;
-    const inner = pw - 12;
-    ctx.fillStyle = '#000'; ctx.fillRect(px, py - 2, inner, 42 + m.raise * 44);
-    ctx.strokeStyle = m.raise > 0.5 ? m.def.color : '#333'; ctx.lineWidth = 1; ctx.strokeRect(px, py - 2, inner, 42);
-    let head = A.ui('head_' + m.def.base + (m.downed ? '_gray' : ''));
-    if (!m.downed && m.def.hue) head = A.hued(head, m.def.hue);
-    drawSpr(ctx, head, px + 13, py + 12, { scale: 0.8 });
-    drawText(ctx, 'main', m.def.name, px + 28, py + 1, { color: m.downed ? '#666' : '#fff' });
-    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(px + 28, py + 18, inner - 68, 6);
-    ctx.fillStyle = m.downed ? '#611' : m.def.color;
-    ctx.fillRect(px + 28, py + 18, Math.max(0, Math.round((inner - 68) * m.hp / m.max)), 6);
-    drawText(ctx, 'main', '' + m.hp, px + inner - 8, py + 1, { color: m.downed ? '#666' : '#bbb', align: 'right' });
-    // darkness meter for darkners (purple bar under the HP bar)
-    if (isDarkner(m) && !m.downed) {
-      ctx.fillStyle = '#1a0a2a'; ctx.fillRect(px + 28, py + 27, inner - 68, 4);
-      ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2';
-      ctx.fillRect(px + 28, py + 27, Math.max(0, Math.round((inner - 68) * m.dark / 100)), 4);
-    }
-    // action buttons revealed under the raised, active member
-    if (i === activeMi && m.raise > 0.6 && B.phase === 'select' && !B.submenu) {
-      const names = menuFor(m);
-      const step = (inner - 16) / names.length;
-      for (let k = 0; k < names.length; k++) {
-        const sel = B.menuIdx === k;
-        drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
-      }
-    }
-  });
-
-  // shared TP bar (left), previewing this turn's tentative spend/gain in select
+  // shared TP bar + buffs + turn/timer
   const dispTP = B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP;
   ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 70, 16, 190);
   const tpH = Math.round(190 * dispTP / 100);
@@ -1013,65 +1056,87 @@ Battle.renderHud = function (ctx) {
   if (tpH > 0 && tpH < 190) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 70 + 190 - tpH, 16, 3); }
   drawText(ctx, 'main', 'TP', 40, 54, { color: '#ff8000', align: 'center' });
   drawText(ctx, 'main', '' + dispTP, 46, 264, { color: '#ff8000', align: 'center' });
-
-  // active team buffs (Northernlight / Lock In)
   let by = 288;
   if (B.myGuardBuff > 0) { drawText(ctx, 'main', 'GUARD ' + B.myGuardBuff, 30, by, { color: '#6cf', scale: 0.85 }); by += 16; }
   if (B.myPowerBuff > 0) { drawText(ctx, 'main', 'POWER ' + B.myPowerBuff, 30, by, { color: '#f84', scale: 0.85 }); }
-
-  if (B.phase === 'select') {
-    const secs = Math.ceil(B.timer / 60);
-    drawText(ctx, 'big', '' + secs, 320, 18, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 });
-  }
+  if (B.phase === 'select') { const secs = Math.ceil(B.timer / 60); drawText(ctx, 'big', '' + secs, 320, 18, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 }); }
   drawText(ctx, 'main', 'TURN ' + B.turn, 30, 18, { color: '#666' });
 
-  if (B.submenu) {
-    const opts = B.subOptions();
-    const px = 200, py = 150, pw2 = 240, ph = 40 + opts.length * 26;
-    ctx.fillStyle = 'rgba(0,0,0,0.92)'; ctx.fillRect(px, py, pw2, ph);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw2, ph);
-    drawText(ctx, 'main', B.curMember().def.name + ' ' + B.submenu.toUpperCase(), px + pw2 / 2, py + 8, { color: '#ff8000', align: 'center' });
-    opts.forEach((o, i) => {
-      const sel = i === B.subIdx;
-      const col = o.disabled ? '#555' : o.ult ? '#f4a' : sel ? '#ff0' : '#fff';
-      drawText(ctx, 'main', (sel ? '> ' : '  ') + o.label, px + 14, py + 32 + i * 26, { color: col });
-      if (o.cost) drawText(ctx, 'main', o.cost, px + pw2 - 14, py + 32 + i * 26, { color: col, align: 'right' });
-    });
+  // bottom dialogue box + state-driven content
+  const d = DBOX;
+  ctx.fillStyle = '#000'; ctx.fillRect(d.x, d.y, d.w, d.h);
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, d.y + 1, d.w - 2, d.h - 2);
+  if (B.targeting) Battle.renderTargetList(ctx, d);
+  else if (B.submenu) Battle.renderOptionGrid(ctx, d);
+  else if (B.phase === 'select') Battle.renderCommandButtons(ctx, d);
+  else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 14, d.y + 14 + i * 20, { color: '#fff' }));
+};
+Battle.renderMsg = function () {};   // text now lives inside the dialogue box
+
+Battle.renderCommandButtons = function (ctx, d) {
+  const B = Battle, mem = B.curMember(); if (!mem) return;
+  drawText(ctx, 'main', '* ' + mem.def.name + "'S TURN", d.x + 14, d.y + 8, { color: mem.def.color, scale: 0.9 });
+  const names = menuFor(mem), bw = 42, gap = 16;
+  const total = names.length * bw + (names.length - 1) * gap, x0 = d.x + (d.w - total) / 2, cy = d.y + d.h / 2 + 8;
+  for (let k = 0; k < names.length; k++)
+    drawSpr(ctx, A.ui('btn_' + names[k] + (B.menuIdx === k ? '_sel' : '')), x0 + k * (bw + gap) + bw / 2, cy, { scale: bw / 32 });
+};
+
+// 3-column layout: two option columns (aligned with the party lines) + info box.
+Battle.renderOptionGrid = function (ctx, d) {
+  const B = Battle;
+  const opts = B.subOptions();
+  const perPage = 6, page = Math.floor(B.subIdx / perPage), pages = Math.ceil(opts.length / perPage);
+  const optW = Math.round(d.w * 0.60), infoX = d.x + optW + 10, infoW = d.w - optW - 20;
+  drawText(ctx, 'main', B.submenu.toUpperCase(), d.x + 12, d.y + 6, { color: '#ff8000', scale: 0.8 });
+  if (pages > 1) drawText(ctx, 'main', '< PAGE ' + (page + 1) + '/' + pages + ' >', d.x + optW / 2, d.y + 6, { color: '#888', align: 'center', scale: 0.75 });
+  const colX = [d.x + 20, d.x + optW / 2 + 6], rowY = [d.y + 26, d.y + 47, d.y + 68];
+  for (let j = 0; j < perPage; j++) {
+    const gi = page * perPage + j; if (gi >= opts.length) break;
+    const o = opts[gi], sel = gi === B.subIdx;
+    const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
+    const color = o.disabled ? '#555' : o.ult ? '#f6a' : sel ? '#ff0' : '#fff';
+    drawText(ctx, 'main', (sel ? '>' : ' ') + o.label, x, y, { color, scale: 0.9 });
   }
-
-  if (B.targeting) Battle.renderTargeting(ctx);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 8, d.y + 6); ctx.lineTo(infoX - 8, d.y + d.h - 6); ctx.stroke();
+  const cur = opts[B.subIdx];
+  if (cur) {
+    if (cur.ally) { const h = A.ui('head_' + cur.ally); if (h) { drawText(ctx, 'main', 'NEEDS', infoX, d.y + 12, { color: '#8cf', scale: 0.75 }); drawSpr(ctx, h, infoX + 44, d.y + 18, { scale: 0.7 }); } }
+    wrapText(ctx, cur.info || '', infoX, d.y + (cur.ally ? 32 : 14), infoW, 11, '#cfcfcf', 0.72);
+    const bottom = cur.item ? 'ITEM' : (cur.cost ? 'COST ' + cur.cost : 'FREE');
+    drawText(ctx, 'main', bottom, infoX, d.y + d.h - 14, { color: '#ff8000', scale: 0.85 });
+  }
 };
 
-// target-select overlay: shows enemy HP (Deltarune shows it here, not on the bar)
-Battle.renderTargeting = function (ctx) {
-  const B = Battle;
-  const ally = B.targetSideCur === 'ally';
-  const team = ally ? B.myTeam : B.oppTeam;
-  drawText(ctx, 'main', B.curMember().def.name + (ally ? ' -> HELP WHO?' : ' -> CHOOSE TARGET'), 320, 150, { color: ally ? '#2f2' : '#ff8000', align: 'center' });
-  B.targetList.forEach((ei, k) => {
-    const m = team[ei], def = m.def, sel = k === B.targetIdx;
-    const y = 176 + k * 30;
-    if (sel) drawSpr(ctx, A.ui('soul'), 190, y + 7, { scale: 1 });
-    let head = A.ui('head_' + def.base + (def.hue ? '' : '')); if (def.hue) head = A.hued(head, def.hue);
-    drawSpr(ctx, head, 214, y + 8, { scale: 0.8 });
-    drawText(ctx, 'main', def.name, 232, y, { color: sel ? '#ff0' : '#fff' });
-    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(360, y + 3, 100, 7);
-    ctx.fillStyle = def.color; ctx.fillRect(360, y + 3, Math.max(0, Math.round(100 * m.hp / m.max)), 7);
-    drawText(ctx, 'main', m.hp + '/' + m.max, 470, y - 2, { color: sel ? '#fff' : '#999' });
-    if (!ally) {   // enemy: show MERCY meter + SPARE readiness
-      ctx.fillStyle = '#3a3000'; ctx.fillRect(360, y + 13, 100, 5);
-      ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(360, y + 13, Math.round(100 * m.mercy / 100), 5);
-      const tag = (m.def.spare || {}).never ? '' : canSpare(m) ? 'SPARE!' : isTired(m) ? 'tired' : m.mercy + '%';
-      drawText(ctx, 'main', tag, 470, y + 11, { color: canSpare(m) ? '#ff0' : '#aa8', align: 'left', scale: 0.8 });
+Battle.renderTargetList = function (ctx, d) {
+  const B = Battle, ally = B.targetSideCur === 'ally', team = ally ? B.myTeam : B.oppTeam;
+  const optW = Math.round(d.w * 0.60), infoX = d.x + optW + 10, infoW = d.w - optW - 20;
+  drawText(ctx, 'main', ally ? 'HELP WHO?' : 'TARGET WHO?', d.x + 12, d.y + 6, { color: ally ? '#2f2' : '#ff8000', scale: 0.8 });
+  const perPage = 6, page = Math.floor(B.targetIdx / perPage), pages = Math.ceil(B.targetList.length / perPage);
+  if (pages > 1) drawText(ctx, 'main', '< PAGE ' + (page + 1) + '/' + pages + ' >', d.x + optW / 2, d.y + 6, { color: '#888', align: 'center', scale: 0.75 });
+  const colX = [d.x + 18, d.x + optW / 2 + 6], rowY = [d.y + 26, d.y + 47, d.y + 68];
+  for (let j = 0; j < perPage; j++) {
+    const gi = page * perPage + j; if (gi >= B.targetList.length) break;
+    const m = team[B.targetList[gi]], sel = gi === B.targetIdx;
+    const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
+    let head = A.ui('head_' + m.def.base); if (m.def.hue) head = A.hued(head, m.def.hue);
+    drawSpr(ctx, head, x + 10, y + 5, { scale: 0.55 });
+    drawText(ctx, 'main', (sel ? '>' : ' ') + m.def.name, x + 20, y, { color: sel ? '#ff0' : '#fff', scale: 0.9 });
+  }
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 8, d.y + 6); ctx.lineTo(infoX - 8, d.y + d.h - 6); ctx.stroke();
+  const tm = team[B.targetList[B.targetIdx]];
+  if (tm) {
+    drawText(ctx, 'main', tm.def.name, infoX, d.y + 12, { color: '#fff', scale: 0.9 });
+    ctx.fillStyle = '#3c0d0d'; ctx.fillRect(infoX, d.y + 28, infoW, 6);
+    ctx.fillStyle = tm.def.color; ctx.fillRect(infoX, d.y + 28, Math.max(0, Math.round(infoW * tm.hp / tm.max)), 6);
+    drawText(ctx, 'main', tm.hp + '/' + tm.max, infoX, d.y + 38, { color: '#bbb', scale: 0.75 });
+    if (!ally) {
+      ctx.fillStyle = '#3a3000'; ctx.fillRect(infoX, d.y + 52, infoW, 5);
+      ctx.fillStyle = canSpare(tm) ? '#ffd000' : '#c8a000'; ctx.fillRect(infoX, d.y + 52, Math.round(infoW * tm.mercy / 100), 5);
+      const tag = (tm.def.spare || {}).never ? 'CANT SPARE' : canSpare(tm) ? 'SPARE READY!' : isTired(tm) ? 'TIRED' : 'MERCY ' + tm.mercy + '%';
+      drawText(ctx, 'main', tag, infoX, d.y + d.h - 13, { color: canSpare(tm) ? '#ff0' : '#aa8', scale: 0.75 });
     }
-  });
-  drawText(ctx, 'main', '[Z] CONFIRM  [X] BACK', 320, 176 + B.targetList.length * 30 + 14, { color: '#555', align: 'center' });
-};
-
-Battle.renderMsg = function (ctx) {
-  const B = Battle;
-  if (!B.msg.length || B.phase === 'timing' || B.phase === 'select') return;
-  B.msg.forEach((m, i) => drawText(ctx, 'main', m, 40, 300 + i * 22, { color: '#fff' }));
+  }
 };
 
 Battle.renderTiming = function (ctx) {
