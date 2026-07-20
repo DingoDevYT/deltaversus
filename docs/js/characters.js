@@ -164,9 +164,12 @@ const QTY_IDS = Object.keys(QTYS);
 
 // projectiles usable in the builder + their skill-point cost tier
 const BULLET_COST = {
-  spark: 0, orb_s: 0, orb_m: 0, star: 0,
+  spark: 0, orb_s: 0, orb_m: 0, star: 0, toebean: 0,
   orb_l: 1, diamond: 1, sword: 1, dart: 1, spade: 1, spade_pink: 1, note: 1, shard: 1, crescent: 1, ring: 1,
+  egg: 1, carrot: 1, knife: 1, yarn: 1, catface: 1, kdiamond: 1, kstar: 1, ktriangle: 1,
+  redring: 1, bell: 1, dice: 1, dice4: 1, umbrella2: 1, trash: 1, lamp: 1, ring2: 1,
   axe: 2, arc: 2, arc_red: 2, shuriken: 2, bone: 2, flame: 2, snowflake: 2, icicle: 2,
+  umbrella: 2, scissors: 2, gflame: 2, ghostfire: 2, lightning: 2, flame_m: 2,
 };
 const CC_BULLETS = Object.keys(BULLET_COST);
 
