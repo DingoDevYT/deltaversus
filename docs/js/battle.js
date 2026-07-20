@@ -43,8 +43,11 @@ Battle.init = function (opts) {
   B.rematchMe = false; B.rematchOpp = false;
   B.turnSeed = randSeed();
   B.fxOnMeQueued = null;
+  B.mirror = null;              // local re-sim of MY attack for spectator box
+  B.myPacified = false; B.myPacifiedNext = false;
   Net.handlers = Net.handlers.filter(h => h !== Battle.onMsg);
   Net.on(Battle.onMsg);
+  Snd.playMusic(Snd.THEME[B.oppChar]);
 };
 
 // send a battle message tagged with the current match number
@@ -63,7 +66,11 @@ Battle.onMsg = function (m) {
   if (m.t === 'action') { B.oppAction = m; }
   else if (m.t === 'tier') { B.oppTier = m.tier; }
   else if (m.t === 'result') { B.oppResult = m; }
-  else if (m.t === 'soul') { B.oppSoul = m; B.oppDodging = !m.done; }
+  else if (m.t === 'soul') {
+    B.oppSoul = m; B.oppDodging = !m.done;
+    if (m.done) B.mirror = null;
+    else if (B.mirror) B.mirror.target = Math.max(B.mirror.target, m.f || 0);
+  }
   else if (m.t === 'rematch') { B.rematchOpp = true; }
 };
 
@@ -99,6 +106,7 @@ Battle.say = function (lines) {
 Battle.update = function () {
   const B = Battle;
   B.anim.f++;
+  B.tickMirror();
   if (B.msgT > 0) B.msgT--;
   if (B.shake > 0) B.shake--;
   if (B.flash > 0) B.flash--;
@@ -149,22 +157,24 @@ Battle.updSelect = function () {
   if (B.timer <= 0) { B.choose('defend', null); return; }
 
   if (!B.submenu) {
-    if (Input.hit.left) { B.menuIdx = (B.menuIdx + MENU.length - 1) % MENU.length; }
-    if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % MENU.length; }
+    if (Input.hit.left) { B.menuIdx = (B.menuIdx + MENU.length - 1) % MENU.length; Snd.play('menumove'); }
+    if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % MENU.length; Snd.play('menumove'); }
     if (Input.hit.ok) {
       const cmd = MENU[B.menuIdx];
+      Snd.play('select');
       if (cmd === 'fight') B.choose('fight', null);
       else if (cmd === 'defend') B.choose('defend', null);
       else { B.submenu = cmd; B.subIdx = 0; }
     }
   } else {
     const opts = B.subOptions();
-    if (Input.hit.up) B.subIdx = (B.subIdx + opts.length - 1) % opts.length;
-    if (Input.hit.down) B.subIdx = (B.subIdx + 1) % opts.length;
-    if (Input.hit.cancel) { B.submenu = null; }
+    if (Input.hit.up) { B.subIdx = (B.subIdx + opts.length - 1) % opts.length; Snd.play('menumove'); }
+    if (Input.hit.down) { B.subIdx = (B.subIdx + 1) % opts.length; Snd.play('menumove'); }
+    if (Input.hit.cancel) { B.submenu = null; Snd.play('menumove'); }
     if (Input.hit.ok && opts.length) {
       const o = opts[B.subIdx];
-      if (!o.disabled) B.choose(B.submenu, o.id);
+      if (o.disabled) Snd.play('cantselect');
+      else { Snd.play('select'); B.choose(B.submenu, o.id); }
     }
   }
 };
@@ -230,9 +240,10 @@ Battle.startTiming = function () {
   const B = Battle;
   const def = myMoveDef();
   if (isAttack(def)) {
-    B.timingBar = { x: 0, dir: 1, done: false, t: 0, result: null };
+    // Deltarune-style: marker sweeps right->left toward the colored zone
+    B.timingBar = { x: 416, done: false, t: 0, result: null };
     B.phase = 'timing';
-    B.say('* Press [Z] in the center!');
+    B.say('* Press [Z] on the target!');
   } else {
     B.myTier = 1;
     Battle.send({ t: 'tier', tier: 1 });
@@ -244,16 +255,11 @@ Battle.startTiming = function () {
 Battle.updTiming = function () {
   const B = Battle, tb = B.timingBar;
   tb.t++;
-  tb.x += tb.dir * 2.4;
-  if (tb.x >= 200) { tb.x = 200; tb.dir = -1; }
-  if (tb.x <= 0 && tb.dir < 0) {
-    // two full passes done -> miss
-    B.finishTiming(0);
-    return;
-  }
+  tb.x -= 3.4;
+  if (tb.x <= -10) { B.finishTiming(0); return; }   // sailed past -> miss
   if (Input.hit.ok) {
-    const d = Math.abs(tb.x - 100);
-    B.finishTiming(d < 12 ? 2 : d < 42 ? 1 : 0);
+    const d = Math.abs(tb.x - 26);                  // zone center (bar-local)
+    B.finishTiming(d < 11 ? 2 : d < 42 ? 1 : 0);
   }
 };
 
@@ -262,9 +268,20 @@ Battle.finishTiming = function (tier) {
   B.myTier = tier;
   B.timingBar.done = true;
   B.timingBar.result = tier;
+  Snd.play(tier === 2 ? 'criticalswing' : tier === 1 ? 'bell' : 'smallswing');
   Battle.send({ t: 'tier', tier });
   B.phase = 'waittier';
   B.say('* ' + TIER_NAME[tier]);
+};
+
+// per-move attack sound when the attack actually fires
+const MOVE_SFX = {
+  susie_rude: 'rudebuster', susie_ult: 'rudebuster',
+  snowgrave: 'snowgrave', noelle_ice: 'icespell', noelle_snow: 'icespell',
+  kris_slash: 'swing', kris_cross: 'swing', kris_giga: 'heavyswing',
+  susie_axe: 'heavyswing', ralsei_scarf: 'smallswing', ralsei_ult: 'spellcast',
+  lancer_spade: 'swing', lancer_storm: 'spellcast', lancer_bike: 'heavyswing',
+  lancer_ult: 'ultraswing',
 };
 
 // ---------- dodge ----------
@@ -299,15 +316,28 @@ Battle.startDodge = function () {
     B.sim = makeDodgeSim(B.oppChar, oppDef, tier, B.oppAction.seed, B.dodgeBox);
     B.dodgeT = B.sim.dur;
     B.anim.oppPose = 'attack'; B.anim.oppT = 0;
+    Snd.play(MOVE_SFX[oppDef.id] || 'swing');
     B.say('* DODGE!');
   } else {
     B.sim = null;
     B.dodgeT = 0;
   }
-  if (isAttack(myMoveDef())) { B.anim.myPose = 'attack'; B.anim.myT = 0; }
+  const myDef = myMoveDef();
+  if (isAttack(myDef)) {
+    B.anim.myPose = 'attack'; B.anim.myT = 0;
+    if (B.sim == null) Snd.play(MOVE_SFX[myDef.id] || 'swing');
+    // spectator mirror: re-simulate MY attack pattern (same seed) so we can
+    // watch the opponent's streamed soul dodge it in the side box
+    const myEffTier = B.myPacified ? 0 : B.myTier;
+    const mbox = { x: 0, y: 0, w: BOX.w, h: BOX.h };
+    B.mirror = {
+      sim: makeDodgeSim(B.myChar, myDef, myEffTier, B.myAction.seed, mbox),
+      box: mbox, bullets: [], f: 0, target: 0,
+      soul: { x: mbox.w / 2, y: mbox.h * 0.72 },
+    };
+  }
 
   // tell the (practice) opponent how strong our attack is
-  const myDef = myMoveDef();
   Battle.send({ t: 'dodgeStart',
              potential: isAttack(myDef) ? Math.round(myDef.dmg * TIER_MULT[B.myTier] * 3) : 0,
              dur: isAttack(myDef) ? PATTERNS[myDef.id].dur : 0 });
@@ -379,6 +409,7 @@ Battle.updDodge = function () {
         B.me.hp = Math.max(0, B.me.hp - dmg);
         B.iframes = IFRAMES;
         B.shake = 14; B.flash = 8;
+        Snd.play('hurt');
         B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '' + dmg, t: 0, color: '#f22' });
         B.anim.myPose = 'hurt'; B.anim.myT = 0;
       }
@@ -387,6 +418,7 @@ Battle.updDodge = function () {
       B.me.tp = Math.min(100, B.me.tp + gain);
       B.tpGained += gain;
       B.grazeCd = 10;
+      Snd.play('graze', 0.35);
       B.grazeFx = { x: B.soul.x, y: B.soul.y, t: 8 };
     }
   }
@@ -394,11 +426,48 @@ Battle.updDodge = function () {
   B.bullets = B.bullets.filter(b =>
     b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
 
-  // stream my soul position for the opponent's mini-cam (10Hz)
-  if (B.anim.f % 6 === 0)
-    Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, done: false });
+  // stream my soul position + sim frame for the opponent's spectator box
+  if (B.anim.f % 4 === 0)
+    Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h,
+                  f: B.sim ? B.sim.f : 0, done: false });
 
   if (--B.dodgeT <= 0 || B.me.hp <= 0) B.endDodge();
+};
+
+// advance the spectator mirror sim toward the opponent's reported frame
+Battle.tickMirror = function () {
+  const B = Battle, M = B.mirror;
+  if (!M || !B.oppDodging) return;
+  // follow their reported frame, advancing at most 3 steps/frame to catch up
+  M.target = Math.max(M.target, M.f + 1);
+  let steps = Math.min(3, M.target - M.f, M.sim.dur - M.f);
+  if (B.oppSoul) {
+    M.soul.x = B.oppSoul.x * M.box.w;
+    M.soul.y = B.oppSoul.y * M.box.h;
+  }
+  while (steps-- > 0) {
+    M.sim.tick(M.soul, b => { b.t = 0; b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
+    M.f++;
+    for (const b of M.bullets) {
+      b.t++;
+      if (b.homing) {
+        const d = Math.hypot(M.soul.x - b.x, M.soul.y - b.y) || 1;
+        b.vx += (M.soul.x - b.x) / d * b.homing;
+        b.vy += (M.soul.y - b.y) / d * b.homing;
+      }
+      b.vx += b.ax || 0; b.vy += b.ay || 0;
+      if (b.maxv) {
+        const v = Math.hypot(b.vx, b.vy);
+        if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; }
+      }
+      b.x += b.vx; b.y += b.vy;
+      if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+      if (b.spin) b.rot = (b.rot || 0) + b.spin;
+    }
+    M.bullets = M.bullets.filter(b =>
+      b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 &&
+      (!b.life || b.t < b.life));
+  }
 };
 
 Battle.endDodge = function () {
@@ -416,6 +485,7 @@ Battle.endDodge = function () {
       B.me.hp = Math.min(B.me.max, B.me.hp + (it.heal || 0));
       B.me.tp = Math.min(100, B.me.tp + (it.tp || 0));
       B.me.items.splice(a.move, 1);
+      Snd.play('cure');
       B.dmgPops.push({ x: 110, y: 250, txt: '+' + it.heal, t: 0, color: '#2f2' });
     }
   }
@@ -425,8 +495,10 @@ Battle.endDodge = function () {
       B.me.tp = Math.max(0, B.me.tp - d.tp);
       if (d.heal) {
         B.me.hp = Math.min(B.me.max, B.me.hp + d.heal);
+        Snd.play('cure');
         B.dmgPops.push({ x: 110, y: 250, txt: '+' + d.heal, t: 0, color: '#2f2' });
       }
+      if (d.kind === 'status') Snd.play(d.status === 'pacified' ? 'pacify' : 'spellcast');
       if (d.kind === 'status') B.pacifyOppNext = (d.status === 'pacified');
       if (d.status === 'drowsy') B.fxOnOppQueue = 'drowsy';
     }
@@ -445,6 +517,7 @@ Battle.resolve = function () {
   const r = B.oppResult;
   B.opp.hp = r.hp; B.opp.tp = r.tp;
   if (r.dmgTaken > 0) {
+    Snd.play('damage');
     B.dmgPops.push({ x: 530, y: 200, txt: '' + r.dmgTaken, t: 0, color: '#f22' });
     B.anim.oppPose = 'hurt'; B.anim.oppT = 0;
     B.shake = Math.max(B.shake, 8);
@@ -462,6 +535,13 @@ Battle.resolve = function () {
     if (d && d.kind === 'status') B.fxOnMeQueued = { ...ACT_FX[d.status] };
   }
   B.pacifyOpp = !!B.pacifyOppNext; B.pacifyOppNext = false;
+  // did THEY pacify ME? then my next attack is capped at weak tier
+  B.myPacifiedNext = false;
+  if (B.oppAction.cmd === 'magic') {
+    const oc2 = CHARS[B.oppChar];
+    const od2 = B.oppAction.move === oc2.ult.id ? oc2.ult : oc2.spells.find(s => s.id === B.oppAction.move);
+    if (od2 && od2.status === 'pacified') B.myPacifiedNext = true;
+  }
 
   const lines = [];
   if (r.dmgTaken > 0) lines.push('* ' + B.oppName + ' took ' + r.dmgTaken + ' damage!');
@@ -473,6 +553,9 @@ Battle.resolve = function () {
     B.result = B.me.hp <= 0 ? (B.opp.hp <= 0 ? 'draw' : 'lose') : 'win';
     B.phase = 'gameover';
     B.anim[B.result === 'win' ? 'oppPose' : 'myPose'] = 'downed';
+    if (B.result === 'win') { Snd.stopMusic(); Snd.play('won'); }
+    else if (B.result === 'lose') Snd.playMusic('game_over');
+    else Snd.stopMusic();
     return;
   }
   B.resolveT = 110;
@@ -484,6 +567,8 @@ Battle.nextTurn = function () {
   B.turn++;
   B.fxOnMe = B.fxOnMeQueued;   // opponent's queued sabotage applies this turn
   B.fxOnMeQueued = null;
+  B.myPacified = B.myPacifiedNext; B.myPacifiedNext = false;
+  B.mirror = null;
   B.myAction = B.oppAction = null;
   B.myTier = B.oppTier = null;
   B.myResult = B.oppResult = null;
@@ -509,6 +594,7 @@ Battle.render = function (ctx) {
 
   B.renderChars(ctx);
   B.renderBoxAndBullets(ctx);
+  B.renderMirror(ctx);
   B.renderHud(ctx);
   B.renderMsg(ctx);
   if (B.phase === 'timing') B.renderTiming(ctx);
@@ -549,9 +635,7 @@ Battle.renderChars = function (ctx) {
   const hurtFlashMe = B.anim.myPose === 'hurt' && (B.anim.myT % 8 < 4);
   drawSpr(ctx, mi, 100, 250, { scale: 2, alpha: hurtFlashMe ? 0.4 : 1 });
   const hurtFlashOpp = B.anim.oppPose === 'hurt' && (B.anim.oppT % 8 < 4);
-  drawSpr(ctx, oi, 540, 210, { scale: 2, flip: true, alpha: hurtFlashOpp ? 0.4 : 1 });
-  drawText(ctx, 'main', B.myName, 100, 300, { color: CHARS[B.myChar].color, align: 'center' });
-  drawText(ctx, 'main', B.oppName, 540, 260, { color: CHARS[B.oppChar].color, align: 'center' });
+  drawSpr(ctx, oi, 540, 230, { scale: 2, flip: true, alpha: hurtFlashOpp ? 0.4 : 1 });
 };
 
 Battle.renderBoxAndBullets = function (ctx) {
@@ -560,7 +644,7 @@ Battle.renderBoxAndBullets = function (ctx) {
   const bx = inDodge ? B.dodgeBox : BOX;
   ctx.fillStyle = '#000';
   ctx.fillRect(bx.x, bx.y, bx.w, bx.h);
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3;   // Deltarune green board
   ctx.strokeRect(bx.x - 1.5, bx.y - 1.5, bx.w + 3, bx.h + 3);
 
   if (inDodge) {
@@ -612,58 +696,105 @@ Battle.renderBoxAndBullets = function (ctx) {
         drawText(ctx, 'main', tags.join(' '), bx.x + bx.w / 2, bx.y - 20,
                  { color: '#ff8', align: 'center' });
     }
-  } else if (B.oppDodging && B.oppSoul) {
-    // mini opponent cam inside the idle box
-    const mw = 90, mh = 70;
-    const mx = bx.x + bx.w / 2 - mw / 2, my = bx.y + bx.h / 2 - mh / 2;
-    ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
-    ctx.strokeRect(mx, my, mw, mh);
-    drawText(ctx, 'main', B.oppName, bx.x + bx.w / 2, my - 18, { color: '#888', align: 'center' });
-    const sx = mx + B.oppSoul.x * mw, sy = my + B.oppSoul.y * mh;
-    drawSpr(ctx, A.ui('soul'), sx, sy, { scale: 1 });
   }
 };
 
+// tinted soul sprite cache (per css color)
+const soulTints = {};
+function tintedSoul(color) {
+  if (soulTints[color]) return soulTints[color];
+  const src = A.ui('soul');
+  const c = document.createElement('canvas');
+  c.width = src.width; c.height = src.height;
+  const x = c.getContext('2d');
+  x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = color;
+  x.fillRect(0, 0, c.width, c.height);
+  soulTints[color] = c;
+  return c;
+}
+
+// spectator box: the opponent (their colored soul) dodging MY attack
+Battle.renderMirror = function (ctx) {
+  const B = Battle, M = B.mirror;
+  if (!M || !B.oppDodging || !B.oppSoul) return;
+  const s = 0.5;
+  const mw = M.box.w * s, mh = M.box.h * s;
+  const mx = 500 - mw / 2, my = 96 - mh / 2;   // top-right, above opp sprite
+  ctx.save();
+  ctx.globalAlpha = 0.62;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(mx, my, mw, mh);
+  ctx.strokeStyle = '#8a8a8a'; ctx.lineWidth = 2;
+  ctx.strokeRect(mx - 1, my - 1, mw + 2, mh + 2);
+  ctx.beginPath(); ctx.rect(mx - 20, my - 20, mw + 40, mh + 40); ctx.clip();
+  for (const b of M.bullets) {
+    if (b.img && b.img.width) {
+      drawSpr(ctx, b.img, mx + b.x * s, my + b.y * s,
+              { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip });
+    } else {
+      ctx.fillStyle = b.color || '#aaa';
+      ctx.beginPath(); ctx.arc(mx + b.x * s, my + b.y * s, (b.r || 5) * s, 0, 7); ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 0.95;
+  drawSpr(ctx, tintedSoul(CHARS[B.oppChar].color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
+  ctx.restore();
+  drawSpr(ctx, A.ui('head_' + B.oppChar), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
+};
+
+// one bottom-panel character entry: head icon, name, HP label, bar, numbers
+function drawEntry(ctx, x, y, ch, name, hp, max, active) {
+  const head = A.ui('head_' + ch + (hp <= 0 ? '_gray' : ''));
+  drawSpr(ctx, head, x + 13, y + 15, { scale: 1 });
+  drawText(ctx, 'main', name, x + 34, y + 6, { color: '#fff' });
+  drawText(ctx, 'main', hp + '/ ' + max, x + 250, y - 2, { color: '#fff', align: 'right' });
+  drawText(ctx, 'main', 'HP', x + 132, y + 11, { color: '#fff' });
+  ctx.fillStyle = '#3c0d0d';
+  ctx.fillRect(x + 156, y + 14, 94, 9);
+  ctx.fillStyle = CHARS[ch].color;
+  ctx.fillRect(x + 156, y + 14, Math.max(0, Math.round(94 * hp / max)), 9);
+  if (active) {
+    ctx.strokeStyle = CHARS[ch].color; ctx.lineWidth = 1;
+    ctx.strokeRect(x - 4, y - 6, 262, 38);
+  }
+}
+
 Battle.renderHud = function (ctx) {
   const B = Battle;
-  const y = 388;
-  // TP bar (vertical, left)
-  ctx.fillStyle = '#333'; ctx.fillRect(20, y - 60, 14, 130);
-  const tpH = Math.round(130 * B.me.tp / 100);
-  ctx.fillStyle = '#ff8000'; ctx.fillRect(20, y + 70 - tpH, 14, tpH);
-  drawText(ctx, 'main', 'TP', 27, y - 78, { color: '#ff8000', align: 'center' });
-  drawText(ctx, 'main', B.me.tp + '%', 27, y + 76, { color: '#ff8000', align: 'center' });
+  // bottom panel
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 384, 640, 96);
+  ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, 384.5); ctx.lineTo(640, 384.5); ctx.stroke();
 
-  // buttons
-  const names = ['fight', 'magic', 'act', 'item', 'defend'];
-  const bw = 62 * 1.4;
-  for (let i = 0; i < names.length; i++) {
-    const sel = B.phase === 'select' && !B.submenu && B.menuIdx === i;
-    const im = A.ui('btn_' + names[i] + (sel ? '_sel' : ''));
-    drawSpr(ctx, im, 84 + i * 70, y + 10, { scale: 1.8 });
-  }
+  drawEntry(ctx, 62, 394, B.myChar, B.myName, B.me.hp, B.me.max,
+            B.phase === 'select');
+  drawEntry(ctx, 358, 394, B.oppChar, B.oppName, B.opp.hp, B.opp.max, false);
 
-  // my HP
-  drawText(ctx, 'main', 'HP', 450, y - 6, { color: '#fff' });
-  ctx.fillStyle = '#802'; ctx.fillRect(478, y - 6, 120, 14);
-  ctx.fillStyle = B.me.hp < B.me.max * 0.25 ? '#f00' : '#ff0';
-  ctx.fillRect(478, y - 6, Math.max(0, Math.round(120 * B.me.hp / B.me.max)), 14);
-  drawText(ctx, 'main', B.me.hp + ' / ' + B.me.max, 538, y + 14, { color: '#fff', align: 'center' });
+  // TP bar (vertical, top-left like the real game)
+  ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 58, 18, 190);
+  const tpH = Math.round(190 * B.me.tp / 100);
+  ctx.fillStyle = '#ff8000'; ctx.fillRect(38, 58 + 190 - tpH, 18, tpH);
+  if (tpH > 0 && tpH < 190) { ctx.fillStyle = '#fff'; ctx.fillRect(38, 58 + 190 - tpH, 18, 3); }
+  drawText(ctx, 'main', 'T', 22, 58, { color: '#fff' });
+  drawText(ctx, 'main', 'P', 22, 76, { color: '#fff' });
+  drawText(ctx, 'main', '' + B.me.tp, 46, 252, { color: '#ff8000', align: 'center' });
+  drawText(ctx, 'main', '%', 46, 270, { color: '#ff8000', align: 'center' });
 
-  // opponent HP (top right)
-  drawText(ctx, 'main', B.oppName, 460, 24, { color: CHARS[B.oppChar].color });
-  ctx.fillStyle = '#802'; ctx.fillRect(460, 42, 140, 12);
-  ctx.fillStyle = '#ff0';
-  ctx.fillRect(460, 42, Math.max(0, Math.round(140 * B.opp.hp / B.opp.max)), 12);
-  drawText(ctx, 'main', B.opp.hp + '/' + B.opp.max, 600, 56, { color: '#aaa', align: 'right' });
-
-  // select timer
+  // command buttons under my entry (select phase only)
   if (B.phase === 'select') {
+    const names = ['fight', 'magic', 'act', 'item', 'defend'];
+    for (let i = 0; i < names.length; i++) {
+      const sel = !B.submenu && B.menuIdx === i;
+      const im = A.ui('btn_' + names[i] + (sel ? '_sel' : ''));
+      drawSpr(ctx, im, 92 + i * 48, 448, { scale: 1.4 });
+    }
     const secs = Math.ceil(B.timer / 60);
-    drawText(ctx, 'big', '' + secs, 320, 24, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.6 });
+    drawText(ctx, 'big', '' + secs, 320, 20, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.6 });
   }
-  // turn counter
-  drawText(ctx, 'main', 'TURN ' + B.turn, 30, 24, { color: '#666' });
+  drawText(ctx, 'main', 'TURN ' + B.turn, 30, 20, { color: '#666' });
 
   // submenu panel
   if (B.submenu) {
@@ -684,20 +815,28 @@ Battle.renderHud = function (ctx) {
 
 Battle.renderMsg = function (ctx) {
   const B = Battle;
-  if (!B.msg.length) return;
+  if (!B.msg.length || B.phase === 'timing' || B.phase === 'select') return;
   B.msg.forEach((m, i) => {
-    drawText(ctx, 'main', m, 320, 66 + i * 20, { color: '#fff', align: 'center' });
+    drawText(ctx, 'main', m, 40, 428 + i * 22, { color: '#fff' });
   });
 };
 
 Battle.renderTiming = function (ctx) {
   const B = Battle, tb = B.timingBar;
-  const x = 220, y = 340, w = 200, h = 26;
+  // Deltarune attack bar: head icon + PRESS + long bar, colored target at left
+  const x = 150, y = 434, w = 416, h = 28;
+  drawSpr(ctx, A.ui('head_' + B.myChar), 60, y + h / 2, { scale: 1 });
+  drawText(ctx, 'main', 'PRESS', 80, y + 6, { color: '#fff' });
   ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
-  ctx.fillStyle = 'rgba(255,128,0,0.35)'; ctx.fillRect(x + 58, y, 84, h);
-  ctx.fillStyle = 'rgba(255,255,0,0.55)'; ctx.fillRect(x + 88, y, 24, h);
-  ctx.fillStyle = '#fff'; ctx.fillRect(x + tb.x - 2, y - 4, 4, h + 8);
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+  ctx.fillStyle = CHARS[B.myChar].color;
+  ctx.globalAlpha = 0.85;
+  ctx.fillRect(x + 8, y + 2, 36, h - 4);            // target zone
+  ctx.globalAlpha = 1;
+  if (!tb.done) {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x + Math.max(0, tb.x) - 2, y - 5, 4, h + 10);
+  }
 };
 
 Battle.renderGameover = function (ctx) {

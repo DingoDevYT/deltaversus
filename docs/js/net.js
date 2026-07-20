@@ -126,10 +126,24 @@ const PracticeAI = {
     } else if (msg.t === 'dodgeStart') {
       const dmg = msg.potential != null ? Math.round(msg.potential * (0.25 + Math.random() * 0.45)) : 0;
       const st = PracticeAI.state;
+      const durMs = (msg.dur || 480) / 60 * 1000 * (0.9 + Math.random() * 0.2);
+      // stream a wandering soul so the spectator mirror box has something to show
+      if (msg.dur > 0) {
+        let f = 0, sx = 0.5, sy = 0.7, vx = 0, vy = 0;
+        const iv = setInterval(() => {
+          f += 4;
+          vx += (Math.random() - 0.5) * 0.06; vy += (Math.random() - 0.5) * 0.06;
+          vx *= 0.8; vy *= 0.8;
+          sx = Math.min(0.95, Math.max(0.05, sx + vx));
+          sy = Math.min(0.95, Math.max(0.05, sy + vy));
+          if (f >= msg.dur) { clearInterval(iv); Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true }); }
+          else Net.emitLocal({ t: 'soul', x: sx, y: sy, f, done: false });
+        }, 66);
+      }
       setTimeout(() => {
         if (st) { st.hp = Math.max(0, st.hp - dmg); st.tp = Math.min(100, st.tp + 20 + Math.random() * 15 | 0); }
         Net.emitLocal({ t: 'result', dmgTaken: dmg, tpGained: 25, hp: st ? st.hp : 1, tp: st ? st.tp : 0 });
-      }, (msg.dur || 480) / 60 * 1000 * (0.9 + Math.random() * 0.2));
+      }, durMs);
     } else if (msg.t === 'rematch') {
       PracticeAI.state = null;
       Net.emitLocal({ t: 'rematch' });

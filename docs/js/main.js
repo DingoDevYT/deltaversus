@@ -40,6 +40,7 @@ function wireNet() {
   Net.onClose = () => {
     G.screen = 'menu';
     G.notice = 'CONNECTION LOST';
+    Snd.playMusic('menu');
   };
   Net.on(m => {
     if (m.t === 'hello') {
@@ -71,13 +72,14 @@ function update() {
   G.f++;
   switch (G.screen) {
     case 'title':
-      if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; }
+      if (Input.hit.ok) { G.screen = 'menu'; G.menuIdx = 0; Snd.play('select'); }
       break;
     case 'menu': {
       const n = 3;
-      if (Input.hit.up) G.menuIdx = (G.menuIdx + n - 1) % n;
-      if (Input.hit.down) G.menuIdx = (G.menuIdx + 1) % n;
+      if (Input.hit.up) { G.menuIdx = (G.menuIdx + n - 1) % n; Snd.play('menumove'); }
+      if (Input.hit.down) { G.menuIdx = (G.menuIdx + 1) % n; Snd.play('menumove'); }
       if (Input.hit.ok) {
+        Snd.play('select');
         G.notice = '';
         if (G.menuIdx === 0) { Net.host(); wireNet(); G.screen = 'host'; }
         else if (G.menuIdx === 1) { G.joinCode = ''; G.screen = 'join'; }
@@ -95,9 +97,10 @@ function update() {
       }
       break;
     case 'select': {
-      if (Input.hit.left) G.selIdx = (G.selIdx + CHAR_IDS.length - 1) % CHAR_IDS.length;
-      if (Input.hit.right) G.selIdx = (G.selIdx + 1) % CHAR_IDS.length;
+      if (Input.hit.left) { G.selIdx = (G.selIdx + CHAR_IDS.length - 1) % CHAR_IDS.length; Snd.play('menumove'); }
+      if (Input.hit.right) { G.selIdx = (G.selIdx + 1) % CHAR_IDS.length; Snd.play('menumove'); }
       if (Input.hit.ok) {
+        Snd.play('select');
         G.myChar = CHAR_IDS[G.selIdx];
         G.screen = 'loadout';
         G.loadout = []; G.loadIdx = 0;
@@ -106,16 +109,19 @@ function update() {
     }
     case 'loadout': {
       const rows = ITEM_IDS.length + 1;  // + DONE
-      if (Input.hit.up) G.loadIdx = (G.loadIdx + rows - 1) % rows;
-      if (Input.hit.down) G.loadIdx = (G.loadIdx + 1) % rows;
+      if (Input.hit.up) { G.loadIdx = (G.loadIdx + rows - 1) % rows; Snd.play('menumove'); }
+      if (Input.hit.down) { G.loadIdx = (G.loadIdx + 1) % rows; Snd.play('menumove'); }
       if (Input.hit.cancel) {
+        Snd.play('menumove');
         if (G.loadout.length) G.loadout.pop();
         else G.screen = 'select';
       }
       if (Input.hit.ok) {
         if (G.loadIdx < ITEM_IDS.length) {
-          if (G.loadout.length < LOADOUT_SIZE) G.loadout.push(ITEM_IDS[G.loadIdx]);
+          if (G.loadout.length < LOADOUT_SIZE) { G.loadout.push(ITEM_IDS[G.loadIdx]); Snd.play('select'); }
+          else Snd.play('cantselect');
         } else {
+          Snd.play('shineselect' in A.manifest.sfx ? 'shineselect' : 'select');
           G.myItems = G.loadout.slice();
           G.myHelloSent = true;
           Net.send({ t: 'hello', name: CHARS[G.myChar].name, char: G.myChar, items: G.myItems });
@@ -276,7 +282,7 @@ function frame(t) {
   render();
 }
 
-A.load(() => { G.screen = 'title'; });
+A.load(() => { G.screen = 'title'; Snd.playMusic('menu'); });
 requestAnimationFrame(frame);
 
 // rAF stops in background tabs and setInterval gets throttled to ~1Hz,

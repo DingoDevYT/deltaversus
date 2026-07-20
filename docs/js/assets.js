@@ -16,6 +16,8 @@ A.load = function (done) {
     for (const b of ['fight', 'act', 'item', 'spare', 'defend', 'magic'])
       paths.push(`assets/ui/btn_${b}.png`, `assets/ui/btn_${b}_sel.png`);
     paths.push('assets/ui/soul.png');
+    for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer'])
+      paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
     // background: load every 2nd frame (50 is plenty smooth)
     for (let i = 0; i < man.bg_frames; i += 2) paths.push(`assets/bg/${i}.png`);

@@ -1,0 +1,73 @@
+// Music + SFX. Browsers block audio until a user gesture, so the first
+// keypress unlocks and starts whatever music was requested.
+const Snd = {
+  muted: false,
+  unlocked: false,
+  music: null, musicKey: null, pendingMusic: null,
+  cache: {},
+  MVOL: 0.45, SVOL: 0.55,
+};
+
+// which track plays while FIGHTING this character (opponent's theme)
+Snd.THEME = {
+  kris: 'rude_buster_general',
+  susie: 'vs_susie_susie',
+  ralsei: 'from_now_on_ralsei',
+  noelle: 'vs_noelle_noelle',
+  lancer: 'vs_lancer_lancer',
+};
+
+Snd.sfxPath = k => 'assets/audio/sfx/' + A.manifest.sfx[k];
+Snd.musPath = k => 'assets/audio/music/' + A.manifest.music[k];
+
+Snd.play = function (k, vol) {
+  if (Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return;
+  let base = Snd.cache[k];
+  if (!base) { base = Snd.cache[k] = new Audio(Snd.sfxPath(k)); }
+  const a = base.cloneNode();
+  a.volume = vol != null ? vol : Snd.SVOL;
+  a.play().catch(() => {});
+};
+
+Snd.playMusic = function (key) {
+  if (!A.manifest || !A.manifest.music[key]) return;
+  if (Snd.musicKey === key && Snd.music && !Snd.music.paused) return;
+  Snd.pendingMusic = key;
+  if (!Snd.unlocked) return;
+  Snd._startMusic(key);
+};
+
+Snd._startMusic = function (key) {
+  if (Snd.music) { Snd.music.pause(); Snd.music = null; }
+  Snd.musicKey = key;
+  if (Snd.muted) return;
+  const m = new Audio(Snd.musPath(key));
+  m.loop = true;
+  m.volume = Snd.MVOL;
+  m.play().catch(() => {});
+  Snd.music = m;
+};
+
+Snd.stopMusic = function () {
+  Snd.pendingMusic = null; Snd.musicKey = null;
+  if (Snd.music) { Snd.music.pause(); Snd.music = null; }
+};
+
+Snd.unlock = function () {
+  if (Snd.unlocked) return;
+  Snd.unlocked = true;
+  if (Snd.pendingMusic) Snd._startMusic(Snd.pendingMusic);
+};
+
+Snd.toggleMute = function () {
+  Snd.muted = !Snd.muted;
+  if (Snd.muted) { if (Snd.music) Snd.music.pause(); }
+  else if (Snd.musicKey) Snd._startMusic(Snd.musicKey);
+  else if (Snd.pendingMusic) Snd._startMusic(Snd.pendingMusic);
+};
+
+window.addEventListener('keydown', () => Snd.unlock(), { once: false });
+window.addEventListener('keydown', e => {
+  if ((e.key === 'm' || e.key === 'M') &&
+      !(typeof G !== 'undefined' && G.screen === 'join')) Snd.toggleMute();
+});
