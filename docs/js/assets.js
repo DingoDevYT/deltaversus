@@ -13,7 +13,7 @@ A.load = function (done) {
     for (const ch in man.chars)
       for (const g in man.chars[ch])
         for (const f of man.chars[ch][g]) paths.push(`assets/chars/${ch}/${f}`);
-    for (const b of ['fight', 'act', 'item', 'spare', 'defend', 'magic'])
+    for (const b of ['fight', 'act', 'item', 'spare', 'defend', 'magic', 'charge'])
       paths.push(`assets/ui/btn_${b}.png`, `assets/ui/btn_${b}_sel.png`);
     paths.push('assets/ui/soul.png');
     for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil'])

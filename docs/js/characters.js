@@ -152,7 +152,9 @@ const ARCHETYPES = {
 const ARCH_IDS = Object.keys(ARCHETYPES);
 
 // which base models are enemy-facing (sprite drawn mirrored vs the party)
-const ENEMY_FACING = { lancer: true };
+// bases whose battle sprites were ripped as ENEMIES (facing left by default),
+// so they must be flipped relative to the party members.
+const ENEMY_FACING = { lancer: true, berdly: true, jevil: true };
 
 // weapon = quick-start: default projectile + preset for your FIGHT emitter
 const WEAPONS = {

@@ -720,7 +720,7 @@ Battle.renderChars = function (ctx) {
       m.poseT++;
       const hurtFlash = m.pose === 'hurt' && (m.poseT % 8 < 4);
       const alpha = m.downed ? 0.35 : (hurtFlash ? 0.4 : 1);
-      const sc = n >= 3 ? 0.85 : 1;
+      const sc = n >= 3 ? 1.3 : 1.7;   // ripped sprites read small; scale them up
       const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, teamGroundY(i, n), flip, alpha, sc);
       if (done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
       else if (done && m.pose === 'hurt' && m.poseT > 50) { m.pose = 'idle'; m.poseT = 0; }
@@ -849,15 +849,7 @@ Battle.renderHud = function (ctx) {
       const step = (inner - 16) / 5;
       for (let k = 0; k < 5; k++) {
         const sel = B.menuIdx === k;
-        if (names[k] === 'charge') {
-          const bx = px + 16 + k * step, by = py + 48, bw = step * 0.86, bh = 22;
-          ctx.fillStyle = sel ? '#8a2be2' : '#20112f';
-          ctx.fillRect(bx, by, bw, bh);
-          ctx.strokeStyle = '#c060ff'; ctx.lineWidth = 1; ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
-          drawText(ctx, 'main', 'CHARGE', bx + bw / 2, by + 6, { color: sel ? '#fff' : '#c060ff', align: 'center', scale: 0.7 });
-        } else {
-          drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
-        }
+        drawSpr(ctx, A.ui('btn_' + names[k] + (sel ? '_sel' : '')), px + 16 + k * step, py + 48, { scale: step / 40 });
       }
     }
   });

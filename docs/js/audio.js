@@ -22,6 +22,8 @@ Snd.THEME = {
   ralsei: 'from_now_on_ralsei',
   noelle: 'vs_noelle_noelle',
   lancer: 'vs_lancer_lancer',
+  berdly: 'smart_race_berdly',
+  jevil: 'the_world_revolving_jevil',
 };
 
 Snd.sfxPath = k => 'assets/audio/sfx/' + A.manifest.sfx[k];
