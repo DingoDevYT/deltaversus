@@ -13,11 +13,13 @@ const Battle = {};
 Battle.init = function (opts) {
   const B = Battle;
   B.matchN = opts.matchN || 1;
-  B.myChar = opts.myChar; B.oppChar = opts.oppChar;
-  B.myName = CHARS[B.myChar].name; B.oppName = CHARS[B.oppChar].name;
-  B.me = { hp: CHARS[B.myChar].hp, max: CHARS[B.myChar].hp, tp: 0,
+  B.mySel = opts.mySel; B.oppSel = opts.oppSel;
+  B.myDef = charDef(opts.mySel); B.oppDef = charDef(opts.oppSel);
+  B.myChar = B.myDef.base; B.oppChar = B.oppDef.base;
+  B.myName = B.myDef.name; B.oppName = B.oppDef.name;
+  B.me = { hp: B.myDef.hp, max: B.myDef.hp, tp: 0,
            items: opts.myItems.slice() };
-  B.opp = { hp: CHARS[B.oppChar].hp, max: CHARS[B.oppChar].hp, tp: 0,
+  B.opp = { hp: B.oppDef.hp, max: B.oppDef.hp, tp: 0,
             items: opts.oppItems.slice() };
   B.phase = 'select';
   B.turn = 1;
@@ -47,7 +49,7 @@ Battle.init = function (opts) {
   B.myPacified = false; B.myPacifiedNext = false;
   Net.handlers = Net.handlers.filter(h => h !== Battle.onMsg);
   Net.on(Battle.onMsg);
-  Snd.playMusic(Snd.THEME[B.oppChar]);
+  Snd.playMusic(B.oppDef.custom ? B.oppDef.theme : Snd.THEME[B.oppDef.base]);
 };
 
 // send a battle message tagged with the current match number
@@ -58,7 +60,7 @@ Battle.onMsg = function (m) {
   if (m.t === 'startMatch') {
     // host started the next match; joiner follows
     if (!Net.isHost && m.n !== B.matchN)
-      Battle.init({ myChar: B.myChar, oppChar: B.oppChar,
+      Battle.init({ mySel: B.mySel, oppSel: B.oppSel,
                     myItems: G.myItems, oppItems: G.oppItems, matchN: m.n });
     return;
   }
@@ -76,7 +78,7 @@ Battle.onMsg = function (m) {
 
 // ---------- helpers ----------
 function myMoveDef() {
-  const B = Battle, c = CHARS[B.myChar], a = B.myAction;
+  const B = Battle, c = B.myDef, a = B.myAction;
   if (!a) return null;
   if (a.cmd === 'fight') return c.fight;
   if (a.cmd === 'magic') {
@@ -86,7 +88,7 @@ function myMoveDef() {
   return null;
 }
 function oppMoveDef() {
-  const B = Battle, c = CHARS[B.oppChar], a = B.oppAction;
+  const B = Battle, c = B.oppDef, a = B.oppAction;
   if (!a) return null;
   if (a.cmd === 'fight') return c.fight;
   if (a.cmd === 'magic') {
@@ -95,7 +97,20 @@ function oppMoveDef() {
   }
   return null;
 }
-function isAttack(def) { return def && def.id && PATTERNS[def.id] && def.dmg; }
+function isAttack(def) {
+  return !!(def && def.dmg && (def.custom || PATTERNS[def.id]));
+}
+
+// SFX for a move: explicit map for standard ids, bullet-based for customs
+function sfxFor(def) {
+  if (MOVE_SFX[def.id]) return MOVE_SFX[def.id];
+  const b = def.custom && def.custom.bullet;
+  if (b === 'icicle' || b === 'snowflake' || b === 'shard') return 'icespell';
+  if (b === 'flame' || b === 'spark' || b === 'star' || b === 'note') return 'spellcast';
+  if (b === 'sword' || b === 'crescent' || b === 'dart') return 'swing';
+  if (b === 'axe' || b === 'arc' || b === 'arc_red') return 'heavyswing';
+  return def.custom && def.custom.ult ? 'ultraswing' : 'swing';
+}
 
 // which animation pose an action plays at dodge start
 const SPELL_POSE = { susie_rude: 'rudebuster', susie_ult: 'rudebuster',
@@ -154,7 +169,7 @@ Battle.update = function () {
         // host authority: announce the new match, then start it
         const n = B.matchN + 1;
         Net.send({ t: 'startMatch', n });
-        Battle.init({ myChar: B.myChar, oppChar: B.oppChar,
+        Battle.init({ mySel: B.mySel, oppSel: B.oppSel,
                       myItems: G.myItems, oppItems: G.oppItems, matchN: n });
       }
       break;
@@ -193,7 +208,7 @@ Battle.updSelect = function () {
 };
 
 Battle.subOptions = function () {
-  const B = Battle, c = CHARS[B.myChar];
+  const B = Battle, c = B.myDef;
   if (B.submenu === 'magic') {
     const list = c.spells.map(s => ({
       id: s.id, label: s.name, cost: s.tp + '%', disabled: B.me.tp < s.tp,
@@ -225,15 +240,15 @@ Battle.choose = function (cmd, move) {
 Battle.startReveal = function () {
   const B = Battle;
   const lines = [];
-  lines.push('* ' + B.actionText(B.myChar, B.myAction, true));
-  lines.push('* ' + B.actionText(B.oppChar, B.oppAction, false));
+  lines.push('* ' + B.actionText(B.myDef, B.myAction, true));
+  lines.push('* ' + B.actionText(B.oppDef, B.oppAction, false));
   B.say(lines);
   B.revealT = 120;
   B.phase = 'reveal';
 };
 
-Battle.actionText = function (ch, a, mine) {
-  const c = CHARS[ch];
+Battle.actionText = function (def, a, mine) {
+  const c = def;
   if (a.cmd === 'fight') return c.fight.text;
   if (a.cmd === 'magic') {
     const d = a.move === c.ult.id ? c.ult : c.spells.find(s => s.id === a.move);
@@ -326,9 +341,9 @@ Battle.startDodge = function () {
     let tier = B.oppTier;
     if (B.pacifyOpp) tier = 0;   // pacified: their press doesn't matter
     B.oppEffTier = tier;
-    B.sim = makeDodgeSim(B.oppChar, oppDef, tier, B.oppAction.seed, B.dodgeBox);
+    B.sim = makeDodgeSim(B.oppDef, oppDef, tier, B.oppAction.seed, B.dodgeBox);
     B.dodgeT = B.sim.dur;
-    Snd.play(MOVE_SFX[oppDef.id] || 'swing');
+    Snd.play(sfxFor(oppDef));
     B.say('* DODGE!');
   } else {
     B.sim = null;
@@ -338,13 +353,13 @@ Battle.startDodge = function () {
   B.anim.myPose = poseForAction(B.myAction); B.anim.myT = 0;
   const myDef = myMoveDef();
   if (isAttack(myDef)) {
-    if (B.sim == null) Snd.play(MOVE_SFX[myDef.id] || 'swing');
+    if (B.sim == null) Snd.play(sfxFor(myDef));
     // spectator mirror: re-simulate MY attack pattern (same seed) so we can
     // watch the opponent's streamed soul dodge it in the side box
     const myEffTier = B.myPacified ? 0 : B.myTier;
     const mbox = { x: 0, y: 0, w: BOX.w, h: BOX.h };
     B.mirror = {
-      sim: makeDodgeSim(B.myChar, myDef, myEffTier, B.myAction.seed, mbox),
+      sim: makeDodgeSim(B.myDef, myDef, myEffTier, B.myAction.seed, mbox),
       box: mbox, bullets: [], f: 0, target: 0,
       soul: { x: mbox.w / 2, y: mbox.h * 0.72 },
     };
@@ -353,7 +368,7 @@ Battle.startDodge = function () {
   // tell the (practice) opponent how strong our attack is
   Battle.send({ t: 'dodgeStart',
              potential: isAttack(myDef) ? Math.round(myDef.dmg * TIER_MULT[B.myTier] * 3) : 0,
-             dur: isAttack(myDef) ? PATTERNS[myDef.id].dur : 0 });
+             dur: isAttack(myDef) ? (myDef.dur || (PATTERNS[myDef.id] || {}).dur || 480) : 0 });
 
   B.phase = 'dodge';
   if (!B.sim) {
@@ -490,7 +505,7 @@ Battle.endDodge = function () {
   Battle.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
 
   // apply my heals/items/defend AFTER dodging
-  const c = CHARS[B.myChar], a = B.myAction;
+  const c = B.myDef, a = B.myAction;
   if (a.cmd === 'defend') B.me.tp = Math.min(100, B.me.tp + 16);
   if (a.cmd === 'item') {
     const it = ITEMS[B.me.items[a.move]];
@@ -540,10 +555,10 @@ Battle.resolve = function () {
 
   // queue status effects for NEXT turn
   B.fxOnMeQueued = null;
-  if (B.oppAction.cmd === 'act') B.fxOnMeQueued = { ...ACT_FX[CHARS[B.oppChar].act.id] };
+  if (B.oppAction.cmd === 'act') B.fxOnMeQueued = { ...ACT_FX[B.oppDef.act.id] };
   const oppD = oppMoveDef();
   if (B.oppAction.cmd === 'magic') {
-    const oc = CHARS[B.oppChar];
+    const oc = B.oppDef;
     const d = B.oppAction.move === oc.ult.id ? oc.ult : oc.spells.find(s => s.id === B.oppAction.move);
     if (d && d.kind === 'status') B.fxOnMeQueued = { ...ACT_FX[d.status] };
   }
@@ -551,7 +566,7 @@ Battle.resolve = function () {
   // did THEY pacify ME? then my next attack is capped at weak tier
   B.myPacifiedNext = false;
   if (B.oppAction.cmd === 'magic') {
-    const oc2 = CHARS[B.oppChar];
+    const oc2 = B.oppDef;
     const od2 = B.oppAction.move === oc2.ult.id ? oc2.ult : oc2.spells.find(s => s.id === B.oppAction.move);
     if (od2 && od2.status === 'pacified') B.myPacifiedNext = true;
   }
@@ -633,14 +648,16 @@ const LOOP_POSES = { idle: 1, guard: 1 };
 // poses that play once and hold their last frame
 const HOLD_POSES = { downed: 1, victory: 1, hurt: 1 };
 
-function drawCharAnim(ctx, ch, pose, tFrames, x, groundY, flip, alpha) {
-  const an = A.anim(ch, pose) || A.anim(ch, 'idle');
+function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha) {
+  const an = A.anim(def.base, pose) || A.anim(def.base, 'idle');
   if (!an) return true;
   const ms = tFrames * (1000 / 60);
   const done = !LOOP_POSES[pose] && ms >= an.total;
-  const im = A.animFrame(an, ms, !!LOOP_POSES[pose]);
-  if (im && im.width)
+  let im = A.animFrame(an, ms, !!LOOP_POSES[pose]);
+  if (im && im.width) {
+    if (def.hue) im = A.hued(im, def.hue);
     drawSpr(ctx, im, x, groundY - im.height / 2, { scale: 1, flip, alpha });
+  }
   return done;
 }
 
@@ -650,9 +667,9 @@ Battle.renderChars = function (ctx) {
   const GROUND_MY = 290, GROUND_OPP = 290;
   const hurtFlashMe = B.anim.myPose === 'hurt' && (B.anim.myT % 8 < 4);
   const hurtFlashOpp = B.anim.oppPose === 'hurt' && (B.anim.oppT % 8 < 4);
-  const doneMy = drawCharAnim(ctx, B.myChar, B.anim.myPose, B.anim.myT,
+  const doneMy = drawCharAnim(ctx, B.myDef, B.anim.myPose, B.anim.myT,
                               100, GROUND_MY, false, hurtFlashMe ? 0.4 : 1);
-  const doneOpp = drawCharAnim(ctx, B.oppChar, B.anim.oppPose, B.anim.oppT,
+  const doneOpp = drawCharAnim(ctx, B.oppDef, B.anim.oppPose, B.anim.oppT,
                                540, GROUND_OPP, true, hurtFlashOpp ? 0.4 : 1);
   if (doneMy && !LOOP_POSES[B.anim.myPose] && !HOLD_POSES[B.anim.myPose])
     { B.anim.myPose = 'idle'; B.anim.myT = 0; }
@@ -772,24 +789,25 @@ Battle.renderMirror = function (ctx) {
   ctx.beginPath(); ctx.rect(mx - 20, my - 20, mw + 40, mh + 40); ctx.clip();
   for (const b of M.bullets) drawBullet(ctx, b, mx + b.x * s, my + b.y * s, s);
   ctx.globalAlpha = 0.95;
-  drawSpr(ctx, tintedSoul(CHARS[B.oppChar].color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
+  drawSpr(ctx, tintedSoul(B.oppDef.color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
   ctx.restore();
-  drawSpr(ctx, A.ui('head_' + B.oppChar), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
+  drawSpr(ctx, A.hued(A.ui('head_' + B.oppDef.base), B.oppDef.hue), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
 };
 
 // one bottom-panel character entry: head icon, name, HP label, bar, numbers
-function drawEntry(ctx, x, y, ch, name, hp, max, active) {
-  const head = A.ui('head_' + ch + (hp <= 0 ? '_gray' : ''));
+function drawEntry(ctx, x, y, def, name, hp, max, active) {
+  let head = A.ui('head_' + def.base + (hp <= 0 ? '_gray' : ''));
+  if (hp > 0 && def.hue) head = A.hued(head, def.hue);
   drawSpr(ctx, head, x + 13, y + 15, { scale: 1 });
   drawText(ctx, 'main', name, x + 34, y + 6, { color: '#fff' });
   drawText(ctx, 'main', hp + '/ ' + max, x + 250, y - 2, { color: '#fff', align: 'right' });
   drawText(ctx, 'main', 'HP', x + 132, y + 11, { color: '#fff' });
   ctx.fillStyle = '#3c0d0d';
   ctx.fillRect(x + 156, y + 14, 94, 9);
-  ctx.fillStyle = CHARS[ch].color;
+  ctx.fillStyle = def.color;
   ctx.fillRect(x + 156, y + 14, Math.max(0, Math.round(94 * hp / max)), 9);
   if (active) {
-    ctx.strokeStyle = CHARS[ch].color; ctx.lineWidth = 1;
+    ctx.strokeStyle = def.color; ctx.lineWidth = 1;
     ctx.strokeRect(x - 4, y - 6, 262, 38);
   }
 }
@@ -802,9 +820,9 @@ Battle.renderHud = function (ctx) {
   ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0, 384.5); ctx.lineTo(640, 384.5); ctx.stroke();
 
-  drawEntry(ctx, 62, 394, B.myChar, B.myName, B.me.hp, B.me.max,
+  drawEntry(ctx, 62, 394, B.myDef, B.myName, B.me.hp, B.me.max,
             B.phase === 'select');
-  drawEntry(ctx, 358, 394, B.oppChar, B.oppName, B.opp.hp, B.opp.max, false);
+  drawEntry(ctx, 358, 394, B.oppDef, B.oppName, B.opp.hp, B.opp.max, false);
 
   // TP bar (vertical, top-left like the real game)
   ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 58, 18, 190);
@@ -858,11 +876,11 @@ Battle.renderTiming = function (ctx) {
   const B = Battle, tb = B.timingBar;
   // Deltarune attack bar: head icon + PRESS + long bar, colored target at left
   const x = 150, y = 434, w = 416, h = 28;
-  drawSpr(ctx, A.ui('head_' + B.myChar), 60, y + h / 2, { scale: 1 });
+  drawSpr(ctx, A.hued(A.ui('head_' + B.myDef.base), B.myDef.hue), 60, y + h / 2, { scale: 1 });
   drawText(ctx, 'main', 'PRESS', 80, y + 6, { color: '#fff' });
   ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
-  ctx.fillStyle = CHARS[B.myChar].color;
+  ctx.fillStyle = B.myDef.color;
   ctx.globalAlpha = 0.85;
   ctx.fillRect(x + 8, y + 2, 36, h - 4);            // target zone
   ctx.globalAlpha = 1;

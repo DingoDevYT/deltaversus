@@ -76,7 +76,7 @@ Snd.toggleMute = function () {
 
 window.addEventListener('keydown', () => Snd.unlock(), { once: false });
 window.addEventListener('keydown', e => {
-  if (typeof G !== 'undefined' && G.screen === 'join') return;
+  if (typeof G !== 'undefined' && (G.screen === 'join' || G.screen === 'ccname')) return;
   if (e.key === 'm' || e.key === 'M') Snd.toggleMute();
   if (e.key === '+' || e.key === '=') { Snd.setMaster(Snd.master + 0.1); Snd.play('menumove'); }
   if (e.key === '-' || e.key === '_') { Snd.setMaster(Snd.master - 0.1); Snd.play('menumove'); }

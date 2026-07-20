@@ -19,6 +19,7 @@ A.load = function (done) {
     for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer'])
       paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
+    for (const b in (man.bullets || {})) paths.push(`assets/bullets/${man.bullets[b].f}`);
     for (const ch in (man.anims || {}))
       for (const pose in man.anims[ch])
         for (const f of man.anims[ch][pose].frames) paths.push(`assets/anims/${ch}/${f}`);
@@ -80,6 +81,46 @@ A.animFrame = function (an, ms, loop) {
 A.bgFrame = function (t) {
   const n = Math.floor(A.manifest.bg_frames / 2);
   return A.img[`assets/bg/${(Math.floor(t / 4) % n) * 2}.png`];
+};
+
+// hue-rotated copy of an image (pixel-art safe: greys/outlines barely move).
+// cached per (src, hue). hue in degrees; 0 returns the original.
+A._hueCache = {};
+A.hued = function (img, hue) {
+  if (!hue || !img || !img.width) return img;
+  const key = (img.src || img._k || '?') + '|' + hue;
+  if (A._hueCache[key]) return A._hueCache[key];
+  const c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, 0);
+  const id = x.getImageData(0, 0, c.width, c.height);
+  const d = id.data;
+  const sh = hue / 60;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] === 0) continue;
+    let r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+    if (mx === mn) continue;                    // grey: leave outlines alone
+    const df = mx - mn;
+    const s = l > 0.5 ? df / (2 - mx - mn) : df / (mx + mn);
+    let h = mx === r ? ((g - b) / df + (g < b ? 6 : 0)) : mx === g ? (b - r) / df + 2 : (r - g) / df + 4;
+    h = (h + sh) % 6; if (h < 0) h += 6;
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    const f = t => {
+      t = ((t % 6) + 6) % 6;
+      if (t < 1) return p + (q - p) * t;
+      if (t < 3) return q;
+      if (t < 4) return p + (q - p) * (4 - t);
+      return p;
+    };
+    d[i] = Math.round(f(h + 2) * 255);
+    d[i + 1] = Math.round(f(h) * 255);
+    d[i + 2] = Math.round(f(h - 2) * 255);
+  }
+  x.putImageData(id, 0, 0);
+  A._hueCache[key] = c;
+  return c;
 };
 
 // --- bitmap font ---
