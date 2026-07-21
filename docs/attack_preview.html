@@ -154,15 +154,16 @@ function makePlayer(canvas, spec) {
     // apply pattern fx from last tick (box warp, soul pull)
     if (FX.boxTarget) { const tg=FX.boxTarget, lp=FX.boxLerp||0.14; box.w+=(tg.w-box.w)*lp; box.h+=(tg.h-box.h)*lp; box.x+=(tg.x-box.x)*lp; box.y+=(tg.y-box.y)*lp; }
     if (FX.pull) { const an=Math.atan2(FX.pull.y-soul.y, FX.pull.x-soul.x); soul.x+=Math.cos(an)*FX.pull.force; soul.y+=Math.sin(an)*FX.pull.force; }
-    if (FX.split) {   // board split: soul + riding teeth move with their half
+    if (FX.split) {   // board split: halves separate OUTWARD from the cut; soul + riding teeth move with their half
       const cutC = FX.split.axis==='h' ? box.y+box.h/2 : box.x+box.w/2;
       const delta = FX.split.offset - (FX._prevSplit||0);
       const side = (FX.split.axis==='h' ? soul.y < cutC : soul.x < cutC) ? 1 : -1;
-      if (FX.split.axis==='h') soul.x += delta*side; else soul.y += delta*side;
-      for (const b of bullets) if (b.ridesSplit) { if (FX.split.axis==='h') b.x += delta*b.ridesSplit; else b.y += delta*b.ridesSplit; }
+      if (FX.split.axis==='h') soul.y -= delta*side; else soul.x -= delta*side;
+      for (const b of bullets) if (b.ridesSplit) { if (FX.split.axis==='h') b.y -= delta*b.ridesSplit; else b.x -= delta*b.ridesSplit; }
       FX._prevSplit = FX.split.offset;
     } else FX._prevSplit = 0;
-    FX.blackout=false; FX.pull=null; FX.faceBox=null; FX.arms=null; FX.bgHue=null; FX.split=null; FX.boss=null; FX.hideBox=false;
+    if (FX.arena && !FX.boxTarget) FX.boxTarget = { x: 8, y: 8, w: CW - 16, h: CH - 16 };
+    FX.blackout=false; FX.pull=null; FX.faceBox=null; FX.arms=null; FX.bgHue=null; FX.split=null; FX.boss=null; FX.hideBox=false; FX.pinch=0; FX.arena=false; FX.bgStars=false; FX.shake=0;
     const add = b => { b.t = b.t||0; b.phase0 = b.phase0||0; bullets.push(b); };
     if (f <= (p.dur||480)) p.tick({ f, rng, box, tier:1, add, soul, imgs:{}, fx:FX });
     const spawned = [];
@@ -174,9 +175,11 @@ function makePlayer(canvas, spec) {
       else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
       if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
+      if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);
       if (b.spin) b.rot = (b.rot||0) + b.spin;
       if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
       if (b.shrink) b.scale = (b.scale||1) * b.shrink;
+      if (b.redAt != null && b.t >= b.redAt) b.tint = '#f33';
       if (b.aim) {
         if (b.t < b.aim.delay) { const px=Math.cos(b.aim.dir+Math.PI/2), py=Math.sin(b.aim.dir+Math.PI/2), rel=(soul.x-b.x)*px+(soul.y-b.y)*py; b.x+=px*rel*0.14; b.y+=py*rel*0.14; b.rot=b.aim.dir; b.tint='#f44'; b.alpha=Math.min(1,b.t/16)*0.5; }
         else if (b.t === b.aim.delay) { b.vx=Math.cos(b.aim.dir)*b.aim.speed; b.vy=Math.sin(b.aim.dir)*b.aim.speed; b.tint=null; b.alpha=1; }
@@ -201,22 +204,36 @@ function makePlayer(canvas, spec) {
       b.t++; if (b.life && b.t > b.life) b.dead = true;
     }
     for (const nb of spawned) { nb.t = nb.t||0; nb.phase0 = nb.phase0||0; bullets.push(nb); }
-    bullets = bullets.filter(b => !b.dead && b.x>-80 && b.x<CW+80 && b.y>-80 && b.y<CH+80);
+    bullets = bullets.filter(b => !b.dead && b.x>-240 && b.x<CW+240 && b.y>-240 && b.y<CH+240);
     f++;
     if (f > (p.dur||480) + 110) reset();   // loop
     // draw
     ctx.fillStyle = FX.bgHue!=null ? 'hsl('+Math.round(FX.bgHue)+',65%,10%)' : '#000';
     ctx.fillRect(0,0,CW,CH);
+    ctx.save();
+    if (FX.shake) ctx.translate((Math.random()-0.5)*FX.shake, (Math.random()-0.5)*FX.shake);
+    if (FX.bgStars) {   // twinkling white specks in the void
+      for (let i = 0; i < 36; i++) {
+        const px = (i*137 + t*(0.2+(i%3)*0.15)) % CW, py = (i*89 + Math.floor(i/7)*53) % CH;
+        ctx.globalAlpha = 0.35 + 0.5*Math.abs(Math.sin(t*0.05+i));
+        ctx.fillStyle = '#fff'; ctx.fillRect(px, py, i%4===0?2:1, i%4===0?2:1);
+      }
+      ctx.globalAlpha = 1;
+    }
     if (FX.boss) {   // giant boss sprite behind the box
       const info = A.manifest.bullets[FX.boss.key], im = info && A.img['assets/bullets/'+info.f];
       if (im && im.width) drawSpr(ctx, im, FX.boss.x, FX.boss.y, { scale: FX.boss.scale||1, flip: FX.boss.flip });
     }
     ctx.strokeStyle = '#3adb3a'; ctx.lineWidth = 2;
     if (FX.hideBox) { /* full-screen arena: no border */ }
-    else if (FX.split && FX.split.offset > 0.5) {
+    else if (FX.split && FX.split.offset > 0.5) {   // halves separate OUTWARD from the cut
       const off = FX.split.offset, cx2 = box.x+box.w/2, cy2 = box.y+box.h/2;
-      if (FX.split.axis==='h') { ctx.strokeRect(box.x+off, box.y, box.w, box.h/2); ctx.strokeRect(box.x-off, cy2, box.w, box.h/2); }
-      else { ctx.strokeRect(box.x, box.y+off, box.w/2, box.h); ctx.strokeRect(cx2, box.y-off, box.w/2, box.h); }
+      if (FX.split.axis==='h') { ctx.strokeRect(box.x, box.y-off, box.w, box.h/2); ctx.strokeRect(box.x, cy2+off, box.w, box.h/2); }
+      else { ctx.strokeRect(box.x-off, box.y, box.w/2, box.h); ctx.strokeRect(cx2+off, box.y, box.w/2, box.h); }
+    } else if (FX.pinch > 0.02) {   // Power-of-NEO suck: right side pinches height-wise (diagonal top/bottom)
+      const p = FX.pinch * box.h / 2;
+      ctx.beginPath(); ctx.moveTo(box.x, box.y); ctx.lineTo(box.x+box.w, box.y+p);
+      ctx.lineTo(box.x+box.w, box.y+box.h-p); ctx.lineTo(box.x, box.y+box.h); ctx.closePath(); ctx.stroke();
     } else ctx.strokeRect(box.x, box.y, box.w, box.h);
     if (FX.faceBox) { const fb=FX.faceBox; ctx.strokeRect(fb.x, fb.y, fb.w, fb.h); }
     if (FX.arms) { ctx.strokeStyle='#49d049'; ctx.lineWidth=3; ctx.lineCap='round'; for (const arm of FX.arms){ ctx.beginPath(); ctx.moveTo(arm.x1,arm.y1); ctx.lineTo(arm.x2,arm.y2); ctx.stroke(); } }
@@ -228,6 +245,7 @@ function makePlayer(canvas, spec) {
     // yellow souls FACE RIGHT (they shoot toward Spamton)
     if (spec.soul === 'yellow') { ctx.save(); ctx.translate(soul.x, soul.y); ctx.rotate(-Math.PI/2); ctx.drawImage(soulImg, -8, -7); ctx.restore(); }
     else ctx.drawImage(soulImg, soul.x-8, soul.y-7);
+    ctx.restore();   // shake wrapper
   }
   return { step, reset };
 }

@@ -674,26 +674,40 @@ Battle.updDodge = function () {
     const a = Math.atan2(CF.pull.y - B.soul.y, CF.pull.x - B.soul.x);
     B.soul.x += Math.cos(a) * CF.pull.force; B.soul.y += Math.sin(a) * CF.pull.force;
   }
-  // BOARD SPLIT: the two halves slide apart along the cut; the soul (and riding
-  // bullets, b.ridesSplit = +1 top/left half, -1 bottom/right) move WITH their half.
-  let splitShift = 0;
+  // BOARD SPLIT: the halves separate OUTWARD from the cut (horizontal cut -> top half
+  // moves up, bottom moves down). The soul and riding bullets (b.ridesSplit = +1
+  // top/left half, -1 bottom/right) move WITH their half.
+  let soulSide = 0;
   if (CF.split) {
     const bx0 = B.dodgeBox, cutC = CF.split.axis === 'h' ? bx0.y + bx0.h / 2 : bx0.x + bx0.w / 2;
     const delta = CF.split.offset - (B._splitPrev || 0);
-    const soulSide = (CF.split.axis === 'h' ? B.soul.y < cutC : B.soul.x < cutC) ? 1 : -1;
-    if (CF.split.axis === 'h') B.soul.x += delta * soulSide; else B.soul.y += delta * soulSide;
+    soulSide = (CF.split.axis === 'h' ? B.soul.y < cutC : B.soul.x < cutC) ? 1 : -1;
+    if (CF.split.axis === 'h') B.soul.y -= delta * soulSide; else B.soul.x -= delta * soulSide;
     for (const b of B.bullets) if (b.ridesSplit) {
-      if (CF.split.axis === 'h') b.x += delta * b.ridesSplit; else b.y += delta * b.ridesSplit;
+      if (CF.split.axis === 'h') b.y -= delta * b.ridesSplit; else b.x -= delta * b.ridesSplit;
     }
     B._splitPrev = CF.split.offset;
-    splitShift = CF.split.offset * soulSide;
   } else B._splitPrev = 0;
+  if (CF.arena && !CF.boxTarget) CF.boxTarget = { x: -12, y: -12, w: 664, h: 504 };   // borderless full-screen arena
+  if (CF.shake) B.shake = Math.max(B.shake || 0, CF.shake);
 
+  // clamp the soul: to its own (shifted) HALF while the board is split, and inside the
+  // pinched trapezoid during the Power-of-NEO suck (right side shrinks height-wise)
   const bx = B.dodgeBox;
-  const shX = (CF.split && CF.split.axis === 'h') ? splitShift : 0;
-  const shY = (CF.split && CF.split.axis === 'v') ? splitShift : 0;
-  B.soul.x = Math.max(bx.x + 4 + shX, Math.min(bx.x + bx.w - 4 + shX, B.soul.x));
-  B.soul.y = Math.max(bx.y + 4 + shY, Math.min(bx.y + bx.h - 4 + shY, B.soul.y));
+  let x0 = bx.x + 4, x1 = bx.x + bx.w - 4, y0 = bx.y + 4, y1 = bx.y + bx.h - 4;
+  if (CF.split) {
+    const off = CF.split.offset;
+    if (CF.split.axis === 'h') { const cy2 = bx.y + bx.h / 2;
+      if (soulSide === 1) { y0 -= off; y1 = cy2 - 4 - off; } else { y0 = cy2 + 4 + off; y1 += off; } }
+    else { const cx2 = bx.x + bx.w / 2;
+      if (soulSide === 1) { x0 -= off; x1 = cx2 - 4 - off; } else { x0 = cx2 + 4 + off; x1 += off; } }
+  }
+  if (CF.pinch) {
+    const t = Math.max(0, Math.min(1, (B.soul.x - bx.x) / bx.w)), inset = CF.pinch * bx.h / 2 * t;
+    y0 += inset; y1 -= inset;
+  }
+  B.soul.x = Math.max(x0, Math.min(x1, B.soul.x));
+  B.soul.y = Math.max(y0, Math.min(y1, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
   // ---- YELLOW SOUL: HOLD the button to charge, RELEASE to fire a shot to the RIGHT.
@@ -721,7 +735,8 @@ Battle.updDodge = function () {
 
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
-  B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false;
+  B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
+  B.fx.bgStars = false; B.fx.shake = 0;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
@@ -738,9 +753,11 @@ Battle.updDodge = function () {
     if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
     if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+    if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);   // ease toward a row and STAY on it
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
+    if (b.redAt != null && b.t >= b.redAt) b.tint = '#f33';   // roar stars turn RED just before shattering
     // axis-tracking sword (Knight directional swords): fade in red at 50%, slide to line up
     // with the soul, then turn white and fire fast (with an SFX)
     if (b.aim) {
@@ -979,6 +996,15 @@ Battle.render = function (ctx) {
     // full blackout (Spamton's BIG SHOT / the Knight's ROAR): only the box + soul + TP show.
     if (B.fx.bgHue != null) { ctx.fillStyle = 'hsl(' + Math.round(B.fx.bgHue) + ',65%,10%)'; ctx.fillRect(0, 0, 640, 480); }
     else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480); }
+    if (B.fx.bgStars) {   // twinkling white star specks drifting in the void
+      for (let i = 0; i < 46; i++) {
+        const px = (i * 137 + B.anim.f * (0.2 + (i % 3) * 0.15)) % 640;
+        const py = (i * 89 + Math.floor(i / 7) * 53) % 480;
+        ctx.globalAlpha = 0.35 + 0.5 * Math.abs(Math.sin(B.anim.f * 0.05 + i));
+        ctx.fillStyle = '#fff'; ctx.fillRect(px, py, i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1);
+      }
+      ctx.globalAlpha = 1;
+    }
   } else {
     const bg = A.bgFrame(B.anim.f);
     if (bg && bg.width) { ctx.globalAlpha = 0.55; ctx.drawImage(bg, 0, 0, 640, 480); ctx.globalAlpha = 1; }
@@ -1077,15 +1103,22 @@ Battle.renderBoxAndBullets = function (ctx) {
   const split = B.fx && B.fx.split;
   if (B.fx && B.fx.hideBox) { /* full-screen arena: no border at all */ }
   else if (split && split.offset > 0.5) {
-    // the CUT board: two half-boxes slid apart along the cut
+    // the CUT board: the halves separate OUTWARD from the cut
     const off = split.offset;
     if (split.axis === 'h') {
-      drawBoxRect(ctx, cx + off, cy - bx.h / 4, bx.w, bx.h / 2, 0, 1);
-      drawBoxRect(ctx, cx - off, cy + bx.h / 4, bx.w, bx.h / 2, 0, 1);
+      drawBoxRect(ctx, cx, cy - bx.h / 4 - off, bx.w, bx.h / 2, 0, 1);
+      drawBoxRect(ctx, cx, cy + bx.h / 4 + off, bx.w, bx.h / 2, 0, 1);
     } else {
-      drawBoxRect(ctx, cx - bx.w / 4, cy + off, bx.w / 2, bx.h, 0, 1);
-      drawBoxRect(ctx, cx + bx.w / 4, cy - off, bx.w / 2, bx.h, 0, 1);
+      drawBoxRect(ctx, cx - bx.w / 4 - off, cy, bx.w / 2, bx.h, 0, 1);
+      drawBoxRect(ctx, cx + bx.w / 4 + off, cy, bx.w / 2, bx.h, 0, 1);
     }
+  } else if (B.fx && B.fx.pinch > 0.02) {
+    // Power-of-NEO suck: the RIGHT side shrinks height-wise, so top & bottom run diagonally
+    const p = B.fx.pinch * bx.h / 2;
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.moveTo(bx.x, bx.y); ctx.lineTo(bx.x + bx.w, bx.y + p);
+    ctx.lineTo(bx.x + bx.w, bx.y + bx.h - p); ctx.lineTo(bx.x, bx.y + bx.h); ctx.closePath();
+    ctx.fill(); ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3; ctx.stroke();
   } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);
   // pattern-driven overlays: a second non-enterable box (face attack) + green connector arms (phones/heart)
   if (B.fx) {

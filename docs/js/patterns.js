@@ -626,8 +626,9 @@ PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's r
   dur: 580, box: { w: 170, h: 170 },   // the player's box stays SQUARE
   tick(a) {
     const { f, box, add } = a;
-    // the face box shares the player box's right edge (directly attached, soul can't enter)
-    const fbw = 78, fbx = box.x + box.w, fby = box.y;
+    // the face box shares the player box's right edge (directly attached, soul can't enter).
+    // it's a WIDE rectangle - the extra width gives the player time to read the projectiles.
+    const fbw = 132, fbx = box.x + box.w, fby = box.y;
     a.fx.faceBox = { x: fbx, y: fby, w: fbw, h: box.h };
     if (f !== 0) return;
     const fcx = fbx + fbw / 2, fcy = fby + box.h / 2, SC = 1.1, PX = 1.6 * SC;
@@ -645,9 +646,10 @@ PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's r
     const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 12, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 120 };
     nose.emit = function (b, out, soul, bx) {
       if (--b._cd > 0) return; b._cd = 180;
-      const rows = [bx.y + 16, bx.y + bx.h / 2, bx.y + bx.h - 16];   // top / middle / bottom rows
+      const rows = [bx.y + 10, bx.y + bx.h / 2, bx.y + bx.h - 10];   // rows RIDE the top edge / middle / bottom edge
       for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)        // 3x3 of the real NOSE TRIANGLES
-        out.push({ ...bulletProps('sneonosetri'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: (rows[r] - b.y) * 0.03, r: 6, rot: Math.PI });
+        out.push({ ...bulletProps('sneonosetri'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: 0,
+                   lerpY: rows[r], lerpRate: 0.1, r: 6, rot: 0 });   // ease onto the row and STAY on it
     };
     add(nose);
     const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + mouthOff, drawDY: -mouthOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 180 };
@@ -669,19 +671,22 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box e
     if (f === 0) this._base = { x: box.x, y: box.y, w: box.w, h: box.h };   // capture before the box warps
     const B = this._base;
     a.fx.blackout = true;                                                    // everything behind the box goes black
-    // PHASE 1 (f<300): GIANT SPAMTON leans in from the right with his sucking face (blue mouth/eyes),
-    // warping the box toward his mouth + pulling the soul; he eats $ streaming in from the left
+    const cy = B.y + B.h / 2;
+    // PHASE 1 (f<300): GIANT SPAMTON leans in with his sucking face (blue mouth/eyes). The box's
+    // RIGHT side shrinks height-wise toward his mouth, so the top & bottom edges run diagonally,
+    // and the $ he's eating funnel INSIDE the box toward the mouth, shrinking as they go.
     if (f < 300) {
       const approach = Math.min(1, f / 220);                                 // he creeps closer over the phase
-      a.fx.boss = { key: 'sneofinalsuck', x: B.x + B.w + 190 - approach * 70, y: B.y + B.h * 0.5, scale: 1, flip: false };
-      a.fx.boxTarget = { w: B.w * 0.72, h: B.h * 0.82, x: B.x + B.w * 0.26, y: B.y + B.h * 0.09 };
-      a.fx.pull = { x: B.x + B.w + 60, y: B.y + B.h / 2, force: 0.35 };
-      if (every(f, rate(18, tier)))                                          // fewer, dodgeable dollars flying in to be eaten
-        add({ ...bulletProps('sneodollar'), x: B.x - 20, y: B.y + 14 + rng() * (B.h - 28), vx: 2.3 + rng() * 0.7, vy: 0, spin: 0.06, r: 7, shrink: 0.9 });
+      a.fx.boss = { key: 'sneofinalsuck', x: B.x + B.w + 165 - approach * 60, y: cy, scale: 1, flip: false };
+      a.fx.pinch = Math.min(1, f / 90) * 0.55;                               // the suck warps the box
+      a.fx.pull = { x: B.x + B.w + 40, y: cy, force: 0.35 };
+      if (every(f, rate(20, tier)))                                          // dodgeable $ spawning INSIDE the box's left side
+        add({ ...bulletProps('sneodollar'), x: B.x + 8, y: B.y + 14 + rng() * (B.h - 28),
+              vx: 2.1 + rng() * 0.6, vy: 0, lerpY: cy, lerpRate: 0.016, spin: 0.06, r: 7, shrink: 0.988 });
     } else {
-      // PHASE 2: he backs off, stops sucking (normal face) and bobs up & down while firing BIG SHOTs
-      a.fx.boss = { key: 'sneofinal', x: B.x + B.w + 170, y: B.y + B.h * 0.5 + Math.sin(f * 0.045) * 46, scale: 1, flip: false };
-      a.fx.boxTarget = { x: B.x, y: B.y, w: B.w, h: B.h };                   // box eases back to normal
+      // PHASE 2: he backs off, stops sucking (normal face); the box snaps back and he bobs while firing
+      a.fx.boss = { key: 'sneofinal', x: B.x + B.w + 170, y: cy + Math.sin(f * 0.045) * 46, scale: 1, flip: false };
+      a.fx.pinch = Math.max(0, 0.55 * (1 - (f - 300) / 36));
     }
     // PHASE 2 (f>=340): ONE massive BIG SHOT bullet per beat - bottom, top, bottom, top, then the FINAL full-box shot
     const p2 = f - 340, SHOT = rate(78, tier);
@@ -799,33 +804,38 @@ PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY
 PATTERNS.knight_roar = {   // FINAL ROAR (ult): black full-screen arena, crystals pulled in + swirl, then a roar that
   dur: 820,                  // spews stars which turn red and shatter into 6 shards; a diagonal cut ends it.
   tick(a) {
-    const { f, rng, tier, add } = a;
-    const cx = 320, cy = 240;
+    const { f, rng, box, tier, add } = a;
     a.fx.blackout = true;
     a.fx.bgHue = f < 520 ? (f * 2) % 360 : 0;                 // scrolling rainbow, then RED for the roar
-    a.fx.hideBox = true;                                       // the battle box is GONE - the whole screen is the arena
-    a.fx.boxTarget = { x: -12, y: -12, w: 664, h: 504 };       // (bounds sit past the screen edge so none are visible)
+    a.fx.hideBox = true; a.fx.arena = true;                    // the battle box is GONE - the whole screen is the arena
+    a.fx.bgStars = true;                                       // little white star specks twinkle in the void
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;      // (the arena's centre = the screen centre)
     // THE KNIGHT stands centre-screen: front facing, hands out while charging, roar sprites while spewing
     const key = f < 320 ? 'knightfront' : (f < 640 ? (Math.floor(f / 12) % 2 ? 'knightroar1' : 'knightroar0') : 'knightfront');
     a.fx.boss = { key, x: cx, y: cy, scale: 1.1 };
-    // PHASE 1 (f<300): crystals pulled from beyond the screen toward the Knight; the soul is sucked in too
+    if (f >= 320 && f < 640) a.fx.shake = 5;                   // the roar itself shakes the screen
+    // PHASE 1 (f<300): TWO big spiralling rows of crystals sweep in toward the Knight - the player
+    // circles the Knight inside the moving gap. The soul is sucked inward the whole time.
     if (f < 300) {
       a.fx.pull = { x: cx, y: cy, force: 0.42 };
-      if (every(f, rate(7, tier))) {
-        const swirl = f > 150, th = swirl ? f * 0.16 : rng() * 6.28, R = 400;   // random first, then swirling
-        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
-        add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.012, vy: (cy - y) * 0.012, spin: 0.1, r: 8 });
+      if (every(f, rate(5, tier))) {
+        const base = f * 0.045, R = Math.max(box.w, box.h) * 0.62 + 40, vr = 2.4, vt = 1.5;
+        for (const armOff of [0, Math.PI]) {                   // the two spiral arms
+          const th = base + armOff, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+          add({ ...bulletProps('knightstar'), x, y, spin: 0, r: 8, life: 175,
+                vx: -Math.cos(th) * vr - Math.sin(th) * vt, vy: -Math.sin(th) * vr + Math.cos(th) * vt });
+        }
       }
     }
-    // PHASE 2 (f>=320): the ROAR spews stars outward; each turns red then bursts into 6 triangle shards
+    // PHASE 2 (f>=320): the ROAR spews stars outward (no spinning); each turns RED then shatters into 6 shards
     if (f === 320)
       for (let i = 0; i < 8; i++) { const th = i * Math.PI / 4;    // 8 in a star
-        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.7, vy: Math.sin(th) * 2.7, spin: 0.1, r: 8,
-              burst: 78, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.4 }); }
+        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.7, vy: Math.sin(th) * 2.7, spin: 0, r: 8,
+              redAt: 62, burst: 78, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.4 }); }
     if (f > 344 && f < 620 && every(f, rate(26, tier)))            // then bursts of 3 in a random spread
       for (let i = 0; i < 3; i++) { const th = rng() * 6.28, sp = 2.2 + rng();
-        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp, spin: 0.1, r: 8,
-              burst: 70, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.2 }); }
+        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp, spin: 0, r: 8,
+              redAt: 54, burst: 70, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.2 }); }
     // FINALE (f=700): a harmless diagonal cut across the screen to end the attack
     if (f === 700)
       add({ shape: 'line', color: '#fff', len: 940, thick: 10, x: cx, y: cy, rot: Math.atan2(1, 1.5), vx: 0, vy: 0, tellT: 34, armWindow: 6, dmg: 0 });
