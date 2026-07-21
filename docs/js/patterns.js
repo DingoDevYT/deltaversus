@@ -429,91 +429,114 @@ PATTERNS.berdly_ult = {   // SMART RACE: a slowly-ROTATING X of converging torna
   },
 };
 
-// ---------- JEVIL (darkner secret boss - Difficult) ----------
-PATTERNS.jevil_spade = {   // SPADE FAN: Jevil hovers at ALTERNATING sides and hurls a slower fan of real spades
-  dur: 440,
+// ---------- JEVIL ("joker", Ch1) — rebuilt from the REAL GML (30fps -> hz30). Turn-based escalating
+// jester; SOUL always RED. Box centre = (cx,cy). GML image_xscale -> our scale via JS(). ----------
+const JS = g => g / 1.6;
+// TYPE 70 — Teleport spade-fans: teleport to a side, hurl a 5-spade 72deg fan at the SOUL (spd 4.5, every 20t).
+PATTERNS.jevil_spade = {
+  dur: 380, hz30: 1,
   tick(a) {
-    const { f, box, tier, add, soul } = a;
-    const CYC = rate(52, tier), ev = f % CYC, k = Math.floor(f / CYC);
-    const left = (k % 2) === 0;
-    const ox = left ? box.x - 20 : box.x + box.w + 20, oy = box.y + box.h / 2;
-    // Jevil floats at the side, bobbing, and throws (drawn behind the box via fx.boss)
-    a.fx.boss = { key: 'jevilcast', x: left ? box.x - 42 : box.x + box.w + 42, y: oy + Math.sin(f * 0.18) * 8, scale: 1, flip: !left };
-    if (ev === 0) {   // slower fan of real battle-spades aimed at the soul (one fewer + slower than before)
-      const base = Math.atan2(soul.y - oy, soul.x - ox);
-      for (const o of [-0.34, 0, 0.34])
-        add({ ...bulletProps('jspade'), x: ox, y: oy, vx: Math.cos(base + o) * 2.0, vy: Math.sin(base + o) * 2.0, spin: 0.22, r: 7, scale: 1.2 });
-    }
+    const { f, box, add, soul, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 20 !== 0 || f > 340) return;
+    const jx = cx + (rng() < 0.5 ? -1 : 1) * (90 + rng() * 70), jy = cy + (rng() - 0.5) * 90;
+    const aim = Math.atan2(soul.y - jy, soul.x - jx);
+    for (let i = 0; i < 5; i++) { const ang = aim + (-36 + 18 * i) * Math.PI / 180;
+      add({ ...bulletProps('suitspade'), x: jx, y: jy, vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5, rot: ang, scale: JS(0.75), r: 5, grazeR: 11, dmg: 18, life: 130 }); }
+    Snd.play('jokerha', 0.3);
   },
 };
-PATTERNS.jevil_diamond = {   // DIAMOND RAIN: small REAL diamonds rain down from the top - readable + dodgeable
-  dur: 500,
+// TYPE 65 — Spade Ring: 10 spades gather on a ring, then sweep through the centre one-by-one.
+PATTERNS.jevil_ring = {
+  dur: 360, hz30: 1,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(9, tier)))     // steady rain of small diamonds with slight drift + spin
-      add({ ...bulletProps('diamond'), x: box.x + rng() * box.w, y: box.y - 16,
-            vx: (rng() - 0.5) * 0.8, vy: 2.2 + rng() * 1.4, r: 6, spin: 0.12 });
-    if (every(f, rate(88, tier))) {  // occasional slanted downpour line to force a move
-      const dir = rng() < 0.5 ? 1 : -1;
-      for (let i = 0; i < 5; i++)
-        add({ ...bulletProps('diamond'), x: box.x + box.w * 0.5 + dir * i * 14, y: box.y - 20 - i * 12,
-              vx: dir * 1.2, vy: 2.6, r: 6, spin: 0.12 });
-    }
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 90 !== 0 || f > 300) return;
+    const N = 10, R = Math.min(box.w, box.h) * 0.55;
+    for (let i = 0; i < N; i++) { const ang = i / N * Math.PI * 2;
+      add({ ...bulletProps('suitspade'), x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R, vx: 0, vy: 0, rot: ang + Math.PI, scale: JS(0.85), r: 5, grazeR: 11, noHit: true,
+            fireAt: 18 + i * 4, fireVX: -Math.cos(ang) * 6, fireVY: -Math.sin(ang) * 6, dmg: 18, life: 18 + i * 4 + 100 }); }
+    Snd.play('jokerha', 0.25);
   },
 };
-PATTERNS.jevil_carousel = {   // THE CAROUSEL: a fake-3D cylinder of 8 columns x 3 horse-ducks rotating around the
-  dur: 560,                    // box. ~3 columns are in FRONT at once, bobbing up/down as a unit - slip the gaps.
+// TYPE 46/49 — Suit bombs fall from the top and detonate into a suit-specific burst.
+PATTERNS.jevil_bombs = {
+  dur: 360, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2;
+    if (f % 20 !== 0 || f > 320) return;
+    const suit = Math.floor(rng() * 4), spr = ['suitspade', 'suitdiamondv', 'jbombheart0', 'jbombclub0'][suit];
+    const bx = cx + (rng() < 0.5 ? -1 : 1) * (50 + rng() * 60);
+    const bomb = { ...bulletProps(spr), x: bx, y: box.y - 20, vx: 0, vy: 10, r: 8, grazeR: 12, scale: JS(1.0), spin: 0.1, _suit: suit, _fuse: 20 + Math.floor(rng() * 16), dmg: 16 };
+    bomb.emit = function (b, out, s) {
+      if (b.t >= b._fuse && !b._done && b.y > box.y) {
+        b._done = 1; b.dead = true; Snd.play('boardbomb', 0.3);
+        if (b._suit === 0) for (let i = 0; i < 12; i++) { const ang = Math.random() * 6.28 + i * Math.PI / 6; out.push({ ...bulletProps('suitspade'), x: b.x, y: b.y, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang, scale: JS(0.55), r: 4, life: 90, dmg: b.dmg }); }
+        else if (b._suit === 1) for (let i = 0; i < 3; i++) { const ang = Math.atan2(s.y - b.y, s.x - b.x), sp = 11 - i; out.push({ ...bulletProps('suitdiamondv'), x: b.x, y: b.y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, scale: JS(0.6), r: 4, life: 90, dmg: b.dmg }); }
+        else if (b._suit === 2) for (let i = 0; i < 8; i++) { const ang = i / 8 * 6.28; out.push({ ...bulletProps('suitheart'), x: b.x, y: b.y, vx: Math.cos(ang) * 6, vy: Math.sin(ang) * 6, scale: JS(0.7), r: 4, life: 80, dmg: b.dmg }); }
+        else for (let i = 0; i < 3; i++) { const base = Math.atan2(s.y - b.y, s.x - b.x), ang = base + (-20 + i * 20) * Math.PI / 180; out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, scale: JS(0.7), r: 4, life: 90, dmg: b.dmg }); }
+      }
+    };
+    add(bomb);
+  },
+};
+// TYPE 75 — Orbiting Devilsknives: 4 scythes swing THROUGH the centre along rotating axes.
+PATTERNS.jevil_scythes = {
+  dur: 420, hz30: 1,
+  tick(a) {
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, RAD = Math.min(box.w, box.h) * 0.5;
+    if (f !== 0) return;
+    for (let k = 0; k < 4; k++) {
+      const s = { ...bulletProps('jdevil'), x: cx, y: cy, r: 9, grazeR: 20, scale: JS(1.0), rot: 0, _sine: k * 20, _dir: k * 90, life: 420 };
+      s.emit = function (b) { b._sine += 1.4; b._dir += 1.5; const L = Math.cos(b._sine / 18) * RAD, va = -b._dir * Math.PI / 180; b.x = cx - Math.cos(va) * L; b.y = cy - Math.sin(va) * L; b.rot += 0.17; };
+      add(s);
+    }
+    Snd.play('boardsummon', 0.35);
+  },
+};
+// TYPE 62 — The Carousel: pseudo-3D horses sweep around the box; only FRONT-facing ones hurt (updCarousel).
+PATTERNS.jevil_carousel = {
+  dur: 480, hz30: 1,
   tick(a) {
     const { f, box, add, rng } = a;
     if (f !== 0) return;
-    const cols = 8, rows = 3;
-    const cx = box.x + box.w / 2, R = box.w / 2 + 24;
-    const rowGap = box.h * 0.34, midY = box.y + box.h / 2;
-    for (let c = 0; c < cols; c++) {
-      const ang0 = c / cols * Math.PI * 2;
-      for (let r = 0; r < rows; r++) {
-        const rowY = midY + (r - 1) * rowGap;
-        // each duck-horse is a RANDOM variant sprite (carousel0/1/2) for visual variety - not an animation
-        add({ ...bulletProps('carousel' + Math.floor(rng() * 3)), x: cx, y: rowY, vx: 0, vy: 0, r: 11,
-              carousel: { ang: ang0, w: 0.018, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } });
-      }
-    }
+    const cols = 7, rows = 3, cx = box.x + box.w / 2, R = box.w / 2 + 24, rowGap = box.h * 0.34, midY = box.y + box.h / 2;
+    for (let c = 0; c < cols; c++) { const ang0 = c / cols * Math.PI * 2;
+      for (let r = 0; r < rows; r++) { const rowY = midY + (r - 1) * rowGap;
+        add({ ...bulletProps('carousel' + Math.floor(rng() * 3)), x: cx, y: rowY, vx: 0, vy: 0, r: 11, grazeR: 16,
+              carousel: { ang: ang0, w: 0.03, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } }); } }
   },
 };
-PATTERNS.jevil_ult = {   // DEVILSKNIFE (turn-4): the arena fills the screen; giant Devilsknives fall and smash
-  dur: 680,               // into light pillars - random first, then edges->center->edges, then a screen-filler.
+// TYPE 71 — Teleport diamonds: dense aimed diamonds fired from teleport spots (spd 8, every 9t).
+PATTERNS.jevil_diamond = {
+  dur: 340, hz30: 1,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    a.fx.arena = true;                                     // the arena grows to fill the whole screen
-    const gY = box.y + box.h - 8;
-    const drop = (x, vy, scale) => {
-      const sc = scale || 1;
-      // SMALLER, MUCH FASTER falling knives; each smashes into a full-height pillar of white light
-      const k = { ...bulletProps('scythebig'), x, y: box.y + 24, vx: 0, vy: vy, spin: 0.08, scale: sc * 0.95,
-                  hitW: 26 * sc, hitH: 62 * sc, _gy: gY };
+    const { f, box, add, soul, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 9 !== 0 || f > 300) return;
+    const jx = cx + (rng() - 0.5) * box.w * 0.8, jy = cy + (rng() - 0.5) * box.h * 0.8, ang = Math.atan2(soul.y - jy, soul.x - jx);
+    add({ ...bulletProps('suitdiamondv'), x: jx, y: jy, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang + Math.PI / 2, scale: JS(0.7), r: 5, grazeR: 11, dmg: 16, life: 120 });
+  },
+};
+// TYPE 77 — ChaosChaos ULT: the box vanishes; giant Devilsknives rain in lanes and smash into ground
+// shockwaves; a huge final scythe + whiteout.
+PATTERNS.jevil_ult = {
+  dur: 600, hz30: 1,
+  tick(a) {
+    const { f, rng, box, add } = a; a.fx.arena = true;
+    const gY = box.y + box.h - 6;
+    const drop = (x) => {
+      const k = { ...bulletProps('jdevilgiant'), x, y: box.y - 60, vx: 0, vy: 5, ay: 1, maxv: 16, spin: 0.24, scale: JS(2.0), hitW: 30, hitH: 72, _gy: gY };
       k.emit = function (b, out) {
-        if (b.y >= b._gy && !b._smash) {
-          b._smash = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 60, thick: 26 + 8 * sc,
-                     armed: true, life: 20, dmg: b.dmg, vx: 0, vy: 0 });
-          Snd.play('boarddmg', 0.3);
+        if (b.y >= b._gy && !b._s) { b._s = 1; b.dead = true;
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: gY, rot: 0, len: 160, thick: 30, armed: true, life: 22, dmg: b.dmg, vx: 0, vy: 0 });
+          Snd.play('boardbomb', 0.4);
         }
       };
       add(k);
     };
-    if (f < 300 && every(f, rate(26, tier))) {             // PHASE 1: MANY random fast knives
-      drop(box.x + 30 + rng() * (box.w - 60), 6.5 + rng() * 1.5, 1.0);
-    }
-    const seq = f - 300;
-    if (seq >= 0 && seq % rate(52, tier) === 0) {           // PHASE 2: the set pattern (fast)
-      const n = Math.floor(seq / rate(52, tier));
-      if (n === 0 || n === 2) { drop(box.x + 44, 7.5, 1.0); drop(box.x + box.w / 2, 7.5, 1.0); drop(box.x + box.w - 44, 7.5, 1.0); }   // edges + centre
-      else if (n === 1) { drop(box.x + box.w * 0.3, 7.5, 1.0); drop(box.x + box.w * 0.7, 7.5, 1.0); }
-      else if (n === 3) { drop(box.x + 80, 7.5, 1.0); drop(box.x + box.w - 80, 7.5, 1.0); }
-      else if (n === 4)   // FINALE: one HUGE Devilsknife descends SLOWLY - DOUBLE damage if touched, but easy: move DOWN
-        add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: -80, vx: 0, vy: 0,
-              lerpY: box.y + box.h * 0.28, lerpRate: 0.02, spin: 0.03, scale: 5.4, hitW: 300, hitH: 240, dmgMult: 2, life: 260 });
-    }
+    if (f === 20) drop(box.x - 30); if (f === 40) drop(box.x + box.w + 30);
+    if (f >= 60 && f % 12 === 0 && f < 420) drop(box.x + box.w * (Math.floor(rng() * 5) / 4));
+    if (f === 440) add({ ...bulletProps('jdevilgiant'), x: box.x + box.w / 2, y: box.y - 200, vx: 0, vy: 0, lerpY: box.y + box.h * 0.3, lerpRate: 0.02, spin: 0.03, scale: JS(6), hitW: 280, hitH: 220, dmgMult: 2, life: 200 });
+    if (f > 500) { a.fx.whiteout = Math.min(1, (f - 500) / 24); a.fx.shake = 8; }
   },
 };
 

@@ -93,9 +93,12 @@ const ATTACKS = [
   { boss:'Berdly',  base:'berdly', id:'berdly_papers',   name:'A++++',            soul:'red' },
   { boss:'Berdly',  base:'berdly', id:'berdly_ult',      name:'SMART RACE',       soul:'red' },
   { boss:'Jevil',   base:'jevil',  id:'jevil_spade',     name:'Spade Fan',        soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_ring',      name:'Ring of Spades',   soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_bombs',     name:'Suit Bombs',       soul:'red' },
   { boss:'Jevil',   base:'jevil',  id:'jevil_diamond',   name:'Diamond Rain',     soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_scythes',   name:'Devilsknives',     soul:'red' },
   { boss:'Jevil',   base:'jevil',  id:'jevil_carousel',  name:'Carousel',         soul:'red' },
-  { boss:'Jevil',   base:'jevil',  id:'jevil_ult',       name:'DEVILSKNIFE',      soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_ult',       name:'CHAOS, CHAOS!',    soul:'red' },
   { boss:'Jevil — NEW SET', base:'jevil', id:'jx_spread',      name:'Five-Spade Spread',  soul:'red' },
   { boss:'Jevil — NEW SET', base:'jevil', id:'jx_spiral',      name:'Spade Spiral',       soul:'red' },
   { boss:'Jevil — NEW SET', base:'jevil', id:'jx_heartbomb',   name:'Heart Bomb',         soul:'red' },
@@ -189,7 +192,7 @@ function makePlayer(canvas, spec) {
   const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
   const base = { x: box.x, y: box.y, w: box.w, h: box.h };
   const FX = {};
-  const hz30 = /^gerson_/.test(spec.id) || !!p.hz30;   // DELTARUNE 30fps attacks: sim every 2nd frame
+  const hz30 = /^(gerson|jevil)_/.test(spec.id) || !!p.hz30;   // DELTARUNE 30fps attacks: sim every 2nd frame
   let hzTick = false;
   function reset() { bullets = []; f = 0; box.x=base.x; box.y=base.y; box.w=base.w; box.h=base.h; }
   function step() {
