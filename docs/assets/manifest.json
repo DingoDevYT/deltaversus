@@ -2398,6 +2398,26 @@
 "f": "sneomouth.png",
 "w": 20,
 "h": 44
+},
+"sneocar": {
+"f": "sneocar.png",
+"w": 44,
+"h": 18
+},
+"sneobomb": {
+"f": "sneobomb.png",
+"w": 26,
+"h": 20
+},
+"sneofacebg": {
+"f": "sneofacebg.png",
+"w": 19,
+"h": 60
+},
+"sneobox": {
+"f": "sneobox.png",
+"w": 22,
+"h": 22
 }
 },
 "bullet_cost": {

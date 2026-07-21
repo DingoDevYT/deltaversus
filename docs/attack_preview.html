@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DELTAVERSUS — Attack Preview & Feedback</title>
+<style>
+  :root { --bg:#0c0c14; --card:#15151f; --line:#2a2a3a; --ink:#e8e8f0; --dim:#8a8aa0;
+          --good:#38d878; --bad:#ff5060; --accent:#ffe100; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family: "Segoe UI", system-ui, sans-serif; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 14px; }
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--bg);
+         padding: 10px 0 12px; border-bottom: 1px solid var(--line); margin-bottom: 16px;
+         display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  button { font: inherit; cursor: pointer; border-radius: 7px; border:1px solid var(--line);
+           background:#20202e; color:var(--ink); padding:7px 12px; }
+  button:hover { border-color:#454560; }
+  .btn-primary { background:var(--accent); color:#000; border-color:var(--accent); font-weight:600; }
+  .count { color: var(--dim); font-size: 13px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+          display:flex; flex-direction:column; }
+  .card.good { border-color: var(--good); }
+  .card.bad  { border-color: var(--bad); }
+  .head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line); }
+  .boss { font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--dim); }
+  .name { font-size:15px; font-weight:600; }
+  .soul { margin-left:auto; font-size:11px; padding:2px 7px; border-radius:20px; border:1px solid var(--line); }
+  .soul.yellow { color:#ffe100; border-color:#5a5320; background:#211f08; }
+  .soul.red    { color:#ff5a5a; border-color:#5a2020; background:#210808; }
+  canvas { width:100%; height:auto; display:block; background:#000; image-rendering: pixelated; }
+  .ctl { display:flex; gap:6px; padding:10px 12px; align-items:center; }
+  .verdict { flex:0 0 auto; display:flex; gap:6px; }
+  .vb { width:38px; height:34px; font-size:16px; line-height:1; padding:0; }
+  .vb.tick.on { background:var(--good); border-color:var(--good); color:#04210f; }
+  .vb.cross.on { background:var(--bad); border-color:var(--bad); color:#210404; }
+  .replay { margin-left:auto; font-size:12px; padding:6px 9px; }
+  textarea { width:100%; min-height:56px; resize:vertical; background:#0e0e16; color:var(--ink);
+             border:1px solid var(--line); border-radius:8px; padding:8px; font:inherit; font-size:13px;
+             margin:0 12px 12px; width:calc(100% - 24px); }
+  .out { width:100%; min-height:160px; margin-top:16px; }
+  .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#222; color:#fff;
+           padding:10px 16px; border-radius:8px; border:1px solid var(--line); opacity:0; transition:opacity .2s;
+           pointer-events:none; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+  <h1>DELTAVERSUS — Attack Preview &amp; Feedback</h1>
+  <div class="sub">Live-rendered from the real <code>patterns.js</code>. Mark each ✓/✗ and jot notes, then <b>Copy feedback</b> and paste it back to me. (Saved automatically as you go.)</div>
+
+  <div class="bar">
+    <button class="btn-primary" id="copyBtn">📋 Copy feedback</button>
+    <button id="dlBtn">⬇ Download feedback.json</button>
+    <button id="clearBtn">↺ Reset marks</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <textarea class="out" id="out" placeholder="Feedback summary appears here when you hit Copy…" readonly></textarea>
+  <div class="toast" id="toast"></div>
+
+<!-- real game code: assets helpers + bullet patterns. No query strings so this
+     works when opened directly as a file:// as well as over http. -->
+<script src="js/assets.js"></script>
+<script src="js/patterns.js"></script>
+<script>
+// bullet manifest embedded so the page needs NO fetch (fetch is blocked on file://).
+const EMBEDDED_BULLETS = {"diamond":{"f":"diamond.png","w":11,"h":11},"kdiamond":{"f":"kdiamond.png","w":22,"h":11},"knightcross":{"f":"knightcross.png","w":22,"h":21},"knightstar":{"f":"knightstar.png","w":22,"h":22},"knightsword":{"f":"knightsword.png","w":30,"h":9},"knighttri":{"f":"knighttri.png","w":16,"h":16},"knightslash":{"f":"knightslash.png","w":54,"h":3},"sneohead":{"f":"sneohead.png","w":22,"h":28},"sneowire":{"f":"sneowire.png","w":30,"h":30},"sneomail":{"f":"sneomail.png","w":20,"h":20},"sneosound":{"f":"sneosound.png","w":22,"h":22},"sneobig":{"f":"sneobig.png","w":50,"h":36},"sneophone":{"f":"sneophone.png","w":26,"h":12},"sneocrew":{"f":"sneocrew.png","w":18,"h":22},"sneodollar":{"f":"sneodollar.png","w":18,"h":20},"sneoarrow":{"f":"sneoarrow.png","w":16,"h":15},"sneoball":{"f":"sneoball.png","w":20,"h":20},"sneowisp":{"f":"sneowisp.png","w":20,"h":13},"sneoeye":{"f":"sneoeye.png","w":39,"h":44},"sneonose":{"f":"sneonose.png","w":44,"h":26},"sneomouth":{"f":"sneomouth.png","w":20,"h":44},"sneolaser":{"f":"sneolaser.png","w":8,"h":8},"sneocar":{"f":"sneocar.png","w":44,"h":18},"sneobomb":{"f":"sneobomb.png","w":26,"h":20},"sneofacebg":{"f":"sneofacebg.png","w":19,"h":60},"sneobox":{"f":"sneobox.png","w":22,"h":22}};
+const ATTACKS = [
+  { boss:'Spamton NEO', id:'sneo_heads',   name:'Flying Heads',        soul:'yellow' },
+  { boss:'Spamton NEO', id:'sneo_heart',   name:'Heart Attack',        soul:'yellow' },
+  { boss:'Spamton NEO', id:'sneo_mail',    name:'Spam Mail',           soul:'yellow' },
+  { boss:'Spamton NEO', id:'sneo_phones',  name:'Gripping Phones',     soul:'yellow' },
+  { boss:'Spamton NEO', id:'sneo_face',    name:'Eyes Nose Mouth',     soul:'yellow' },
+  { boss:'Spamton NEO', id:'sneo_bigshot', name:'Power of NEO (BIG SHOT)', soul:'yellow' },
+  { boss:'Roaring Knight', id:'knight_corridor', name:'Sword Corridor',   soul:'red' },
+  { boss:'Roaring Knight', id:'knight_circle',   name:'Spinning Swords',  soul:'red' },
+  { boss:'Roaring Knight', id:'knight_slash',    name:'Red Slash',        soul:'red' },
+  { boss:'Roaring Knight', id:'knight_board',    name:'Break the Board',  soul:'red' },
+  { boss:'Roaring Knight', id:'knight_roar',     name:'FINAL ROAR',       soul:'red' },
+];
+const SOULCOL = { yellow:'#ffe100', red:'#ff2020' };
+const CW = 480, CH = 300;   // canvas coordinate space
+
+// --- renderer copied from battle.js so this page needs nothing else ---
+const soulTints = {};
+function tintedSoul(color) {
+  if (soulTints[color]) return soulTints[color];
+  const src = A.ui('soul');
+  const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+  const x = c.getContext('2d'); x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  soulTints[color] = c; return c;
+}
+function drawBullet(ctx, b, px, py, s) {
+  if (b.img && b.img.width) { drawSpr(ctx, b.img, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip }); return; }
+  ctx.fillStyle = b.color || '#fff';
+  if (b.shape === 'crescent') {
+    const r = (b.r || 8) * 1.5 * s;
+    ctx.save(); ctx.translate(px, py); ctx.rotate((b.rot || 0));
+    ctx.strokeStyle = b.color || '#fff'; ctx.lineWidth = Math.max(2, 4 * s);
+    ctx.beginPath(); ctx.arc(-r * 0.35, 0, r, -1.1, 1.1); ctx.stroke();
+    ctx.restore();
+  } else if (b.shape === 'star') {
+    ctx.save(); ctx.translate(px, py); ctx.rotate((b.t || 0) * 0.1);
+    for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-1 * s, -6 * s, 2 * s, 12 * s); }
+    ctx.restore();
+  } else { ctx.beginPath(); ctx.arc(px, py, (b.r || 5) * s, 0, 7); ctx.fill(); }
+}
+
+// one animated preview player per attack
+function makePlayer(canvas, spec) {
+  const ctx = canvas.getContext('2d');
+  const p = PATTERNS[spec.id];
+  const bw = p.box ? p.box.w : 200, bh = p.box ? p.box.h : 200;
+  const box = { x: Math.round(CW/2 - bw/2), y: Math.round(CH/2 - bh/2), w: bw, h: bh };
+  const soulImg = tintedSoul(SOULCOL[spec.soul]);
+  let bullets = [], f = 0, seed = spec.id.length + 3, t = 0;
+  const rng = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
+  function reset() { bullets = []; f = 0; }
+  function step() {
+    // gentle auto-move so aimed/homing attacks track a moving target
+    t += 1;
+    soul.x = box.x + box.w/2 + Math.sin(t*0.031) * box.w*0.30;
+    soul.y = box.y + box.h/2 + Math.sin(t*0.047) * box.h*0.26;
+    const add = b => { b.t = b.t||0; b.phase0 = b.phase0||0; bullets.push(b); };
+    if (f <= (p.dur||480)) p.tick({ f, rng, box, tier:1, add, soul, imgs:{} });
+    const spawned = [];
+    for (const b of bullets) {
+      if (b.dead) continue;
+      if (b.homing) { const d = Math.hypot(soul.x-b.x, soul.y-b.y)||1; b.vx += (soul.x-b.x)/d*b.homing; b.vy += (soul.y-b.y)/d*b.homing; }
+      if (b.maxv) { const v = Math.hypot(b.vx||0, b.vy||0); if (v > b.maxv) { b.vx *= b.maxv/v; b.vy *= b.maxv/v; } }
+      if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang)*b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang)*b.orbit.R; }
+      else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
+      if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
+      if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
+      if (b.spin) b.rot = (b.rot||0) + b.spin;
+      if (b.emit && !b.dead) b.emit(b, spawned, soul, box);
+      if (b.burst && b.t >= b.burst) {
+        b.dead = true;
+        const n = b.burstN||8, bsp = b.burstSpeed||2.2, full = b.burstArc == null;
+        const bimg = b.burstImg ? bulletProps(b.burstImg).img : b.img;
+        for (let i=0;i<n;i++){
+          const ang = full ? (i/n*6.28+(b.burstRot||0)) : ((b.burstAng||0) + (n>1 ? (i/(n-1)-0.5)*b.burstArc : 0));
+          bullets.push({ img:bimg, color:b.burstColor, shape:b.burstShape,
+            scale:(b.burstScale!=null?b.burstScale:(b.scale||1)*0.55), r:b.burstR||Math.max(4,(b.r||8)*0.55),
+            x:b.x, y:b.y, vx:Math.cos(ang)*bsp, vy:Math.sin(ang)*bsp,
+            rot:b.burstImg?ang:0, spin:b.burstSpin!=null?b.burstSpin:(b.burstImg?0:0.2), t:0, phase0:0 }); }
+        continue;
+      }
+      b.t++; if (b.life && b.t > b.life) b.dead = true;
+    }
+    for (const nb of spawned) { nb.t = nb.t||0; nb.phase0 = nb.phase0||0; bullets.push(nb); }
+    bullets = bullets.filter(b => !b.dead && b.x>-80 && b.x<CW+80 && b.y>-80 && b.y<CH+80);
+    f++;
+    if (f > (p.dur||480) + 110) reset();   // loop
+    // draw
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,CW,CH);
+    ctx.strokeStyle = '#3adb3a'; ctx.lineWidth = 2; ctx.strokeRect(box.x, box.y, box.w, box.h);
+    for (const b of bullets) if (!b.dead) drawBullet(ctx, b, b.x, b.y, 1);
+    ctx.drawImage(soulImg, soul.x-8, soul.y-7);
+  }
+  return { step, reset };
+}
+
+// --- feedback state (localStorage) ---
+const KEY = 'dv_attack_feedback';
+let fb = {};
+try { fb = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { fb = {}; }
+function save() { localStorage.setItem(KEY, JSON.stringify(fb)); updateCount(); }
+function updateCount() {
+  const done = ATTACKS.filter(a => fb[a.id] && fb[a.id].verdict).length;
+  document.getElementById('count').textContent = done + ' / ' + ATTACKS.length + ' marked';
+}
+
+function build() {
+  const grid = document.getElementById('grid');
+  const players = [];
+  for (const spec of ATTACKS) {
+    const card = document.createElement('div'); card.className = 'card';
+    const rec = fb[spec.id] || (fb[spec.id] = { verdict:'', notes:'' });
+    if (rec.verdict === 'good') card.classList.add('good');
+    if (rec.verdict === 'bad')  card.classList.add('bad');
+    card.innerHTML = `
+      <div class="head">
+        <div><div class="boss">${spec.boss}</div><div class="name">${spec.name}</div></div>
+        <span class="soul ${spec.soul}">${spec.soul === 'yellow' ? '◆ yellow soul' : '♥ red soul'}</span>
+      </div>
+      <canvas width="${CW}" height="${CH}"></canvas>
+      <div class="ctl">
+        <div class="verdict">
+          <button class="vb tick ${rec.verdict==='good'?'on':''}" title="Accurate">✓</button>
+          <button class="vb cross ${rec.verdict==='bad'?'on':''}" title="Wrong">✗</button>
+        </div>
+        <button class="replay">↻ replay</button>
+      </div>
+      <textarea placeholder="What's right / wrong about this attack…">${rec.notes||''}</textarea>`;
+    grid.appendChild(card);
+    const canvas = card.querySelector('canvas');
+    const tick = card.querySelector('.tick'), cross = card.querySelector('.cross');
+    const notes = card.querySelector('textarea');
+    const player = makePlayer(canvas, spec); players.push(player);
+    tick.onclick = () => { rec.verdict = rec.verdict==='good'?'':'good'; card.classList.toggle('good', rec.verdict==='good'); card.classList.remove('bad');
+      tick.classList.toggle('on', rec.verdict==='good'); cross.classList.remove('on'); save(); };
+    cross.onclick = () => { rec.verdict = rec.verdict==='bad'?'':'bad'; card.classList.toggle('bad', rec.verdict==='bad'); card.classList.remove('good');
+      cross.classList.toggle('on', rec.verdict==='bad'); tick.classList.remove('on'); save(); };
+    card.querySelector('.replay').onclick = () => player.reset();
+    notes.oninput = () => { rec.notes = notes.value; save(); };
+  }
+  updateCount();
+  function loop() { for (const pl of players) pl.step(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+}
+
+function summary() {
+  const lines = ['DELTAVERSUS attack feedback', ''];
+  for (const a of ATTACKS) {
+    const r = fb[a.id] || {};
+    const mark = r.verdict === 'good' ? '[✓ OK]' : r.verdict === 'bad' ? '[✗ WRONG]' : '[ ? unmarked ]';
+    lines.push(`${mark} ${a.boss} — ${a.name} (${a.id})`);
+    if (r.notes && r.notes.trim()) lines.push('    ' + r.notes.trim().replace(/\n/g, '\n    '));
+  }
+  return lines.join('\n');
+}
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1600); }
+document.getElementById('copyBtn').onclick = async () => {
+  const s = summary(); document.getElementById('out').value = s;
+  try { await navigator.clipboard.writeText(s); toast('Feedback copied — paste it back to me!'); }
+  catch(e) { document.getElementById('out').select(); toast('Selected below — press Ctrl+C'); }
+};
+document.getElementById('dlBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(fb, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'attack_feedback.json'; a.click();
+};
+document.getElementById('clearBtn').onclick = () => { if (confirm('Clear all marks and notes?')) { fb = {}; save(); location.reload(); } };
+
+// self-contained loader: set the embedded manifest, load only the sprites the
+// previews use (images work fine on file://; fetch does not), then build.
+A.manifest = { bullets: EMBEDDED_BULLETS, chars:{}, anims:{}, fonts:{} };
+(function loadSprites() {
+  const need = [];
+  for (const b in A.manifest.bullets) need.push('assets/bullets/' + A.manifest.bullets[b].f);
+  need.push('assets/ui/soul.png');
+  let n = need.length;
+  if (!n) { A.ready = true; build(); return; }
+  for (const p of need) {
+    const im = new Image();
+    im.onload = im.onerror = () => { if (--n === 0) { A.ready = true; build(); } };
+    im.src = p;              // no ?query -> loads under file:// too
+    A.img[p] = im;
+  }
+})();
+</script>
+</body>
+</html>

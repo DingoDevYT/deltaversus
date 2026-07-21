@@ -532,127 +532,141 @@ PATTERNS.redbuster = {
 // ---------- SPAMTON NEO (Ch2 secret boss) ----------
 // Rebuilt frame-by-frame from the real attack GIFs (ref/spamton/*.webp,
 // montages in ref/vidframes/*_grid.png). Yellow SOUL shoots (def.soulYellow).
-PATTERNS.sneo_heads = {   // FLYING HEADS: blue Spamton heads fly in from the right - shoot them
-  dur: 460, box: { w: 300, h: 150 },   // wide box
-  tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    // heads launch from the right toward the soul's lane + a random lane
-    if (every(f, rate(28, tier)))
-      for (const ly of [soul.y, box.y + 24 + rng() * (box.h - 48)])
-        add({ ...bulletProps('sneohead'), x: box.x + box.w + 30, y: ly,
-              vx: -(2.3 + rng() * 0.9), vy: 0, spin: 0, shootable: true, hp: 2, r: 12 });
-    // occasional 4-ball yellow "clover" cluster drifting in
-    if (every(f, rate(96, tier))) {
-      const cy = box.y + 26 + rng() * (box.h - 52);
-      for (const [dx, dy] of [[0, -10], [0, 10], [-10, 0], [10, 0]])
-        add({ ...bulletProps('sneoball'), x: box.x + box.w + 24 + dx, y: cy + dy, vx: -1.9, vy: 0, r: 6 });
-    }
-  },
-};
-PATTERNS.sneo_heart = {   // A HEART ATTACK: a chained blue heart swings, scattering WHITE diamonds
-  dur: 520, box: { w: 180, h: 180 },   // square box
-  tick(a) {
-    const { f, box, tier, add } = a;
-    const amp = box.w * 0.40, cx0 = box.x + box.w * 0.5, cy = box.y + box.h * 0.42;
-    if (f === 0)   // ONE persistent chained heart - shoot it down to end early / earn TP
-      add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
-            swing: { cx: cx0, amp, spd: 0.035 }, shootable: true, hp: 16, spin: 0.05, r: 15, life: 514 });
-    const cx = cx0 + amp * Math.sin(0.035 * f);
-    // chain beads from Spamton (right) to the heart - cosmetic, non-colliding
-    if (f % 2 === 0)
-      for (let k = 0; k < 8; k++) { const t = k / 8;
-        add({ color: '#4aa8ff', r: 3, noHit: true, life: 3,
-              x: cx + (box.x + box.w + 60 - cx) * t, y: cy + (box.y + box.h * 0.3 - cy) * t, vx: 0, vy: 0 }); }
-    // scatter WHITE diamonds in a slow-rotating ring, in bursts
-    if (every(f, rate(15, tier))) {
-      const n = 6;
-      for (let k = 0; k < n; k++) { const th = f * 0.10 + k * 6.28 / n;
-        add({ ...bulletProps('diamond'), x: cx, y: cy, vx: Math.cos(th) * 2.2, vy: Math.sin(th) * 2.2, spin: 0.14, r: 6 }); }
-    }
-  },
-};
-PATTERNS.sneo_mail = {   // SPAM MAIL: vertical mail pillars rise from the floor with a gap to weave through
-  dur: 500, box: { w: 250, h: 200 },   // wide box
+PATTERNS.sneo_heads = {   // FLYING HEADS: a row of 4 heads decelerates to ~66% in, stops, EXPLODES into small heads
+  dur: 470, box: { w: 300, h: 150 },
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    const period = rate(72, tier), colW = 26, ncols = Math.floor((box.w - 20) / colW);
-    if (f % period === 0) {
-      const gap = 1 + Math.floor(rng() * (ncols - 3));   // a 2-wide passable gap
-      for (let c = 0; c < ncols; c++) {
-        if (c === gap || c === gap + 1) continue;
-        const cx = box.x + 16 + c * colW, h = box.h * (0.45 + rng() * 0.5);
-        for (let y = box.y + box.h - 8; y > box.y + box.h - h; y -= 18)
-          add({ ...bulletProps('sneomail'), x: cx, y, vx: 0, vy: 0, r: 8, life: period + 24 });
-        add({ ...bulletProps('sneocrew'), x: cx, y: box.y + box.h - 8, vx: 0, vy: 0, r: 9, shootable: true, hp: 1, life: period + 24 });
+    const period = rate(122, tier);
+    if (f % period === 0 && f < 360) {
+      const ly = box.y + 28 + rng() * (box.h - 56);          // random lane
+      for (let i = 0; i < 4; i++)                             // 4 heads in a straight row, entering from the right
+        add({ ...bulletProps('sneohead'), x: box.x + box.w + 24 + i * 24, y: ly,
+              vx: -4.1, ax: 0.046, vy: 0, r: 11, spin: 0, shootable: true, hp: 1,
+              // if not all shot in time they stop and burst into 5 small UN-shootable heads
+              burst: 88, burstN: 5, burstSpeed: 1.7, burstImg: 'sneohead', burstScale: 0.5, burstSpin: 0.08 });
+    }
+  },
+};
+PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; fires 3 rounds of a 5-bullet 180 arc
+  dur: 520, box: { w: 190, h: 190 },
+  tick(a) {
+    const { f, box, tier, add } = a;
+    const cx0 = box.x + box.w * 0.85, amp = box.w * 0.28, cy = box.y + box.h * 0.44;   // never reaches past box middle
+    if (f === 0)   // the shootable heart, swinging out from Spamton on the right
+      add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
+            swing: { cx: cx0, amp, spd: 0.028 }, shootable: true, hp: 16, spin: 0.05, r: 15, life: 514 });
+    const hx = cx0 + amp * Math.sin(0.028 * f);
+    // three rounds per cycle with delay between each: a 5-bullet fan across a leftward 180 arc.
+    // stretched diamonds pointing where they travel, no spin.
+    const cyc = f % rate(150, tier);
+    if (cyc === 0 || cyc === 26 || cyc === 52)
+      for (let k = 0; k < 5; k++) {
+        const ang = Math.PI / 2 + k * (Math.PI / 4);         // PI/2..3PI/2 : down -> left -> up
+        add({ ...bulletProps('kdiamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 6 });
       }
-    }
   },
 };
-PATTERNS.sneo_phones = {   // GRIPPING PHONES: a rotating oval cord of green dots, phones fire inward
-  dur: 500, box: { w: 210, h: 150 },   // wide box
+PATTERNS.sneo_mail = {   // SPAM MAIL: cars carry towers R->L (decel but never stop). Slots: mail / shootable head / bomb
+  dur: 540, box: { w: 260, h: 190 },
   tick(a) {
-    const { f, box, tier, add, soul } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, Rx = box.w * 0.60, Ry = box.h * 0.78;
-    // green cord dots forming the rotating oval ring (outside the box, non-colliding)
-    const dots = 24;
-    if (f % 2 === 0)
-      for (let k = 0; k < dots; k++) { const th = k * 6.28 / dots + f * 0.012;
-        add({ color: '#49d049', r: 3, noHit: true, life: 3, x: cx + Math.cos(th) * Rx, y: cy + Math.sin(th) * Ry, vx: 0, vy: 0 }); }
-    // phones on the ring grip + fire a yellow bullet inward at the soul
-    if (every(f, rate(24, tier))) {
-      const N = 5;
-      for (let k = 0; k < N; k++) { const th = k * 6.28 / N + f * 0.012;
-        const px = cx + Math.cos(th) * Rx, py = cy + Math.sin(th) * Ry, ang = Math.atan2(soul.y - py, soul.x - px);
-        add({ ...bulletProps('sneophone'), x: px, y: py, vx: 0, vy: 0, life: 10, r: 8, rot: ang, noHit: true });
-        add({ ...bulletProps('sneoball'), x: px, y: py, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, r: 6 });
+    const { f, rng, box, tier, add } = a;
+    const period = rate(98, tier);
+    if (f % period === 0 && f < 440) {
+      const w = Math.floor(f / period);
+      let fill;
+      if (w % 5 >= 3) { fill = ['m', 'm', 'm', 'm', 'm']; fill[1 + (w % 3)] = 'h'; }   // corridor run: aligned heads
+      else {
+        fill = [['m', 'm', 'm', 'm', 'h'], ['m', 'm', 'm', 'h', 'b'], ['m', 'm', 'm', 'h', 'h']][w % 3].slice();
+        for (let i = fill.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [fill[i], fill[j]] = [fill[j], fill[i]]; }
       }
-    }
-    // periodic soundwave sweeping inward
-    if (every(f, rate(38, tier))) {
-      const th = f * 0.05, px = cx + Math.cos(th) * Rx, py = cy + Math.sin(th) * Ry, ang = Math.atan2(cy - py, cx - px);
-      add({ ...bulletProps('sneosound'), x: px, y: py, vx: Math.cos(ang) * 2.0, vy: Math.sin(ang) * 2.0, r: 7 });
-    }
-  },
-};
-PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: face parts on the right fire dart streams + wisps + clovers
-  dur: 520, box: { w: 300, h: 160 },   // wide box
-  tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    const rx = box.x + box.w - 26;
-    // the current face part parked on the right, cycling eye -> nose -> mouth (cosmetic)
-    const part = ['sneoeye', 'sneonose', 'sneomouth'][Math.floor(f / 130) % 3];
-    add({ ...bulletProps(part), x: rx, y: box.y + box.h * 0.5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, scale: 1.3 });
-    // white dart streams fly left in rows
-    if (every(f, rate(10, tier)))
-      add({ ...bulletProps('sneoarrow'), x: rx + 26, y: box.y + 16 + rng() * (box.h - 32), vx: -(3.0 + rng() * 1.1), vy: 0, r: 6, rot: Math.PI });
-    // white wisps drift left
-    if (every(f, rate(22, tier)))
-      add({ ...bulletProps('sneowisp'), x: rx + 18, y: box.y + rng() * box.h, vx: -(1.6 + rng() * 0.8), vy: (rng() - 0.5) * 0.6, r: 6 });
-    // a yellow clover cluster aimed at the soul's lane
-    if (every(f, rate(72, tier))) {
-      const cy = soul.y;
-      for (const [dx, dy] of [[0, -10], [0, 10], [-10, 0], [10, 0], [0, 0]])
-        add({ ...bulletProps('sneoball'), x: rx + dx, y: cy + dy, vx: -2.0, vy: 0, r: 6 });
+      const tx = box.x + box.w + 30, vx = -2.5, ax = 0.006;    // decelerates, but keeps drifting past the player
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y - 6, vx, ax, r: 9 });                 // top square
+      for (let s = 0; s < 5; s++) {
+        const sy = box.y + (s + 0.5) * box.h / 5;
+        if (fill[s] === 'm') add({ ...bulletProps('sneomail'), x: tx, y: sy, vx, ax, r: 9 });
+        else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1 });
+        else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1, bomb: true });   // shot -> cross laser
+      }
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 6, vx, ax, r: 9 });         // bottom square
+      add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 24, vx, ax, r: 0, noHit: true });  // the car
     }
   },
 };
-PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): a cone spray of yellow balls + white dollar signs
-  dur: 640, box: { w: 300, h: 170 },   // wide box
+PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones; shoot to delay, BIG SHOT shoves it back
+  dur: 560, box: { w: 240, h: 160 },
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    const ox = box.x + box.w + 36, oy = box.y + box.h * 0.5;
-    const aim = () => Math.atan2(soul.y - oy, soul.x - ox) + (rng() - 0.5) * 0.75;   // spreading cone toward the soul
-    if (every(f, rate(7, tier))) {   // yellow balls of varied size
-      const ang = aim(), sp = 2.4 + rng() * 1.3;
-      add({ ...bulletProps('sneoball'), x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, spin: 0.1, r: 8, scale: 0.8 + rng() * 0.7 });
-    }
-    if (every(f, rate(11, tier))) {  // white dollar signs
-      const ang = aim(), sp = 2.0 + rng() * 1.0;
-      add({ ...bulletProps('sneodollar'), x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, spin: 0.08, r: 8 });
-    }
-    if (every(f, rate(64, tier))) {  // periodic BIG SHOT beam straight at the soul
-      const ang = Math.atan2(soul.y - oy, soul.x - ox);
-      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.6, vy: Math.sin(ang) * 2.6, rot: ang, spin: 0, r: 13 });
+    const { f, box, add } = a;
+    if (f !== 0) return;
+    const head = { ...bulletProps('sneohead'), x: box.x + box.w + 12, y: box.y + box.h / 2,
+      vx: -0.42, vy: 0, r: 16, scale: 1.9, shootable: true, hp: 9999, pushOnShot: 20, homing: 0.011, maxv: 0.85, _ball: 74 };
+    head.emit = function (b, out, soul, bx) {
+      // two phones ride the top & bottom border at the head's x (the "hands" it climbs with)
+      out.push({ ...bulletProps('sneophone'), x: b.x, y: bx.y + 5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 1.57 });
+      out.push({ ...bulletProps('sneophone'), x: b.x, y: bx.y + bx.h - 5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: -1.57 });
+      // every so often it spits a yellow ball that flashes ~1s then bursts into 3 leftward soundwaves
+      if (--b._ball <= 0) {
+        b._ball = 68;
+        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -0.5, vy: 0, r: 8,
+          burst: 58, burstN: 3, burstArc: Math.PI, burstAng: Math.PI, burstSpeed: 2.3, burstImg: 'sneosound', burstR: 7 });
+      }
+    };
+    add(head);
+  },
+};
+PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: destructible face parts, each firing its own pattern until shot down
+  dur: 580, box: { w: 300, h: 160 },
+  tick(a) {
+    const { f, box, add } = a;
+    if (f !== 0) return;
+    const fx = box.x + box.w + 34;   // the face box sits to the right; the soul can't enter it, but shots reach it
+    add({ ...bulletProps('sneofacebg'), x: fx, y: box.y + box.h / 2, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: 2.4 });
+    // EYES: every ~3s fire a straight 7-pellet line toward where the soul was (dodge vertically)
+    const eye = { ...bulletProps('sneoeye'), x: fx, y: box.y + box.h * 0.24, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 60 };
+    eye.emit = function (b, out, soul) {
+      if (--b._cd > 0) return; b._cd = 180;
+      const ang = Math.atan2(soul.y - b.y, soul.x - b.x), dx = Math.cos(ang), dy = Math.sin(ang);
+      for (let i = 0; i < 7; i++) out.push({ ...bulletProps('sneolaser'), x: b.x - dx * i * 15, y: b.y - dy * i * 15, vx: dx * 4.2, vy: dy * 4.2, r: 5 });
+    };
+    add(eye);
+    // NOSE: every ~3s (offset) fire a 3x3 grid of triangles that lerp into top / middle / bottom rows
+    const nose = { ...bulletProps('sneonose'), x: fx, y: box.y + box.h * 0.5, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 120 };
+    nose.emit = function (b, out, soul, bx) {
+      if (--b._cd > 0) return; b._cd = 180;
+      const rows = [bx.y + 16, bx.y + bx.h / 2, bx.y + bx.h - 16];
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)
+        out.push({ ...bulletProps('sneoarrow'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: (rows[r] - b.y) * 0.03, r: 6, rot: Math.PI });
+    };
+    add(nose);
+    // MOUTH: every ~3s (offset) fire 6 "kiss" wisps that drift left then curl upward out of the box
+    const mouth = { ...bulletProps('sneomouth'), x: fx, y: box.y + box.h * 0.76, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 180 };
+    mouth.emit = function (b, out) {
+      if (--b._cd > 0) return; b._cd = 180;
+      for (let i = 0; i < 6; i++)
+        out.push({ ...bulletProps('sneowisp'), x: b.x, y: b.y, vx: -1.4 - Math.random() * 0.9, vy: 0.3 - Math.random() * 0.6, ay: -0.02, r: 6 });
+    };
+    add(mouth);
+  },
+};
+PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): $ suck phase, then a BIG SHOT volley (bottom/top x4) + a final full-box shot
+  dur: 760, box: { w: 300, h: 180 },
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    // PHASE 1 (f<300): dollar signs stream from the LEFT toward Spamton's mouth (right) - he "eats" them
+    if (f < 300 && every(f, rate(9, tier)))
+      add({ ...bulletProps('sneodollar'), x: box.x - 20, y: box.y + 12 + rng() * (box.h - 24), vx: 2.5 + rng() * 0.9, vy: 0, spin: 0.06, r: 7 });
+    // PHASE 2 (f>=330): BIG SHOT walls take 66% of bottom/top with a gap, then a final full-height shot
+    const p2 = f - 330, SHOT = rate(72, tier);
+    if (p2 >= 0 && p2 % SHOT === 0) {
+      const n = Math.floor(p2 / SHOT);
+      if (n < 4) {                                   // bottom, top, bottom, top - gap on the opposite side
+        const bottom = (n % 2) === 0;
+        const y0 = bottom ? box.y + box.h * 0.34 : box.y, y1 = bottom ? box.y + box.h : box.y + box.h * 0.66;
+        for (let y = y0; y <= y1; y += 26)
+          add({ ...bulletProps('sneobig'), x: box.x + box.w + 44, y, vx: -3.4, vy: 0, r: 12, rot: Math.PI });
+      } else if (n === 4) {                          // FINAL BIG SHOT: full box, slow - sit on the LEFT; it fizzles out
+        for (let y = box.y + 6; y <= box.y + box.h - 6; y += 24)
+          add({ ...bulletProps('sneobig'), x: box.x + box.w + 60, y, vx: -1.15, vy: 0, r: 13, rot: Math.PI, life: 205 });
+      }
     }
   },
 };

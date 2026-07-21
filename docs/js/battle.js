@@ -606,7 +606,7 @@ Battle.startDodge = function () {
 
   // YELLOW SOUL: dodging a boss with soulYellow lets you shoot RIGHT (toward them)
   B.soulYellow = oppAtkers.some(a => a.def.soulYellow);
-  B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false;
+  B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false; B.pendingLasers = [];
 
   // mirror = combined MY attackers (spectator box)
   const myAtkers = attackersOf(B.myTeam, B.myPacified);
@@ -666,27 +666,36 @@ Battle.updDodge = function () {
   B.soul.y = Math.max(bx.y + 4, Math.min(bx.y + bx.h - 4, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
-  // ---- YELLOW SOUL: fire shots to the RIGHT (toward the boss); hold to charge a BIG SHOT ----
+  // ---- YELLOW SOUL: HOLD the button to charge, RELEASE to fire a shot to the RIGHT.
+  //      Hold time = shot size: a quick tap = a small pellet, a long hold = the BIG SHOT.
+  //      You can't rapid-fire AND charge at once - it's one shot per press-release. ----
   if (B.soulYellow) {
     const ok = Input.down.ok;
-    if (B.shootCd > 0) B.shootCd--;
+    const BIG_AT = 26;   // frames held to graduate a tap into a BIG SHOT
     if (ok) {
-      B.charge = Math.min(70, B.charge + 1);
-      if (B.shootCd <= 0) { B.shots.push({ x: B.soul.x + 6, y: B.soul.y, vx: 8, r: 4, big: false }); B.shootCd = 11; Snd.play('shoot', 0.35); }
+      B.charge = Math.min(60, B.charge + 1);
+    } else if (B._okPrev) {                 // just released -> fire
+      const c = B.charge, big = c >= BIG_AT;
+      B.shots.push({ x: B.soul.x + 8, y: B.soul.y, vx: big ? 9 : 8,
+                     r: big ? 12 + Math.min(10, (c - BIG_AT) * 0.4) : 4,
+                     big, power: big ? 4 : 1, pierce: big ? 8 : 1 });
+      Snd.play('shoot', big ? 0.7 : 0.4);
+      B.charge = 0;
     } else {
-      if (B._okPrev && B.charge >= 45) { B.shots.push({ x: B.soul.x + 6, y: B.soul.y, vx: 9, r: 13, big: true, pierce: 8 }); Snd.play('shoot', 0.7); }
       B.charge = 0;
     }
     B._okPrev = ok;
     for (const s of B.shots) s.x += s.vx;
-    B.shots = B.shots.filter(s => !s.dead && s.x < bx.x + bx.w + 60);
+    B.shots = B.shots.filter(s => !s.dead && s.x < bx.x + bx.w + 220);
   }
 
   B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); });
+  tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
   const front = frontLiving(B.myTeam);
   const defending = front && front.action && front.action.cmd === 'defend';
+  const spawned = [];   // bullets emitted by controller bullets this frame (added after the loop)
   for (const b of B.bullets) {
     b.t++;
     if (b.homing) { const d = Math.hypot(B.soul.x - b.x, B.soul.y - b.y) || 1; b.vx += (B.soul.x - b.x) / d * b.homing; b.vy += (B.soul.y - b.y) / d * b.homing; }
@@ -697,13 +706,19 @@ Battle.updDodge = function () {
     if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
+    // controller bullets (climbing head, face parts) emit projectiles from their LIVE position
+    if (b.emit && !b.dead) b.emit(b, spawned, B.soul, B.dodgeBox);
     // yellow-soul shots destroy shootable boss bullets (heads / mail / heart)
     if (B.soulYellow && b.shootable) {
       for (const s of B.shots) {
         if (Math.hypot(b.x - s.x, b.y - s.y) < (b.r || 8) + s.r) {
-          b.hp = (b.hp || 1) - (s.big ? 4 : 1);
+          if (b.pushOnShot) b.x += (s.big ? 3 : 1) * b.pushOnShot;   // shove it back toward the boss
+          b.hp = (b.hp || 1) - (s.power || (s.big ? 4 : 1));
           if (!s.big || --s.pierce <= 0) s.dead = true;
-          if (b.hp <= 0) { b.dead = true; B.myTP = Math.min(100, B.myTP + 2); Snd.play('graze', 0.3); }
+          if (b.hp <= 0) {
+            b.dead = true; B.myTP = Math.min(100, B.myTP + 2); Snd.play('graze', 0.3);
+            if (b.bomb) B.pendingLasers.push({ x: b.x, y: b.y, t: b.bombDelay || 16 });   // cross laser after a beat
+          }
           break;
         }
       }
@@ -711,13 +726,7 @@ Battle.updDodge = function () {
     }
     if (b.burst && b.t >= b.burst) {
       b.dead = true;
-      const n = b.burstN || 8, bsp = b.burstSpeed || 2.2;
-      for (let i = 0; i < n; i++) {
-        const ang = i / n * 6.28 + (b.burstRot || 0);
-        B.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
-          dmg: b.dmg, target: b.target, x: b.x, y: b.y,
-          vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp, spin: 0.2, t: 0, phase0: 0 });
-      }
+      B.bullets.push(...burstChildren(b));
       continue;
     }
     if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
@@ -741,6 +750,7 @@ Battle.updDodge = function () {
     }
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
+  for (const nb of spawned) { nb.t = nb.t || 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
   B.bullets = B.bullets.filter(b => !b.dead && b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
 
   if (B.anim.f % 4 === 0)
@@ -770,12 +780,7 @@ Battle.tickMirror = function () {
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
       if (b.burst && b.t >= b.burst) {
         b.dead = true;
-        const n = b.burstN || 8, bsp = b.burstSpeed || 2.2;
-        for (let i = 0; i < n; i++) {
-          const ang = i / n * 6.28 + (b.burstRot || 0);
-          M.bullets.push({ img: b.img, scale: (b.scale || 1) * 0.55, r: Math.max(4, (b.r || 8) * 0.55),
-            x: b.x, y: b.y, vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp, spin: 0.2, t: 0, phase0: 0 });
-        }
+        M.bullets.push(...burstChildren(b));
       }
     }
     M.bullets = M.bullets.filter(b => !b.dead && b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 && (!b.life || b.t < b.life));
@@ -1011,16 +1016,18 @@ Battle.renderBoxAndBullets = function (ctx) {
       if (s.big) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
       else ctx.fillRect(s.x - 5, s.y - 2, 10, 4);
     }
-    if (B.charge >= 45) {   // charged & ready: pulsing ring around the soul
-      ctx.strokeStyle = 'rgba(255,234,0,' + (0.5 + 0.4 * Math.sin(B.anim.f * 0.4)) + ')';
-      ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B.soul.x, B.soul.y, 11, 0, 7); ctx.stroke();
+    if (B.charge > 0) {   // charge ring grows while held; locks bright once it's a BIG SHOT
+      const ready = B.charge >= 26;
+      ctx.strokeStyle = ready ? 'rgba(255,234,0,' + (0.55 + 0.4 * Math.sin(B.anim.f * 0.4)) + ')' : 'rgba(255,243,107,0.6)';
+      ctx.lineWidth = ready ? 3 : 2; ctx.beginPath();
+      ctx.arc(B.soul.x, B.soul.y, 8 + Math.min(14, B.charge * 0.5), 0, 7); ctx.stroke();
     }
   }
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
-  if (!blink) drawSpr(ctx, B.soulYellow ? tintedSoul('#ffe100') : A.ui('soul'), B.soul.x, B.soul.y, { scale: 1 });
+  if (!blink) drawSpr(ctx, B.soulYellow ? tintedSoul('#ffe100') : A.ui('soul'), B.soul.x, B.soul.y, { scale: 1, rot: B.soulYellow ? -Math.PI / 2 : 0 });
   if (B.grazeFx) { ctx.strokeStyle = 'rgba(255,255,150,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B.grazeFx.x, B.grazeFx.y, 14 - B.grazeFx.t, 0, 7); ctx.stroke(); }
   ctx.restore();
-  if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - [Z] SHOOT / HOLD = BIG SHOT', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
+  if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.fxOnMe) {
     const tags = [];
     if (B.fxOnMe.boxScale) tags.push('CRAMPED');
@@ -1031,6 +1038,42 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (tags.length) drawText(ctx, 'main', tags.join(' '), bx.x + bx.w / 2, bx.y - 20, { color: '#ff8', align: 'center' });
   }
 };
+
+// shared burst: full ring (default) or an arc of burstN bullets centred on burstAng,
+// optionally with a different child sprite/colour/shape. Directional sprites face travel.
+function burstChildren(b) {
+  const n = b.burstN || 8, bsp = b.burstSpeed || 2.2, out = [];
+  const full = b.burstArc == null;
+  const bimg = b.burstImg ? bulletProps(b.burstImg).img : b.img;
+  for (let i = 0; i < n; i++) {
+    const ang = full ? (i / n * 6.28 + (b.burstRot || 0))
+                     : ((b.burstAng || 0) + (n > 1 ? (i / (n - 1) - 0.5) * b.burstArc : 0));
+    out.push({ img: bimg, color: b.burstColor, shape: b.burstShape,
+      scale: b.burstScale != null ? b.burstScale : (b.scale || 1) * 0.55,
+      r: b.burstR || Math.max(4, (b.r || 8) * 0.55),
+      dmg: b.dmg, target: b.target, x: b.x, y: b.y,
+      vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp,
+      rot: b.burstImg ? ang : 0, spin: b.burstSpin != null ? b.burstSpin : (b.burstImg ? 0 : 0.2),
+      life: b.burstLife, t: 0, phase0: 0 });
+  }
+  return out;
+}
+
+// bomb cross-laser: after a short delay, a white beam sweeps the bomb's whole row + column
+function tickPendingLasers(bullets, box) {
+  const B = Battle;
+  if (!B.pendingLasers || !B.pendingLasers.length) return;
+  for (const pl of B.pendingLasers) {
+    if (--pl.t > 0) continue;
+    pl.done = true;
+    for (let x = box.x + 6; x <= box.x + box.w - 6; x += 12)   // horizontal beam (its row)
+      bullets.push({ x, y: pl.y, vx: 0, vy: 0, r: 6, color: '#fff', life: 26, t: 0, phase0: 0, dmg: 8 });
+    for (let y = box.y + 6; y <= box.y + box.h - 6; y += 12)   // vertical beam (its column)
+      bullets.push({ x: pl.x, y, vx: 0, vy: 0, r: 6, color: '#fff', life: 26, t: 0, phase0: 0, dmg: 8 });
+    Snd.play('shoot', 0.5);
+  }
+  B.pendingLasers = B.pendingLasers.filter(pl => !pl.done);
+}
 
 function drawBullet(ctx, b, px, py, s) {
   if (b.img && b.img.width) { drawSpr(ctx, b.img, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip }); return; }
