@@ -259,7 +259,7 @@ function targetSide(cmd, def, move) {
   if (cmd === 'act') {
     const ad = findAct(move);
     if (!ad) return null;
-    return (ad.kind === 'attack' || ad.kind === 'mercy') ? 'enemy' : null;
+    return (ad.kind === 'attack' || ad.kind === 'mercy' || ad.kind === 'demercy') ? 'enemy' : null;
   }
   if (cmd === 'magic') {
     const d = moveById(def, move);
@@ -1040,6 +1040,11 @@ Battle.applyMyEffects = function () {
     } else if (a.cmd === 'act') {
       const ad = findAct(a.move); if (!ad) continue;
       if (ad.mercy) grantMercy(a.target, ad.mercy);
+      if (ad.kind === 'demercy') {   // Motivate: aggression undoes a foe's spare progress, rallies the party
+        const o = B.oppTeam[a.target]; if (o && !isOut(o)) o.mercy = Math.max(0, o.mercy - (ad.mercyDown || 20));
+        B.myPowerBuff = 3;
+        if (o) B.mercyMsg = '* ' + o.def.name + '\'s MERCY dropped!';
+      }
       if (ad.kind === 'buff') { if (ad.buff === 'guard') B.myGuardBuff = 3; if (ad.buff === 'power') B.myPowerBuff = 3; }
       if (ad.kind === 'proceed') usedProceed = true;
     } else if (a.cmd === 'spare') { doSpare(a.target, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.'); }

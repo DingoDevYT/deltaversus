@@ -12,6 +12,8 @@ const CHARS = {
     // KRIS is the only character with the ACT menu (single acts + Kris multi-acts).
     acts: [
       { id: 'act_check', name: 'Check', kind: 'mercy', mercy: 20, text: 'KRIS sizes up the foe.' },
+      { id: 'act_motivate', name: 'Motivate', tp: 20, kind: 'demercy', mercyDown: 25,
+        text: 'KRIS motivates the team! Resolve rises (+POWER) as the foe\'s MERCY fades.' },
       { id: 'act_xslash', name: 'X-Slash', tp: 25, dmg: 34, dur: 480, kind: 'attack', pattern: 'kris_cross',
         mercy: 8, lvl3: true, text: 'KRIS carves an X into the air!' },
       { id: 'act_redbuster', name: 'Red-Buster', tp: 60, dmg: 46, dur: 500, kind: 'attack', pattern: 'redbuster',
