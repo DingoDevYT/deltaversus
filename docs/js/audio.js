@@ -26,6 +26,8 @@ Snd.THEME = {
   jevil: 'the_world_revolving_jevil',
   spamton: 'big_shot_spamton_neo',
   knight: 'black_knife_the_roaring_knight',
+  gerson: 'gerson_theme',
+  pink: 'pink_theme',
 };
 
 Snd.sfxPath = k => 'assets/audio/sfx/' + A.manifest.sfx[k];
