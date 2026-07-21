@@ -6,7 +6,7 @@ const A = {
   ready: false,
 };
 
-const ASSET_V = 39;   // bump when sprite/manifest files change so browsers refetch
+const ASSET_V = 40;   // bump when sprite/manifest files change so browsers refetch
 A.load = function (done) {
   fetch('assets/manifest.json?a=' + ASSET_V).then(r => r.json()).then(man => {
     A.manifest = man;
@@ -179,6 +179,7 @@ function drawSpr(ctx, im, x, y, opts) {
   if (opts.flip) ctx.scale(-1, 1);
   if (opts.alpha != null) ctx.globalAlpha = opts.alpha;
   if (opts.rot) ctx.rotate(opts.rot);
+  if (opts.sx != null || opts.sy != null) ctx.scale(opts.sx || 1, opts.sy || 1);   // stretch along the sprite's own axes
   ctx.drawImage(im, Math.round(-w / 2), Math.round(-h / 2), w, h);
   ctx.restore();
 }

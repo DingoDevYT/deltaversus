@@ -542,8 +542,8 @@ PATTERNS.sneo_heads = {   // FLYING HEADS: a row of 4 heads decelerates to ~66% 
       for (let i = 0; i < 4; i++)                             // 4 heads in a straight row, entering from the right
         add({ ...bulletProps('sneohead'), x: box.x + box.w + 24 + i * 24, y: ly,
               vx: -4.1, ax: 0.046, vy: 0, r: 11, spin: 0, shootable: true, hp: 1,
-              // if not all shot in time they stop and burst into 5 small UN-shootable heads
-              burst: 88, burstN: 5, burstSpeed: 1.7, burstImg: 'sneohead', burstScale: 0.5, burstSpin: 0.08 });
+              // if not all shot in time they stop and burst into 5 small UN-shootable heads at RANDOM angles
+              burst: 88, burstN: 5, burstSpeed: 1.7, burstImg: 'sneohead', burstScale: 0.5, burstSpin: 0.08, burstScatter: true });
     }
   },
 };
@@ -552,9 +552,9 @@ PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; 
   tick(a) {
     const { f, box, tier, add } = a;
     const cx0 = box.x + box.w * 0.85, amp = box.w * 0.28, cy = box.y + box.h * 0.44;   // never reaches past box middle
-    if (f === 0)   // the shootable heart, swinging out from Spamton on the right
+    if (f === 0)   // the shootable heart - shots damage it AND knock it back toward Spamton
       add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
-            swing: { cx: cx0, amp, spd: 0.028 }, shootable: true, hp: 16, spin: 0.05, r: 15, life: 514 });
+            swing: { cx: cx0, amp, spd: 0.028 }, shootable: true, hp: 16, pushOnShot: 12, spin: 0.05, r: 15, life: 514 });
     const hx = cx0 + amp * Math.sin(0.028 * f);
     // green connector "arm" from Spamton (right edge) to the heart, like the heart's chain
     a.fx.arms = [{ x1: box.x + box.w + 40, y1: box.y + box.h * 0.3, x2: hx, y2: cy }];
@@ -564,7 +564,8 @@ PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; 
     if (cyc === 0 || cyc === 26 || cyc === 52)
       for (let k = 0; k < 5; k++) {
         const ang = Math.PI / 2 + k * (Math.PI / 4);         // PI/2..3PI/2 : down -> left -> up
-        add({ ...bulletProps('diamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 6, scale: 1.5 });
+        // small diamonds STRETCHED 200% along their travel direction, no spin
+        add({ ...bulletProps('diamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 5, scale: 0.8, sx: 2 });
       }
   },
 };
@@ -582,15 +583,13 @@ PATTERNS.sneo_mail = {   // SPAM MAIL: cars carry towers R->L (decel but never s
         for (let i = fill.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [fill[i], fill[j]] = [fill[j], fill[i]]; }
       }
       const tx = box.x + box.w + 26, vx = -2.5, ax = 0.006;    // decelerates, but keeps drifting past the player
-      const slotH = box.h / 5;
+      const slotH = box.h / 5;                                  // EXACTLY 5 slots between the two squares
       add({ ...bulletProps('sneobox'), x: tx, y: box.y - 4, vx, ax, r: 9 });                 // top square
       for (let s = 0; s < 5; s++) {
-        const sy = box.y + (s + 0.5) * slotH;
-        if (fill[s] === 'm')                                    // fill the slot with a TIGHT stack so the tower reads solid
-          for (let y = box.y + s * slotH + 5; y < box.y + (s + 1) * slotH; y += 16)
-            add({ ...bulletProps('sneomail'), x: tx, y, vx, ax, r: 9 });
-        else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1 });
-        else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1, bomb: true });   // shot -> cross laser
+        const sy = box.y + (s + 0.5) * slotH, sc = slotH / (20 * 1.6);   // one sprite per slot, sized to FILL it
+        if (fill[s] === 'm') add({ ...bulletProps('sneomail'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc });
+        else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1 });
+        else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1, bomb: true });   // shot -> cross laser
       }
       add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 4, vx, ax, r: 9 });         // bottom square
       add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 22, vx, ax, r: 0, noHit: true });  // the car
@@ -605,12 +604,14 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
     const head = { ...bulletProps('sneohead'), x: box.x + box.w + 12, y: box.y + box.h / 2,
       vx: -0.42, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 20, homing: 0.011, maxv: 0.85, _ball: 74 };
     head.emit = function (b, out, soul, bx, fx) {
-      // the two phones are its HANDS gripping the top & bottom border, level with the head's x
-      const topPh = { ...bulletProps('sneophone'), x: b.x, y: bx.y + 2, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 1.57 };
-      const botPh = { ...bulletProps('sneophone'), x: b.x, y: bx.y + bx.h - 2, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: -1.57 };
+      // the two phones are its HANDS: they lie FLAT ON the border (receiver heads walking along it),
+      // ahead of the head, alternating like a hand-over-hand climb
+      const step = Math.sin(b.t * 0.1) * 8;
+      const topPh = { ...bulletProps('sneophone'), x: b.x - 18 + step, y: bx.y + 3, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 0 };
+      const botPh = { ...bulletProps('sneophone'), x: b.x - 18 - step, y: bx.y + bx.h - 3, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 0, flip: true };
       out.push(topPh, botPh);
-      // green connector "arms" from the head to each phone-hand on the border
-      if (fx) fx.arms = [{ x1: b.x, y1: b.y, x2: topPh.x, y2: topPh.y }, { x1: b.x, y1: b.y, x2: botPh.x, y2: botPh.y }];
+      // DIAGONAL green arms: the head sits behind its phone-hands
+      if (fx) fx.arms = [{ x1: b.x, y1: b.y - 6, x2: topPh.x, y2: topPh.y + 3 }, { x1: b.x, y1: b.y + 6, x2: botPh.x, y2: botPh.y - 3 }];
       // spit a yellow ball that drifts left & decelerates, flashes ~1s, then bursts into 3 soundwaves over a 90 arc
       if (--b._ball <= 0) {
         b._ball = 68;
@@ -621,36 +622,40 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
     add(head);
   },
 };
-PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: a SECOND box holds Spamton's face; shoot its parts to silence them
-  dur: 580, box: { w: 300, h: 160 },
+PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's rectangular face box ATTACHED to it
+  dur: 580, box: { w: 170, h: 170 },   // the player's box stays SQUARE
   tick(a) {
     const { f, box, add } = a;
-    // the face box (its own box on the right, the soul CANNOT enter it) - drawn every frame via fx
-    const fbw = 84, fbh = box.h, fbx = box.x + box.w + 14, fby = box.y;
-    a.fx.faceBox = { x: fbx, y: fby, w: fbw, h: fbh };
+    // the face box shares the player box's right edge (directly attached, soul can't enter)
+    const fbw = 78, fbx = box.x + box.w, fby = box.y;
+    a.fx.faceBox = { x: fbx, y: fby, w: fbw, h: box.h };
     if (f !== 0) return;
-    const fcx = fbx + fbw / 2, fcy = fby + fbh / 2;   // the parts OVERLAY here to form one face
-    add({ ...bulletProps('sneofacebg'), x: fcx, y: fcy, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: 1.9 });
-    // each part draws centred on the face (drawDY) but its HITBOX sits where the feature actually is,
-    // so shooting high hits the eyes, middle the nose, low the mouth. ~3 big shots each (hp 12).
-    const eye = { ...bulletProps('sneoeye'), x: fcx, y: fcy - 26, drawDY: 26, vx: 0, vy: 0, r: 15, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 60 };
+    const fcx = fbx + fbw / 2, fcy = fby + box.h / 2, SC = 1.1, PX = 1.6 * SC;
+    // the part sprites share one 42x71 canvas, so drawing them ALL at the same centre
+    // rebuilds Spamton's face exactly. Hitboxes sit at each feature's height via drawDY.
+    add({ ...bulletProps('sneofacebg'), x: fcx, y: fcy, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: SC });
+    const eyeOff = -21.5 * PX, mouthOff = 20.5 * PX;
+    const eye = { ...bulletProps('sneoeye'), x: fcx, y: fcy + eyeOff, drawDY: -eyeOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 60 };
     eye.emit = function (b, out, soul) {
       if (--b._cd > 0) return; b._cd = 180;
       const ang = Math.atan2(soul.y - b.y, soul.x - b.x), dx = Math.cos(ang), dy = Math.sin(ang);   // aim at captured soul pos
       for (let i = 0; i < 7; i++) out.push({ ...bulletProps('sneolaser'), x: b.x - dx * i * 15, y: b.y - dy * i * 15, vx: dx * 4.2, vy: dy * 4.2, r: 5 });
     };
     add(eye);
-    const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 13, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 120 };
+    const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 12, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 120 };
     nose.emit = function (b, out, soul, bx) {
       if (--b._cd > 0) return; b._cd = 180;
       const rows = [bx.y + 16, bx.y + bx.h / 2, bx.y + bx.h - 16];   // top / middle / bottom rows
-      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)
-        out.push({ ...bulletProps('sneoarrow'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: (rows[r] - b.y) * 0.03, r: 6, rot: Math.PI });
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)        // 3x3 of the real NOSE TRIANGLES
+        out.push({ ...bulletProps('sneonosetri'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: (rows[r] - b.y) * 0.03, r: 6, rot: Math.PI });
     };
     add(nose);
-    const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + 24, drawDY: -24, vx: 0, vy: 0, r: 15, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 180 };
+    const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + mouthOff, drawDY: -mouthOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 180 };
+    mouth._openImg = bulletProps('sneomouth').img; mouth._kissImg = bulletProps('sneomouthk').img;
     mouth.emit = function (b, out) {
+      if (b._kissT && --b._kissT <= 0) b.img = b._openImg;   // back to the normal mouth after the kiss
       if (--b._cd > 0) return; b._cd = 180;
+      b.img = b._kissImg; b._kissT = 26;                     // pucker up while firing
       for (let i = 0; i < 6; i++)   // 6 kiss-wisps drift left then curl up out of the box
         out.push({ ...bulletProps('sneowisp'), x: b.x, y: b.y, vx: -1.4 - Math.random() * 0.9, vy: 0.3 - Math.random() * 0.6, ay: -0.02, r: 6 });
     };
@@ -664,13 +669,18 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box e
     if (f === 0) this._base = { x: box.x, y: box.y, w: box.w, h: box.h };   // capture before the box warps
     const B = this._base;
     a.fx.blackout = true;                                                    // everything behind the box goes black
-    // PHASE 1 (f<300): the box is sucked toward his mouth (warp) + the soul is gently pulled right; he eats $ from the left
+    // PHASE 1 (f<300): GIANT SPAMTON leans in from the right with his sucking face (blue mouth/eyes),
+    // warping the box toward his mouth + pulling the soul; he eats $ streaming in from the left
     if (f < 300) {
+      const approach = Math.min(1, f / 220);                                 // he creeps closer over the phase
+      a.fx.boss = { key: 'sneofinalsuck', x: B.x + B.w + 190 - approach * 70, y: B.y + B.h * 0.5, scale: 1, flip: false };
       a.fx.boxTarget = { w: B.w * 0.72, h: B.h * 0.82, x: B.x + B.w * 0.26, y: B.y + B.h * 0.09 };
       a.fx.pull = { x: B.x + B.w + 60, y: B.y + B.h / 2, force: 0.35 };
       if (every(f, rate(18, tier)))                                          // fewer, dodgeable dollars flying in to be eaten
         add({ ...bulletProps('sneodollar'), x: B.x - 20, y: B.y + 14 + rng() * (B.h - 28), vx: 2.3 + rng() * 0.7, vy: 0, spin: 0.06, r: 7, shrink: 0.9 });
     } else {
+      // PHASE 2: he backs off, stops sucking (normal face) and bobs up & down while firing BIG SHOTs
+      a.fx.boss = { key: 'sneofinal', x: B.x + B.w + 170, y: B.y + B.h * 0.5 + Math.sin(f * 0.045) * 46, scale: 1, flip: false };
       a.fx.boxTarget = { x: B.x, y: B.y, w: B.w, h: B.h };                   // box eases back to normal
     }
     // PHASE 2 (f>=340): ONE massive BIG SHOT bullet per beat - bottom, top, bottom, top, then the FINAL full-box shot
@@ -702,16 +712,19 @@ PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): fast sword COLUMNS wit
     // leaving a ~3-soul gap that wanders on a gentle randomised sine. They fly left VERY fast.
     if (f < 372 && f % per === 0) {
       const col = Math.floor(f / per);
-      const gapC = cy + Math.sin(col * 0.35) * box.h * 0.20 + Math.sin(col * 0.13) * box.h * 0.08;
-      const gapH = 46;
-      const topH = Math.max(10, (gapC - gapH / 2) - box.y), botH = Math.max(10, (box.y + box.h) - (gapC + gapH / 2));
-      add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y: box.y + topH / 2, vx: -7.4, vy: 0, rot: Math.PI / 2, scale: topH / 46, hitW: 13, hitH: topH });
-      add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y: box.y + box.h - botH / 2, vx: -7.4, vy: 0, rot: -Math.PI / 2, scale: botH / 46, hitW: 13, hitH: botH });
+      // gap wanders on a small incremental sine (LESS variance); blades keep a FIXED size,
+      // squashed to ~33% thickness, and spawn hanging outside the box edges
+      const gapC = cy + Math.sin(col * 0.30) * box.h * 0.12;
+      const gapH = 46, L = 115;   // fixed blade length - never scaled to the box
+      add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC - gapH / 2 - L / 2, vx: -7.4, vy: 0,
+            rot: Math.PI / 2, scale: 1.65, sy: 0.33, hitW: 9, hitH: L });
+      add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC + gapH / 2 + L / 2, vx: -7.4, vy: 0,
+            rot: -Math.PI / 2, scale: 1.65, sy: 0.33, hitW: 9, hitH: L });
     }
-    // finale: the Knight fills the box with red tell-lines - find the gap before they all cut
+    // finale: the Knight fills the box with THIN red tell-lines, edge to edge (masked inside the box)
     if (f === 402)
-      for (let i = 0; i < 9; i++)
-        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h), thick: 9,
+      for (let i = 0; i < 22; i++)
+        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,
               x: box.x + rng() * box.w, y: box.y + rng() * box.h, rot: rng() * Math.PI, vx: 0, vy: 0, tellT: 62, armWindow: 12, dmg: 16 });
   },
 };
@@ -726,8 +739,9 @@ PATTERNS.knight_circle = {   // DIRECTIONAL SWORDS: swords appear on the 8 axes,
     if (f > 8 && f % per === 0) {
       const slot = (Math.floor(f / per) * 3) % 8;             // cycle the 8 slots
       const dir = slot * Math.PI / 4;
-      add({ ...bulletProps('knightsword'), x: cx - Math.cos(dir) * R, y: cy - Math.sin(dir) * R, vx: 0, vy: 0,
-            scale: 1.6, rot: dir, aim: { dir, delay: rate(90, tier), speed: 13 } });
+      // the KNIFE fades into existence red at 50%, tracks your axis, turns white + SFX when it fires
+      add({ ...bulletProps('knightknife'), x: cx - Math.cos(dir) * R, y: cy - Math.sin(dir) * R, vx: 0, vy: 0,
+            scale: 1.5, rot: dir, aim: { dir, delay: rate(90, tier), speed: 13 } });
     }
   },
 };
@@ -739,42 +753,47 @@ PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotat
     for (let e = 0; e < SEQ.length; e++) {
       if (f !== 20 + e * GAP) continue;
       const n = SEQ[e], C = { x: soul.x, y: soul.y };           // centred on the soul's position at spawn
-      const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.028 + rng() * 0.03);   // spins ~<=30deg then stops
+      // spins a full 45-60 degrees before easing to a stop (total = spin0 / (1 - decay))
+      const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.047 + rng() * 0.016);
       for (let i = 0; i < n; i++)
-        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.1, thick: 9,
+        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,   // thin, reaches every edge (masked to the box)
               x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.94, tellT: 62, armWindow: 10, dmg: 20 });
     }
   },
 };
-PATTERNS.knight_board = {   // BREAK THE BOARD: a red cut-line, then the board splits and two rows of teeth erupt from the cut
-  dur: 560,
+PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY splits (soul rides its half),
+  dur: 560,                  // teeth appear instantly on the cut, then fire in two random waves of 4
   tick(a) {
-    const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = rate(150, tier);
-    const ev = f % GAP, k = Math.floor(f / GAP) % 2, horiz = k === 0;
+    const { f, box, tier, add, rng } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = rate(176, tier);
     if (f >= 460) return;
-    if (ev === 0)   // the cut tell-line (harmless until it strikes)
-      add({ shape: 'line', color: '#f33', len: horiz ? box.w : box.h, thick: 8,
-            x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 56, armWindow: 12, dmg: 20 });
-    // teeth erupt from the cut: 4 first (ev 66), the remaining 4 after a beat (ev 96), pointing into each half
-    const rowShoot = (offset, parity) => {
-      if (ev !== offset) return;
+    const ev = f % GAP, k = Math.floor(f / GAP) % 2, horiz = k === 0;
+    if (ev === 0)   // the cut tell-line (harmless until the Knight strikes it)
+      add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.05, thick: 4,
+            x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 54, armWindow: 10, dmg: 20 });
+    // THE SPLIT: halves slide apart after the cut, hold, then come back together
+    let off = 0;
+    if (ev >= 56 && ev < 88) off = (ev - 56) / 32 * 26;
+    else if (ev >= 88 && ev < 122) off = 26;
+    else if (ev >= 122 && ev < 152) off = 26 * (1 - (ev - 122) / 30);
+    if (off > 0) a.fx.split = { axis: horiz ? 'h' : 'v', offset: off };
+    // teeth spawn INSTANTLY when the cut lands - two rows of 8 riding the halves,
+    // then a RANDOM 4 of each row fire first (slow), and the remaining 4 after a delay
+    if (ev === 56) {
+      const firstWave = []; while (firstWave.length < 4) { const i = Math.floor(rng() * 8); if (!firstWave.includes(i)) firstWave.push(i); }
       for (let i = 0; i < 8; i++) {
-        if ((i % 2) !== parity) continue;
-        const t = (i + 0.5) / 8;
+        const t = (i + 0.5) / 8, when = firstWave.includes(i) ? 34 : 74;
         if (horiz) {
           const x = box.x + t * box.w;
-          add({ ...bulletProps('knighttri'), x, y: cy - 6, vx: 0, vy: -2.7, rot: -Math.PI / 2, r: 7 });
-          add({ ...bulletProps('knighttri'), x, y: cy + 6, vx: 0, vy: 2.7, rot: Math.PI / 2, r: 7 });
+          add({ ...bulletProps('knighttooth'), x, y: cy - 7, vx: 0, vy: 0, rot: 0, r: 7, noHit: true, ridesSplit: 1, fireAt: when, fireVY: -1.9 });
+          add({ ...bulletProps('knighttooth'), x, y: cy + 7, vx: 0, vy: 0, rot: Math.PI, r: 7, noHit: true, ridesSplit: -1, fireAt: when, fireVY: 1.9 });
         } else {
           const y = box.y + t * box.h;
-          add({ ...bulletProps('knighttri'), x: cx - 6, y, vx: -2.7, vy: 0, rot: Math.PI, r: 7 });
-          add({ ...bulletProps('knighttri'), x: cx + 6, y, vx: 2.7, vy: 0, rot: 0, r: 7 });
+          add({ ...bulletProps('knighttooth'), x: cx - 7, y, vx: 0, vy: 0, rot: -Math.PI / 2, r: 7, noHit: true, ridesSplit: 1, fireAt: when, fireVX: -1.9 });
+          add({ ...bulletProps('knighttooth'), x: cx + 7, y, vx: 0, vy: 0, rot: Math.PI / 2, r: 7, noHit: true, ridesSplit: -1, fireAt: when, fireVX: 1.9 });
         }
       }
-    };
-    rowShoot(66, 0);
-    rowShoot(96, 1);
+    }
   },
 };
 PATTERNS.knight_roar = {   // FINAL ROAR (ult): black full-screen arena, crystals pulled in + swirl, then a roar that
@@ -784,7 +803,11 @@ PATTERNS.knight_roar = {   // FINAL ROAR (ult): black full-screen arena, crystal
     const cx = 320, cy = 240;
     a.fx.blackout = true;
     a.fx.bgHue = f < 520 ? (f * 2) % 360 : 0;                 // scrolling rainbow, then RED for the roar
-    a.fx.boxTarget = { x: 18, y: 36, w: 604, h: 408 };         // the box opens up to (nearly) the whole screen
+    a.fx.hideBox = true;                                       // the battle box is GONE - the whole screen is the arena
+    a.fx.boxTarget = { x: -12, y: -12, w: 664, h: 504 };       // (bounds sit past the screen edge so none are visible)
+    // THE KNIGHT stands centre-screen: front facing, hands out while charging, roar sprites while spewing
+    const key = f < 320 ? 'knightfront' : (f < 640 ? (Math.floor(f / 12) % 2 ? 'knightroar1' : 'knightroar0') : 'knightfront');
+    a.fx.boss = { key, x: cx, y: cy, scale: 1.1 };
     // PHASE 1 (f<300): crystals pulled from beyond the screen toward the Knight; the soul is sucked in too
     if (f < 300) {
       a.fx.pull = { x: cx, y: cy, force: 0.42 };

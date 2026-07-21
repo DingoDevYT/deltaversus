@@ -674,11 +674,26 @@ Battle.updDodge = function () {
     const a = Math.atan2(CF.pull.y - B.soul.y, CF.pull.x - B.soul.x);
     B.soul.x += Math.cos(a) * CF.pull.force; B.soul.y += Math.sin(a) * CF.pull.force;
   }
-  if (B.boardSplit) B.soul.x += B.boardSplit.soulVX || 0, B.soul.y += B.boardSplit.soulVY || 0;   // ride the split board piece
+  // BOARD SPLIT: the two halves slide apart along the cut; the soul (and riding
+  // bullets, b.ridesSplit = +1 top/left half, -1 bottom/right) move WITH their half.
+  let splitShift = 0;
+  if (CF.split) {
+    const bx0 = B.dodgeBox, cutC = CF.split.axis === 'h' ? bx0.y + bx0.h / 2 : bx0.x + bx0.w / 2;
+    const delta = CF.split.offset - (B._splitPrev || 0);
+    const soulSide = (CF.split.axis === 'h' ? B.soul.y < cutC : B.soul.x < cutC) ? 1 : -1;
+    if (CF.split.axis === 'h') B.soul.x += delta * soulSide; else B.soul.y += delta * soulSide;
+    for (const b of B.bullets) if (b.ridesSplit) {
+      if (CF.split.axis === 'h') b.x += delta * b.ridesSplit; else b.y += delta * b.ridesSplit;
+    }
+    B._splitPrev = CF.split.offset;
+    splitShift = CF.split.offset * soulSide;
+  } else B._splitPrev = 0;
 
   const bx = B.dodgeBox;
-  B.soul.x = Math.max(bx.x + 4, Math.min(bx.x + bx.w - 4, B.soul.x));
-  B.soul.y = Math.max(bx.y + 4, Math.min(bx.y + bx.h - 4, B.soul.y));
+  const shX = (CF.split && CF.split.axis === 'h') ? splitShift : 0;
+  const shY = (CF.split && CF.split.axis === 'v') ? splitShift : 0;
+  B.soul.x = Math.max(bx.x + 4 + shX, Math.min(bx.x + bx.w - 4 + shX, B.soul.x));
+  B.soul.y = Math.max(bx.y + 4 + shY, Math.min(bx.y + bx.h - 4 + shY, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
   // ---- YELLOW SOUL: HOLD the button to charge, RELEASE to fire a shot to the RIGHT.
@@ -706,6 +721,7 @@ Battle.updDodge = function () {
 
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
+  B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
@@ -725,14 +741,20 @@ Battle.updDodge = function () {
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
-    // axis-tracking sword (Knight directional swords): slide to line up with the soul, then fire fast
+    // axis-tracking sword (Knight directional swords): fade in red at 50%, slide to line up
+    // with the soul, then turn white and fire fast (with an SFX)
     if (b.aim) {
       if (b.t < b.aim.delay) {
         const px = Math.cos(b.aim.dir + Math.PI / 2), py = Math.sin(b.aim.dir + Math.PI / 2);
         const rel = (B.soul.x - b.x) * px + (B.soul.y - b.y) * py;
         b.x += px * rel * 0.14; b.y += py * rel * 0.14; b.rot = b.aim.dir;   // points along its firing axis
-      } else if (b.t === b.aim.delay) { b.vx = Math.cos(b.aim.dir) * b.aim.speed; b.vy = Math.sin(b.aim.dir) * b.aim.speed; }
+        b.tint = '#f44'; b.alpha = Math.min(1, b.t / 16) * 0.5; b.noHit = true;
+      } else if (b.t === b.aim.delay) {
+        b.vx = Math.cos(b.aim.dir) * b.aim.speed; b.vy = Math.sin(b.aim.dir) * b.aim.speed;
+        b.tint = null; b.alpha = 1; b.noHit = false; Snd.play('shoot', 0.55);
+      }
     }
+    if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }   // parked teeth launch
     if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('shoot', 0.4); }   // tell -> live cut
     if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
     // controller bullets (climbing head, face parts) emit projectiles from their LIVE position
@@ -1046,7 +1068,25 @@ Battle.renderBoxAndBullets = function (ctx) {
     drawBoxRect(ctx, cx, cy, bx.w * s, bx.h * s, B.boxRotCur || 0, 1);
     return;
   }
-  drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);
+  // giant boss sprite behind the box (Power of NEO / FINAL ROAR)
+  if (B.fx && B.fx.boss) {
+    const bp = B.fx.boss, info = (A.manifest.bullets || {})[bp.key];
+    const im = info && A.img['assets/bullets/' + info.f];
+    if (im && im.width) drawSpr(ctx, im, bp.x, bp.y, { scale: bp.scale || 1, flip: bp.flip });
+  }
+  const split = B.fx && B.fx.split;
+  if (B.fx && B.fx.hideBox) { /* full-screen arena: no border at all */ }
+  else if (split && split.offset > 0.5) {
+    // the CUT board: two half-boxes slid apart along the cut
+    const off = split.offset;
+    if (split.axis === 'h') {
+      drawBoxRect(ctx, cx + off, cy - bx.h / 4, bx.w, bx.h / 2, 0, 1);
+      drawBoxRect(ctx, cx - off, cy + bx.h / 4, bx.w, bx.h / 2, 0, 1);
+    } else {
+      drawBoxRect(ctx, cx - bx.w / 4, cy + off, bx.w / 2, bx.h, 0, 1);
+      drawBoxRect(ctx, cx + bx.w / 4, cy - off, bx.w / 2, bx.h, 0, 1);
+    }
+  } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);
   // pattern-driven overlays: a second non-enterable box (face attack) + green connector arms (phones/heart)
   if (B.fx) {
     if (B.fx.arms) { ctx.strokeStyle = '#49d049'; ctx.lineWidth = 3; ctx.lineCap = 'round';
@@ -1054,16 +1094,21 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (B.fx.faceBox) { const fb = B.fx.faceBox; drawBoxRect(ctx, fb.x + fb.w / 2, fb.y + fb.h / 2, fb.w, fb.h, 0, 1); }
   }
   ctx.save();
-  const clipL = B.fx && B.fx.faceBox ? Math.min(bx.x, B.fx.faceBox.x) - 40 : bx.x - 40;
-  const clipR = B.fx && B.fx.faceBox ? Math.max(bx.x + bx.w, B.fx.faceBox.x + B.fx.faceBox.w) + 40 : bx.x + bx.w + 80;
-  ctx.beginPath(); ctx.rect(clipL, bx.y - 40, clipR - clipL, bx.h + 80); ctx.clip();
+  const wide = B.fx && (B.fx.hideBox || bx.w > 500);   // full-screen arena: no bullet clipping
+  const clipL = wide ? 0 : (B.fx && B.fx.faceBox ? Math.min(bx.x, B.fx.faceBox.x) - 40 : bx.x - 40);
+  const clipR = wide ? 640 : (B.fx && B.fx.faceBox ? Math.max(bx.x + bx.w, B.fx.faceBox.x + B.fx.faceBox.w) + 40 : bx.x + bx.w + 80);
+  ctx.beginPath(); ctx.rect(clipL, wide ? 0 : bx.y - 40, clipR - clipL, wide ? 480 : bx.h + 80); ctx.clip();
   for (const h of B.hearts) {
     ctx.fillStyle = 'rgba(255,105,180,0.8)';
     ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(-0.05);
     ctx.fillRect(-4, -3, 3, 3); ctx.fillRect(1, -3, 3, 3); ctx.fillRect(-4, 0, 8, 3); ctx.fillRect(-2, 3, 4, 2);
     ctx.restore();
   }
-  for (const b of B.bullets) drawBullet(ctx, b, b.x, b.y, 1);
+  for (const b of B.bullets) if (b.shape !== 'line') drawBullet(ctx, b, b.x, b.y, 1);
+  // red tell-lines are MASKED to the inside of the battle box (they stretch edge to edge)
+  ctx.save(); ctx.beginPath(); ctx.rect(bx.x, bx.y, bx.w, bx.h); ctx.clip();
+  for (const b of B.bullets) if (b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
+  ctx.restore();
   // yellow-soul player shots + charge glow
   if (B.soulYellow) {
     for (const s of B.shots) {
@@ -1101,7 +1146,8 @@ function burstChildren(b) {
   const full = b.burstArc == null;
   const bimg = b.burstImg ? bulletProps(b.burstImg).img : b.img;
   for (let i = 0; i < n; i++) {
-    const ang = full ? (i / n * 6.28 + (b.burstRot || 0))
+    const ang = b.burstScatter ? Math.random() * 6.28
+              : full ? (i / n * 6.28 + (b.burstRot || 0))
                      : ((b.burstAng || 0) + (n > 1 ? (i / (n - 1) - 0.5) * b.burstArc : 0));
     out.push({ img: bimg, color: b.burstColor, shape: b.burstShape,
       scale: b.burstScale != null ? b.burstScale : (b.scale || 1) * 0.55,
@@ -1130,10 +1176,26 @@ function tickPendingLasers(bullets, box) {
   B.pendingLasers = B.pendingLasers.filter(pl => !pl.done);
 }
 
+// generic sprite tint cache (red spawn-tint for the Knight's directional knives, etc.)
+const imgTints = {};
+function tintImg(img, color) {
+  const key = (img.src || img._tid || (img._tid = Math.random())) + '|' + color;
+  if (imgTints[key]) return imgTints[key];
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  imgTints[key] = c; return c;
+}
+
 function drawBullet(ctx, b, px, py, s) {
   if (b.drawDX) px += b.drawDX * s;   // visual offset from the hitbox (overlaid face layers)
   if (b.drawDY) py += b.drawDY * s;
-  if (b.img && b.img.width) { drawSpr(ctx, b.img, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip }); return; }
+  if (b.img && b.img.width) {
+    const im = b.tint ? tintImg(b.img, b.tint) : b.img;
+    drawSpr(ctx, im, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip,
+                               sx: b.sx, sy: b.sy, alpha: b.alpha });
+    return;
+  }
   ctx.fillStyle = b.color || '#fff';
   if (b.shape === 'crescent') {
     const r = (b.r || 8) * 1.5 * s;

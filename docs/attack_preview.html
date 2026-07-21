@@ -69,7 +69,7 @@
 <script src="js/patterns.js"></script>
 <script>
 // bullet manifest embedded so the page needs NO fetch (fetch is blocked on file://).
-const EMBEDDED_BULLETS = {"diamond":{"f":"diamond.png","w":11,"h":11},"kdiamond":{"f":"kdiamond.png","w":22,"h":11},"knightcross":{"f":"knightcross.png","w":22,"h":21},"knightstar":{"f":"knightstar.png","w":22,"h":22},"knightsword":{"f":"knightsword.png","w":30,"h":9},"knighttri":{"f":"knighttri.png","w":16,"h":16},"knightslash":{"f":"knightslash.png","w":54,"h":3},"sneohead":{"f":"sneohead.png","w":22,"h":28},"sneowire":{"f":"sneowire.png","w":30,"h":30},"sneomail":{"f":"sneomail.png","w":20,"h":20},"sneosound":{"f":"sneosound.png","w":22,"h":22},"sneobig":{"f":"sneobig.png","w":50,"h":36},"sneophone":{"f":"sneophone.png","w":26,"h":12},"sneocrew":{"f":"sneocrew.png","w":18,"h":22},"sneodollar":{"f":"sneodollar.png","w":18,"h":20},"sneoarrow":{"f":"sneoarrow.png","w":16,"h":15},"sneoball":{"f":"sneoball.png","w":20,"h":20},"sneowisp":{"f":"sneowisp.png","w":20,"h":13},"sneoeye":{"f":"sneoeye.png","w":39,"h":44},"sneonose":{"f":"sneonose.png","w":44,"h":26},"sneomouth":{"f":"sneomouth.png","w":20,"h":44},"sneolaser":{"f":"sneolaser.png","w":8,"h":8},"sneocar":{"f":"sneocar.png","w":44,"h":18},"sneobomb":{"f":"sneobomb.png","w":26,"h":20},"sneofacebg":{"f":"sneofacebg.png","w":19,"h":60},"sneobox":{"f":"sneobox.png","w":22,"h":22}};
+const EMBEDDED_BULLETS = {"diamond":{"f":"diamond.png","w":11,"h":11},"kdiamond":{"f":"kdiamond.png","w":22,"h":11},"knightcross":{"f":"knightcross.png","w":22,"h":21},"knightstar":{"f":"knightstar.png","w":22,"h":22},"knightsword":{"f":"knightsword.png","w":30,"h":9},"knighttri":{"f":"knighttri.png","w":16,"h":16},"knightslash":{"f":"knightslash.png","w":54,"h":3},"sneohead":{"f":"sneohead.png","w":22,"h":28},"sneowire":{"f":"sneowire.png","w":30,"h":30},"sneomail":{"f":"sneomail.png","w":20,"h":20},"sneosound":{"f":"sneosound.png","w":22,"h":22},"sneobig":{"f":"sneobig.png","w":50,"h":36},"sneophone":{"f":"sneophone.png","w":26,"h":12},"sneocrew":{"f":"sneocrew.png","w":18,"h":22},"sneodollar":{"f":"sneodollar.png","w":18,"h":20},"sneoarrow":{"f":"sneoarrow.png","w":16,"h":15},"sneoball":{"f":"sneoball.png","w":20,"h":20},"sneowisp":{"f":"sneowisp.png","w":20,"h":13},"sneoeye":{"f":"sneoeye.png","w":42,"h":71},"sneonose":{"f":"sneonose.png","w":42,"h":71},"sneomouth":{"f":"sneomouth.png","w":42,"h":71},"sneomouthk":{"f":"sneomouthk.png","w":42,"h":71},"sneolaser":{"f":"sneolaser.png","w":8,"h":8},"sneocar":{"f":"sneocar.png","w":44,"h":18},"sneobomb":{"f":"sneobomb.png","w":26,"h":20},"sneofacebg":{"f":"sneofacebg.png","w":42,"h":71},"sneobox":{"f":"sneobox.png","w":22,"h":22},"sneonosetri":{"f":"sneonosetri.png","w":20,"h":12},"sneofinal":{"f":"sneofinal.png","w":233,"h":240},"sneofinalsuck":{"f":"sneofinalsuck.png","w":233,"h":240},"knightfront":{"f":"knightfront.png","w":96,"h":110},"knightroar0":{"f":"knightroar0.png","w":96,"h":110},"knightroar1":{"f":"knightroar1.png","w":99,"h":110},"knighttooth":{"f":"knighttooth.png","w":22,"h":15},"knightknife":{"f":"knightknife.png","w":44,"h":12}};
 const ATTACKS = [
   { boss:'Spamton NEO', id:'sneo_heads',   name:'Flying Heads',        soul:'yellow' },
   { boss:'Spamton NEO', id:'sneo_heart',   name:'Heart Attack',        soul:'yellow' },
@@ -96,10 +96,23 @@ function tintedSoul(color) {
   x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
   soulTints[color] = c; return c;
 }
+const imgTints = {};
+function tintImg(img, color) {
+  const key = (img.src || img._tid || (img._tid = Math.random())) + '|' + color;
+  if (imgTints[key]) return imgTints[key];
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  imgTints[key] = c; return c;
+}
 function drawBullet(ctx, b, px, py, s) {
   if (b.drawDX) px += b.drawDX * s;
   if (b.drawDY) py += b.drawDY * s;
-  if (b.img && b.img.width) { drawSpr(ctx, b.img, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip }); return; }
+  if (b.img && b.img.width) {
+    const im = b.tint ? tintImg(b.img, b.tint) : b.img;
+    drawSpr(ctx, im, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip, sx: b.sx, sy: b.sy, alpha: b.alpha });
+    return;
+  }
   ctx.fillStyle = b.color || '#fff';
   if (b.shape === 'crescent') {
     const r = (b.r || 8) * 1.5 * s;
@@ -141,7 +154,15 @@ function makePlayer(canvas, spec) {
     // apply pattern fx from last tick (box warp, soul pull)
     if (FX.boxTarget) { const tg=FX.boxTarget, lp=FX.boxLerp||0.14; box.w+=(tg.w-box.w)*lp; box.h+=(tg.h-box.h)*lp; box.x+=(tg.x-box.x)*lp; box.y+=(tg.y-box.y)*lp; }
     if (FX.pull) { const an=Math.atan2(FX.pull.y-soul.y, FX.pull.x-soul.x); soul.x+=Math.cos(an)*FX.pull.force; soul.y+=Math.sin(an)*FX.pull.force; }
-    FX.blackout=false; FX.pull=null; FX.faceBox=null; FX.arms=null; FX.bgHue=null;
+    if (FX.split) {   // board split: soul + riding teeth move with their half
+      const cutC = FX.split.axis==='h' ? box.y+box.h/2 : box.x+box.w/2;
+      const delta = FX.split.offset - (FX._prevSplit||0);
+      const side = (FX.split.axis==='h' ? soul.y < cutC : soul.x < cutC) ? 1 : -1;
+      if (FX.split.axis==='h') soul.x += delta*side; else soul.y += delta*side;
+      for (const b of bullets) if (b.ridesSplit) { if (FX.split.axis==='h') b.x += delta*b.ridesSplit; else b.y += delta*b.ridesSplit; }
+      FX._prevSplit = FX.split.offset;
+    } else FX._prevSplit = 0;
+    FX.blackout=false; FX.pull=null; FX.faceBox=null; FX.arms=null; FX.bgHue=null; FX.split=null; FX.boss=null; FX.hideBox=false;
     const add = b => { b.t = b.t||0; b.phase0 = b.phase0||0; bullets.push(b); };
     if (f <= (p.dur||480)) p.tick({ f, rng, box, tier:1, add, soul, imgs:{}, fx:FX });
     const spawned = [];
@@ -156,7 +177,11 @@ function makePlayer(canvas, spec) {
       if (b.spin) b.rot = (b.rot||0) + b.spin;
       if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
       if (b.shrink) b.scale = (b.scale||1) * b.shrink;
-      if (b.aim) { if (b.t < b.aim.delay) { const px=Math.cos(b.aim.dir+Math.PI/2), py=Math.sin(b.aim.dir+Math.PI/2), rel=(soul.x-b.x)*px+(soul.y-b.y)*py; b.x+=px*rel*0.14; b.y+=py*rel*0.14; b.rot=b.aim.dir; } else if (b.t === b.aim.delay) { b.vx=Math.cos(b.aim.dir)*b.aim.speed; b.vy=Math.sin(b.aim.dir)*b.aim.speed; } }
+      if (b.aim) {
+        if (b.t < b.aim.delay) { const px=Math.cos(b.aim.dir+Math.PI/2), py=Math.sin(b.aim.dir+Math.PI/2), rel=(soul.x-b.x)*px+(soul.y-b.y)*py; b.x+=px*rel*0.14; b.y+=py*rel*0.14; b.rot=b.aim.dir; b.tint='#f44'; b.alpha=Math.min(1,b.t/16)*0.5; }
+        else if (b.t === b.aim.delay) { b.vx=Math.cos(b.aim.dir)*b.aim.speed; b.vy=Math.sin(b.aim.dir)*b.aim.speed; b.tint=null; b.alpha=1; }
+      }
+      if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }
       if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; }
       if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
       if (b.emit && !b.dead) b.emit(b, spawned, soul, box, FX);
@@ -165,7 +190,8 @@ function makePlayer(canvas, spec) {
         const n = b.burstN||8, bsp = b.burstSpeed||2.2, full = b.burstArc == null;
         const bimg = b.burstImg ? bulletProps(b.burstImg).img : b.img;
         for (let i=0;i<n;i++){
-          const ang = full ? (i/n*6.28+(b.burstRot||0)) : ((b.burstAng||0) + (n>1 ? (i/(n-1)-0.5)*b.burstArc : 0));
+          const ang = b.burstScatter ? Math.random()*6.28
+                    : full ? (i/n*6.28+(b.burstRot||0)) : ((b.burstAng||0) + (n>1 ? (i/(n-1)-0.5)*b.burstArc : 0));
           bullets.push({ img:bimg, color:b.burstColor, shape:b.burstShape,
             scale:(b.burstScale!=null?b.burstScale:(b.scale||1)*0.55), r:b.burstR||Math.max(4,(b.r||8)*0.55),
             x:b.x, y:b.y, vx:Math.cos(ang)*bsp, vy:Math.sin(ang)*bsp,
@@ -181,11 +207,27 @@ function makePlayer(canvas, spec) {
     // draw
     ctx.fillStyle = FX.bgHue!=null ? 'hsl('+Math.round(FX.bgHue)+',65%,10%)' : '#000';
     ctx.fillRect(0,0,CW,CH);
-    ctx.strokeStyle = '#3adb3a'; ctx.lineWidth = 2; ctx.strokeRect(box.x, box.y, box.w, box.h);
+    if (FX.boss) {   // giant boss sprite behind the box
+      const info = A.manifest.bullets[FX.boss.key], im = info && A.img['assets/bullets/'+info.f];
+      if (im && im.width) drawSpr(ctx, im, FX.boss.x, FX.boss.y, { scale: FX.boss.scale||1, flip: FX.boss.flip });
+    }
+    ctx.strokeStyle = '#3adb3a'; ctx.lineWidth = 2;
+    if (FX.hideBox) { /* full-screen arena: no border */ }
+    else if (FX.split && FX.split.offset > 0.5) {
+      const off = FX.split.offset, cx2 = box.x+box.w/2, cy2 = box.y+box.h/2;
+      if (FX.split.axis==='h') { ctx.strokeRect(box.x+off, box.y, box.w, box.h/2); ctx.strokeRect(box.x-off, cy2, box.w, box.h/2); }
+      else { ctx.strokeRect(box.x, box.y+off, box.w/2, box.h); ctx.strokeRect(cx2, box.y-off, box.w/2, box.h); }
+    } else ctx.strokeRect(box.x, box.y, box.w, box.h);
     if (FX.faceBox) { const fb=FX.faceBox; ctx.strokeRect(fb.x, fb.y, fb.w, fb.h); }
     if (FX.arms) { ctx.strokeStyle='#49d049'; ctx.lineWidth=3; ctx.lineCap='round'; for (const arm of FX.arms){ ctx.beginPath(); ctx.moveTo(arm.x1,arm.y1); ctx.lineTo(arm.x2,arm.y2); ctx.stroke(); } }
-    for (const b of bullets) if (!b.dead) drawBullet(ctx, b, b.x, b.y, 1);
-    ctx.drawImage(soulImg, soul.x-8, soul.y-7);
+    for (const b of bullets) if (!b.dead && b.shape !== 'line') drawBullet(ctx, b, b.x, b.y, 1);
+    // red tell-lines are masked to the inside of the battle box
+    ctx.save(); ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
+    for (const b of bullets) if (!b.dead && b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
+    ctx.restore();
+    // yellow souls FACE RIGHT (they shoot toward Spamton)
+    if (spec.soul === 'yellow') { ctx.save(); ctx.translate(soul.x, soul.y); ctx.rotate(-Math.PI/2); ctx.drawImage(soulImg, -8, -7); ctx.restore(); }
+    else ctx.drawImage(soulImg, soul.x-8, soul.y-7);
   }
   return { step, reset };
 }

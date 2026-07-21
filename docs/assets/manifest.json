@@ -2386,18 +2386,18 @@
 },
 "sneoeye": {
 "f": "sneoeye.png",
-"w": 39,
-"h": 44
+"w": 42,
+"h": 71
 },
 "sneonose": {
 "f": "sneonose.png",
-"w": 44,
-"h": 26
+"w": 42,
+"h": 71
 },
 "sneomouth": {
 "f": "sneomouth.png",
-"w": 20,
-"h": 44
+"w": 42,
+"h": 71
 },
 "sneocar": {
 "f": "sneocar.png",
@@ -2411,13 +2411,58 @@
 },
 "sneofacebg": {
 "f": "sneofacebg.png",
-"w": 19,
-"h": 60
+"w": 42,
+"h": 71
 },
 "sneobox": {
 "f": "sneobox.png",
 "w": 22,
 "h": 22
+},
+"sneomouthk": {
+"f": "sneomouthk.png",
+"w": 42,
+"h": 71
+},
+"sneonosetri": {
+"f": "sneonosetri.png",
+"w": 20,
+"h": 12
+},
+"sneofinal": {
+"f": "sneofinal.png",
+"w": 233,
+"h": 240
+},
+"sneofinalsuck": {
+"f": "sneofinalsuck.png",
+"w": 233,
+"h": 240
+},
+"knightfront": {
+"f": "knightfront.png",
+"w": 96,
+"h": 110
+},
+"knightroar0": {
+"f": "knightroar0.png",
+"w": 96,
+"h": 110
+},
+"knightroar1": {
+"f": "knightroar1.png",
+"w": 99,
+"h": 110
+},
+"knighttooth": {
+"f": "knighttooth.png",
+"w": 22,
+"h": 15
+},
+"knightknife": {
+"f": "knightknife.png",
+"w": 44,
+"h": 12
 }
 },
 "bullet_cost": {
