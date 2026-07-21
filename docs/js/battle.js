@@ -81,10 +81,11 @@ const MOVE_SFX = {
   lancer_spade: 'swing', lancer_storm: 'spellcast', lancer_bike: 'heavyswing',
   lancer_ult: 'ultraswing',
   berdly_fight: 'swing', berdly_bolt: 'icespell', berdly_books: 'spellcast', berdly_ult: 'ultraswing',
-  jevil_spade: 'bell', jevil_diamond: 'bell', jevil_carousel: 'spellcast', jevil_ult: 'ultraswing',
-  // Spamton NEO - his fight sounds (gunshot / pipis mail / laser)
+  // Jevil - his own voice/laughs (Ch1 snd_joker_*)
+  jevil_spade: 'jokerha', jevil_diamond: 'jokerlaugh', jevil_carousel: 'jokerlaugh', jevil_ult: 'jokerchaos',
+  // Spamton NEO - his real Ch2 sounds (laser / pipis mail / overpower voice)
   sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_mail: 'pipis', sneo_phones: 'laz',
-  sneo_face: 'laz', sneo_bigshot: 'sneogun',
+  sneo_face: 'spamtonlaugh', sneo_bigshot: 'sneoover',
   // The Roaring Knight - the Ch3 board-battle sounds
   knight_corridor: 'knightsword', knight_circle: 'knightsword', knight_slash: 'boarddmg',
   knight_board: 'boardbomb', knight_roar: 'knightlaugh',
@@ -745,6 +746,7 @@ Battle.updDodge = function () {
     const ok = Input.down.ok;
     const BIG_AT = 26;   // frames held to graduate a tap into a BIG SHOT
     if (ok) {
+      if (B.charge === 0) Snd.play('sneocharge', 0.5);   // start-of-charge whir
       B.charge = Math.min(60, B.charge + 1);
     } else if (B._okPrev) {                 // just released -> fire
       const c = B.charge, big = c >= BIG_AT;
@@ -752,7 +754,7 @@ Battle.updDodge = function () {
       // pierces up to 3 targets. push is small so it nudges rather than launches.
       B.shots.push({ x: B.soul.x + 8, y: B.soul.y, vx: big ? 8.5 : 8,
                      r: big ? 9 : 4, big, power: big ? 4 : 1, pierce: big ? 3 : 1, hitIds: [] });
-      Snd.play('sneogun', big ? 0.75 : 0.45);
+      Snd.play(big ? 'sneofire' : 'heartshot', big ? 0.75 : 0.5);   // real heart-shot / big-shot fire
       B.charge = 0;
     } else {
       B.charge = 0;
@@ -1201,9 +1203,9 @@ Battle.renderBoxAndBullets = function (ctx) {
     const soulImg = B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
     drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: 1 });
   }
-  if (B.grazeFx) {   // graze sparkle: yellow-soul graze frames, or the soul-shining anim otherwise
-    const el = 8 - B.grazeFx.t;
-    const g = B.soulYellow ? A.soul('ygraze' + Math.min(3, Math.floor(el / 2))) : A.soul('shine' + (Math.floor(el * 1.4) % 12));
+  if (B.grazeFx) {   // graze sparkle: spr_grazeappear_0..3 (yellow variant for the yellow soul)
+    const fr = Math.min(3, Math.floor((8 - B.grazeFx.t) / 2));
+    const g = A.soul((B.soulYellow ? 'ygraze' : 'graze') + fr);
     if (g) drawSpr(ctx, g, B.grazeFx.x, B.grazeFx.y, { scale: 1, alpha: 0.9 });
   }
   ctx.restore();

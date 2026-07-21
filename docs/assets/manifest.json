@@ -1078,7 +1078,15 @@
 "boardsummon": "boardsummon.wav",
 "boarddmg": "boarddmg.wav",
 "splat": "splat.wav",
-"knightlaugh": "knightlaugh.wav"
+"knightlaugh": "knightlaugh.wav",
+"sneocharge": "sneocharge.wav",
+"sneofire": "sneofire.wav",
+"heartshot": "heartshot.wav",
+"spamtonlaugh": "spamtonlaugh.wav",
+"sneoover": "sneoover.wav",
+"jokerchaos": "jokerchaos.wav",
+"jokerlaugh": "jokerlaugh.wav",
+"jokerha": "jokerha.wav"
 },
 "music": {
 "attack_of_the_killer_queen_queen": "attack_of_the_killer_queen_queen.mp3",
@@ -1958,14 +1966,32 @@
 "idle_1.png",
 "idle_2.png",
 "idle_3.png",
-"idle_4.png"
+"idle_4.png",
+"idle_5.png",
+"idle_6.png",
+"idle_7.png",
+"idle_8.png",
+"idle_9.png",
+"idle_10.png",
+"idle_11.png",
+"idle_12.png",
+"idle_13.png"
 ],
 "durs": [
-90,
-90,
-90,
-90,
-90
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70,
+70
 ]
 }
 },
@@ -2563,6 +2589,10 @@
 "shine8": "shine8.png",
 "shine9": "shine9.png",
 "shine10": "shine10.png",
-"shine11": "shine11.png"
+"shine11": "shine11.png",
+"graze0": "graze0.png",
+"graze1": "graze1.png",
+"graze2": "graze2.png",
+"graze3": "graze3.png"
 }
 }
