@@ -970,106 +970,113 @@ PATTERNS.knight_roar = {
 };
 
 // ============================================================================
-// JEVIL — "NEW SET" (from the Gemini recipes). TEST patterns wired only into the
+// JEVIL — "NEW SET" (Gemini recipes, FULL specs). TEST patterns wired only into the
 // attack tester + showcase, NOT Jevil's real in-game moveset. Real suit sprites.
 //
-// AUTHENTIC SPEED IMPORT: DELTARUNE runs at 30 FPS; our dodge loop updates at a fixed
-// 60 Hz. So every per-FRAME value from the recipes (px/frame, rad/frame) is multiplied
-// by F below to reproduce the original real-world speed; absolute delays stay in real
-// seconds (seconds*60 = ticks). Recipe words: fast~=5.5px/f, medium~=4px/f (at 30 FPS).
+// UNIT CONVERSIONS (DELTARUNE 30 FPS -> our fixed 60 Hz):
+//  * speeds/rotations are PER-FRAME @30fps -> multiply by F (=0.5) for per-tick @60fps.
+//  * absolute delays stay in real seconds (seconds*60 = ticks).
+//  * DISPLAY size: SZ(nativeMax, dispPx) -> the scale that draws the sprite at dispPx
+//    (our draw = native*scale*1.6). Native sizes: spade36 heart18 club34 clubball18
+//    diamond33 jdevil47 jdevilgiant62.
+//  * HURTBOX: b.r ~= recipe_hurtbox/2 - 2 (our collision adds SOUL_R=5), kept smaller
+//    than the sprite for tight grazing; rect blades use hitW/hitH; b.grazeR per recipe.
 // ============================================================================
-const F = 0.5;                                   // per-frame(30fps) -> per-tick(60fps)
-const JX_FAST = 5.5 * F, JX_MED = 4 * F, JX_MEDFAST = 4.75 * F, JX_ULTRA = 7 * F, JX_SLOW = 2.5 * F;
+const F = 0.5;
+const SZ = (nat, disp) => disp / (nat * 1.6);
+const SC_SPADE16 = SZ(36, 16), SC_SPADE32 = SZ(36, 32), SC_HEART24 = SZ(18, 24), SC_HEART16 = SZ(18, 16),
+      SC_CLUB24 = SZ(34, 24), SC_CLUB16 = SZ(18, 16), SC_DIA = SZ(33, 16),
+      SC_DEVIL = SZ(47, 64), SC_DEVILRED = SZ(62, 128), SC_DEVILGIANT = SZ(62, 160), SC_DEVILULT = SZ(62, 320);
 
-PATTERNS.jx_spread = {   // Five-Spade Teleport Spread: Jevil pops out alternating sides, fires a 5-spade fan (middle AIMED)
+PATTERNS.jx_spread = {   // Five-Spade Teleport Spread. spade 16px | hurtbox 8 | graze 24 | speed 6px/f
   dur: 340, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, tier, add, soul } = a;
-    const CYC = rate(30, tier), k = Math.floor(f / CYC);
+    const CYC = rate(30, tier), k = Math.floor(f / CYC);   // teleport + fan every 0.5s, 10 waves
     if (k >= 10) return;
     const left = (k % 2) === 0;
-    const oy = box.y + box.h * (0.2 + ((k * 37) % 100) / 100 * 0.6);       // deterministic random-ish lane
+    const oy = box.y + box.h * (0.2 + ((k * 37) % 100) / 100 * 0.6);       // random Y 20%-80%
     a.fx.boss = { key: 'jevilcast', x: left ? box.x - 40 : box.x + box.w + 40, y: oy, scale: 1, flip: !left };
     if (f % CYC === 0) {
       const ox = left ? box.x - 18 : box.x + box.w + 18;
-      const base = Math.atan2(soul.y - oy, soul.x - ox);                   // middle spade aimed at the soul
-      for (const off of [-0.52, -0.26, 0, 0.26, 0.52]) {                   // +/-30, +/-15 deg
+      const base = Math.atan2(soul.y - oy, soul.x - ox);                   // middle spade AIMED
+      for (const off of [-0.524, -0.262, 0, 0.262, 0.524]) {              // -30, -15, 0, +15, +30 deg
         const ang = base + off;
-        add({ ...bulletProps('suitspade'), x: ox, y: oy, vx: Math.cos(ang) * JX_FAST, vy: Math.sin(ang) * JX_FAST, rot: ang + Math.PI / 2, spin: 0, r: 6, scale: 0.55 });   // spade points its travel direction
+        add({ ...bulletProps('suitspade'), x: ox, y: oy, vx: Math.cos(ang) * 6 * F, vy: Math.sin(ang) * 6 * F, rot: ang + Math.PI / 2, spin: 0, r: 2, grazeR: 7, scale: SC_SPADE16 });
       }
     }
   },
 };
-PATTERNS.jx_spiral = {   // Spade Spiral: a ring of 10 big spades appears, then collapses inward one after another
+PATTERNS.jx_spiral = {   // Spade Spiral. large spade 32px | hurtbox 16 | graze 40 | speed 5.5 then 7.0px/f
   dur: 280, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = 110;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = 130;         // 140px ring, clamped to the 160 box
     for (const w0 of [0, 120]) {
       if (f !== w0) continue;
-      const dir = w0 === 0 ? -1 : 1;
-      for (let i = 0; i < 10; i++) {
+      const dir = w0 === 0 ? -1 : 1, spd = (w0 === 0 ? 5.5 : 7.0) * F;      // wave 2 is faster
+      for (let i = 0; i < 10; i++) {                                        // 10 spades, 36 deg apart
         const ang = i / 10 * Math.PI * 2, x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
         const toC = Math.atan2(cy - y, cx - x);                            // inward + tangential = spiral
-        const vr = JX_MEDFAST, vt = JX_MEDFAST * 0.55;
-        const vx = Math.cos(toC) * vr - Math.sin(toC) * dir * vt, vy = Math.sin(toC) * vr + Math.cos(toC) * dir * vt;
-        add({ ...bulletProps('suitspade'), x, y, vx: 0, vy: 0, r: 8, scale: 0.8, spin: 0, rot: Math.atan2(vy, vx) + Math.PI / 2,   // NO spin - points its charge/travel direction
-              noHit: true, fireAt: 22 + i * 4, fireVX: vx, fireVY: vy, life: 22 + i * 4 + 100 });   // park in the ring, then launch staggered
+        const vx = Math.cos(toC) * spd - Math.sin(toC) * dir * spd * 0.5, vy = Math.sin(toC) * spd + Math.cos(toC) * dir * spd * 0.5;
+        add({ ...bulletProps('suitspade'), x, y, vx: 0, vy: 0, r: 6, grazeR: 15, scale: SC_SPADE32, spin: 0, rot: Math.atan2(vy, vx) + Math.PI / 2,
+              noHit: true, fireAt: 24 + i * 4, fireVX: vx, fireVY: vy, life: 24 + i * 4 + 110 });   // 0.4s tell, then launch 0.06s apart
       }
     }
   },
 };
-PATTERNS.jx_heartbomb = {   // Heart Bomb: bombs fall + burst into a square of 4 hearts that spin as the cluster falls
+PATTERNS.jx_heartbomb = {   // Heart Bomb. bomb 24px/hb12 | heart 16px/hb8 | bomb 4px/f, cluster 3px/f + 0.1rad/f
   dur: 360, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, tier, add } = a;
-    const CYC = rate(48, tier);
+    const CYC = rate(48, tier);                                            // a bomb every 0.8s
     if (f % CYC === 0 && f < 300) {
       const k = f / CYC, x = box.x + box.w * (0.15 + ((k * 53) % 100) / 100 * 0.7);
-      const bomb = { ...bulletProps('suitheart'), x, y: box.y - 16, vx: 0, vy: JX_MED, r: 8, scale: 1.0 };
+      const bomb = { ...bulletProps('suitheart'), x, y: box.y - 16, vx: 0, vy: 4 * F, r: 6, grazeR: 11, scale: SC_HEART24 };
       bomb.emit = function (b, out) {
         if (b.y >= box.y + 14 && !b._done) {
           b._done = 1; b.dead = true;
           const cx = b.x, cy = box.y + 14;
-          for (let i = 0; i < 4; i++) { const ang = i / 4 * Math.PI * 2;
-            out.push({ ...bulletProps('suitheart'), x: cx + Math.cos(ang) * 16, y: cy + Math.sin(ang) * 16, r: 6, scale: 0.7,
-                       orbit: { cx, cy, R: 16, w: 0.1 * F, ang, vy: JX_MED }, life: 130 }); }   // cluster spins (0.1 rad/f) + falls (medium)
+          for (let i = 0; i < 4; i++) { const ang = i / 4 * Math.PI * 2;   // 24px square that spins + falls
+            out.push({ ...bulletProps('suitheart'), x: cx + Math.cos(ang) * 12, y: cy + Math.sin(ang) * 12, r: 2, grazeR: 7, scale: SC_HEART16,
+                       orbit: { cx, cy, R: 12, w: 0.1 * F, ang, vy: 3 * F }, life: 140 }); }
         }
       };
       add(bomb);
     }
   },
 };
-PATTERNS.jx_clubbomb = {   // Club Bomb: bombs fall + burst into a 3-way club fan AIMED at the soul
+PATTERNS.jx_clubbomb = {   // Club Bomb. bomb 24px/hb12 | club 16px/hb8 | bomb 5px/f, burst 5.5px/f aimed +/-20
   dur: 340, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, tier, add } = a;
-    const CYC = rate(36, tier);
+    const CYC = rate(36, tier);                                            // a bomb every 0.6s
     if (f % CYC === 0 && f < 300) {
       const k = f / CYC, x = box.x + box.w * (0.1 + ((k * 61) % 100) / 100 * 0.8);
-      const bomb = { ...bulletProps('suitclub'), x, y: box.y - 16, vx: 0, vy: JX_FAST, r: 8, scale: 1.0 };
+      const bomb = { ...bulletProps('suitclub'), x, y: box.y - 16, vx: 0, vy: 5 * F, r: 6, grazeR: 11, scale: SC_CLUB24 };
       bomb.emit = function (b, out, s) {
         if (b.y >= box.y + 14 && !b._done) {
           b._done = 1; b.dead = true;
-          const base = Math.atan2(s.y - b.y, s.x - b.x);
-          for (const off of [-0.35, 0, 0.35])
-            out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(base + off) * JX_FAST, vy: Math.sin(base + off) * JX_FAST, r: 6, scale: 1.0, spin: 0.15 });
+          const base = Math.atan2(s.y - b.y, s.x - b.x);                   // middle AIMED, outer +/-20 deg
+          for (const off of [-0.349, 0, 0.349])
+            out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(base + off) * 5.5 * F, vy: Math.sin(base + off) * 5.5 * F, r: 2, grazeR: 7, scale: SC_CLUB16, spin: 0.1 });
         }
       };
       add(bomb);
     }
   },
 };
-PATTERNS.jx_diamond = {   // Diamond Shower: dense diamonds stream straight UP from the bottom, ramping in density
+PATTERNS.jx_diamond = {   // Diamond Shower. vertical diamond 12x16px | hurtbox 6x8 | speed 6.5px/f UP
   dur: 360, box: { w: 160, h: 160 },
   tick(a) {
     const { f, rng, box, add } = a;
-    if (f < 300 && f % (f < 180 ? 3 : 2) === 0)   // 20/sec, then 30/sec (at 60Hz)
-      add({ ...bulletProps('suitdiamondv'), x: box.x + box.w * (0.05 + rng() * 0.9), y: box.y + box.h + 12, vx: 0, vy: -(JX_FAST + rng() * 0.6), r: 5, spin: 0, scale: 0.85 });   // real vertical diamond, NO spin, FAST
+    if (f < 300 && f % (f < 180 ? 3 : 2) === 0)   // 20/sec, then 30/sec (60Hz)
+      add({ ...bulletProps('suitdiamondv'), x: box.x + box.w * (0.05 + rng() * 0.9), y: box.y + box.h + 12, vx: 0, vy: -6.5 * F, r: 3, grazeR: 8, spin: 0, scale: SC_DIA });   // faces UP, no spin
   },
 };
 // Both carousels reuse the GAME'S proven fake-3D CYLINDER (updCarousel): 8 columns x 3 rows rotate
 // around a cylinder with the box inside; the far side is hidden, front columns bob - slip the gaps.
+// (Recipe: horse hurtbox 16 much smaller than the 48px sprite - the cylinder keeps r tight below.)
 function jxCarousel(a, keyFor) {
   const { f, rng, box, add } = a;
   if (f !== 0) return;
@@ -1077,68 +1084,68 @@ function jxCarousel(a, keyFor) {
   const rowGap = box.h * 0.34, midY = box.y + box.h / 2;
   for (let c = 0; c < cols; c++) { const ang0 = c / cols * Math.PI * 2;
     for (let r = 0; r < rows; r++) { const rowY = midY + (r - 1) * rowGap;
-      add({ ...bulletProps(keyFor(c, r, rng)), x: cx, y: rowY, vx: 0, vy: 0, r: 11,
+      add({ ...bulletProps(keyFor(c, r, rng)), x: cx, y: rowY, vx: 0, vy: 0, r: 7, grazeR: 14,
             carousel: { ang: ang0, w: 0.018, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } }); } }
 }
 PATTERNS.jx_carousel_h = {   // Carousel (horses): the cylinder, random duck-horse variants
   dur: 520, box: { w: 160, h: 160 },
   tick(a) { jxCarousel(a, (c, r, rng) => 'carousel' + Math.floor(rng() * 3)); },
 };
-PATTERNS.jx_carousel_hd = {   // Carousel (horses & ducks): the cylinder, alternating horse/duck sprites + a rare Everyman
+PATTERNS.jx_carousel_hd = {   // Carousel (horses & ducks): the cylinder, alternating horse/duck sprites + a rare Everyman (1%)
   dur: 520, box: { w: 160, h: 160 },
-  tick(a) { jxCarousel(a, (c, r, rng) => { const duck = (c + r) % 2 === 1; return duck ? (rng() < 0.03 ? 'carousel2' : 'carousel1') : 'carousel0'; }); },
+  tick(a) { jxCarousel(a, (c, r, rng) => { const duck = (c + r) % 2 === 1; return duck ? (rng() < 0.01 ? 'carousel2' : 'carousel1') : 'carousel0'; }); },
 };
-PATTERNS.jx_scythes = {   // Orbiting Devilsknives: 4 scythes self-spin while orbiting the centre; the radius breathes
+PATTERNS.jx_scythes = {   // Orbiting Devilsknives. scythe 64px | hurtbox r12 circle | graze 56 | orbit 0.04 spin 0.15 rad/f
   dur: 420, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 10, spin: 0.15 * F, vx: 0, vy: 0, life: 400,   // self-spin 0.15 rad/f
-            orbit: { cx, cy, R: 65, w: 0.04 * F, ang: k * Math.PI / 2, pulse: { base: 65, amp: 10, freq: 0.03 * F } } });   // orbit 0.04 rad/f, pulse 0.03 rad/f
+      add({ ...bulletProps('jdevil'), x: cx, y: cy, r: 10, grazeR: 23, scale: SC_DEVIL, spin: 0.15 * F, vx: 0, vy: 0, life: 400,
+            orbit: { cx, cy, R: 65, w: 0.04 * F, ang: k * Math.PI / 2, pulse: { base: 65, amp: 10, freq: 0.03 * F } } });   // orbit 0.04, pulse 55-75 @0.03 rad/f
   },
 };
-PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep: grey scythes orbit while a giant RED scythe sweeps top/bottom lanes
+PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep. grey scythe 64px + red 128px/hb 80x32 | red speed 8px/f
   dur: 380, box: { w: 160, h: 160 },
   tick(a) {
     const { f, box, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 9, spin: 0.15 * F, vx: 0, vy: 0, life: 380,
+      add({ ...bulletProps('jdevil'), x: cx, y: cy, r: 10, grazeR: 23, scale: SC_DEVIL, spin: 0.15 * F, vx: 0, vy: 0, life: 380,
             orbit: { cx, cy, R: 58, w: 0.04 * F, ang: k * Math.PI / 2 } });
-    // 4 red sweeps alternating TOP/BOTTOM lanes at 0.5 / 1.8 / 3.1 / 4.4s (60Hz ticks)
+    // 4 red sweeps alternating TOP/BOTTOM lanes at 0.5 / 1.8 / 3.1 / 4.4s
     const sweeps = [[30, 0.25, 1], [108, 0.75, -1], [186, 0.25, 1], [264, 0.75, -1]];
     for (const [t, laneP, dir] of sweeps) if (f === t)
-      add({ ...bulletProps('scythebig'), tint: '#e83030', x: dir > 0 ? box.x - 42 : box.x + box.w + 42, y: box.y + box.h * laneP,
-            vx: dir * JX_FAST, vy: 0, r: 16, scale: 1.3, spin: 0.1 * F, hitW: 40, hitH: 40 });
+      add({ ...bulletProps('jdevilgiant'), tint: '#e83030', x: dir > 0 ? box.x - 70 : box.x + box.w + 70, y: box.y + box.h * laneP,
+            vx: dir * 8 * F, vy: 0, scale: SC_DEVILRED, spin: 0.1 * F, hitW: 72, hitH: 24, flip: dir < 0 });   // blade box 80x32
   },
 };
-PATTERNS.jx_finalchaos = {   // Final Chaos (ult): full-screen arena, giant scythes rain (light pillars), edges->centre wave,
-  dur: 760, box: { w: 160, h: 160 },   // then one massive slow screen-scythe; ends on a white flash.
+PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; giant scythe 160px/hb 120x40 + light beam;
+  dur: 760, box: { w: 160, h: 160 },   // ultimate 320px/hb 280x80 descends slowly, 30px safe zone; white flash.
   tick(a) {
     const { f, rng, box, tier, add } = a;
     a.fx.arena = true;
     const gY = box.y + box.h - 8;
-    const drop = (x, vy, scale) => {
-      const sc = scale || 1;
-      const k = { ...bulletProps('scythebig'), x, y: box.y + 20, vx: 0, vy, spin: 0.08, scale: sc * 0.95, hitW: 26 * sc, hitH: 60 * sc, _gy: gY };
+    const drop = (x, vy) => {   // a GIANT scythe (160px) -> smashes into a full-height light beam (12px column)
+      const k = { ...bulletProps('jdevilgiant'), x, y: box.y + 30, vx: 0, vy, spin: 0.04, scale: SC_DEVILGIANT, hitW: 112, hitH: 32, _gy: gY };
       k.emit = function (b, out) {
         if (b.y >= b._gy && !b._s) { b._s = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 40, thick: 20 * sc, armed: true, life: 24, dmg: b.dmg, vx: 0, vy: 0 });
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 40, thick: 12, armed: true, life: 24, dmg: b.dmg, vx: 0, vy: 0 });   // beam lingers 0.4s
           Snd.play('boarddmg', 0.3);
         }
       };
       add(k);
     };
-    if (f >= 30 && f < 240 && (f - 30) % 9 === 0) drop(box.x + 20 + rng() * (box.w - 40), JX_ULTRA + rng() * 0.6, 1);   // PHASE 1: ULTRA-fast rain every 0.15s
-    const seq = f - 240;                                                                                    // PHASE 2: edges -> centre, 0.2s apart
+    if (f >= 30 && f < 240 && (f - 30) % 9 === 0) drop(box.x + 30 + rng() * (box.w - 60), 12 * F);   // PHASE 1: random rain every 0.15s @12px/f
+    const seq = f - 240;                                                                              // PHASE 2: edges -> centre, 0.2s apart
     if (seq >= 0 && seq < 60 && seq % 12 === 0) {
       const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / 12)];
-      if (pairs) for (const p of pairs) drop(box.x + box.w * p, JX_ULTRA, 1);
+      if (pairs) for (const p of pairs) drop(box.x + box.w * p, 12 * F);
     }
-    if (f === 470) add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: box.y - 100, vx: 0, vy: 0,   // PHASE 3: the ultimate scythe descends slowly (~3s) then stops
-                         lerpY: box.y + box.h * 0.8 - 40, lerpRate: 0.016, spin: 0.02, scale: 5.6, hitW: box.w * 1.2, hitH: box.h * 0.85, life: 300 });
-    if (f > 700) { a.fx.whiteout = Math.min(1, (f - 700) / 24); a.fx.shake = 8; }                            // white-flash ending
+    // PHASE 3: the ULTIMATE scythe (320px, hurtbox 280x80) descends slowly over ~3s, stops with a 30px safe zone at the bottom
+    if (f === 470) add({ ...bulletProps('jdevilgiant'), x: box.x + box.w / 2, y: box.y - 160, vx: 0, vy: 0,
+                         lerpY: box.y + box.h - 30 - 40, lerpRate: 0.016, spin: 0.02, scale: SC_DEVILULT, hitW: 280, hitH: 80, life: 300 });
+    if (f > 700) { a.fx.whiteout = Math.min(1, (f - 700) / 24); a.fx.shake = 8; }                     // white-flash ending
   },
 };
 

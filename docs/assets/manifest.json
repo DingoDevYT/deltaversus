@@ -2710,8 +2710,8 @@
 },
 "suitspade": {
 "f": "suitspade.png",
-"w": 20,
-"h": 19
+"w": 36,
+"h": 34
 },
 "suitheart": {
 "f": "suitheart.png",
@@ -2720,13 +2720,13 @@
 },
 "suitclub": {
 "f": "suitclub.png",
-"w": 20,
-"h": 20
+"w": 34,
+"h": 34
 },
 "suitclubball": {
 "f": "suitclubball.png",
-"w": 14,
-"h": 14
+"w": 18,
+"h": 18
 },
 "suitdiamond": {
 "f": "suitdiamond.png",
@@ -2735,8 +2735,18 @@
 },
 "suitdiamondv": {
 "f": "suitdiamondv.png",
-"w": 14,
-"h": 24
+"w": 19,
+"h": 33
+},
+"jdevil": {
+"f": "jdevil.png",
+"w": 47,
+"h": 45
+},
+"jdevilgiant": {
+"f": "jdevilgiant.png",
+"w": 62,
+"h": 63
 }
 },
 "bullet_cost": {
@@ -2848,7 +2858,9 @@
 "suitclub": 1,
 "suitclubball": 1,
 "suitdiamond": 1,
-"suitdiamondv": 1
+"suitdiamondv": 1,
+"jdevil": 1,
+"jdevilgiant": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

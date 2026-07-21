@@ -939,7 +939,7 @@ Battle.updDodge = function () {
         B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '' + dmg, t: 0, color: '#f22' });
         if (hit) { hit.pose = 'hurt'; hit.poseT = 0; }
       }
-    } else if (dist < (b.r || 6) + GRAZE_R && B.grazeCd <= 0 && b.t > 2) {
+    } else if (dist < (b.r || 6) + (b.grazeR || GRAZE_R) && B.grazeCd <= 0 && b.t > 2) {
       const gain = defending ? 3 : 2;
       B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain; B.grazeCd = 10;
       Snd.play('graze', 0.35); B.grazeFx = { x: B.soul.x, y: B.soul.y, t: 8 };
