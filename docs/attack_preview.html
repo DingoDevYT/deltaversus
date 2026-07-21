@@ -117,15 +117,13 @@ const ATTACKS = [
   { boss:'Roaring Knight', base:'knight', id:'knight_slash',    name:'Red Slash',           soul:'red' },
   { boss:'Roaring Knight', base:'knight', id:'knight_board',    name:'Break the Board',     soul:'red' },
   { boss:'Roaring Knight', base:'knight', id:'knight_roar',     name:'FINAL ROAR',          soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_boxrumble',    name:'Box Rumble',         soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_shell',        name:'Shell Pinball',      soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_hammercascade', name:'Hammer Cascade',    soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_hammerbro',    name:'Hammer Bro Toss',    soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_bells',        name:'Double Bell',        soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_slashes',      name:'Telegraph Slashes',  soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_cane',         name:'Whistle Cane',       soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_spearshot',    name:'Spear Shot (GREEN)', soul:'red' },
-  { boss:'Gerson', base:'gerson', id:'gerson_gianthammer',  name:'Giant Hammer (GREEN)', soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_spears',      name:'Spear Volley (GREEN)', soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_barrage',     name:'Upper Barrage (GREEN)', soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_spearsweep',  name:'Spear Sweep (GREEN)',  soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_shellvolley', name:'Shell Volley (GREEN)', soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_shellkick',   name:'Shell Kick',           soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_swingdown',   name:'Swing Down',           soul:'red' },
+  { boss:'Gerson', base:'gerson', id:'gerson_finale',      name:'Finale (ult)',         soul:'red' },
 ];
 const SOULCOL = { yellow:'#ffe100', red:'#ff2020' };
 const CW = 480, CH = 300;   // canvas coordinate space
@@ -191,8 +189,11 @@ function makePlayer(canvas, spec) {
   const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
   const base = { x: box.x, y: box.y, w: box.w, h: box.h };
   const FX = {};
+  const hz30 = /^gerson_/.test(spec.id) || !!p.hz30;   // DELTARUNE 30fps attacks: sim every 2nd frame
+  let hzTick = false;
   function reset() { bullets = []; f = 0; box.x=base.x; box.y=base.y; box.w=base.w; box.h=base.h; }
   function step() {
+    if (hz30) { hzTick = !hzTick; if (!hzTick) return; }
     // gentle auto-move so aimed/homing attacks track a moving target
     t += 1;
     soul.x = box.x + box.w/2 + Math.sin(t*0.031) * box.w*0.30;

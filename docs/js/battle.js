@@ -719,6 +719,10 @@ Battle.startDodge = function () {
   B._defGreen = oppAtkers.some(a => a.def.soulGreen);   // whole-attack green; patterns can also toggle it live
   B.soulGreen = false; B._greenLatch = false; B._greenOctLatch = false; B.greenOct = false;
   B.shieldAng = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = [];
+  // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
+  // are correct as-written; we render at 60Hz (bullets step every 2nd frame = authentic choppy motion).
+  B.hz30 = oppAtkers.length === 1 && (/^gerson_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
+  B._hzTick = false;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
 
@@ -788,8 +792,9 @@ function applyTargetedDamage(team, dmg, target) {
 
 Battle.updDodge = function () {
   const B = Battle;
+  if (B.hz30) { B._hzTick = !B._hzTick; if (!B._hzTick) return; }   // 30 FPS attack: process the sim every 2nd 60Hz frame
   const fx = B.fxOnMe || {};
-  let sp = 2.4 * (fx.soulSpeed || 1);
+  let sp = 2.4 * (fx.soulSpeed || 1) * (B.hz30 ? 2 : 1);   // at 30Hz, move twice as far per processed frame to keep real-time speed
   let dx = (Input.down.right ? 1 : 0) - (Input.down.left ? 1 : 0);
   let dy = (Input.down.down ? 1 : 0) - (Input.down.up ? 1 : 0);
   if (fx.invertX) dx = -dx;
