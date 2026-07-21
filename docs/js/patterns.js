@@ -529,171 +529,223 @@ PATTERNS.redbuster = {
   },
 };
 
-// ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
-// (rebuilt from the wiki attack GIFs in ref/spamton/)
-PATTERNS.sneo_heads = {   // Electric Orbs: destructible orbs stream in lanes toward the soul (shoot them)
-  dur: 440, box: { w: 288, h: 150 },   // wide box
+// ---------- SPAMTON NEO (Ch2 secret boss) ----------
+// Rebuilt frame-by-frame from the real attack GIFs (ref/spamton/*.webp,
+// montages in ref/vidframes/*_grid.png). Yellow SOUL shoots (def.soulYellow).
+PATTERNS.sneo_heads = {   // FLYING HEADS: blue Spamton heads fly in from the right - shoot them
+  dur: 460, box: { w: 300, h: 150 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(30, tier)))   // orbs launch from the right at the soul's lane + a random lane
-      for (const ly of [soul.y, box.y + 20 + rng() * (box.h - 40)])
-        add({ ...bulletProps('sneohead'), x: box.x + box.w + 22, y: ly, vx: -(2.6 + rng() * 0.5), vy: 0, spin: 0.14, r: 9, shootable: true, hp: 2 });
-    if (every(f, rate(22, tier)))   // small bullets fall as they cross
-      add({ ...bulletProps('sneosound'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 14, vx: 0, vy: 2.0, r: 6 });
+    // heads launch from the right toward the soul's lane + a random lane
+    if (every(f, rate(28, tier)))
+      for (const ly of [soul.y, box.y + 24 + rng() * (box.h - 48)])
+        add({ ...bulletProps('sneohead'), x: box.x + box.w + 30, y: ly,
+              vx: -(2.3 + rng() * 0.9), vy: 0, spin: 0, shootable: true, hp: 2, r: 12 });
+    // occasional 4-ball yellow "clover" cluster drifting in
+    if (every(f, rate(96, tier))) {
+      const cy = box.y + 26 + rng() * (box.h - 52);
+      for (const [dx, dy] of [[0, -10], [0, 10], [-10, 0], [10, 0]])
+        add({ ...bulletProps('sneoball'), x: box.x + box.w + 24 + dx, y: cy + dy, vx: -1.9, vy: 0, r: 6 });
+    }
   },
 };
-PATTERNS.sneo_heart = {   // Heart Attack: a chained shootable heart swings, scattering white diamonds
-  dur: 500, box: { w: 180, h: 180 },   // square box
+PATTERNS.sneo_heart = {   // A HEART ATTACK: a chained blue heart swings, scattering WHITE diamonds
+  dur: 520, box: { w: 180, h: 180 },   // square box
   tick(a) {
     const { f, box, tier, add } = a;
-    const amp = box.w * 0.42, cx0 = box.x + box.w / 2, cy = box.y + box.h * 0.5;
-    if (f === 0)   // ONE persistent chained heart - shoot it to earn TP
+    const amp = box.w * 0.40, cx0 = box.x + box.w * 0.5, cy = box.y + box.h * 0.42;
+    if (f === 0)   // ONE persistent chained heart - shoot it down to end early / earn TP
       add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
-            swing: { cx: cx0, amp, spd: 0.03 }, shootable: true, hp: 14, spin: 0.04, r: 12, life: 494 });
-    const cx = cx0 + amp * Math.sin(0.03 * f);
-    if (every(f, rate(11, tier)))   // scatters diamonds outward in a slow-rotating 3-way spread
-      for (let k = 0; k < 3; k++) { const th = f * 0.15 + k * 2.094;
-        add({ ...bulletProps('kdiamond'), x: cx, y: cy, vx: Math.cos(th) * 2.0, vy: Math.sin(th) * 2.0, spin: 0.12, r: 6 }); }
+            swing: { cx: cx0, amp, spd: 0.035 }, shootable: true, hp: 16, spin: 0.05, r: 15, life: 514 });
+    const cx = cx0 + amp * Math.sin(0.035 * f);
+    // chain beads from Spamton (right) to the heart - cosmetic, non-colliding
+    if (f % 2 === 0)
+      for (let k = 0; k < 8; k++) { const t = k / 8;
+        add({ color: '#4aa8ff', r: 3, noHit: true, life: 3,
+              x: cx + (box.x + box.w + 60 - cx) * t, y: cy + (box.y + box.h * 0.3 - cy) * t, vx: 0, vy: 0 }); }
+    // scatter WHITE diamonds in a slow-rotating ring, in bursts
+    if (every(f, rate(15, tier))) {
+      const n = 6;
+      for (let k = 0; k < n; k++) { const th = f * 0.10 + k * 6.28 / n;
+        add({ ...bulletProps('diamond'), x: cx, y: cy, vx: Math.cos(th) * 2.2, vy: Math.sin(th) * 2.2, spin: 0.14, r: 6 }); }
+    }
   },
 };
-PATTERNS.sneo_mail = {   // Spam Mail: full-height mail towers slide left with a gap + destructible crew
-  dur: 480, box: { w: 200, h: 230 },   // tall box
+PATTERNS.sneo_mail = {   // SPAM MAIL: vertical mail pillars rise from the floor with a gap to weave through
+  dur: 500, box: { w: 250, h: 200 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    const period = rate(46, tier), cols = 4;
+    const period = rate(72, tier), colW = 26, ncols = Math.floor((box.w - 20) / colW);
     if (f % period === 0) {
-      const gap = Math.floor(rng() * cols);
-      for (let c = 0; c < cols; c++) {
-        if (c === gap) continue;
-        const cx = box.x + box.w + 16 + c * 22;
-        for (let y = box.y + 6; y < box.y + box.h - 6; y += 16)
-          add({ ...bulletProps('sneomail'), x: cx, y, vx: -1.8, vy: 0, r: 7 });
-        add({ ...bulletProps('sneocrew'), x: cx, y: box.y + box.h * 0.5, vx: -1.8, vy: 0, r: 8, shootable: true, hp: 1 });
+      const gap = 1 + Math.floor(rng() * (ncols - 3));   // a 2-wide passable gap
+      for (let c = 0; c < ncols; c++) {
+        if (c === gap || c === gap + 1) continue;
+        const cx = box.x + 16 + c * colW, h = box.h * (0.45 + rng() * 0.5);
+        for (let y = box.y + box.h - 8; y > box.y + box.h - h; y -= 18)
+          add({ ...bulletProps('sneomail'), x: cx, y, vx: 0, vy: 0, r: 8, life: period + 24 });
+        add({ ...bulletProps('sneocrew'), x: cx, y: box.y + box.h - 8, vx: 0, vy: 0, r: 9, shootable: true, hp: 1, life: period + 24 });
       }
     }
   },
 };
-PATTERNS.sneo_phones = {   // Gripping Phones: a ring of phones fires bullets inward at the soul
-  dur: 480, box: { w: 190, h: 190 },   // square box
+PATTERNS.sneo_phones = {   // GRIPPING PHONES: a rotating oval cord of green dots, phones fire inward
+  dur: 500, box: { w: 210, h: 150 },   // wide box
   tick(a) {
     const { f, box, tier, add, soul } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.min(box.w, box.h) * 0.5 + 6;
-    if (every(f, rate(20, tier))) {
-      const N = 8;
-      for (let k = 0; k < N; k++) { const th = k * 2 * Math.PI / N + f * 0.02;
-        const px = cx + Math.cos(th) * R, py = cy + Math.sin(th) * R, ang = Math.atan2(soul.y - py, soul.x - px);
-        add({ ...bulletProps('sneosound'), x: px, y: py, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, r: 6 }); }
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, Rx = box.w * 0.60, Ry = box.h * 0.78;
+    // green cord dots forming the rotating oval ring (outside the box, non-colliding)
+    const dots = 24;
+    if (f % 2 === 0)
+      for (let k = 0; k < dots; k++) { const th = k * 6.28 / dots + f * 0.012;
+        add({ color: '#49d049', r: 3, noHit: true, life: 3, x: cx + Math.cos(th) * Rx, y: cy + Math.sin(th) * Ry, vx: 0, vy: 0 }); }
+    // phones on the ring grip + fire a yellow bullet inward at the soul
+    if (every(f, rate(24, tier))) {
+      const N = 5;
+      for (let k = 0; k < N; k++) { const th = k * 6.28 / N + f * 0.012;
+        const px = cx + Math.cos(th) * Rx, py = cy + Math.sin(th) * Ry, ang = Math.atan2(soul.y - py, soul.x - px);
+        add({ ...bulletProps('sneophone'), x: px, y: py, vx: 0, vy: 0, life: 10, r: 8, rot: ang, noHit: true });
+        add({ ...bulletProps('sneoball'), x: px, y: py, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, r: 6 });
+      }
     }
-    if (f % 4 === 0) { const th = f * 0.03, px = cx + Math.cos(th) * R, py = cy + Math.sin(th) * R;   // the phone ring itself
-      add({ ...bulletProps('sneophone'), x: px, y: py, vx: 0, vy: 0, life: 5, r: 8 }); }
+    // periodic soundwave sweeping inward
+    if (every(f, rate(38, tier))) {
+      const th = f * 0.05, px = cx + Math.cos(th) * Rx, py = cy + Math.sin(th) * Ry, ang = Math.atan2(cy - py, cx - px);
+      add({ ...bulletProps('sneosound'), x: px, y: py, vx: Math.cos(ang) * 2.0, vy: Math.sin(ang) * 2.0, r: 7 });
+    }
   },
 };
-PATTERNS.sneo_bigshot = {   // BIG SHOT: the giant arm-cannon fires a spreading cone at the soul
-  dur: 620, box: { w: 290, h: 170 },   // wide box
+PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: face parts on the right fire dart streams + wisps + clovers
+  dur: 520, box: { w: 300, h: 160 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    const ox = box.x + box.w + 30, oy = box.y + box.h * 0.5, base = Math.atan2(soul.y - oy, soul.x - ox);
-    if (every(f, rate(9, tier)))    // dense cone of bullets from the cannon
-      add({ ...bulletProps('sneosound'), x: ox, y: oy, vx: Math.cos(base + (rng() - 0.5) * 0.5) * 3.0, vy: Math.sin(base + (rng() - 0.5) * 0.5) * 3.0, r: 6 });
-    if (every(f, rate(40, tier))) {   // periodic BIG SHOT beam, pointed along its travel (no spin)
-      const ang = base + (rng() - 0.5) * 0.2;
-      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, rot: ang, spin: 0, r: 12 });
+    const rx = box.x + box.w - 26;
+    // the current face part parked on the right, cycling eye -> nose -> mouth (cosmetic)
+    const part = ['sneoeye', 'sneonose', 'sneomouth'][Math.floor(f / 130) % 3];
+    add({ ...bulletProps(part), x: rx, y: box.y + box.h * 0.5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, scale: 1.3 });
+    // white dart streams fly left in rows
+    if (every(f, rate(10, tier)))
+      add({ ...bulletProps('sneoarrow'), x: rx + 26, y: box.y + 16 + rng() * (box.h - 32), vx: -(3.0 + rng() * 1.1), vy: 0, r: 6, rot: Math.PI });
+    // white wisps drift left
+    if (every(f, rate(22, tier)))
+      add({ ...bulletProps('sneowisp'), x: rx + 18, y: box.y + rng() * box.h, vx: -(1.6 + rng() * 0.8), vy: (rng() - 0.5) * 0.6, r: 6 });
+    // a yellow clover cluster aimed at the soul's lane
+    if (every(f, rate(72, tier))) {
+      const cy = soul.y;
+      for (const [dx, dy] of [[0, -10], [0, 10], [-10, 0], [10, 0], [0, 0]])
+        add({ ...bulletProps('sneoball'), x: rx + dx, y: cy + dy, vx: -2.0, vy: 0, r: 6 });
+    }
+  },
+};
+PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): a cone spray of yellow balls + white dollar signs
+  dur: 640, box: { w: 300, h: 170 },   // wide box
+  tick(a) {
+    const { f, rng, box, tier, add, soul } = a;
+    const ox = box.x + box.w + 36, oy = box.y + box.h * 0.5;
+    const aim = () => Math.atan2(soul.y - oy, soul.x - ox) + (rng() - 0.5) * 0.75;   // spreading cone toward the soul
+    if (every(f, rate(7, tier))) {   // yellow balls of varied size
+      const ang = aim(), sp = 2.4 + rng() * 1.3;
+      add({ ...bulletProps('sneoball'), x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, spin: 0.1, r: 8, scale: 0.8 + rng() * 0.7 });
+    }
+    if (every(f, rate(11, tier))) {  // white dollar signs
+      const ang = aim(), sp = 2.0 + rng() * 1.0;
+      add({ ...bulletProps('sneodollar'), x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, spin: 0.08, r: 8 });
+    }
+    if (every(f, rate(64, tier))) {  // periodic BIG SHOT beam straight at the soul
+      const ang = Math.atan2(soul.y - oy, soul.x - ox);
+      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.6, vy: Math.sin(ang) * 2.6, rot: ang, spin: 0, r: 13 });
     }
   },
 };
 
 // ---------- THE ROARING KNIGHT (Ch3 secret boss) ----------
-// Rebuilt from gameplay footage (ref/knight/attack_guide.mp4): frame-mapped
-// at 82-90s, 114-120s, 122-128s, 164-170s, 180-188s, 222-230s, 240-248s.
-PATTERNS.knight_stars = {   // Shard Burst: star clusters detonate into triangle sprays ("find the gaps")
-  dur: 460,
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (every(f, rate(34, tier))) {   // a star drifts in, then bursts into a radial spray of shards
-      const x = box.x + 20 + rng() * (box.w - 40), y = box.y + 20 + rng() * (box.h - 40);
-      add({ ...bulletProps('knightstar'), x, y: box.y - 20, vx: (x - (box.x + box.w / 2)) * 0.004, vy: 1.8,
-            spin: 0.1, r: 8, burst: 34, burstN: 8, burstSpeed: 2.2 });
-    }
-    // late phase (per footage): remaining shards turn hostile and home to your location
-    if (f > 300 && every(f, rate(30, tier)))
-      add({ ...bulletProps('knighttri'), x: box.x + rng() * box.w, y: box.y - 16, vx: 0, vy: 1.2,
-            homing: 0.05, maxv: 2.6, spin: 0.15, r: 6 });
-  },
-};
-PATTERNS.knight_corridor = {   // Sword Corridor: sword columns march left, gap to follow; radial burst finale
-  dur: 500,
+// Rebuilt frame-by-frame from the attack-guide footage (ref/knight/attack_guide.mp4,
+// montages ref/vidframes/scan_*.png + clip_*.png). The guide's own captions name each
+// attack: Sword Corridor (~114s), Spinning Swords (~164s), Red Slash (~172s),
+// Break the Board (~142/190s), and the FINAL "converge then spinning pattern" (~240s).
+PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): rows of vertical swords march left, weave the gap
+  dur: 480,
   tick(a) {
     const { f, box, tier, add, soul, rng } = a;
-    if (f < 380 && every(f, rate(13, tier))) {
-      const midY = box.y + box.h / 2 + Math.sin(f * 0.05) * box.h * 0.30, gapH = 50;
-      for (let y = box.y + 4; y < box.y + box.h - 4; y += 20) {
-        if (y > midY - gapH / 2 && y < midY + gapH / 2) continue;   // the traveling gap
-        add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y, vx: -2.6, vy: 0, rot: -Math.PI / 2, r: 8 });
+    const period = rate(26, tier);
+    if (f < 380 && f % period === 0) {
+      const rows = 8, gap = 2 + Math.round(2.5 * (1 + Math.sin(f * 0.045)));   // gap drifts up/down
+      for (let r = 0; r < rows; r++) {
+        if (Math.abs(r - gap) <= 1) continue;                                  // 3-row gap to follow
+        const y = box.y + 12 + r * (box.h - 24) / (rows - 1);
+        add({ ...bulletProps('knightsword'), x: box.x + box.w + 24, y, vx: -2.5, vy: 0, rot: -Math.PI / 2, spin: 0, r: 7 });
       }
     }
-    if (f >= 400 && every(f, rate(46, tier))) {   // finale: angled swords burst in from all directions
-      for (let k = 0; k < 8; k++) {
-        const th = k * Math.PI / 4 + rng() * 0.3, R = Math.max(box.w, box.h) * 0.75;
-        const x = box.x + box.w / 2 + Math.cos(th) * R, y = box.y + box.h / 2 + Math.sin(th) * R;
-        const ang = Math.atan2(soul.y - y, soul.x - x);
-        add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.4, vy: Math.sin(ang) * 3.4, rot: ang + Math.PI / 2, r: 8 });
+    if (f === 396) {   // finale: swords converge inward from every side toward the soul
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      for (let k = 0; k < 12; k++) {
+        const th = k / 12 * 6.28 + rng() * 0.2, R = Math.max(box.w, box.h) * 0.85;
+        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, ang = Math.atan2(soul.y - y, soul.x - x);
+        add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.2, vy: Math.sin(ang) * 3.2, rot: ang, spin: 0, r: 7 });
       }
     }
   },
 };
-PATTERNS.knight_circle = {   // Spinning Swords: ~10 swords orbit the box edge, lunging at you one by one
+PATTERNS.knight_circle = {   // SPINNING SWORDS: a wreath of spinning blades orbits the border, one lunges in
   dur: 500,
   tick(a) {
-    const { f, box, tier, add, soul } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.min(box.w, box.h) * 0.52;
-    if (f === 0)   // the persistent orbiting ring (10 spinning swords)
-      for (let k = 0; k < 10; k++)
-        add({ ...bulletProps('knightsword'), x: cx, y: cy, vx: 0, vy: 0, spin: 0.25, r: 7, life: 470,
-              orbit: { cx, cy, R, w: 0.016, ang: k * Math.PI / 5 } });
-    if (f > 40 && every(f, rate(38, tier))) {   // one sword peels off and lunges at the soul
-      const th = f * 0.016;
-      const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+    const { f, rng, box, tier, add, soul } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) * 0.62;
+    if (f === 0)   // build the persistent rotating wreath
+      for (let k = 0; k < 14; k++)
+        add({ ...bulletProps('knightsword'), x: cx, y: cy, vx: 0, vy: 0, spin: 0.06, r: 7, life: 490,
+              orbit: { cx, cy, R, w: 0.011, ang: k * 6.28 / 14 } });
+    if (f > 30 && every(f, rate(32, tier))) {   // one blade peels off and lunges at the soul
+      const ang0 = rng() * 6.28, x = cx + Math.cos(ang0) * R, y = cy + Math.sin(ang0) * R;
       const ang = Math.atan2(soul.y - y, soul.x - x);
-      add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.0, vy: Math.sin(ang) * 3.0, rot: ang + Math.PI / 2, spin: 0, r: 7 });
+      add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.3, vy: Math.sin(ang) * 3.3, rot: ang, spin: 0, r: 7 });
     }
   },
 };
-PATTERNS.knight_slash = {   // Red Slash: giant diagonal slash-waves sweep the box, alternating diagonals
+PATTERNS.knight_slash = {   // RED SLASH: red slash-beams radiate from the centre in a rotating star
   dur: 480,
   tick(a) {
     const { f, box, tier, add } = a;
-    const period = rate(90, tier);
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, period = rate(44, tier);
     if (f % period === 0) {
-      const k = Math.floor(f / period), down = (k % 2) === 0;   // alternate the diagonal
-      // a wall of red slash-energy along one diagonal, sweeping perpendicular across the box
-      const n = 12;
-      for (let i = 0; i < n; i++) {
-        const t = i / (n - 1);
-        const x = box.x + t * box.w, y = down ? box.y + t * box.h : box.y + (1 - t) * box.h;
-        const perp = down ? { x: 0.707, y: -0.707 } : { x: 0.707, y: 0.707 };
-        // blade lies along the diagonal (perpendicular to travel), sweeping across the box
-        const rot = Math.atan2(down ? box.h : -box.h, box.w);
-        add({ ...bulletProps('knightslash'), r: 6, rot, spin: 0,
-              x: x - perp.x * box.w * 0.7, y: y - perp.y * box.w * 0.7,
-              vx: perp.x * 3.4, vy: perp.y * 3.4 });
-      }
+      const k = Math.floor(f / period), n = 6, off = (k % 2) * (Math.PI / n);   // alternate orientation
+      for (let i = 0; i < n; i++) { const th = i * 6.28 / n + off;
+        add({ ...bulletProps('knightslash'), x: cx, y: cy, vx: Math.cos(th) * 3.2, vy: Math.sin(th) * 3.2, rot: th, spin: 0, r: 6 }); }
     }
   },
 };
-PATTERNS.knight_roar = {   // FINAL ATTACK: shards converge on the Knight, then spiral back out
-  dur: 620,
+PATTERNS.knight_board = {   // BREAK THE BOARD: red slashes split the box (vertical/horizontal/diagonal) - go to a corner
+  dur: 480,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    const period = rate(78, tier), cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % period === 0) {
+      const k = Math.floor(f / period) % 3, n = 11;
+      for (let i = 0; i < n; i++) { const t = i / (n - 1); let x, y, rot;
+        if (k === 0) { x = cx; y = box.y + t * box.h; rot = Math.PI / 2; }                     // vertical split
+        else if (k === 1) { x = box.x + t * box.w; y = cy; rot = 0; }                          // horizontal split
+        else { x = box.x + t * box.w; y = box.y + t * box.h; rot = Math.atan2(box.h, box.w); } // diagonal split
+        add({ ...bulletProps('knightslash'), x, y, vx: 0, vy: 0, rot, spin: 0, r: 6, life: 46 });
+      }
+    }
+    if (every(f, rate(22, tier)))   // white diamonds drift down in the safe zones
+      add({ ...bulletProps('diamond'), x: box.x + rng() * box.w, y: box.y - 12, vx: 0, vy: 2.0, spin: 0.1, r: 6 });
+  },
+};
+PATTERNS.knight_roar = {   // FINAL ROAR (ult): shards fly in from outside onto the boss, then a spinning pattern
+  dur: 640,
   tick(a) {
     const { f, rng, box, tier, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f < 260 && every(f, rate(9, tier))) {   // phase 1: stars converge from outside toward the centre
-      const th = rng() * 6.28, R = Math.max(box.w, box.h) * 0.9;
+    if (f < 240 && every(f, rate(8, tier))) {   // phase 1: shards converge from outside toward the centre
+      const th = rng() * 6.28, R = Math.max(box.w, box.h) * 1.05;
       const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
-      add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.012, vy: (cy - y) * 0.012, spin: 0.12, r: 8 });
+      add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.013, vy: (cy - y) * 0.013, spin: 0.12, r: 8 });
     }
-    if (f >= 280 && every(f, rate(7, tier))) {   // phase 2: spinning spiral outward from the centre
-      const th = f * 0.19;
-      add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.3, vy: Math.sin(th) * 2.3, spin: 0.12, r: 7 });
-      add({ ...bulletProps('knighttri'), x: cx, y: cy, vx: Math.cos(th + 3.14) * 1.7, vy: Math.sin(th + 3.14) * 1.7, spin: 0.15, r: 6 });
+    if (f >= 260 && every(f, rate(6, tier))) {   // phase 2: a growing spinning pattern from the centre
+      const th = f * 0.20;
+      for (const s of [0, 2.094, 4.189]) {
+        add({ ...bulletProps('knighttri'), x: cx, y: cy, vx: Math.cos(th + s) * 2.4, vy: Math.sin(th + s) * 2.4, spin: 0.15, r: 6 });
+      }
     }
   },
 };

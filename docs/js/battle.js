@@ -720,6 +720,7 @@ Battle.updDodge = function () {
       }
       continue;
     }
+    if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
     if (dist < (b.r || 6) + SOUL_R) {
       if (B.iframes <= 0) {

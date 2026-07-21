@@ -2316,8 +2316,8 @@
 },
 "sneohead": {
 "f": "sneohead.png",
-"w": 24,
-"h": 24
+"w": 22,
+"h": 28
 },
 "sneowire": {
 "f": "sneowire.png",
@@ -2363,6 +2363,41 @@
 "f": "knightslash.png",
 "w": 54,
 "h": 3
+},
+"sneodollar": {
+"f": "sneodollar.png",
+"w": 18,
+"h": 20
+},
+"sneoarrow": {
+"f": "sneoarrow.png",
+"w": 16,
+"h": 15
+},
+"sneoball": {
+"f": "sneoball.png",
+"w": 20,
+"h": 20
+},
+"sneowisp": {
+"f": "sneowisp.png",
+"w": 20,
+"h": 13
+},
+"sneoeye": {
+"f": "sneoeye.png",
+"w": 39,
+"h": 44
+},
+"sneonose": {
+"f": "sneonose.png",
+"w": 44,
+"h": 26
+},
+"sneomouth": {
+"f": "sneomouth.png",
+"w": 20,
+"h": 44
 }
 },
 "bullet_cost": {
