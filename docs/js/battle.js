@@ -6,7 +6,7 @@ const BOX = { x: 220, y: 116, w: 200, h: 200 };   // dodge box (square by defaul
 const SOUL_R = 5;
 const GRAZE_R = 15;
 const BOX_ANIM = 16;   // frames for the box open/close spin-in animation
-const SELECT_FRAMES = 24 * 60;
+const SELECT_FRAMES = 60 * 60;   // 60s to pick your move
 const IFRAMES = 55;
 const TIER_TP = [4, 10, 18];   // accuracy -> TP
 
@@ -38,6 +38,16 @@ function canSpare(m) {
   if (sp.fullHp && m.hp < m.max) return false;
   if (sp.noKris && Battle.oppTeam.some(o => !isOut(o) && o.def.base === 'kris')) return false;
   return true;
+}
+// one-line description of what it takes to SPARE this foe (shown in the target menu)
+function spareHint(def) {
+  const sp = def.spare || {};
+  if (sp.never) return 'CANNOT be SPARED';
+  if (sp.alone) return 'SPARE: when ALONE (+100%)';
+  if (sp.downed) return 'SPARE: when DOWNED (+100%)';
+  if (sp.fullHp) return 'SPARE: at FULL HP (+100%)';
+  if (sp.noKris) return 'SPARE: no KRIS up (+100%)';
+  return 'SPARE at 100% MERCY';
 }
 // an ACT id resolves to one of KRIS's own acts OR a living enemy's per-enemy mercy act
 function findAct(id) {
@@ -1012,7 +1022,8 @@ Battle.resolve = function () {
 // buffs / proceed). Mercy is a LOCAL view of the enemy; spares are synced.
 Battle.applyMyEffects = function () {
   const B = Battle;
-  const grantMercy = (i, amt) => { const o = B.oppTeam[i]; if (o && !isOut(o)) o.mercy = Math.min(100, o.mercy + amt); };
+  // mercy gained scales by the foe's resistance (super bosses build MERCY very slowly ~20 turns)
+  const grantMercy = (i, amt) => { const o = B.oppTeam[i]; if (o && !isOut(o)) o.mercy = Math.min(100, o.mercy + amt * (o.def.mercyGain != null ? o.def.mercyGain : 1)); };
   const doSpare = (i, tiredOnly) => {
     const o = B.oppTeam[i]; if (!o || isOut(o)) return false;
     if ((o.def.spare || {}).never) return false;
@@ -1033,6 +1044,15 @@ Battle.applyMyEffects = function () {
       if (ad.kind === 'proceed') usedProceed = true;
     } else if (a.cmd === 'spare') { doSpare(a.target, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.'); }
   }
+  // per-enemy spare passives
+  for (const o of B.oppTeam) {
+    if (isOut(o)) continue;
+    // SUSIE shields her team: while she's up and not TIRED, her allies' MERCY slips
+    if ((o.def.spare || {}).alone && !isTired(o))
+      for (const a of B.oppTeam) if (a !== o && !isOut(a)) a.mercy = Math.max(0, a.mercy - 15);
+  }
+  // using PROCEED sways an enemy NOELLE (+20% MERCY toward sparing her)
+  if (usedProceed) for (const o of B.oppTeam) if (!isOut(o) && o.def.base === 'noelle') o.mercy = Math.min(100, o.mercy + 20);
   // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
   const anyDown = B.myTeam.some(m => m.downed);
   if (B.usedSnowgrave || anyDown) B.proceedCount = 0;
@@ -1130,6 +1150,17 @@ Battle.renderChars = function (ctx) {
       const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, gy, flip, alpha, sc);
       if (done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
       else if (done && m.pose === 'hurt' && m.poseT > 50) { m.pose = 'idle'; m.poseT = 0; }
+      // ALWAYS-visible enemy readout: a small HP bar + MERCY% so you can track a spare any time
+      if (team === B.oppTeam && !isOut(m)) {
+        const bw = 60, bx0 = x - bw / 2, by0 = gy - 66;
+        ctx.fillStyle = '#3c0d0d'; ctx.fillRect(bx0, by0, bw, 4);
+        ctx.fillStyle = m.def.color; ctx.fillRect(bx0, by0, Math.max(0, Math.round(bw * m.hp / m.max)), 4);
+        if (!(m.def.spare || {}).never) {
+          ctx.fillStyle = '#3a3000'; ctx.fillRect(bx0, by0 + 6, bw, 3);
+          ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(bx0, by0 + 6, Math.round(bw * m.mercy / 100), 3);
+          drawText(ctx, 'main', canSpare(m) ? 'SPARE!' : m.mercy + '%', x, by0 - 16, { color: canSpare(m) ? '#ff0' : '#dd0', align: 'center', scale: 0.9 });
+        }
+      }
     });
   }
   drawTeam(B.myTeam, 96, false);
@@ -1493,10 +1524,13 @@ Battle.renderTargetList = function (ctx, d) {
     ctx.fillStyle = tm.def.color; ctx.fillRect(infoX, d.y + 30, Math.max(0, Math.round(infoW * tm.hp / tm.max)), 7);
     drawText(ctx, 'main', tm.hp + '/' + tm.max, infoX + infoW, d.y + 28, { color: '#bbb', align: 'right' });
     if (!ally) {
+      // MERCY bar + exact % (always shown so you can track progress toward a spare)
       ctx.fillStyle = '#3a3000'; ctx.fillRect(infoX, d.y + 50, infoW, 6);
       ctx.fillStyle = canSpare(tm) ? '#ffd000' : '#c8a000'; ctx.fillRect(infoX, d.y + 50, Math.round(infoW * tm.mercy / 100), 6);
-      const tag = (tm.def.spare || {}).never ? 'CANT SPARE' : canSpare(tm) ? 'SPARE READY!' : isTired(tm) ? 'TIRED' : 'MERCY ' + tm.mercy + '%';
-      drawText(ctx, 'main', tag, infoX, d.y + d.h - 16, { color: canSpare(tm) ? '#ff0' : '#aa8' });
+      drawText(ctx, 'main', 'MERCY ' + tm.mercy + '%', infoX, d.y + 40, { color: '#ffd000' });
+      // status + the exact spare CONDITION so the player knows what's needed
+      const ready = canSpare(tm), status = ready ? 'SPARE READY!' : spareHint(tm.def);
+      drawText(ctx, 'main', status, infoX, d.y + d.h - 16, { color: ready ? '#ff0' : (tm.def.spare || {}).never ? '#f66' : '#aa8' });
     }
   }
 };

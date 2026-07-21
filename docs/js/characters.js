@@ -94,7 +94,7 @@ const CHARS = {
     act: { id: 'act_praise', name: 'Praise', kind: 'mercy', mercy: 26, text: 'KRIS praises LANCER! He grins. Ho ho ho!' },
   },
   berdly: {
-    name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1, level: 3, spare: { fullHp: true, easyMercy: true },
+    name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1, level: 3, spare: { fullHp: true }, mercyGain: 1.6,
     desc: 'THE SMART ONE.\nHIGH PROJECTILE VARIETY.',
     fight: { id: 'berdly_fight', name: 'Halberd', dmg: 26, dur: 420,
              text: 'BERDLY swings his halberd!' },
@@ -112,7 +112,7 @@ const CHARS = {
            text: 'BERDLY goes ALL OUT!!' },
   },
   jevil: {
-    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: {},
+    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
     desc: 'CHAOS, CHAOS!\nSECRET BOSS - 1000 HP, NO ITEMS.',
     fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 26, dur: 440,
              text: 'JEVIL flings spinning spades!' },
@@ -127,7 +127,7 @@ const CHARS = {
     act: { id: 'act_play', name: 'Play', kind: 'mercy', mercy: 20, text: 'KRIS plays JEVIL\'s game! CHAOS, CHAOS!' },
   },
   spamton: {
-    name: 'SPAMTON NEO', shortName: 'S. NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: {},
+    name: 'SPAMTON NEO', shortName: 'S. NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
     dscale: 0.6, yoff: 18,   // marionette puppet is a big multi-part sprite - scale down + sit it on the line
     soulYellow: true,   // dodging his attacks uses the yellow SOUL (shoots right)
     act: { id: 'act_deal', name: 'Deal', kind: 'mercy', mercy: 22, text: 'KRIS hears out [[SPAMTON]]\'s deal...' },
