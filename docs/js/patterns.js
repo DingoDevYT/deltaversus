@@ -556,13 +556,15 @@ PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; 
       add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
             swing: { cx: cx0, amp, spd: 0.028 }, shootable: true, hp: 16, spin: 0.05, r: 15, life: 514 });
     const hx = cx0 + amp * Math.sin(0.028 * f);
+    // green connector "arm" from Spamton (right edge) to the heart, like the heart's chain
+    a.fx.arms = [{ x1: box.x + box.w + 40, y1: box.y + box.h * 0.3, x2: hx, y2: cy }];
     // three rounds per cycle with delay between each: a 5-bullet fan across a leftward 180 arc.
-    // stretched diamonds pointing where they travel, no spin.
+    // DIAMONDS pointing where they travel, no spin.
     const cyc = f % rate(150, tier);
     if (cyc === 0 || cyc === 26 || cyc === 52)
       for (let k = 0; k < 5; k++) {
         const ang = Math.PI / 2 + k * (Math.PI / 4);         // PI/2..3PI/2 : down -> left -> up
-        add({ ...bulletProps('kdiamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 6 });
+        add({ ...bulletProps('diamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 6, scale: 1.5 });
       }
   },
 };
@@ -579,93 +581,108 @@ PATTERNS.sneo_mail = {   // SPAM MAIL: cars carry towers R->L (decel but never s
         fill = [['m', 'm', 'm', 'm', 'h'], ['m', 'm', 'm', 'h', 'b'], ['m', 'm', 'm', 'h', 'h']][w % 3].slice();
         for (let i = fill.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [fill[i], fill[j]] = [fill[j], fill[i]]; }
       }
-      const tx = box.x + box.w + 30, vx = -2.5, ax = 0.006;    // decelerates, but keeps drifting past the player
-      add({ ...bulletProps('sneobox'), x: tx, y: box.y - 6, vx, ax, r: 9 });                 // top square
+      const tx = box.x + box.w + 26, vx = -2.5, ax = 0.006;    // decelerates, but keeps drifting past the player
+      const slotH = box.h / 5;
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y - 4, vx, ax, r: 9 });                 // top square
       for (let s = 0; s < 5; s++) {
-        const sy = box.y + (s + 0.5) * box.h / 5;
-        if (fill[s] === 'm') add({ ...bulletProps('sneomail'), x: tx, y: sy, vx, ax, r: 9 });
+        const sy = box.y + (s + 0.5) * slotH;
+        if (fill[s] === 'm')                                    // fill the slot with a TIGHT stack so the tower reads solid
+          for (let y = box.y + s * slotH + 5; y < box.y + (s + 1) * slotH; y += 16)
+            add({ ...bulletProps('sneomail'), x: tx, y, vx, ax, r: 9 });
         else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1 });
         else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, ax, r: 10, shootable: true, hp: 1, bomb: true });   // shot -> cross laser
       }
-      add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 6, vx, ax, r: 9 });         // bottom square
-      add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 24, vx, ax, r: 0, noHit: true });  // the car
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 4, vx, ax, r: 9 });         // bottom square
+      add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 22, vx, ax, r: 0, noHit: true });  // the car
     }
   },
 };
-PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones; shoot to delay, BIG SHOT shoves it back
+PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones (its hands on the box); shoot to delay
   dur: 560, box: { w: 240, h: 160 },
   tick(a) {
     const { f, box, add } = a;
     if (f !== 0) return;
     const head = { ...bulletProps('sneohead'), x: box.x + box.w + 12, y: box.y + box.h / 2,
-      vx: -0.42, vy: 0, r: 16, scale: 1.9, shootable: true, hp: 9999, pushOnShot: 20, homing: 0.011, maxv: 0.85, _ball: 74 };
-    head.emit = function (b, out, soul, bx) {
-      // two phones ride the top & bottom border at the head's x (the "hands" it climbs with)
-      out.push({ ...bulletProps('sneophone'), x: b.x, y: bx.y + 5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 1.57 });
-      out.push({ ...bulletProps('sneophone'), x: b.x, y: bx.y + bx.h - 5, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: -1.57 });
-      // every so often it spits a yellow ball that flashes ~1s then bursts into 3 leftward soundwaves
+      vx: -0.42, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 20, homing: 0.011, maxv: 0.85, _ball: 74 };
+    head.emit = function (b, out, soul, bx, fx) {
+      // the two phones are its HANDS gripping the top & bottom border, level with the head's x
+      const topPh = { ...bulletProps('sneophone'), x: b.x, y: bx.y + 2, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 1.57 };
+      const botPh = { ...bulletProps('sneophone'), x: b.x, y: bx.y + bx.h - 2, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: -1.57 };
+      out.push(topPh, botPh);
+      // green connector "arms" from the head to each phone-hand on the border
+      if (fx) fx.arms = [{ x1: b.x, y1: b.y, x2: topPh.x, y2: topPh.y }, { x1: b.x, y1: b.y, x2: botPh.x, y2: botPh.y }];
+      // spit a yellow ball that drifts left & decelerates, flashes ~1s, then bursts into 3 soundwaves over a 90 arc
       if (--b._ball <= 0) {
         b._ball = 68;
-        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -0.5, vy: 0, r: 8,
-          burst: 58, burstN: 3, burstArc: Math.PI, burstAng: Math.PI, burstSpeed: 2.3, burstImg: 'sneosound', burstR: 7 });
+        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -2.6, ax: 0.05, vy: 0, r: 8, flash: true,
+          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.3, burstImg: 'sneosound', burstR: 7 });
       }
     };
     add(head);
   },
 };
-PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: destructible face parts, each firing its own pattern until shot down
+PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: a SECOND box holds Spamton's face; shoot its parts to silence them
   dur: 580, box: { w: 300, h: 160 },
   tick(a) {
     const { f, box, add } = a;
+    // the face box (its own box on the right, the soul CANNOT enter it) - drawn every frame via fx
+    const fbw = 84, fbh = box.h, fbx = box.x + box.w + 14, fby = box.y;
+    a.fx.faceBox = { x: fbx, y: fby, w: fbw, h: fbh };
     if (f !== 0) return;
-    const fx = box.x + box.w + 34;   // the face box sits to the right; the soul can't enter it, but shots reach it
-    add({ ...bulletProps('sneofacebg'), x: fx, y: box.y + box.h / 2, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: 2.4 });
-    // EYES: every ~3s fire a straight 7-pellet line toward where the soul was (dodge vertically)
-    const eye = { ...bulletProps('sneoeye'), x: fx, y: box.y + box.h * 0.24, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 60 };
+    const fcx = fbx + fbw / 2, fcy = fby + fbh / 2;   // the parts OVERLAY here to form one face
+    add({ ...bulletProps('sneofacebg'), x: fcx, y: fcy, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: 1.9 });
+    // each part draws centred on the face (drawDY) but its HITBOX sits where the feature actually is,
+    // so shooting high hits the eyes, middle the nose, low the mouth. ~3 big shots each (hp 12).
+    const eye = { ...bulletProps('sneoeye'), x: fcx, y: fcy - 26, drawDY: 26, vx: 0, vy: 0, r: 15, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 60 };
     eye.emit = function (b, out, soul) {
       if (--b._cd > 0) return; b._cd = 180;
-      const ang = Math.atan2(soul.y - b.y, soul.x - b.x), dx = Math.cos(ang), dy = Math.sin(ang);
+      const ang = Math.atan2(soul.y - b.y, soul.x - b.x), dx = Math.cos(ang), dy = Math.sin(ang);   // aim at captured soul pos
       for (let i = 0; i < 7; i++) out.push({ ...bulletProps('sneolaser'), x: b.x - dx * i * 15, y: b.y - dy * i * 15, vx: dx * 4.2, vy: dy * 4.2, r: 5 });
     };
     add(eye);
-    // NOSE: every ~3s (offset) fire a 3x3 grid of triangles that lerp into top / middle / bottom rows
-    const nose = { ...bulletProps('sneonose'), x: fx, y: box.y + box.h * 0.5, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 120 };
+    const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 13, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 120 };
     nose.emit = function (b, out, soul, bx) {
       if (--b._cd > 0) return; b._cd = 180;
-      const rows = [bx.y + 16, bx.y + bx.h / 2, bx.y + bx.h - 16];
+      const rows = [bx.y + 16, bx.y + bx.h / 2, bx.y + bx.h - 16];   // top / middle / bottom rows
       for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)
         out.push({ ...bulletProps('sneoarrow'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: (rows[r] - b.y) * 0.03, r: 6, rot: Math.PI });
     };
     add(nose);
-    // MOUTH: every ~3s (offset) fire 6 "kiss" wisps that drift left then curl upward out of the box
-    const mouth = { ...bulletProps('sneomouth'), x: fx, y: box.y + box.h * 0.76, vx: 0, vy: 0, r: 13, scale: 1.2, shootable: true, noHit: true, hp: 12, _cd: 180 };
+    const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + 24, drawDY: -24, vx: 0, vy: 0, r: 15, scale: 1.7, shootable: true, noHit: true, hp: 12, _cd: 180 };
     mouth.emit = function (b, out) {
       if (--b._cd > 0) return; b._cd = 180;
-      for (let i = 0; i < 6; i++)
+      for (let i = 0; i < 6; i++)   // 6 kiss-wisps drift left then curl up out of the box
         out.push({ ...bulletProps('sneowisp'), x: b.x, y: b.y, vx: -1.4 - Math.random() * 0.9, vy: 0.3 - Math.random() * 0.6, ay: -0.02, r: 6 });
     };
     add(mouth);
   },
 };
-PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): $ suck phase, then a BIG SHOT volley (bottom/top x4) + a final full-box shot
-  dur: 760, box: { w: 300, h: 180 },
+PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box eating $, then fires ONE massive BIG SHOT at a time
+  dur: 820, box: { w: 300, h: 180 },
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    // PHASE 1 (f<300): dollar signs stream from the LEFT toward Spamton's mouth (right) - he "eats" them
-    if (f < 300 && every(f, rate(9, tier)))
-      add({ ...bulletProps('sneodollar'), x: box.x - 20, y: box.y + 12 + rng() * (box.h - 24), vx: 2.5 + rng() * 0.9, vy: 0, spin: 0.06, r: 7 });
-    // PHASE 2 (f>=330): BIG SHOT walls take 66% of bottom/top with a gap, then a final full-height shot
-    const p2 = f - 330, SHOT = rate(72, tier);
+    if (f === 0) this._base = { x: box.x, y: box.y, w: box.w, h: box.h };   // capture before the box warps
+    const B = this._base;
+    a.fx.blackout = true;                                                    // everything behind the box goes black
+    // PHASE 1 (f<300): the box is sucked toward his mouth (warp) + the soul is gently pulled right; he eats $ from the left
+    if (f < 300) {
+      a.fx.boxTarget = { w: B.w * 0.72, h: B.h * 0.82, x: B.x + B.w * 0.26, y: B.y + B.h * 0.09 };
+      a.fx.pull = { x: B.x + B.w + 60, y: B.y + B.h / 2, force: 0.35 };
+      if (every(f, rate(18, tier)))                                          // fewer, dodgeable dollars flying in to be eaten
+        add({ ...bulletProps('sneodollar'), x: B.x - 20, y: B.y + 14 + rng() * (B.h - 28), vx: 2.3 + rng() * 0.7, vy: 0, spin: 0.06, r: 7, shrink: 0.9 });
+    } else {
+      a.fx.boxTarget = { x: B.x, y: B.y, w: B.w, h: B.h };                   // box eases back to normal
+    }
+    // PHASE 2 (f>=340): ONE massive BIG SHOT bullet per beat - bottom, top, bottom, top, then the FINAL full-box shot
+    const p2 = f - 340, SHOT = rate(78, tier);
     if (p2 >= 0 && p2 % SHOT === 0) {
       const n = Math.floor(p2 / SHOT);
-      if (n < 4) {                                   // bottom, top, bottom, top - gap on the opposite side
+      if (n < 4) {
         const bottom = (n % 2) === 0;
-        const y0 = bottom ? box.y + box.h * 0.34 : box.y, y1 = bottom ? box.y + box.h : box.y + box.h * 0.66;
-        for (let y = y0; y <= y1; y += 26)
-          add({ ...bulletProps('sneobig'), x: box.x + box.w + 44, y, vx: -3.4, vy: 0, r: 12, rot: Math.PI });
-      } else if (n === 4) {                          // FINAL BIG SHOT: full box, slow - sit on the LEFT; it fizzles out
-        for (let y = box.y + 6; y <= box.y + box.h - 6; y += 24)
-          add({ ...bulletProps('sneobig'), x: box.x + box.w + 60, y, vx: -1.15, vy: 0, r: 13, rot: Math.PI, life: 205 });
+        const hitH = B.h * 0.66, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
+        add({ ...bulletProps('sneobig'), x: B.x + B.w + 90, y: cyy, vx: -3.2, vy: 0, hitW: 120, hitH, scale: hitH / 56, rot: 0 });
+      } else if (n === 4) {   // FINAL: ONE massive full-box bullet, slow - sit on the LEFT; it fizzles out harmlessly
+        add({ ...bulletProps('sneobig'), x: B.x + B.w + 130, y: B.y + B.h / 2, vx: -1.0, vy: 0, hitW: 150, hitH: B.h, scale: B.h / 52, rot: 0, life: 230 });
       }
     }
   },
@@ -875,10 +892,10 @@ function makeCombinedSim(attackers, box) {
   const dur = Math.max(...subs.map(s => s.sim.dur));
   return {
     f: 0, dur,
-    tick(soul, add) {
+    tick(soul, add, fx) {
       for (const s of subs) {
         if (this.f >= s.sim.dur) continue;
-        s.sim.tick(soul, b => { if (N === 1 || s.rng() < keep) { b.dmg = s.dmg; b.target = s.target; add(b); } });
+        s.sim.tick(soul, b => { if (N === 1 || s.rng() < keep) { b.dmg = s.dmg; b.target = s.target; add(b); } }, fx);
       }
       this.f++;
     },
@@ -894,8 +911,10 @@ function makeDodgeSim(attackerDef, moveDef, tier, seed, box) {
   const imgs = imgsOf(attackerDef.base);
   return {
     bullets: [], f: 0, dur: pattern.dur,
-    tick(soul, add) {
-      pattern.tick({ f: this.f, rng, box, tier, soul, add, imgs });
+    // `fx` is the engine control channel: patterns set flags on it (blackout, box warp,
+    // soul pull, screen arena, board split) and Battle.updDodge applies them each frame.
+    tick(soul, add, fx) {
+      pattern.tick({ f: this.f, rng, box, tier, soul, add, imgs, fx: fx || {} });
       this.f++;
     },
   };
