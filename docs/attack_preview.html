@@ -70,18 +70,43 @@
 <script>
 // bullet manifest embedded so the page needs NO fetch (fetch is blocked on file://).
 const EMBEDDED_BULLETS = {"diamond":{"f":"diamond.png","w":11,"h":11},"kdiamond":{"f":"kdiamond.png","w":22,"h":11},"knightcross":{"f":"knightcross.png","w":22,"h":21},"knightstar":{"f":"knightstar.png","w":22,"h":22},"knightsword":{"f":"knightsword.png","w":30,"h":9},"knighttri":{"f":"knighttri.png","w":16,"h":16},"knightslash":{"f":"knightslash.png","w":54,"h":3},"sneohead":{"f":"sneohead.png","w":22,"h":28},"sneowire":{"f":"sneowire.png","w":30,"h":30},"sneomail":{"f":"sneomail.png","w":20,"h":20},"sneosound":{"f":"sneosound.png","w":22,"h":22},"sneobig":{"f":"sneobig.png","w":50,"h":36},"sneophone":{"f":"sneophone.png","w":26,"h":12},"sneocrew":{"f":"sneocrew.png","w":18,"h":22},"sneodollar":{"f":"sneodollar.png","w":18,"h":20},"sneoarrow":{"f":"sneoarrow.png","w":16,"h":15},"sneoball":{"f":"sneoball.png","w":20,"h":20},"sneowisp":{"f":"sneowisp.png","w":20,"h":13},"sneoeye":{"f":"sneoeye.png","w":42,"h":71},"sneonose":{"f":"sneonose.png","w":42,"h":71},"sneomouth":{"f":"sneomouth.png","w":42,"h":71},"sneomouthk":{"f":"sneomouthk.png","w":42,"h":71},"sneolaser":{"f":"sneolaser.png","w":8,"h":8},"sneocar":{"f":"sneocar.png","w":44,"h":18},"sneobomb":{"f":"sneobomb.png","w":26,"h":20},"sneofacebg":{"f":"sneofacebg.png","w":42,"h":71},"sneobox":{"f":"sneobox.png","w":22,"h":22},"sneonosetri":{"f":"sneonosetri.png","w":20,"h":12},"sneofinal":{"f":"sneofinal.png","w":233,"h":240},"sneofinalsuck":{"f":"sneofinalsuck.png","w":233,"h":240},"knightfront":{"f":"knightfront.png","w":96,"h":110},"knightroar0":{"f":"knightroar0.png","w":96,"h":110},"knightroar1":{"f":"knightroar1.png","w":99,"h":110},"knighttooth":{"f":"knighttooth.png","w":22,"h":15},"knightknife":{"f":"knightknife.png","w":44,"h":12}};
+// EVERY attack in the game (party + darkners + secret bosses). base = character (for imgs), soul type.
 const ATTACKS = [
-  { boss:'Spamton NEO', id:'sneo_heads',   name:'Flying Heads',        soul:'yellow' },
-  { boss:'Spamton NEO', id:'sneo_heart',   name:'Heart Attack',        soul:'yellow' },
-  { boss:'Spamton NEO', id:'sneo_mail',    name:'Spam Mail',           soul:'yellow' },
-  { boss:'Spamton NEO', id:'sneo_phones',  name:'Gripping Phones',     soul:'yellow' },
-  { boss:'Spamton NEO', id:'sneo_face',    name:'Eyes Nose Mouth',     soul:'yellow' },
-  { boss:'Spamton NEO', id:'sneo_bigshot', name:'Power of NEO (BIG SHOT)', soul:'yellow' },
-  { boss:'Roaring Knight', id:'knight_corridor', name:'Sword Corridor',   soul:'red' },
-  { boss:'Roaring Knight', id:'knight_circle',   name:'Spinning Swords',  soul:'red' },
-  { boss:'Roaring Knight', id:'knight_slash',    name:'Red Slash',        soul:'red' },
-  { boss:'Roaring Knight', id:'knight_board',    name:'Break the Board',  soul:'red' },
-  { boss:'Roaring Knight', id:'knight_roar',     name:'FINAL ROAR',       soul:'red' },
+  { boss:'Kris',    base:'kris',   id:'kris_slash',      name:'Slash',            soul:'red' },
+  { boss:'Kris',    base:'kris',   id:'kris_cross',      name:'X-Slash',          soul:'red' },
+  { boss:'Kris',    base:'kris',   id:'redbuster',       name:'Red Buster',       soul:'red' },
+  { boss:'Susie',   base:'susie',  id:'susie_axe',       name:'Axe Swing',        soul:'red' },
+  { boss:'Susie',   base:'susie',  id:'susie_rude',      name:'Rude Buster',      soul:'red' },
+  { boss:'Susie',   base:'susie',  id:'susie_ult',       name:'Buster Rampage',   soul:'red' },
+  { boss:'Ralsei',  base:'ralsei', id:'ralsei_scarf',    name:'Scarf Whip',       soul:'red' },
+  { boss:'Ralsei',  base:'ralsei', id:'ralsei_ult',      name:'Dream Chorus',     soul:'red' },
+  { boss:'Noelle',  base:'noelle', id:'noelle_snow',     name:'Snow Toss',        soul:'red' },
+  { boss:'Noelle',  base:'noelle', id:'noelle_ice',      name:'Ice Shock',        soul:'red' },
+  { boss:'Noelle',  base:'noelle', id:'snowgrave',       name:'SNOWGRAVE',        soul:'red' },
+  { boss:'Lancer',  base:'lancer', id:'lancer_spade',    name:'Spade Toss',       soul:'red' },
+  { boss:'Lancer',  base:'lancer', id:'lancer_storm',    name:'Spade Storm',      soul:'red' },
+  { boss:'Lancer',  base:'lancer', id:'lancer_bike',     name:'Bike Charge',      soul:'red' },
+  { boss:'Lancer',  base:'lancer', id:'lancer_ult',      name:'COOL ATTACK',      soul:'red' },
+  { boss:'Berdly',  base:'berdly', id:'berdly_fight',    name:'Halberd',          soul:'red' },
+  { boss:'Berdly',  base:'berdly', id:'berdly_bolt',     name:'Winged Saviour',   soul:'red' },
+  { boss:'Berdly',  base:'berdly', id:'berdly_books',    name:'Halberdly',        soul:'red' },
+  { boss:'Berdly',  base:'berdly', id:'berdly_papers',   name:'A++++',            soul:'red' },
+  { boss:'Berdly',  base:'berdly', id:'berdly_ult',      name:'SMART RACE',       soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_spade',     name:'Spade Fan',        soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_diamond',   name:'Diamond Rain',     soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_carousel',  name:'Carousel',         soul:'red' },
+  { boss:'Jevil',   base:'jevil',  id:'jevil_ult',       name:'DEVILSKNIFE',      soul:'red' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_heads',   name:'Flying Heads',        soul:'yellow' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_heart',   name:'Heart Attack',        soul:'yellow' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_mail',    name:'Spam Mail',           soul:'yellow' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_phones',  name:'Gripping Phones',     soul:'yellow' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_face',    name:'Eyes Nose Mouth',     soul:'yellow' },
+  { boss:'Spamton NEO', base:'spamton', id:'sneo_bigshot', name:'BIG SHOT',            soul:'yellow' },
+  { boss:'Roaring Knight', base:'knight', id:'knight_corridor', name:'Sword Corridor',      soul:'red' },
+  { boss:'Roaring Knight', base:'knight', id:'knight_circle',   name:'Directional Swords',  soul:'red' },
+  { boss:'Roaring Knight', base:'knight', id:'knight_slash',    name:'Red Slash',           soul:'red' },
+  { boss:'Roaring Knight', base:'knight', id:'knight_board',    name:'Break the Board',     soul:'red' },
+  { boss:'Roaring Knight', base:'knight', id:'knight_roar',     name:'FINAL ROAR',          soul:'red' },
 ];
 const SOULCOL = { yellow:'#ffe100', red:'#ff2020' };
 const CW = 480, CH = 300;   // canvas coordinate space
@@ -106,6 +131,7 @@ function tintImg(img, color) {
   imgTints[key] = c; return c;
 }
 function drawBullet(ctx, b, px, py, s) {
+  if (b.noDraw) return;
   if (b.drawDX) px += b.drawDX * s;
   if (b.drawDY) py += b.drawDY * s;
   if (b.img && b.img.width) {
@@ -140,6 +166,7 @@ function makePlayer(canvas, spec) {
   const bw = p.box ? p.box.w : 200, bh = p.box ? p.box.h : 200;
   const box = { x: Math.round(CW/2 - bw/2), y: Math.round(CH/2 - bh/2), w: bw, h: bh };
   const soulImg = A.img[spec.soul === 'yellow' ? 'assets/ui/soul/yheart0.png' : 'assets/ui/soul/red0.png'] || tintedSoul(SOULCOL[spec.soul]);
+  const imgs = (typeof imgsOf === 'function') ? imgsOf(spec.base || 'kris') : {};   // char-frame sprites (Lancer spades etc.)
   let bullets = [], f = 0, seed = spec.id.length + 3, t = 0;
   const rng = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
   const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
@@ -165,13 +192,18 @@ function makePlayer(canvas, spec) {
     if (FX.arena && !FX.boxTarget) FX.boxTarget = { x: 8, y: 8, w: CW - 16, h: CH - 16 };
     FX.blackout=false; FX.pull=null; FX.faceBox=null; FX.arms=null; FX.bgHue=null; FX.split=null; FX.boss=null; FX.hideBox=false; FX.pinch=0; FX.arena=false; FX.bgStars=false; FX.shake=0;
     const add = b => { b.t = b.t||0; b.phase0 = b.phase0||0; bullets.push(b); };
-    if (f <= (p.dur||480)) p.tick({ f, rng, box, tier:1, add, soul, imgs:{}, fx:FX });
+    if (f <= (p.dur||480)) p.tick({ f, rng, box, tier:1, add, soul, imgs, fx:FX });
     const spawned = [];
     for (const b of bullets) {
       if (b.dead) continue;
+      if (b.animKeys && b.animRate) b.img = bulletProps(b.animKeys[Math.floor(b.t/b.animRate)%b.animKeys.length]).img;   // frame-cycled sprite
       if (b.homing) { const d = Math.hypot(soul.x-b.x, soul.y-b.y)||1; b.vx += (soul.x-b.x)/d*b.homing; b.vy += (soul.y-b.y)/d*b.homing; }
       if (b.maxv) { const v = Math.hypot(b.vx||0, b.vy||0); if (v > b.maxv) { b.vx *= b.maxv/v; b.vy *= b.maxv/v; } }
-      if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang)*b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang)*b.orbit.R; }
+      if (b.carousel) {   // fake-3D carousel column (Jevil)
+        const c = b.carousel; c.ang += c.w; const depth = Math.cos(c.ang);
+        b.x = c.cx + Math.sin(c.ang)*c.R; b.y = c.rowY + Math.sin(c.ang*3 + c.phase)*c.bob;
+        b.scale = 0.62 + 0.5*(depth*0.5+0.5); b.noDraw = depth < 0.02; b.flip = depth < 0;
+      } else if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang)*b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang)*b.orbit.R; }
       else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
       if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
@@ -179,6 +211,7 @@ function makePlayer(canvas, spec) {
       if (b.spin) b.rot = (b.rot||0) + b.spin;
       if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
       if (b.shrink) b.scale = (b.scale||1) * b.shrink;
+      if (b.fade && b.life) { const fd = b.fadeDelay||0; b.alpha = b.t<=fd ? 1 : Math.max(0, 1-(b.t-fd)/Math.max(1,b.life-fd)); }
       if (b.redAt != null && b.t >= b.redAt) b.tint = '#f33';
       if (b.aim) {
         if (b.t < b.aim.delay) { const px=Math.cos(b.aim.dir+Math.PI/2), py=Math.sin(b.aim.dir+Math.PI/2), rel=(soul.x-b.x)*px+(soul.y-b.y)*py; b.x+=px*rel*0.14; b.y+=py*rel*0.14; b.rot=b.aim.dir; b.tint='#f44'; b.alpha=Math.min(1,b.t/16)*0.5; }
@@ -198,7 +231,8 @@ function makePlayer(canvas, spec) {
           bullets.push({ img:bimg, color:b.burstColor, shape:b.burstShape,
             scale:(b.burstScale!=null?b.burstScale:(b.scale||1)*0.55), r:b.burstR||Math.max(4,(b.r||8)*0.55),
             x:b.x, y:b.y, vx:Math.cos(ang)*bsp, vy:Math.sin(ang)*bsp,
-            rot:b.burstImg?ang:0, spin:b.burstSpin!=null?b.burstSpin:(b.burstImg?0:0.2), t:0, phase0:0 }); }
+            rot:b.burstImg?ang:0, spin:b.burstSpin!=null?b.burstSpin:(b.burstImg?0:0.2),
+            life:b.burstLife, shrink:b.burstShrink, fade:b.burstFade, fadeDelay:b.burstFadeDelay, t:0, phase0:0 }); }
         continue;
       }
       b.t++; if (b.life && b.t > b.life) b.dead = true;
@@ -320,22 +354,36 @@ document.getElementById('dlBtn').onclick = () => {
 };
 document.getElementById('clearBtn').onclick = () => { if (confirm('Clear all marks and notes?')) { fb = {}; save(); location.reload(); } };
 
-// self-contained loader: set the embedded manifest, load only the sprites the
-// previews use (images work fine on file://; fetch does not), then build.
-A.manifest = { bullets: EMBEDDED_BULLETS, chars:{}, anims:{}, fonts:{} };
-(function loadSprites() {
-  const need = [];
-  for (const b in A.manifest.bullets) need.push('assets/bullets/' + A.manifest.bullets[b].f);
-  need.push('assets/ui/soul.png', 'assets/ui/soul/yheart0.png', 'assets/ui/soul/red0.png');   // real heart sprites
+// patterns.js emit fns call Snd (jevil knife smash, big-shot explosion) - stub it so nothing throws
+window.Snd = window.Snd || { play(){}, stop(){}, hold(){ return null; }, unlock(){}, playMusic(){} };
+
+// loader: try to fetch the FULL manifest (so every bullet + Lancer's char-frame spades resolve);
+// fall back to the embedded boss bullets if fetch is blocked (opened as a bare file://).
+function loadSprites(need) {
+  need.push('assets/ui/soul.png', 'assets/ui/soul/yheart0.png', 'assets/ui/soul/red0.png');
   let n = need.length;
   if (!n) { A.ready = true; build(); return; }
   for (const p of need) {
     const im = new Image();
     im.onload = im.onerror = () => { if (--n === 0) { A.ready = true; build(); } };
-    im.src = p;              // no ?query -> loads under file:// too
+    im.src = p;
     A.img[p] = im;
   }
-})();
+}
+fetch('assets/manifest.json').then(r => r.json()).then(man => {
+  A.manifest = man;
+  const need = [];
+  for (const b in man.bullets) need.push('assets/bullets/' + man.bullets[b].f);
+  // Lancer's spade patterns draw char-frame sprites (imgs), so pull those too
+  const lc = man.chars && man.chars.lancer;
+  if (lc) for (const g of ['spade_white', 'spade_pink']) for (const f of (lc[g] || [])) need.push('assets/chars/lancer/' + f);
+  loadSprites(need);
+}).catch(() => {   // file:// fallback: embedded boss bullets only
+  A.manifest = { bullets: EMBEDDED_BULLETS, chars:{}, anims:{}, fonts:{} };
+  const need = [];
+  for (const b in EMBEDDED_BULLETS) need.push('assets/bullets/' + EMBEDDED_BULLETS[b].f);
+  loadSprites(need);
+});
 </script>
 </body>
 </html>

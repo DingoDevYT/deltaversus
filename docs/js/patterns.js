@@ -484,17 +484,17 @@ PATTERNS.jevil_ult = {   // DEVILSKNIFE (turn-4): the arena fills the screen; gi
   dur: 680,               // into light pillars - random first, then edges->center->edges, then a screen-filler.
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    a.fx.boxTarget = { x: 24, y: 58, w: 592, h: 384 };     // the arena grows to fill the whole screen
-    const gY = 58 + 384 - 8;
+    a.fx.arena = true;                                     // the arena grows to fill the whole screen
+    const gY = box.y + box.h - 8;
     const drop = (x, vy, scale) => {
       const sc = scale || 1;
       // SMALLER, MUCH FASTER falling knives; each smashes into a full-height pillar of white light
-      const k = { ...bulletProps('scythebig'), x, y: 24, vx: 0, vy: vy, spin: 0.08, scale: sc * 0.95,
+      const k = { ...bulletProps('scythebig'), x, y: box.y + 24, vx: 0, vy: vy, spin: 0.08, scale: sc * 0.95,
                   hitW: 26 * sc, hitH: 62 * sc, _gy: gY };
       k.emit = function (b, out) {
         if (b.y >= b._gy && !b._smash) {
           b._smash = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: 240, rot: Math.PI / 2, len: 520, thick: 26 + 8 * sc,
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 60, thick: 26 + 8 * sc,
                      armed: true, life: 20, dmg: b.dmg, vx: 0, vy: 0 });
           Snd.play('boarddmg', 0.3);
         }

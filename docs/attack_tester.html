@@ -79,7 +79,7 @@ const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
 const el = id => document.getElementById(id);
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
-let running = false, current = null, rafId = 0;
+let running = false, current = null, rafId = 0, last = 0, acc = 0;
 
 // ---- build the list of every ATTACK move from the real character kits ----
 function moveAction(defId, move) {
@@ -129,29 +129,43 @@ function startAttack(attackerId, move) {
   current = { attackerId, move, defId, tier, seed, hits: 0, lastDmg: 0 };
   el('atkname').textContent = (CHARS[attackerId].shortName || CHARS[attackerId].name) + ' — ' + move.name;
   el('menu').style.display = 'none'; el('play').style.display = 'block'; el('done').style.display = 'none';
-  running = true; loop();
+  running = true; last = 0; acc = 0; rafId = requestAnimationFrame(loop);
 }
 
-function loop() {
-  if (!running) return;
+// ONE fixed 60Hz game tick (all the housekeeping Battle.update() normally does, since we drive updDodge ourselves)
+function step() {
   const B = Battle;
   B.anim.f++;
-  // per-frame housekeeping Battle.update() normally does (we bypass it) - else shake/flash never decay
   if (B.shake > 0) B.shake--;
   if (B.flash > 0) B.flash--;
   for (const p of B.dmgPops) p.t++;
   B.dmgPops = B.dmgPops.filter(p => p.t < 70);
+  for (const m of B.myTeam || []) m.poseT = (m.poseT || 0) + 1;   // advance char anims at 60Hz too
+  for (const m of B.oppTeam || []) m.poseT = (m.poseT || 0) + 1;
   if (B.phase === 'dodge') {
     if (el('invuln').checked) B.iframes = 999;   // practice mode: watch without taking damage
     B.updDodge();
-    // count hits (dmgTaken jumps up on a hit)
-    if (B.dmgTaken > current.lastDmg) { current.hits++; current.lastDmg = B.dmgTaken; }
+    if (B.dmgTaken > current.lastDmg) { current.hits++; current.lastDmg = B.dmgTaken; }   // count hits
     el('dmg').textContent = B.dmgTaken;
     el('hits').textContent = current.hits + ' hit' + (current.hits === 1 ? '' : 's');
   }
-  Battle.render(ctx);
   Input.flush();
-  if (B.phase !== 'dodge' && B.phase !== 'boxin') { finish(); return; }
+}
+
+// FIXED-TIMESTEP loop: update() runs at a locked 60Hz regardless of the display's refresh rate
+// (fixes the game running 2-4x too fast on 120/144/240Hz screens); render every animation frame.
+function loop(t) {
+  if (!running) return;
+  const B = Battle;
+  if (!last) last = t;
+  acc += Math.min(100, t - last); last = t;
+  let steps = 0;
+  while (acc >= 1000 / 60 && steps < 6) {
+    acc -= 1000 / 60; steps++;
+    step();
+    if (B.phase !== 'dodge' && B.phase !== 'boxin') { Battle.render(ctx); finish(); return; }
+  }
+  Battle.render(ctx);
   rafId = requestAnimationFrame(loop);
 }
 
