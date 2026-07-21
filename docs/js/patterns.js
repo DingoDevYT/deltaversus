@@ -986,7 +986,7 @@ const F = 0.5;
 const SZ = (nat, disp) => disp / (nat * 1.6);
 const SC_SPADE12 = SZ(36, 12), SC_SPADE16 = SZ(36, 16), SC_SPADE32 = SZ(36, 26), SC_HEART24 = SZ(18, 24), SC_HEART16 = SZ(18, 16),
       SC_CLUB24 = SZ(34, 24), SC_CLUB16 = SZ(18, 16), SC_DIA = SZ(33, 16),
-      SC_DEVIL = SZ(47, 64), SC_DEVILSM = SZ(47, 46), SC_DEVILRED = SZ(62, 128), SC_DEVILGIANT = SZ(47, 160), SC_DEVILULT = SZ(47, 320), SC_BOMB = SZ(23, 26);
+      SC_DEVIL = SZ(47, 64), SC_DEVILSM = SZ(47, 46), SC_DEVILRED = SZ(62, 92), SC_DEVILGIANT = SZ(47, 84), SC_DEVILULT = SZ(47, 190), SC_BOMB = SZ(23, 26);
 
 PATTERNS.jx_spread = {   // Five-Spade Teleport Spread. spade 16px | hurtbox 8 | graze 24 | speed 6px/f
   dur: 340, box: { w: 160, h: 160 },
@@ -1017,8 +1017,8 @@ PATTERNS.jx_spiral = {   // Spade Spiral. large spade 32px | hurtbox 16 | graze 
       const dir = w0 === 0 ? -1 : 1, spd = (w0 === 0 ? 5.5 : 7.0) * F;      // wave 2 is faster
       for (let i = 0; i < 10; i++) {                                        // 10 spades, 36 deg apart
         const ang = i / 10 * Math.PI * 2, x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
-        const toC = Math.atan2(cy - y, cx - x);                            // mostly inward + slight tangential -> passes THROUGH the centre
-        const vx = Math.cos(toC) * spd - Math.sin(toC) * dir * spd * 0.28, vy = Math.sin(toC) * spd + Math.cos(toC) * dir * spd * 0.28;
+        const toC = Math.atan2(cy - y, cx - x);                            // PURE inward -> each spade drives straight THROUGH the centre and out the far side (no safe middle)
+        const vx = Math.cos(toC) * spd, vy = Math.sin(toC) * spd;
         add({ ...bulletProps('suitspade'), x, y, vx: 0, vy: 0, r: 6, grazeR: 15, scale: SC_SPADE32, spin: 0, rot: Math.atan2(vy, vx),   // points travel dir
               noHit: true, fireAt: 24 + i * 4, fireVX: vx, fireVY: vy, life: 24 + i * 4 + 200 });   // 0.4s tell, launch 0.06s apart, live long enough to cross + exit
       }
@@ -1032,7 +1032,8 @@ PATTERNS.jx_heartbomb = {   // Heart Bomb (HORIZONTAL): bomb-sprite hearts fly i
     const CYC = rate(48, tier);                                            // a bomb every 0.8s
     if (f % CYC === 0 && f < 300) {
       const k = f / CYC, left = (k % 2) === 0, dir = left ? 1 : -1;
-      const y = box.y + box.h * (0.2 + ((k * 53) % 100) / 100 * 0.6);      // random lane
+      const LANES = [0.12, 0.62, 0.37, 0.87, 0.25, 0.75, 0.5, 0.06, 0.94];  // fixed spread hits top, bottom & middle every run
+      const y = box.y + box.h * LANES[k % LANES.length];                    // no permanent safe zone anywhere vertically
       const bomb = { ...bulletProps('jbombheart0'), animKeys: ['jbombheart0', 'jbombheart1'], animRate: 8,
                      x: left ? box.x - 16 : box.x + box.w + 16, y, vx: dir * 4 * F, vy: 0, r: 6, grazeR: 11, scale: SC_BOMB, _burstX: left ? box.x + box.w * 0.35 : box.x + box.w * 0.65 };
       bomb.emit = function (b, out) {
@@ -1074,8 +1075,8 @@ PATTERNS.jx_diamond = {   // Diamond Shower. vertical diamond 12x16px | hurtbox 
     const { f, rng, box, add } = a;
     if (f < 290 && f % (f < 180 ? 5 : 4) === 0) {   // ~60% of the old rate
       const x = box.x + box.w * (0.05 + rng() * 0.9);
-      add({ ...bulletProps('suitdiamondv'), x, y: box.y + box.h - 6, vx: 0, vy: 0, r: 3, grazeR: 8, spin: 0, scale: SC_DIA,
-            noHit: true, redAt: 16, fireAt: 24, fireVX: 0, fireVY: -5.5 * F, life: 120 });   // solid diamond parks at bottom (0.4s tell, flashes red), then fires up
+      add({ ...bulletProps('suitdiamondv'), tint: '#fff', x, y: box.y + box.h - 6, vx: 0, vy: 0, r: 3, grazeR: 8, spin: 0, scale: SC_DIA,
+            noHit: true, fireAt: 24, fireVX: 0, fireVY: -5.5 * F, life: 120 });   // solid WHITE diamond parks at bottom as the tell (0.4s), then fires up
     }
   },
 };
@@ -1123,35 +1124,35 @@ PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep. grey scythe 64px + red 128p
     const sweeps = [[30, 0.25, 1], [108, 0.75, -1], [186, 0.25, 1], [264, 0.75, -1]];
     for (const [t, laneP, dir] of sweeps) if (f === t)
       add({ ...bulletProps('jdevilgiant'), tint: '#e83030', x: dir > 0 ? box.x - 70 : box.x + box.w + 70, y: box.y + box.h * laneP,
-            vx: dir * 8 * F, vy: 0, scale: SC_DEVILRED, spin: 0.1 * F, hitW: 72, hitH: 24, flip: dir < 0 });   // blade box 80x32
+            vx: dir * 8 * F, vy: 0, scale: SC_DEVILRED, spin: 0.1 * F, hitW: 52, hitH: 18, flip: dir < 0 });   // smaller red blade
   },
 };
-PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; giant scythe 160px/hb 120x40 + light beam;
-  dur: 760, box: { w: 160, h: 160 },   // ultimate 320px/hb 280x80 descends slowly, 30px safe zone; white flash.
+PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; devilsknife (same sprite as the orbiting set,
+  dur: 900, box: { w: 160, h: 160 },   // just bigger) -> full-height light beam; ends with a huge descending ultimate + white flash.
   tick(a) {
     const { f, rng, box, tier, add } = a;
     a.fx.arena = true;
     const gY = box.y + box.h - 8;
-    const drop = (x, vy) => {   // a GIANT scythe (160px) -> smashes into a full-height light beam (12px column)
-      const k = { ...bulletProps('jdevil'), x, y: box.y + 30, vx: 0, vy, spin: 0.04, scale: SC_DEVILGIANT, hitW: 112, hitH: 32, _gy: gY };
+    const drop = (x, vy) => {   // a scythe -> smashes into a full-height light beam (thick column)
+      const k = { ...bulletProps('jdevil'), x, y: box.y + 30, vx: 0, vy, spin: 0.04, scale: SC_DEVILGIANT, hitW: 58, hitH: 18, _gy: gY };
       k.emit = function (b, out) {
         if (b.y >= b._gy && !b._s) { b._s = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 40, thick: 12, armed: true, life: 24, dmg: b.dmg, vx: 0, vy: 0 });   // beam lingers 0.4s
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 40, thick: 26, armed: true, life: 24, dmg: b.dmg, vx: 0, vy: 0 });   // beam lingers 0.4s
           Snd.play('boarddmg', 0.3);
         }
       };
       add(k);
     };
-    if (f >= 30 && f < 240 && (f - 30) % 9 === 0) drop(box.x + 30 + rng() * (box.w - 60), 12 * F);   // PHASE 1: random rain every 0.15s @12px/f
-    const seq = f - 240;                                                                              // PHASE 2: edges -> centre, 0.2s apart
-    if (seq >= 0 && seq < 60 && seq % 12 === 0) {
-      const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / 12)];
+    if (f >= 30 && f < 420 && (f - 30) % 18 === 0) drop(box.x + 30 + rng() * (box.w - 60), 12 * F);   // PHASE 1: random rain every 0.3s @12px/f (doubled spacing)
+    const seq = f - 440;                                                                              // PHASE 2: edges -> centre, 0.4s apart (doubled)
+    if (seq >= 0 && seq < 120 && seq % 24 === 0) {
+      const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / 24)];
       if (pairs) for (const p of pairs) drop(box.x + box.w * p, 12 * F);
     }
-    // PHASE 3: the ULTIMATE scythe (320px, hurtbox 280x80) descends slowly over ~3s, stops with a 30px safe zone at the bottom
-    if (f === 470) add({ ...bulletProps('jdevil'), x: box.x + box.w / 2, y: box.y - 160, vx: 0, vy: 0,
-                         lerpY: box.y + box.h - 30 - 40, lerpRate: 0.016, spin: 0.02, scale: SC_DEVILULT, hitW: 280, hitH: 80, life: 300 });
-    if (f > 700) { a.fx.whiteout = Math.min(1, (f - 700) / 24); a.fx.shake = 8; }                     // white-flash ending
+    // PHASE 3: the ULTIMATE scythe (190px, hurtbox 150x46) descends over ~2.5s, stops with a 30px safe zone at the bottom
+    if (f === 580) add({ ...bulletProps('jdevil'), x: box.x + box.w / 2, y: box.y - 90, vx: 0, vy: 0,
+                         lerpY: box.y + box.h - 30 - 20, lerpRate: 0.035, spin: 0.02, scale: SC_DEVILULT, hitW: 150, hitH: 46, life: 320 });
+    if (f > 860) { a.fx.whiteout = Math.min(1, (f - 860) / 24); a.fx.shake = 8; }                     // white-flash ending (well after the ultimate is on-screen)
   },
 };
 
