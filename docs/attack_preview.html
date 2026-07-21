@@ -212,8 +212,9 @@ function makePlayer(canvas, spec) {
       if (b.carousel) {   // fake-3D carousel column (Jevil)
         const c = b.carousel; c.ang += c.w; const depth = Math.cos(c.ang);
         b.x = c.cx + Math.sin(c.ang)*c.R; b.y = c.rowY + Math.sin(c.ang*3 + c.phase)*c.bob;
-        b.scale = 0.62 + 0.5*(depth*0.5+0.5); b.noDraw = depth < 0.02; b.flip = depth < 0;
+        b.scale = 0.62 + 0.5*(depth*0.5+0.5); b._back = depth < 0.02; b.flip = depth < 0;
       } else if (b.orbit) { const o=b.orbit; o.ang += o.w; if(o.vx)o.cx+=o.vx; if(o.vy)o.cy+=o.vy;
+        if(o.center){ o.cx=o.center.cx0+o.center.ax*Math.sin(b.t*o.center.f); o.cy=o.center.cy0+o.center.ay*Math.cos(b.t*o.center.f); }
         if(o.pulse) o.R = o.pulse.base + o.pulse.amp*Math.sin(b.t*o.pulse.freq);
         b.x = o.cx + Math.cos(o.ang)*o.R; b.y = o.cy + Math.sin(o.ang)*o.R; }
       else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
@@ -270,6 +271,12 @@ function makePlayer(canvas, spec) {
       const info = A.manifest.bullets[FX.boss.key], im = info && A.img['assets/bullets/'+info.f];
       if (im && im.width) drawSpr(ctx, im, FX.boss.x, FX.boss.y, { scale: FX.boss.scale||1, flip: FX.boss.flip });
     }
+    // CAROUSEL far side: draw behind-the-box horses first, then a black box fill masks the inside part
+    const hasBack = bullets.some(b => b.carousel && b._back);
+    if (hasBack) {
+      for (const b of bullets) if (!b.dead && b.carousel && b._back) drawBullet(ctx, b, b.x, b.y, 1);
+      ctx.fillStyle = '#000'; ctx.fillRect(box.x, box.y, box.w, box.h);
+    }
     ctx.strokeStyle = '#3adb3a'; ctx.lineWidth = 2;
     if (FX.hideBox) { /* full-screen arena: no border */ }
     else if (FX.split && FX.split.offset > 0.5) {   // halves separate OUTWARD from the cut
@@ -283,7 +290,7 @@ function makePlayer(canvas, spec) {
     } else ctx.strokeRect(box.x, box.y, box.w, box.h);
     if (FX.faceBox) { const fb=FX.faceBox; ctx.strokeRect(fb.x, fb.y, fb.w, fb.h); }
     if (FX.arms) { ctx.strokeStyle='#49d049'; ctx.lineWidth=3; ctx.lineCap='round'; for (const arm of FX.arms){ ctx.beginPath(); ctx.moveTo(arm.x1,arm.y1); ctx.lineTo(arm.x2,arm.y2); ctx.stroke(); } }
-    for (const b of bullets) if (!b.dead && b.shape !== 'line') drawBullet(ctx, b, b.x, b.y, 1);
+    for (const b of bullets) if (!b.dead && b.shape !== 'line' && !(b.carousel && b._back)) drawBullet(ctx, b, b.x, b.y, 1);
     // red tell-lines are masked to the inside of the battle box
     ctx.save(); ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
     for (const b of bullets) if (!b.dead && b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);

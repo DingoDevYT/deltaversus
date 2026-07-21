@@ -2747,6 +2747,26 @@
 "f": "jdevilgiant.png",
 "w": 62,
 "h": 63
+},
+"jbombheart0": {
+"f": "jbombheart0.png",
+"w": 23,
+"h": 23
+},
+"jbombheart1": {
+"f": "jbombheart1.png",
+"w": 23,
+"h": 23
+},
+"jbombclub0": {
+"f": "jbombclub0.png",
+"w": 23,
+"h": 23
+},
+"jbombclub1": {
+"f": "jbombclub1.png",
+"w": 23,
+"h": 23
 }
 },
 "bullet_cost": {
@@ -2860,7 +2880,11 @@
 "suitdiamond": 1,
 "suitdiamondv": 1,
 "jdevil": 1,
-"jdevilgiant": 1
+"jdevilgiant": 1,
+"jbombheart0": 1,
+"jbombheart1": 1,
+"jbombclub0": 1,
+"jbombclub1": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

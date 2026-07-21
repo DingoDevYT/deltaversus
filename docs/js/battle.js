@@ -847,6 +847,7 @@ Battle.updDodge = function () {
     b.x += b.vx; b.y += b.vy;
     if (b.orbit) { const o = b.orbit; o.ang += o.w;
       if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;                                   // the orbit centre can drift
+      if (o.center) { o.cx = o.center.cx0 + o.center.ax * Math.sin(b.t * o.center.f); o.cy = o.center.cy0 + o.center.ay * Math.cos(b.t * o.center.f); }   // ...or wander so the centre isn't safe
       if (o.pulse) o.R = o.pulse.base + o.pulse.amp * Math.sin(b.t * o.pulse.freq);     // radius can breathe
       b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R; }
     if (b.carousel) updCarousel(b);   // fake-3D carousel column (Jevil)
@@ -971,6 +972,7 @@ Battle.tickMirror = function () {
       if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
       b.x += b.vx; b.y += b.vy;
       if (b.orbit) { const o = b.orbit; o.ang += o.w; if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;
+        if (o.center) { o.cx = o.center.cx0 + o.center.ax * Math.sin(b.t * o.center.f); o.cy = o.center.cy0 + o.center.ay * Math.cos(b.t * o.center.f); }
         if (o.pulse) o.R = o.pulse.base + o.pulse.amp * Math.sin(b.t * o.pulse.freq);
         b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R; }
       if (b.carousel) updCarousel(b);
@@ -1251,6 +1253,9 @@ Battle.renderBoxAndBullets = function (ctx) {
     const im = info && A.img['assets/bullets/' + info.f];
     if (im && im.width) drawSpr(ctx, im, bp.x, bp.y, { scale: bp.scale || 1, flip: bp.flip });
   }
+  // CAROUSEL far side: draw the behind-the-box horses BEFORE the box, so the box's black fill masks
+  // the part that's inside it (they render perfectly where they poke out past the box edges).
+  for (const b of B.bullets) if (b.carousel && b._back) drawBullet(ctx, b, b.x, b.y, 1);
   const split = B.fx && B.fx.split;
   if (B.fx && B.fx.hideBox) { /* full-screen arena: no border at all */ }
   else if (split && split.offset > 0.5) {
@@ -1288,7 +1293,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.fillRect(-4, -3, 3, 3); ctx.fillRect(1, -3, 3, 3); ctx.fillRect(-4, 0, 8, 3); ctx.fillRect(-2, 3, 4, 2);
     ctx.restore();
   }
-  for (const b of B.bullets) if (b.shape !== 'line') drawBullet(ctx, b, b.x, b.y, 1);
+  for (const b of B.bullets) if (b.shape !== 'line' && !(b.carousel && b._back)) drawBullet(ctx, b, b.x, b.y, 1);   // (back carousel horses already drawn behind the box)
   // red tell-lines are MASKED to the inside of the battle box (they stretch edge to edge)
   ctx.save(); ctx.beginPath(); ctx.rect(bx.x, bx.y, bx.w, bx.h); ctx.clip();
   for (const b of B.bullets) if (b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
@@ -1340,7 +1345,7 @@ function updCarousel(b) {
   b.x = c.cx + Math.sin(c.ang) * c.R;
   b.y = c.rowY + Math.sin(c.ang * 3 + c.phase) * c.bob;   // the whole column bobs together
   b.scale = 0.62 + 0.5 * (depth * 0.5 + 0.5);
-  b.noDraw = depth < 0.02;                                 // the far (behind-the-box) side is NOT drawn
+  b._back = depth < 0.02;                                  // the far side draws BEHIND the box (masked by it), not hidden
   b.noHit = depth < 0.12;                                  // only front-facing horses collide
   b.flip = depth < 0;                                      // face the way it's travelling
 }
