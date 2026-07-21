@@ -2707,6 +2707,36 @@
 "f": "jevilcast.png",
 "w": 46,
 "h": 48
+},
+"suitspade": {
+"f": "suitspade.png",
+"w": 20,
+"h": 19
+},
+"suitheart": {
+"f": "suitheart.png",
+"w": 18,
+"h": 18
+},
+"suitclub": {
+"f": "suitclub.png",
+"w": 20,
+"h": 20
+},
+"suitclubball": {
+"f": "suitclubball.png",
+"w": 14,
+"h": 14
+},
+"suitdiamond": {
+"f": "suitdiamond.png",
+"w": 20,
+"h": 12
+},
+"suitdiamondv": {
+"f": "suitdiamondv.png",
+"w": 14,
+"h": 24
 }
 },
 "bullet_cost": {
@@ -2812,7 +2842,13 @@
 "lancerbike3": 1,
 "lancerbike4": 1,
 "lancerbike5": 1,
-"jevilcast": 1
+"jevilcast": 1,
+"suitspade": 1,
+"suitheart": 1,
+"suitclub": 1,
+"suitclubball": 1,
+"suitdiamond": 1,
+"suitdiamondv": 1
 },
 "souls": {
 "yheart0": "yheart0.png",
