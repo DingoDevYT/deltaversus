@@ -1360,6 +1360,82 @@ PATTERNS.gerson_finale = {
   },
 };
 
+// ============================================================================
+// PINK — Ch5 idol boss (mew magical-girl). Rebuilt from real GML (30fps -> hz30). Real ripped
+// Ch5 sprites. NOTE: the real fight uses the PURPLE string-soul (grid/web movement) + DOKI/DATE
+// machinery; this v1 uses RED free-move as an approximation (purple-soul mode = follow-up).
+// ============================================================================
+const PS = g => g / 1.6;   // GML image_xscale -> our scale
+// TYPE 200 — CATS: cat bullets stream in from the sides in 3 rows (56px apart).
+PATTERNS.pink_cats = {
+  dur: 340, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 13 !== 0 || f > 300) return;
+    const side = rng() < 0.5 ? -1 : 1, lane = Math.floor(rng() * 3);
+    add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 30), y: cy + (lane - 1) * 52, vx: -side * 9, vy: 0, r: 8, grazeR: 13, scale: PS(2), spin: 0.05, dmg: 24, life: 170 });
+    if (rng() < 0.4) add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 7, vy: 0, r: 6, grazeR: 12, scale: PS(1.4), dmg: 20, life: 170 });
+    Snd.play('boardsummon', 0.25);
+  },
+};
+// TYPE 206 — PIÑATA BOMBS: fusebombs land on a 4x4 grid, then detonate into a row+column cross of beams.
+PATTERNS.pink_bombs = {
+  dur: 300, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f < 20 || f % 16 !== 0 || f > 260) return;
+    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx - 60 + gx * 40, y = cy - 60 + gy * 40;
+    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, r: 7, grazeR: 11, scale: PS(2.4), spin: 0.15, _fuse: 60, dmg: 20 };
+    bomb.emit = function (b, out) {
+      if (b.t >= b._fuse && !b._done) {
+        b._done = 1; b.dead = true; Snd.play('boardbomb', 0.35);
+        out.push({ ...bulletProps('pboom'), shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: 0, len: box.w * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
+        out.push({ shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: Math.PI / 2, len: box.h * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
+      }
+    };
+    add(bomb);
+  },
+};
+// TYPE 204 — BELL/CAT LANES: three vertical cat streams at cx-28/cx/cx+28, different rates.
+PATTERNS.pink_lanes = {
+  dur: 340, hz30: 1,
+  tick(a) {
+    const { f, box, add } = a; const cx = box.x + box.w / 2;
+    const lanes = [[7, -28, 1, 3.2], [10, 0, -1, 2.0], [36, 28, 1, 1.25]];   // [interval, xoff, dir(1=down/-1=up), speed]
+    for (const [intv, xo, dir, spd] of lanes) if (f % intv === 0 && f < 300) {
+      const y = dir === 1 ? box.y - 16 : box.y + box.h + 16;
+      add({ ...bulletProps('pcat'), x: cx + xo, y, vx: 0, vy: dir * spd * 2, r: 7, grazeR: 12, scale: PS(2), spin: 0.05, dmg: 22, life: 170 });
+    }
+    if (f % 44 === 0 && f < 300) add({ ...bulletProps('pbell'), x: cx, y: box.y - 18, vx: 0, vy: 3, r: 8, grazeR: 13, scale: PS(2), spin: 0.08, dmg: 22, life: 160 });
+  },
+};
+// TYPE 202 — ROTATING BOX: lane bullets fire inward from a rotating cardinal, with perpendicular offshoots.
+PATTERNS.pink_rotbox = {
+  dur: 300, hz30: 1,
+  tick(a) {
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 20 !== 0 || f < 20 || f > 260) return;
+    const dir = (Math.floor(f / 20) % 4) * 90, va = -dir * Math.PI / 180, D = box.w * 0.9;
+    const sx = cx - Math.cos(va) * D, sy = cy - Math.sin(va) * D;
+    add({ ...bulletProps('planeb'), x: sx, y: sy, vx: Math.cos(va) * 8, vy: Math.sin(va) * 8, rot: va, r: 7, grazeR: 12, scale: PS(2), dmg: 24, life: 130 });
+    const px = Math.cos(va + Math.PI / 2) * 52, py = Math.sin(va + Math.PI / 2) * 52;
+    for (const s of [-1, 1]) add({ ...bulletProps('plane'), x: sx + px * s, y: sy + py * s, vx: Math.cos(va) * 8, vy: Math.sin(va) * 8, rot: va, r: 6, grazeR: 11, scale: PS(1.7), dmg: 20, life: 130 });
+    Snd.play('boardsummon', 0.25);
+  },
+};
+// TYPE 209 — SINGING (ult, idol concert): cats from the sides + bells raining + a doki flourish finale.
+PATTERNS.pink_idol = {
+  dur: 460, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 10 === 0 && f < 400) { const side = rng() < 0.5 ? -1 : 1;
+      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 9, vy: 0, r: 7, grazeR: 12, scale: PS(2), spin: 0.05, dmg: 22, life: 170 }); }
+    if (f % 16 === 8 && f < 400) add({ ...bulletProps('pbell'), x: box.x + rng() * box.w, y: box.y - 18, vx: 0, vy: 4, r: 7, grazeR: 12, scale: PS(2), spin: 0.1, dmg: 22, life: 160 });
+    if (f === 410) { for (let i = 0; i < 16; i++) { const ang = i / 16 * 6.28; add({ ...bulletProps('pdoki'), x: cx, y: cy, vx: Math.cos(ang) * 5, vy: Math.sin(ang) * 5, rot: ang, r: 6, grazeR: 11, scale: PS(1.6), dmg: 24, life: 130 }); } Snd.play('boardbomb', 0.5); }
+    if (f > 430) a.fx.shake = 6;
+  },
+};
+
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';

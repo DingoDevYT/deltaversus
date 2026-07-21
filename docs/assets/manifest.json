@@ -2313,6 +2313,152 @@
 90
 ]
 }
+},
+"pink": {
+"idle": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"attack": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"spell": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"act": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"defend": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"hurt": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"item": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"victory": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+},
+"downed": {
+"frames": [
+"idle_0.png",
+"idle_1.png",
+"idle_2.png",
+"idle_3.png",
+"idle_4.png"
+],
+"durs": [
+120,
+120,
+120,
+120,
+120
+]
+}
 }
 },
 "bullets": {
@@ -3130,6 +3276,41 @@
 "f": "gshield.png",
 "w": 13,
 "h": 61
+},
+"pcat": {
+"f": "pcat.png",
+"w": 19,
+"h": 21
+},
+"pdoki": {
+"f": "pdoki.png",
+"w": 24,
+"h": 22
+},
+"pbomb": {
+"f": "pbomb.png",
+"w": 10,
+"h": 11
+},
+"plane": {
+"f": "plane.png",
+"w": 19,
+"h": 19
+},
+"planeb": {
+"f": "planeb.png",
+"w": 19,
+"h": 10
+},
+"pbell": {
+"f": "pbell.png",
+"w": 22,
+"h": 22
+},
+"pboom": {
+"f": "pboom.png",
+"w": 16,
+"h": 24
 }
 },
 "bullet_cost": {
@@ -3258,7 +3439,14 @@
 "gbell": 1,
 "ggiant": 1,
 "gswdown": 1,
-"gshield": 1
+"gshield": 1,
+"pcat": 1,
+"pdoki": 1,
+"pbomb": 1,
+"plane": 1,
+"planeb": 1,
+"pbell": 1,
+"pboom": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

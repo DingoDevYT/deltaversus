@@ -721,7 +721,7 @@ Battle.startDodge = function () {
   B.shieldAng = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = [];
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
   // are correct as-written; we render at 60Hz (bullets step every 2nd frame = authentic choppy motion).
-  B.hz30 = oppAtkers.length === 1 && (/^(gerson|jevil)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
+  B.hz30 = oppAtkers.length === 1 && (/^(gerson|jevil|pink)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
   B._hzTick = false;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
