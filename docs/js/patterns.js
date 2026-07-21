@@ -1182,6 +1182,193 @@ PATTERNS.green_test = {
   },
 };
 
+// ============================================================================
+// GERSON BOOM — Hammer of Justice / Sound of Justice (Ch4). Real ripped sprites.
+// Doc runs at 60 FPS so tick values map 1:1 to our 60Hz frames (no F halving).
+// #7 & #8 use the GREEN SOUL engine (a.fx.greenSoul); the rest are RED (free move).
+// ============================================================================
+const GSC = (nat, disp) => disp / (nat * 1.6);   // display-px -> scale for Gerson sprites
+
+// #1 Shell Pinball & Kick Finale: a shell ricochets; side-wall hits re-aim it at the SOUL; the
+// 7th kick sends it up, then it slams straight down into a 28-star bottom-edge starburst.
+PATTERNS.gerson_shell = {
+  dur: 360, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, soul } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f !== 0) return;
+    const a0 = Math.atan2(soul.y - cy, soul.x - (box.x + box.w + 18));
+    const shell = { ...bulletProps('gshell'), x: box.x + box.w + 18, y: cy, vx: Math.cos(a0) * 12, vy: Math.sin(a0) * 12, r: 9, grazeR: 14, scale: GSC(45, 26), spin: 0.4, _kicks: 0, _phase: 0 };
+    shell.emit = function (b, out, s) {
+      const L = box.x + 8, R = box.x + box.w - 8, T = box.y + 8, Bt = box.y + box.h - 8;
+      if (b._phase === 0) {
+        if (b.y < T) { b.y = T; b.vy = Math.abs(b.vy); }
+        else if (b.y > Bt) { b.y = Bt; b.vy = -Math.abs(b.vy); }
+        if (b.x < L || b.x > R) {
+          b.x = b.x < L ? L : R; b._kicks++;
+          if (b._kicks >= 7) { const ang = Math.atan2((cy - 70) - b.y, cx - b.x); b.vx = Math.cos(ang) * 10; b.vy = Math.sin(ang) * 10; b._phase = 1; }
+          else { const ang = Math.atan2(s.y - b.y, s.x - b.x); b.vx = Math.cos(ang) * 13; b.vy = Math.sin(ang) * 13; }
+          Snd.play('boarddmg', 0.25);
+        }
+      } else if (b._phase === 1) {                    // rose to the top -> straight-down slam
+        if (b.y <= cy - 55 || b.x < L || b.x > R) { b.x = Math.max(L, Math.min(R, b.x)); b.vx = 0; b.vy = 30; b._phase = 2; }
+      } else if (b._phase === 2) {
+        if (b.y >= Bt) {                              // IMPACT -> 28-star starburst in 4 arcs
+          b.dead = true; Battle.shake = 16; Snd.play('boardbomb', 0.5);
+          const arcs = [[4, 0, 12.0, 0.535, 4], [10, 24, 13.25, 0.5, 7], [8, 0, 14.5, 0.465, 6], [6, -24, 15.75, 0.43, 5]];
+          for (const [n, xo, sp, grav, spr] of arcs) for (let i = 0; i < n; i++) {
+            const ang = -Math.PI / 2 + (n > 1 ? (i / (n - 1) - 0.5) * 2 * spr * Math.PI / 180 : 0);
+            out.push({ ...bulletProps('gstar7'), x: b.x + xo, y: Bt, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, ay: grav, r: 6, grazeR: 12, scale: GSC(16, 16), spin: 0.2, life: 140, dmg: b.dmg });
+          }
+        }
+      }
+    };
+    add(shell);
+  },
+};
+// #2 Hammer Bounce Cascade: 5 hammers thrown across, bounce off the far wall and arc; then Gerson
+// rains hammers down at the SOUL that bounce off the floor.
+PATTERNS.gerson_hammercascade = {
+  dur: 420, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, soul } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, L = box.x + 8, Bt = box.y + box.h - 8;
+    if ([42, 72, 98, 120, 138].includes(f)) {         // PHASE 0: horizontal throws, accelerating cadence
+      const h = { ...bulletProps('ghammer'), x: box.x + box.w + 16, y: cy + (a.rng() * 60 - 30), vx: -15, vy: 0, r: 8, grazeR: 13, scale: GSC(23, 28), spin: -0.5 };
+      h.emit = function (b) {
+        if (b.x <= L && !b._b) { b._b = 1; b.vx = 4; b.vy = -12; b.ay = 0.6; Snd.play('boarddmg', 0.3); }
+        if (b.ay && b.y > Bt) { b.y = Bt; b.vy = -Math.abs(b.vy) * 0.6; }
+      };
+      add(h);
+    }
+    if (f >= 180 && f < 390 && (f - 180) % 25 === 0) { // PHASE 2: downward rain, floor bounce
+      const ang = Math.atan2(soul.y - (box.y - 20), soul.x - cx);
+      const h = { ...bulletProps('ghammerd'), x: cx, y: box.y - 20, vx: Math.cos(ang) * 14, vy: Math.max(5, Math.sin(ang) * 14), r: 8, grazeR: 13, scale: GSC(23, 26), spin: 0.4 };
+      h.emit = function (b) { if (b.y >= Bt && !b._fl) { b._fl = 1; b.vy = -20; b.ay = 1.2; Snd.play('boarddmg', 0.3); } };
+      add(h);
+    }
+  },
+};
+// #3 Hammer Bro Toss: Gerson leaps side to side overhead, lobbing arcing hammers into the box.
+PATTERNS.gerson_hammerbro = {
+  dur: 280, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, soul } = a;
+    const cx = box.x + box.w / 2;
+    if (f < 30 || f > 250 || f % 7 !== 0) return;
+    const gx = cx + Math.sin(f / 24) * 55;            // overhead leaping position
+    let vx = (soul.x - gx) / 40; vx = Math.max(-4, Math.min(4, vx));   // slight lock toward the soul
+    add({ ...bulletProps('ghammer'), x: gx, y: box.y - 14, vx, vy: -3, ay: 0.55, r: 7, grazeR: 12, scale: GSC(23, 26), spin: 0.3, life: 170, dmg: 14 });
+  },
+};
+// #4 Box Rumble & Wall Slams (FIGHT): alternating wall slams fire a 7-bullet column across the box;
+// some pellets are faster than others, so the gap to slip through drifts.
+PATTERNS.gerson_boxrumble = {
+  dur: 300, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, rng } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = 40;
+    if (f % GAP !== 0 || f >= 7 * GAP) return;
+    const k = f / GAP, left = k % 2 === 0, dir = left ? 1 : -1, wx = left ? cx - 70 : cx + 70;
+    const fast = new Set(); while (fast.size < 3 + Math.floor(rng() * 2)) fast.add(Math.floor(rng() * 7));
+    Snd.play('stardrop', 0.4);
+    for (let i = 0; i < 7; i++)
+      add({ x: wx, y: cy - 69 + 23 * i, vx: (fast.has(i) ? 6 : 3.2) * dir, vy: 0, r: 5, grazeR: 11, color: '#fff', dmg: 12 });
+  },
+};
+// #5 Double Bell Resonance: two bells hang at the sides; a strike releases either a radial arc burst
+// or a 5-lane horizontal grid with one empty safe lane.
+PATTERNS.gerson_bells = {
+  dur: 400, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, rng } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = 95;
+    if (f === 0) for (const sx of [cx - 100, cx + 100])
+      add({ ...bulletProps('gbell'), x: sx, y: cy - 24, vx: 0, vy: 0, r: 0, noHit: true, scale: GSC(120, 92), life: 400 });
+    if (f % GAP !== 20 || f >= 4 * GAP) return;
+    const k = Math.floor(f / GAP), left = k % 2 === 0, radial = k < 2, bx = left ? cx - 96 : cx + 96;
+    Snd.play('stardrop', 0.4);
+    if (radial) {
+      const n = 7 + Math.floor(rng() * 5), base = left ? 0 : Math.PI;
+      for (let i = 0; i < n; i++) { const ang = base + (i / (n - 1) - 0.5) * (Math.PI * 0.8);
+        add({ ...bulletProps('gstar'), x: bx + (left ? 20 : -20), y: cy + 20, vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5, r: 6, grazeR: 12, scale: GSC(30, 18), spin: 0.15, life: 150, dmg: 16 });
+      }
+    } else {
+      const lanes = [-60, -30, 0, 30, 60], gap = Math.floor(rng() * 5), dir = left ? 1 : -1, sx = left ? cx - 80 : cx + 80;
+      for (let i = 0; i < 5; i++) { if (i === gap) continue;
+        add({ ...bulletProps('gstar'), x: sx, y: cy + lanes[i], vx: 5 * dir, vy: 0, r: 6, grazeR: 12, scale: GSC(30, 18), spin: 0.1, life: 130, dmg: 16 });
+      }
+    }
+  },
+};
+// #6 Telegraph Slashes & Growtangle Cut: a red mask covers a slice of the box, then Gerson slashes
+// through it. Half-cuts and diagonals via thick tell->cut lines.
+PATTERNS.gerson_slashes = {
+  dur: 320, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const SEQ = [[40, 0], [92, 1], [144, 2], [196, 3], [248, 4]];   // L half, R half, top half, bottom half, diagonal
+    for (const [t, kind] of SEQ) { if (f !== t) continue;
+      if (kind < 4) {
+        const horiz = kind >= 2, off = (kind % 2 === 0) ? -38 : 38;
+        add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.6, thick: 60,
+              x: horiz ? cx : cx + off, y: horiz ? cy + off : cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 26, armWindow: 6, dmg: 24 });
+      } else add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.6, thick: 46, x: cx, y: cy, rot: Math.PI / 4, vx: 0, vy: 0, tellT: 26, armWindow: 6, dmg: 24, shakeOnCut: true });
+    }
+  },
+};
+// #7 Giant Hammer / Shield Crush (GREEN SOUL): a giant hammer winds up on one cardinal side, then
+// swings toward centre. Face the shield that way to block (handled by the green-soul engine).
+PATTERNS.gerson_gianthammer = {
+  dur: 400, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add, rng } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    a.fx.greenSoul = true;
+    if (f % 70 !== 10 || f >= 5 * 70) return;
+    const ang = Math.floor(rng() * 4) * Math.PI / 2, D = 150;
+    add({ ...bulletProps('ggiant'), x: cx + Math.cos(ang) * D, y: cy + Math.sin(ang) * D, vx: 0, vy: 0, r: 16, scale: GSC(92, 110), rot: ang + Math.PI, spin: 0,
+          noHit: true, fireAt: 34, fireVX: -Math.cos(ang) * 12, fireVY: -Math.sin(ang) * 12, dmg: 40, life: 120 });
+  },
+};
+// #8 Spear Shot Rhythm & Green Switch (GREEN SOUL): green chevrons fire inward from the cardinals in
+// rhythmic sequences; rotate the shield to face each one.
+PATTERNS.gerson_spearshot = {
+  dur: 380, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    a.fx.greenSoul = true;
+    const shoot = (d) => { const ang = d * Math.PI / 2, D = 120;
+      add({ ...bulletProps('gchevron'), x: cx + Math.cos(ang) * D, y: cy + Math.sin(ang) * D,
+            vx: -Math.cos(ang) * 6, vy: -Math.sin(ang) * 6, ax: -Math.cos(ang) * 0.25, ay: -Math.sin(ang) * 0.25,
+            r: 8, scale: GSC(22, 20), rot: ang + Math.PI, dmg: 16, life: 80 });
+      Snd.play('smallswing', 0.4); };
+    // 0=right 1=down 2=left 3=up.  3-Left -> 3-Right, then alternating, then a quad stream.
+    const SEQ = [[20, 2], [44, 2], [68, 2], [92, 0], [116, 0], [140, 0], [176, 2], [200, 0], [222, 2], [244, 0], [274, 2], [292, 3], [310, 0], [328, 3]];
+    for (const [t, d] of SEQ) if (f === t) shoot(d);
+  },
+};
+// #9 Whistle Cane Orbit & Corner Bounces: the cane leaps to top-centre then rebounds between the four
+// corners of the box. The exact centre stays safe throughout.
+PATTERNS.gerson_cane = {
+  dur: 210, box: { w: 150, h: 150 },
+  tick(a) {
+    const { f, box, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f !== 0) return;
+    const wp = [[cx, box.y - 55, 0], [cx + 45, cy - 45, 73], [cx - 45, cy - 45, 101], [cx - 45, cy + 45, 129], [cx + 45, cy + 45, 157]];
+    const cane = { ...bulletProps('gcane'), x: cx, y: box.y - 80, vx: 0, vy: 0, r: 8, grazeR: 13, scale: GSC(20, 30), spin: 0.6, _wp: wp, life: 205, dmg: 20 };
+    cane.emit = function (b) {
+      const wp = b._wp; let ti = 0;
+      for (let k = 0; k < wp.length; k++) if (b.t >= wp[k][2]) ti = k;
+      b.x += (wp[ti][0] - b.x) * 0.18; b.y += (wp[ti][1] - b.y) * 0.18;
+    };
+    add(cane);
+  },
+};
+
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';

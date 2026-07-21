@@ -166,6 +166,31 @@ const CHARS = {
     ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 110, dur: 860, kind: 'attack',
            text: 'THE KNIGHT lets out a ROAR!!' },
   },
+  gerson: {
+    name: 'GERSON', color: '#5bb84a', hp: 1400, cost: 3, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
+    dscale: 1.15, yoff: 4,
+    desc: 'GERSON BOOM - the HAMMER OF JUSTICE.\nGREEN SOUL spells: BLOCK, don\'t dodge!',
+    fight: { id: 'gerson_boxrumble', name: 'Box Rumble', dmg: 24, dur: 300,
+             text: 'GERSON RUMBLES the box!' },
+    spells: [
+      { id: 'gerson_shell', name: 'Shell Pinball', tp: 42, dmg: 34, dur: 360, kind: 'attack',
+        text: 'GERSON kicks a SHELL!' },
+      { id: 'gerson_hammercascade', name: 'Hammer Cascade', tp: 44, dmg: 34, dur: 420, kind: 'attack',
+        text: 'GERSON hurls BOUNCING HAMMERS!' },
+      { id: 'gerson_hammerbro', name: 'Hammer Bro Toss', tp: 40, dmg: 30, dur: 280, kind: 'attack',
+        text: 'GERSON leaps and lobs HAMMERS!' },
+      { id: 'gerson_bells', name: 'Double Bell', tp: 44, dmg: 32, dur: 400, kind: 'attack',
+        text: 'GERSON rings the BELLS!' },
+      { id: 'gerson_slashes', name: 'Telegraph Slashes', tp: 48, dmg: 40, dur: 320, kind: 'attack',
+        text: 'GERSON telegraphs a SLASH!' },
+      { id: 'gerson_cane', name: 'Whistle Cane', tp: 38, dmg: 30, dur: 210, kind: 'attack',
+        text: 'GERSON\'s CANE whistles and spins!' },
+      { id: 'gerson_spearshot', name: 'Spear Shot (GREEN)', tp: 48, dmg: 30, dur: 380, kind: 'attack',
+        text: 'GREEN SOUL! BLOCK the SPEARS!' },
+    ],
+    ult: { id: 'gerson_gianthammer', name: 'Giant Hammer (GREEN)', tp: 100, dmg: 80, dur: 400, kind: 'attack',
+           text: 'GREEN SOUL! BLOCK the HAMMER OF JUSTICE!!' },
+  },
 };
 // party-cost + darkner + level/spare defaults
 for (const id in CHARS) {
@@ -213,7 +238,7 @@ const ARCH_IDS = Object.keys(ARCHETYPES);
 // which base models are enemy-facing (sprite drawn mirrored vs the party)
 // bases whose battle sprites were ripped as ENEMIES (facing left by default),
 // so they must be flipped relative to the party members.
-const ENEMY_FACING = { lancer: true, berdly: true, jevil: true, spamton: true, knight: true };
+const ENEMY_FACING = { lancer: true, berdly: true, jevil: true, spamton: true, knight: true, gerson: true };
 
 // weapon = quick-start: default projectile + preset for your FIGHT emitter
 const WEAPONS = {

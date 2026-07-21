@@ -990,6 +990,7 @@ Battle.updDodge = function () {
     const rectHit = b.hitW && Math.abs(b.x + (b.hitDX || 0) - B.soul.x) < b.hitW / 2 + SOUL_R && Math.abs(b.y - B.soul.y) < b.hitH / 2 + SOUL_R;
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
     if (lineHit || rectHit || (!b.hitW && b.shape !== 'line' && dist < (b.r || 6) + SOUL_R)) {
+      if (b.transform) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.flash = 6; Snd.play('hurt', 0.4); continue; }   // Hammer's red<->green transform bullet
       if (B.iframes <= 0) {
         const tgtDef = (b.target != null && B.myTeam[b.target] && B.myTeam[b.target].action && B.myTeam[b.target].action.cmd === 'defend');
         const guard = B.myGuardBuff > 0 ? 0.5 : 1;   // Northernlight damage shield
