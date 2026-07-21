@@ -1086,7 +1086,8 @@
 "sneoover": "sneoover.wav",
 "jokerchaos": "jokerchaos.wav",
 "jokerlaugh": "jokerlaugh.wav",
-"jokerha": "jokerha.wav"
+"jokerha": "jokerha.wav",
+"lancerhonk": "lancerhonk.wav"
 },
 "music": {
 "attack_of_the_killer_queen_queen": "attack_of_the_killer_queen_queen.mp3",
@@ -1998,32 +1999,10 @@
 "knight": {
 "idle": {
 "frames": [
-"idle_0.png",
-"idle_1.png",
-"idle_2.png",
-"idle_3.png",
-"idle_4.png",
-"idle_5.png",
-"idle_6.png",
-"idle_7.png",
-"idle_8.png",
-"idle_9.png",
-"idle_10.png",
-"idle_11.png"
+"idle_0.png"
 ],
 "durs": [
-70,
-70,
-70,
-70,
-70,
-70,
-70,
-70,
-70,
-70,
-70,
-70
+150
 ]
 }
 }
@@ -2481,13 +2460,13 @@
 },
 "knightroar0": {
 "f": "knightroar0.png",
-"w": 96,
-"h": 110
+"w": 66,
+"h": 75
 },
 "knightroar1": {
 "f": "knightroar1.png",
-"w": 99,
-"h": 110
+"w": 66,
+"h": 75
 },
 "knighttooth": {
 "f": "knighttooth.png",
@@ -2498,6 +2477,236 @@
 "f": "knightknife.png",
 "w": 44,
 "h": 12
+},
+"knightflourish0": {
+"f": "knightflourish0.png",
+"w": 66,
+"h": 77
+},
+"knightflourish1": {
+"f": "knightflourish1.png",
+"w": 66,
+"h": 77
+},
+"knightflourish2": {
+"f": "knightflourish2.png",
+"w": 66,
+"h": 77
+},
+"knightflourish3": {
+"f": "knightflourish3.png",
+"w": 66,
+"h": 77
+},
+"knightflourish4": {
+"f": "knightflourish4.png",
+"w": 66,
+"h": 77
+},
+"knightflourish5": {
+"f": "knightflourish5.png",
+"w": 66,
+"h": 77
+},
+"knightflourish6": {
+"f": "knightflourish6.png",
+"w": 66,
+"h": 77
+},
+"knightslashf0": {
+"f": "knightslashf0.png",
+"w": 125,
+"h": 132
+},
+"knightslashf1": {
+"f": "knightslashf1.png",
+"w": 125,
+"h": 132
+},
+"knightslashf2": {
+"f": "knightslashf2.png",
+"w": 125,
+"h": 132
+},
+"knightslashf3": {
+"f": "knightslashf3.png",
+"w": 125,
+"h": 132
+},
+"knightslashf4": {
+"f": "knightslashf4.png",
+"w": 125,
+"h": 132
+},
+"knightslashf5": {
+"f": "knightslashf5.png",
+"w": 125,
+"h": 132
+},
+"knightswordol": {
+"f": "knightswordol.png",
+"w": 46,
+"h": 19
+},
+"rkflame0": {
+"f": "rkflame0.png",
+"w": 56,
+"h": 37
+},
+"rkflame1": {
+"f": "rkflame1.png",
+"w": 56,
+"h": 37
+},
+"rkflame2": {
+"f": "rkflame2.png",
+"w": 56,
+"h": 37
+},
+"rkflame3": {
+"f": "rkflame3.png",
+"w": 56,
+"h": 37
+},
+"rkflame4": {
+"f": "rkflame4.png",
+"w": 56,
+"h": 37
+},
+"rkflame5": {
+"f": "rkflame5.png",
+"w": 56,
+"h": 37
+},
+"rkflamebig0": {
+"f": "rkflamebig0.png",
+"w": 72,
+"h": 48
+},
+"rkflamebig1": {
+"f": "rkflamebig1.png",
+"w": 72,
+"h": 48
+},
+"rkflamebig2": {
+"f": "rkflamebig2.png",
+"w": 72,
+"h": 48
+},
+"rkflamebig3": {
+"f": "rkflamebig3.png",
+"w": 72,
+"h": 48
+},
+"rkflamebig4": {
+"f": "rkflamebig4.png",
+"w": 72,
+"h": 48
+},
+"rkflamebig5": {
+"f": "rkflamebig5.png",
+"w": 72,
+"h": 48
+},
+"rkflameedge0": {
+"f": "rkflameedge0.png",
+"w": 44,
+"h": 29
+},
+"rkflameedge1": {
+"f": "rkflameedge1.png",
+"w": 44,
+"h": 29
+},
+"rkflameedge2": {
+"f": "rkflameedge2.png",
+"w": 44,
+"h": 29
+},
+"rkflameedge3": {
+"f": "rkflameedge3.png",
+"w": 44,
+"h": 29
+},
+"rkflameedge4": {
+"f": "rkflameedge4.png",
+"w": 44,
+"h": 29
+},
+"jspade": {
+"f": "jspade.png",
+"w": 18,
+"h": 18
+},
+"carousel0": {
+"f": "carousel0.png",
+"w": 36,
+"h": 29
+},
+"carousel1": {
+"f": "carousel1.png",
+"w": 36,
+"h": 29
+},
+"carousel2": {
+"f": "carousel2.png",
+"w": 36,
+"h": 29
+},
+"aplus0": {
+"f": "aplus0.png",
+"w": 20,
+"h": 15
+},
+"aplus1": {
+"f": "aplus1.png",
+"w": 20,
+"h": 15
+},
+"aplus2": {
+"f": "aplus2.png",
+"w": 20,
+"h": 15
+},
+"aplus3": {
+"f": "aplus3.png",
+"w": 20,
+"h": 15
+},
+"lancerbike0": {
+"f": "lancerbike0.png",
+"w": 54,
+"h": 41
+},
+"lancerbike1": {
+"f": "lancerbike1.png",
+"w": 54,
+"h": 41
+},
+"lancerbike2": {
+"f": "lancerbike2.png",
+"w": 54,
+"h": 41
+},
+"lancerbike3": {
+"f": "lancerbike3.png",
+"w": 54,
+"h": 41
+},
+"lancerbike4": {
+"f": "lancerbike4.png",
+"w": 54,
+"h": 41
+},
+"lancerbike5": {
+"f": "lancerbike5.png",
+"w": 54,
+"h": 41
+},
+"jevilcast": {
+"f": "jevilcast.png",
+"w": 46,
+"h": 48
 }
 },
 "bullet_cost": {
@@ -2555,7 +2764,55 @@
 "knightsword": 1,
 "knighttri": 1,
 "sneophone": 2,
-"sneocrew": 1
+"sneocrew": 1,
+"knightflourish0": 1,
+"knightflourish1": 1,
+"knightflourish2": 1,
+"knightflourish3": 1,
+"knightflourish4": 1,
+"knightflourish5": 1,
+"knightflourish6": 1,
+"knightroar0": 1,
+"knightroar1": 1,
+"knightslashf0": 1,
+"knightslashf1": 1,
+"knightslashf2": 1,
+"knightslashf3": 1,
+"knightslashf4": 1,
+"knightslashf5": 1,
+"knightswordol": 1,
+"rkflame0": 1,
+"rkflame1": 1,
+"rkflame2": 1,
+"rkflame3": 1,
+"rkflame4": 1,
+"rkflame5": 1,
+"rkflamebig0": 1,
+"rkflamebig1": 1,
+"rkflamebig2": 1,
+"rkflamebig3": 1,
+"rkflamebig4": 1,
+"rkflamebig5": 1,
+"rkflameedge0": 1,
+"rkflameedge1": 1,
+"rkflameedge2": 1,
+"rkflameedge3": 1,
+"rkflameedge4": 1,
+"jspade": 1,
+"carousel0": 2,
+"carousel1": 2,
+"carousel2": 2,
+"aplus0": 1,
+"aplus1": 1,
+"aplus2": 1,
+"aplus3": 1,
+"lancerbike0": 1,
+"lancerbike1": 1,
+"lancerbike2": 1,
+"lancerbike3": 1,
+"lancerbike4": 1,
+"lancerbike5": 1,
+"jevilcast": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

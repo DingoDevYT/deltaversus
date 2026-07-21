@@ -77,7 +77,7 @@ const CHARS = {
       { id: 'noelle_ice', name: 'Ice Shock', tp: 8, dmg: 22, dur: 460, kind: 'attack',
         text: 'NOELLE casts ICE SHOCK!' },
     ],
-    ult: { id: 'snowgrave', name: 'SNOWGRAVE', tp: 100, dmg: 60, dur: 600, kind: 'attack',
+    ult: { id: 'snowgrave', name: 'SNOWGRAVE', tp: 100, dmg: 1000, dur: 170, kind: 'attack',
            snowgrave: true, text: 'NOELLE casts the forbidden SNOWGRAVE...' },
   },
   lancer: {
@@ -91,8 +91,8 @@ const CHARS = {
       { id: 'lancer_bike', name: 'Bike Charge', tp: 45, dmg: 42, dur: 480, kind: 'attack', darkReq: 51,
         text: 'LANCER rides through on his hog!' },
     ],
-    ult: { id: 'lancer_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 48, dur: 560, kind: 'attack', darkReq: 85,
-           text: 'LANCER spins like the DEVILSKNIFE!!' },
+    ult: { id: 'lancer_ult', name: 'SPECIAL BAD GUY ATTACK', tp: 100, dmg: 48, dur: 600, kind: 'attack', darkReq: 85,
+           text: 'LANCER unleashes his SPECIAL BAD GUY ATTACK!! Ho ho ho!!' },
     act: { id: 'act_praise', name: 'Praise', kind: 'mercy', mercy: 26, text: 'KRIS praises LANCER! He grins. Ho ho ho!' },
   },
   berdly: {
@@ -143,10 +143,10 @@ const CHARS = {
         text: 'SPAMTON NEO delivers SPAM MAIL!' },
       { id: 'sneo_phones', name: 'Gripping Phones', tp: 56, dmg: 34, dur: 500, kind: 'attack',
         text: 'SPAMTON NEO GRIPS the PHONES!' },
-      { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 36, dur: 520, kind: 'attack',
+      { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 48, dur: 520, kind: 'attack',
         text: 'SPAMTON NEO shows his [[FACE]]!' },
     ],
-    ult: { id: 'sneo_bigshot', name: 'BIG SHOT', tp: 100, dmg: 50, dur: 640, kind: 'attack',
+    ult: { id: 'sneo_bigshot', name: 'BIG SHOT', tp: 100, dmg: 50, dur: 900, kind: 'attack',
            text: 'SPAMTON NEO: [[NOW\'S YOUR CHANCE TO BE A]] BIG SHOT!!' },
   },
   knight: {
@@ -158,12 +158,12 @@ const CHARS = {
     spells: [
       { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 56, dur: 560, kind: 'attack',
         text: 'THE KNIGHT aims SWORDS at you!' },
-      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 660, kind: 'attack',
+      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 820, kind: 'attack',
         text: 'THE KNIGHT carves RED SLASHES!' },
       { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 64, dur: 560, kind: 'attack',
         text: 'THE KNIGHT BREAKS THE BOARD!' },
     ],
-    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 90, dur: 820, kind: 'attack',
+    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 90, dur: 860, kind: 'attack',
            text: 'THE KNIGHT lets out a ROAR!!' },
   },
 };

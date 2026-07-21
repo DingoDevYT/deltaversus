@@ -15,7 +15,7 @@ const Battle = {};
 // ---------- team helpers ----------
 function mkMember(sel) {
   const def = charDef(sel);
-  return { sel, def, hp: def.hp, max: def.hp, downed: false, spared: false,
+  return { sel, def, hp: def.hp, max: def.hp, downed: false, spared: false, frozen: false,
            mercy: 0, tiredFlag: false,   // mercy = how close YOU are to sparing this foe
            action: null, tier: null, pose: 'idle', poseT: 0,
            dark: 0 };   // darkness/CHARGE meter (darkners only)
@@ -161,7 +161,7 @@ Battle.onMsg = function (m) {
     if (m.done) B.mirror = null;
     else if (B.mirror) B.mirror.target = Math.max(B.mirror.target, m.f || 0);
   } else if (m.t === 'spare') { const mm = B.myTeam[m.mi]; if (mm && !isOut(mm)) { mm.spared = true; mm.pose = 'idle'; mm.poseT = 0; } }
-  else if (m.t === 'snowgrave') { for (const mm of B.myTeam) { mm.hp = 0; mm.downed = true; mm.pose = 'downed'; mm.poseT = 0; } }
+  else if (m.t === 'snowgrave') { applySnowgrave(B.myTeam, m.mi); }
   else if (m.t === 'rematch') B.rematchOpp = true;
 };
 
@@ -608,7 +608,7 @@ Battle.startDodge = function () {
       if (it) {
         // items can target downed allies too (heal is added to their negative balance)
         const tgt = (a.tside === 'ally' && B.myTeam[a.target]) ? B.myTeam[a.target] : m;
-        if (it.revivePct) { tgt.hp = Math.max(tgt.hp, Math.round(tgt.max * it.revivePct)); if (tgt.downed) { tgt.downed = false; tgt.pose = 'idle'; tgt.poseT = 0; } }  // revive items bypass the debt, never lower HP
+        if (it.revivePct) { if (!tgt.frozen) { tgt.hp = Math.max(tgt.hp, Math.round(tgt.max * it.revivePct)); if (tgt.downed) { tgt.downed = false; tgt.pose = 'idle'; tgt.poseT = 0; } } }  // revive items bypass the debt, never lower HP - but NOT frozen (SNOWGRAVE)
         else healHP(tgt, it.heal || 0);
         B.myTP = Math.min(100, B.myTP + (it.tp || 0));
         Snd.play('cure');
@@ -694,11 +694,24 @@ Battle.tickBoxAnim = function (dir) {
 // Deltarune healing: adds to the (possibly negative) HP balance; a member stands back
 // up the moment healing pushes them above 0, bumped to at least 1/6 max HP.
 function healHP(m, amt) {
+  if (m.frozen) return;   // FROZEN (SNOWGRAVE) members can never be healed or revived
   m.hp = Math.min(m.max, m.hp + amt);
   if (m.downed && m.hp > 0) {
     m.hp = Math.max(m.hp, Math.ceil(m.max / 6));   // minimum stand-up HP
     m.downed = false; m.pose = 'idle'; m.poseT = 0;
   }
+}
+// SNOWGRAVE execute: ~1000 straight ICE to ONE target, bypassing the downed floor
+// (can sink to ~-900), and FREEZES them so they can never be healed/revived. Bosses
+// survive one hit early but are then frozen. Returns the hit member.
+function applySnowgrave(team, target) {
+  const m = (target != null && team[target]) ? team[target] : frontLiving(team);
+  if (!m) return null;
+  m.hp = Math.max(-999, m.hp - 1000);
+  m.frozen = true;
+  if (m.hp <= 0 && !m.downed) { m.downed = true; }
+  m.pose = 'downed'; m.poseT = 0;
+  return m;
 }
 // targeted damage: hits the member the attacker aimed at (or the front if that one is down).
 // lethal damage sinks HP into a NEGATIVE debt, hard-capped at -50% max HP. No cascade.
@@ -804,7 +817,7 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0;
-  B.sim.tick(B.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
+  B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
@@ -813,17 +826,21 @@ Battle.updDodge = function () {
   const spawned = [];   // bullets emitted by controller bullets this frame (added after the loop)
   for (const b of B.bullets) {
     b.t++;
+    if (b.spawnSnd && !b._snd) { b._snd = 1; Snd.play(b.spawnSnd, b.spawnVol != null ? b.spawnVol : 0.6); }   // one-shot sfx on spawn (bike honk, etc.)
+    if (b.animKeys && b.animRate) b.img = bulletProps(b.animKeys[Math.floor(b.t / b.animRate) % b.animKeys.length]).img;   // frame-cycled sprite
     if (b.homing) { const d = Math.hypot(B.soul.x - b.x, B.soul.y - b.y) || 1; b.vx += (B.soul.x - b.x) / d * b.homing; b.vy += (B.soul.y - b.y) / d * b.homing; }
     b.vx += b.ax || 0; b.vy += b.ay || 0;
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
     if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
+    if (b.carousel) updCarousel(b);   // fake-3D carousel column (Jevil)
     if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);   // ease toward a row and STAY on it
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
+    if (b.fade && b.life) b.alpha = Math.max(0, 1 - b.t / b.life);   // fade out over its lifetime (roar shards)
     if (b.redAt != null && b.t >= b.redAt) b.tint = '#f33';   // roar stars turn RED just before shattering
     // axis-tracking sword (Knight directional swords): fade in red at 50%, slide to line up
     // with the soul, then turn white and fire fast (with an SFX)
@@ -851,7 +868,7 @@ Battle.updDodge = function () {
           if (s.hitIds) s.hitIds.push(b);
           if (b.pushOnShot) b.x += (s.big ? 2 : 1) * b.pushOnShot;   // small nudge back toward the boss
           b.hp = (b.hp || 1) - (s.power || (s.big ? 4 : 1));
-          if (!s.big || --s.pierce <= 0) s.dead = true;
+          if (!s.big || b.breakShot || --s.pierce <= 0) s.dead = true;   // shots BREAK on face parts (breakShot), else big shots pierce
           B.shotFx.push({ x: b.x, y: b.y, t: 0 });   // shot-hit sparkle vfx
           Snd.play('bosshit', 0.4);
           if (b.hp <= 0) {
@@ -900,7 +917,7 @@ Battle.updDodge = function () {
     }
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
-  for (const nb of spawned) { nb.t = nb.t || 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
+  for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
   B.bullets = B.bullets.filter(b => !b.dead && b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
 
   if (B.anim.f % 4 === 0)
@@ -916,7 +933,7 @@ Battle.tickMirror = function () {
   let steps = Math.min(3, M.target - M.f, M.sim.dur - M.f);
   if (B.oppSoul) { M.soul.x = B.oppSoul.x * M.box.w; M.soul.y = B.oppSoul.y * M.box.h; }
   while (steps-- > 0) {
-    M.sim.tick(M.soul, b => { b.t = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
+    M.sim.tick(M.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
     M.f++;
     for (const b of M.bullets) {
       b.t++;
@@ -925,6 +942,7 @@ Battle.tickMirror = function () {
       if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
       b.x += b.vx; b.y += b.vy;
       if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang) * b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang) * b.orbit.R; }
+      if (b.carousel) updCarousel(b);
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
       if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
@@ -958,15 +976,15 @@ Battle.endDodge = function () {
       else if (d.heal) healMember(m, d.heal);           // attack+heal ult (DREAM CHORUS)
       if (d.kind === 'revive') {
         const t = B.myTeam[a.target];
-        if (t && t.downed) { t.downed = false; t.hp = Math.round(t.max * (d.revive || 0.5)); t.pose = 'idle'; t.poseT = 0; Snd.play('cure'); B.dmgPops.push({ x: 96, y: teamGroundY(a.target, B.myTeam.length) - 30, txt: 'REVIVE', t: 0, color: '#2f2' }); }
+        if (t && t.downed && !t.frozen) { t.downed = false; t.hp = Math.round(t.max * (d.revive || 0.5)); t.pose = 'idle'; t.poseT = 0; Snd.play('cure'); B.dmgPops.push({ x: 96, y: teamGroundY(a.target, B.myTeam.length) - 30, txt: 'REVIVE', t: 0, color: '#2f2' }); }
       }
-      if (d.snowgrave) B.usedSnowgrave = true;
+      if (d.snowgrave) { B.usedSnowgrave = true; B.snowgraveTarget = a.target != null ? a.target : 0; }
     } else if (a.cmd === 'act') {
       const ad = findAct(a.move);
       if (ad && ad.kind === 'healAll') for (const tm of B.myTeam) if (!isOut(tm)) healMember(tm, ad.heal);
     }
   }
-  if (B.usedSnowgrave) Battle.send({ t: 'snowgrave' });
+  if (B.usedSnowgrave) Battle.send({ t: 'snowgrave', mi: B.snowgraveTarget });
   B.myResult = { t: 'result', dmgTaken: B.dmgTaken,
                  hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP };
   Battle.send(B.myResult);
@@ -993,7 +1011,8 @@ Battle.resolve = function () {
 
   // resolve MY mercy / spare / buff / proceed effects (SNOWGRAVE forces a wipe)
   Battle.applyMyEffects();
-  if (B.usedSnowgrave) for (const m of B.oppTeam) { m.hp = 0; m.downed = true; m.pose = 'downed'; }
+  if (B.usedSnowgrave) { const t = applySnowgrave(B.oppTeam, B.snowgraveTarget);
+    if (t) { B.dmgPops.push({ x: 530, y: 200, txt: 'FROZEN', t: 0, color: '#8cf' }); Snd.play('snowgrave'); } }
 
   const lines = [];
   if (r.dmgTaken > 0) lines.push('* Enemy team took ' + r.dmgTaken + ' damage!');
@@ -1279,6 +1298,18 @@ Battle.renderBoxAndBullets = function (ctx) {
   }
 };
 
+// fake-3D carousel: a duck-horse rides a column around a vertical cylinder. Its x sweeps
+// with sin(angle); depth = cos(angle) sizes/dims it and only the FRONT columns are solid.
+function updCarousel(b) {
+  const c = b.carousel; c.ang += c.w;
+  const depth = Math.cos(c.ang);
+  b.x = c.cx + Math.sin(c.ang) * c.R;
+  b.y = c.rowY + Math.sin(c.ang * 3 + c.phase) * c.bob;   // the whole column bobs together
+  b.scale = 0.62 + 0.5 * (depth * 0.5 + 0.5);
+  b.alpha = depth < -0.1 ? 0.35 : 1;
+  b.noHit = depth < 0.12;                                  // only front-facing horses collide
+  b.flip = depth < 0;                                      // face the way it's travelling
+}
 // shared burst: full ring (default) or an arc of burstN bullets centred on burstAng,
 // optionally with a different child sprite/colour/shape. Directional sprites face travel.
 function burstChildren(b) {
@@ -1295,7 +1326,7 @@ function burstChildren(b) {
       dmg: b.dmg, target: b.target, x: b.x, y: b.y,
       vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp,
       rot: b.burstImg ? ang : 0, spin: b.burstSpin != null ? b.burstSpin : (b.burstImg ? 0 : 0.2),
-      life: b.burstLife, t: 0, phase0: 0 });
+      life: b.burstLife, shrink: b.burstShrink, fade: b.burstFade, t: 0, phase0: 0 });
   }
   return out;
 }
@@ -1400,9 +1431,9 @@ function drawPartyPanel(ctx, m, px, py, w, active) {
   drawText(ctx, 'main', m.def.shortName || m.def.name, px + 32, py + 10, { color: out ? '#666' : '#fff' });
   const barW = 82, barX = px + w - barW - 6, barY = py + 22;
   drawText(ctx, 'main', 'HP', barX - 22, py + 10, { color: out ? '#555' : '#c8c8c8' });
-  drawText(ctx, 'main', m.spared ? 'SPARED' : (m.hp + '/' + m.max), barX, py + 4, { color: out ? '#888' : '#fff' });
-  ctx.fillStyle = '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
-  ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6);
+  drawText(ctx, 'main', m.frozen ? 'FROZEN' : m.spared ? 'SPARED' : (m.hp + '/' + m.max), barX, py + 4, { color: m.frozen ? '#8cf' : out ? '#888' : '#fff' });
+  ctx.fillStyle = m.frozen ? '#12354d' : '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
+  if (!m.frozen) { ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6); }
   if (isDarkner(m) && !out) {
     ctx.fillStyle = '#1a0a2a'; ctx.fillRect(barX, barY + 7, barW, 3);
     ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2'; ctx.fillRect(barX, barY + 7, Math.round(barW * m.dark / 100), 3);

@@ -182,14 +182,23 @@ PATTERNS.ralsei_ult = {
   dur: 560,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    // spiral galaxy of sparkles from the center
-    if (every(f, rate(9, tier))) {
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, ang = f * 0.3;
-      for (let k = 0; k < 2; k++) {
-        const a = ang + k * Math.PI;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    // THREE spinning galaxy arms - denser, faster + accelerating (it's a 100% ULT)
+    if (every(f, rate(6, tier))) {
+      const ang = f * 0.36;
+      for (let k = 0; k < 3; k++) {
+        const a = ang + k * (Math.PI * 2 / 3);
         add({ ...bulletProps('ralseidot'), x: cx, y: cy,
-              vx: Math.cos(a) * 1.5, vy: Math.sin(a) * 1.5,
-              ax: Math.cos(a) * 0.012, ay: Math.sin(a) * 0.012, r: 6 });
+              vx: Math.cos(a) * 1.7, vy: Math.sin(a) * 1.7,
+              ax: Math.cos(a) * 0.02, ay: Math.sin(a) * 0.02, r: 6 });
+      }
+    }
+    // periodic converging ring from the edges - forces you OFF the safe spiral track
+    if (f > 60 && every(f, rate(92, tier))) {
+      const R = Math.max(box.w, box.h) / 2 + 34, n = 11, off = (f * 0.02) % (6.28 / n);
+      for (let i = 0; i < n; i++) {
+        const a = i / n * 6.28 + off, x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
+        add({ ...bulletProps('ralseidot'), x, y, vx: -Math.cos(a) * 1.55, vy: -Math.sin(a) * 1.55, r: 6 });
       }
     }
   },
@@ -200,18 +209,18 @@ PATTERNS.noelle_snow = {
   dur: 420,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(30, tier))) {
+    if (every(f, rate(34, tier))) {   // slightly sparser falling hexes
       add({
         x: box.x + rng() * box.w, y: box.y - 24,
-        vx: (rng() - 0.5) * 1.2, vy: 0.8 + rng() * 0.9, ay: 0.012,
+        vx: (rng() - 0.5) * 1.1, vy: 0.8 + rng() * 0.9, ay: 0.012,
         ...bulletProps('icehex'), r: 7,
         sineA: 0.5, sineF: 0.05,
       });
     }
-    if (every(f, rate(90, tier))) {
+    if (every(f, rate(104, tier))) {   // gentler homing snowflake (weaker seek, slower, rarer)
       add({
         x: rng() < 0.5 ? box.x - 26 : box.x + box.w + 26, y: box.y + rng() * box.h,
-        vx: 0, vy: 0, homing: 0.045, maxv: 2.0,
+        vx: 0, vy: 0, homing: 0.03, maxv: 1.6,
         ...bulletProps('icesnow'), r: 9, spin: 0.05,
       });
     }
@@ -221,51 +230,42 @@ PATTERNS.noelle_ice = {
   dur: 500,
   tick(api) {
     const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(34, tier))) {
-      // falling icicles with slight aim
-      const x = rng() < 0.4 ? api.soul.x + (rng() - 0.5) * 70 : box.x + rng() * box.w;
+    if (every(f, rate(24, tier))) {
+      // denser falling icicles, more often aimed at the soul + falling faster
+      const x = rng() < 0.55 ? api.soul.x + (rng() - 0.5) * 60 : box.x + rng() * box.w;
       add({
-        x, y: box.y - 34, vx: 0, vy: 0.5, ay: 0.11, maxv: 5,
+        x, y: box.y - 34, vx: 0, vy: 0.7, ay: 0.13, maxv: 5.6,
         ...bulletProps('icehex'),
       });
     }
-    if (every(f, rate(46, tier))) {
-      // shards bounce up from impact line
-      add({
-        x: box.x + rng() * box.w, y: box.y + box.h + 12,
-        vx: (rng() - 0.5) * 2.0, vy: -(1.8 + rng() * 1.4), ay: 0.06,
-        ...bulletProps('icehex'), scale: 0.8, r: 5, spin: 0.15,
-      });
+    if (every(f, rate(36, tier))) {
+      // shards bounce up from the impact line - occasionally a pair
+      const pair = rng() < 0.4 ? 2 : 1;
+      for (let i = 0; i < pair; i++)
+        add({
+          x: box.x + rng() * box.w, y: box.y + box.h + 12,
+          vx: (rng() - 0.5) * 2.2, vy: -(2.0 + rng() * 1.5), ay: 0.06,
+          ...bulletProps('icehex'), scale: 0.8, r: 5, spin: 0.15,
+        });
     }
   },
 };
-PATTERNS.snowgrave = {
-  dur: 600,
+PATTERNS.snowgrave = {   // NOT a dodge: straight forbidden ICE. Cosmetic only - the ~1000-dmg
+  dur: 170,               // FROZEN execute is applied directly to the single target (see applySnowgrave).
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(22, tier))) {
-      // blizzard walls: horizontal streams alternating gaps
-      const lane = Math.floor(rng() * 6);
-      add({
-        x: box.x + box.w + 30, y: box.y + (lane + 0.5) * (box.h / 6),
-        vx: -(2.2 + rng() * 1.4), vy: 0,
-        ...bulletProps('icesnow'), scale: 0.8, r: 6,
-      });
-    }
-    if (every(f, rate(50, tier))) {
-      add({
-        x: box.x + rng() * box.w, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.1, maxv: 5.5,
-        ...bulletProps('icehex'), scale: 1.1, r: 9,
-      });
-    }
-    if (every(f, rate(120, tier))) {
-      // the giant snowflake: slow homing menace
-      add({
-        x: rng() < 0.5 ? box.x - 50 : box.x + box.w + 50,
-        y: box.y - 40, homing: 0.03, maxv: 1.6, vx: 0, vy: 0.8,
-        ...bulletProps('icesnow'), scale: 1.5, r: 14, spin: 0.03,
-      });
-    }
+    const { f, rng, box, add } = api;
+    api.fx.bgHue = 205;                     // the world goes ice-cold blue-white
+    if (f < 6) api.fx.shake = 12;
+    if (f % 4 === 0 && f < 90) api.fx.shake = Math.max(api.fx.shake || 0, 6);
+    // a wall of giant vertical ICE spears crashes straight down through the whole box (harmless spectacle)
+    if (f === 4)
+      for (let i = 0; i < 9; i++)
+        add({ ...bulletProps('icicle'), x: box.x + (i + 0.5) * (box.w / 9), y: box.y - 40 - (i % 3) * 30,
+              vx: 0, vy: 15, scale: 2.4, r: 0, noHit: true, life: 60 });
+    // a few frozen shards linger and drift down (cosmetic)
+    if (f % 6 === 0 && f < 120)
+      add({ ...bulletProps('icehex'), x: box.x + rng() * box.w, y: box.y - 20,
+            vx: 0, vy: 2 + rng() * 2, scale: 1.1, r: 0, noHit: true, life: 90 });
   },
 };
 
@@ -292,78 +292,89 @@ PATTERNS.lancer_spade = {
 PATTERNS.lancer_storm = {
   dur: 480,
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(18, tier))) {
+    const { f, rng, box, tier, add, imgs, soul } = api;
+    if (every(f, rate(15, tier))) {   // denser + faster rain of spades
       add({
         x: box.x + rng() * box.w, y: box.y - 22,
-        vx: (rng() - 0.5) * 0.6, vy: 1.6 + rng() * 1.5,
+        vx: (rng() - 0.5) * 0.6, vy: 1.9 + rng() * 1.6,
         img: rng() < 0.5 ? pick(rng, imgs.spadeW) : pick(rng, imgs.spadeP),
         scale: 1.3, r: 7, spin: (rng() - 0.5) * 0.2,
       });
     }
-  },
-};
-PATTERNS.lancer_bike = {
-  dur: 480,
-  tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    const period = rate(85, tier);
-    if (every(f, period)) {
-      // bike crossing at soul height, spraying spades behind it
-      const fromLeft = (Math.floor(f / period) % 2) === 0;
-      add({
-        x: fromLeft ? box.x - 60 : box.x + box.w + 60,
-        y: api.soul.y,
-        vx: (fromLeft ? 1 : -1) * 3.6, vy: 0,
-        img: pick(rng, imgs.bike), scale: 1.6, r: 13, flip: !fromLeft,
-        trail: 'spade',
-      });
-    }
-    if (every(f, rate(50, tier))) {
-      add({
-        x: box.x + rng() * box.w, y: box.y + box.h + 14,
-        vx: 0, vy: -(1.4 + rng() * 1.2),
-        img: pick(rng, imgs.spadeP), scale: 1.2, r: 6,
-      });
+    if (every(f, rate(72, tier))) {   // periodic aimed 3-spade fan straight at the soul
+      const ox = box.x + box.w / 2, oy = box.y - 18;
+      const base = Math.atan2(soul.y - oy, soul.x - ox);
+      for (let i = -1; i <= 1; i++) {
+        const a = base + i * 0.3;
+        add({ x: ox, y: oy, vx: Math.cos(a) * 3.0, vy: Math.sin(a) * 3.0,
+              img: pick(rng, imgs.spadeW), scale: 1.2, r: 7, spin: 0.15 });
+      }
     }
   },
 };
-PATTERNS.lancer_ult = {
-  dur: 560,
-  tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(14, tier))) {
-      // devilsknife spiral from center
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const a = f * 0.23;
-      add({
-        x: cx, y: cy, vx: Math.cos(a) * 2.0, vy: Math.sin(a) * 2.0,
-        img: pick(rng, imgs.spadeW), scale: 1.4, r: 7, spin: 0.2,
-      });
+const BIKE_KEYS = ['lancerbike0', 'lancerbike1', 'lancerbike2', 'lancerbike3', 'lancerbike4', 'lancerbike5'];
+PATTERNS.lancer_bike = {   // BIKE CHARGE: Lancer waits on his hog to the side (HONK), then blitzes across the
+  dur: 560,                 // telegraphed lane. His vertical position outside the box tells you the line. x6.
+  tick(a) {
+    const { f, box, tier, add } = a;
+    const CYC = rate(84, tier), TELL = 30, k = Math.floor(f / CYC), ev = f % CYC;
+    if (k >= 6) return;                                   // ~6 charges
+    const left = (k % 2) === 0;
+    const lane = box.y + box.h * [0.22, 0.5, 0.78, 0.36, 0.64, 0.5][k];
+    const parkX = left ? box.x - 30 : box.x + box.w + 30;
+    if (ev === 0)   // rev up: the engine plays the HONK once as this marker spawns
+      add({ x: parkX, y: lane, vx: 0, vy: 0, r: 0, noHit: true, life: 2, spawnSnd: 'lancerhonk', spawnVol: 0.6 });
+    if (ev < TELL) {   // TELEGRAPH: Lancer sits on the bike just outside the box at this lane (harmless)
+      add({ img: bulletProps(BIKE_KEYS[Math.floor(f / 4) % 6]).img, x: parkX, y: lane,
+            vx: 0, vy: 0, r: 0, noHit: true, life: 2, flip: left, scale: 1.4 });
+    } else if (ev === TELL) {   // RIDE: fast crossing on the telegraphed lane, spitting spades behind
+      const bike = { ...bulletProps('lancerbike0'), x: parkX, y: lane, vx: (left ? 1 : -1) * 6.4, vy: 0,
+                     r: 14, flip: left, scale: 1.4, animKeys: BIKE_KEYS, animRate: 3, _sp: 0 };
+      bike.emit = function (b, out) {
+        if ((b._sp = (b._sp || 0) + 1) % 4) return;
+        out.push({ ...bulletProps('spade_pink'), x: b.x - (left ? 18 : -18), y: b.y + 6, vx: 0, vy: 1.4, r: 6, scale: 1.1, spin: 0.2 });
+      };
+      add(bike);
     }
-    if (every(f, rate(95, tier))) {
-      const fromLeft = rng() < 0.5;
-      add({
-        x: fromLeft ? box.x - 60 : box.x + box.w + 60, y: box.y + rng() * box.h,
-        vx: (fromLeft ? 1 : -1) * 3.2, vy: 0,
-        img: pick(rng, imgs.bike), scale: 1.6, r: 13, flip: !fromLeft,
-      });
+  },
+};
+PATTERNS.lancer_ult = {   // SPECIAL BAD GUY ATTACK: spade spiral + bike blitz + bursting spade bombs (100% darkner ult)
+  dur: 600,
+  tick(a) {
+    const { f, rng, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    // relentless two-arm spade spiral from the centre
+    if (every(f, rate(10, tier))) {
+      const ang = f * 0.22;
+      for (let k = 0; k < 2; k++) { const a2 = ang + k * Math.PI;
+        add({ ...bulletProps('spade_pink'), x: cx, y: cy, vx: Math.cos(a2) * 2.0, vy: Math.sin(a2) * 2.0, r: 7, scale: 1.2, spin: 0.2 }); }
     }
+    // bike blitz screaming across at alternating random lanes
+    const CYC = rate(72, tier);
+    if (f % CYC === 0) {
+      const left = (Math.floor(f / CYC) % 2) === 0, lane = box.y + 20 + rng() * (box.h - 40);
+      add({ ...bulletProps('lancerbike0'), x: left ? box.x - 40 : box.x + box.w + 40, y: lane,
+            vx: (left ? 1 : -1) * 6.8, vy: 0, r: 13, flip: left, scale: 1.4,
+            animKeys: BIKE_KEYS, animRate: 3, spawnSnd: 'lancerhonk', spawnVol: 0.4 });
+    }
+    // spade bombs fall + burst into a full ring of spades
+    if (f > 30 && every(f, rate(120, tier)))
+      add({ ...bulletProps('bspade'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 18, vx: 0, vy: 1.8, r: 9, scale: 1.1,
+            burst: 46, burstN: 8, burstSpeed: 2.2, burstImg: 'spade_pink', burstScale: 1.1 });
   },
 };
 
 // ---------- custom pattern factory (character creator attacks) ----------
 // spec: {ptype, bullet, speed, ult} — bullet is a library id or a shape name.
 // ---------- BERDLY (wind, A+ papers, halberd lasers) ----------
-PATTERNS.berdly_fight = {   // basic HALBERD swings: telegraphed slashes, easy (free attack)
+PATTERNS.berdly_fight = {   // basic HALBERD swings: fewer, BIGGER, faster thrusts (readable but punchy)
   dur: 420,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(40, tier))) {          // a slow halberd slash sweeps across at one height
+    if (every(f, rate(44, tier))) {          // one large halberd thrust sweeps across at one height
       const y = box.y + 20 + rng() * (box.h - 40);
-      for (let i = 0; i < 2; i++)
-        add({ ...bulletProps('spear'), x: box.x + box.w + 24 + i * 22, y,
-              vx: -(2.1 + rng() * 0.4), vy: 0, rot: Math.PI, r: 7 });
+      add({ ...bulletProps('spear'), x: box.x + box.w + 26, y,
+            vx: -(3.1 + rng() * 0.5), vy: 0, rot: Math.PI, scale: 1.4, r: 10 });
     }
   },
 };
@@ -384,120 +395,135 @@ PATTERNS.berdly_bolt = {   // Tornado 1: walls of 4 stacked tornadoes sweep left
     }
   },
 };
-PATTERNS.berdly_books = {   // Halberd Laser: wavy energy beam + perpendicular scatter
+PATTERNS.berdly_books = {   // Halberdly: fewer but BIGGER + FASTER energy spears (wavy beam + scatter)
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    if (every(f, rate(16, tier)))       // curved energy beam sweeps in from the right
+    if (every(f, rate(22, tier)))       // curved energy beam sweeps in from the right, bigger + faster
       add({ ...bulletProps('spear'), x: box.x + box.w + 20, y: box.y + 18 + rng() * (box.h - 36),
-            vx: -(2.6 + rng()), vy: 0, rot: Math.PI, sineA: 1.4, sineF: 0.06, r: 7 });
-    if (every(f, rate(46, tier)))       // scattered energy shards perpendicular to the trail
+            vx: -(3.4 + rng()), vy: 0, rot: Math.PI, sineA: 1.4, sineF: 0.06, scale: 1.3, r: 9 });
+    if (every(f, rate(54, tier)))       // scattered energy shards perpendicular to the trail
       add({ ...bulletProps('spear'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 16,
-            vx: (rng() - 0.5) * 0.6, vy: 1.9 + rng(), rot: Math.PI / 2, r: 7 });
+            vx: (rng() - 0.5) * 0.6, vy: 2.4 + rng(), rot: Math.PI / 2, scale: 1.3, r: 9 });
   },
 };
-PATTERNS.berdly_ult = {   // SMART RACE: center-converging tornadoes + doubled papers
+PATTERNS.berdly_ult = {   // SMART RACE: a slowly-ROTATING X of converging tornadoes (like Dream Chorus) + A+ papers
   dur: 560,
   tick(a) {
     const { f, rng, box, tier, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (every(f, rate(50, tier))) {     // 4 corner tornadoes collapse to center + cross
-      const cn = [[box.x - 24, box.y - 24], [box.x + box.w + 24, box.y - 24],
-                  [box.x - 24, box.y + box.h + 24], [box.x + box.w + 24, box.y + box.h + 24]];
-      for (const [x, y] of cn) {
+    if (every(f, rate(50, tier))) {     // 4 spawn points ORBIT the centre slowly -> the whole X spins
+      const rotOff = f * 0.006, R = Math.max(box.w, box.h) * 0.78;
+      for (let k = 0; k < 4; k++) {
+        const a0 = rotOff + k * Math.PI / 2;
+        const x = cx + Math.cos(a0) * R, y = cy + Math.sin(a0) * R;
         const ang = Math.atan2(cy - y, cx - x);
         add({ ...bulletProps('tornado'), x, y, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2, spin: 0.3, r: 9 });
       }
     }
-    if (every(f, rate(18, tier)))       // doubled A+ papers streaming from the right
-      add({ ...bulletProps('feather'), x: box.x + box.w + 20, y: box.y + 14 + rng() * (box.h - 28),
-            vx: -(3 + rng()), vy: (rng() - 0.5) * 1.2, rot: Math.PI, spin: 0.03, r: 7 });
+    if (every(f, rate(18, tier)))       // A+ papers streaming from the right
+      add({ ...bulletProps('aplus' + Math.floor(rng() * 4)), x: box.x + box.w + 20, y: box.y + 14 + rng() * (box.h - 28),
+            vx: -(3 + rng()), vy: (rng() - 0.5) * 1.2, rot: Math.PI, spin: 0.12, r: 7 });
   },
 };
 
 // ---------- JEVIL (darkner secret boss - Difficult) ----------
-PATTERNS.jevil_spade = {   // Five-Spade Teleport Spread: middle aimed at soul, ±15°/±30°
+PATTERNS.jevil_spade = {   // SPADE FAN: Jevil hovers at ALTERNATING sides and hurls a slower fan of real spades
   dur: 440,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(38, tier))) {   // teleport, then 5-way spread w/ ±15°/±30° offsets (spec)
-      const left = rng() < 0.5;
-      const ox = left ? box.x - 18 : box.x + box.w + 18;
-      const oy = box.y + 16 + rng() * (box.h - 32);
+    const { f, box, tier, add, soul } = a;
+    const CYC = rate(52, tier), ev = f % CYC, k = Math.floor(f / CYC);
+    const left = (k % 2) === 0;
+    const ox = left ? box.x - 20 : box.x + box.w + 20, oy = box.y + box.h / 2;
+    // Jevil floats at the side, bobbing, and throws (drawn behind the box via fx.boss)
+    a.fx.boss = { key: 'jevilcast', x: left ? box.x - 42 : box.x + box.w + 42, y: oy + Math.sin(f * 0.18) * 8, scale: 1, flip: !left };
+    if (ev === 0) {   // slower fan of real battle-spades aimed at the soul (one fewer + slower than before)
       const base = Math.atan2(soul.y - oy, soul.x - ox);
-      for (const o of [-0.52, -0.26, 0, 0.26, 0.52])
-        add({ ...bulletProps('spade'), x: ox, y: oy,
-              vx: Math.cos(base + o) * 2.6, vy: Math.sin(base + o) * 2.6, spin: 0.2, r: 7 });
+      for (const o of [-0.34, 0, 0.34])
+        add({ ...bulletProps('jspade'), x: ox, y: oy, vx: Math.cos(base + o) * 2.0, vy: Math.sin(base + o) * 2.0, spin: 0.22, r: 7, scale: 1.2 });
     }
   },
 };
-PATTERNS.jevil_diamond = {   // Rising Diamond Shower: fast diamonds up near the soul's X (spec)
+PATTERNS.jevil_diamond = {   // DIAMOND RAIN: small REAL diamonds rain down from the top - readable + dodgeable
   dur: 500,
   tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(12, tier))) {  // spawn near the soul's X, rise fast w/ slight drift
-      const x = Math.max(box.x + 6, Math.min(box.x + box.w - 6, soul.x + (rng() - 0.5) * 80));
-      add({ ...bulletProps('bdiamond'), x, y: box.y + box.h + 18, vx: 0, vy: -(3.3 + rng() * 0.8), sineA: 0.5, sineF: 0.1, spin: 0.1, r: 8 });
+    const { f, rng, box, tier, add } = a;
+    if (every(f, rate(9, tier)))     // steady rain of small diamonds with slight drift + spin
+      add({ ...bulletProps('diamond'), x: box.x + rng() * box.w, y: box.y - 16,
+            vx: (rng() - 0.5) * 0.8, vy: 2.2 + rng() * 1.4, r: 6, spin: 0.12 });
+    if (every(f, rate(88, tier))) {  // occasional slanted downpour line to force a move
+      const dir = rng() < 0.5 ? 1 : -1;
+      for (let i = 0; i < 5; i++)
+        add({ ...bulletProps('diamond'), x: box.x + box.w * 0.5 + dir * i * 14, y: box.y - 20 - i * 12,
+              vx: dir * 1.2, vy: 2.6, r: 6, spin: 0.12 });
     }
-    if (every(f, rate(120, tier)))    // heart bomb falls, detonates into 4 rotating hearts
-      add({ ...bulletProps('bheart'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 18,
-            vx: 0, vy: 1.5, r: 9, burst: 46, burstN: 4, burstSpeed: 1.7, burstRot: 0.78 });
   },
 };
-PATTERNS.jevil_carousel = {   // The Carousel: 3 rows L->R, sine bob w/ alternating phase + club bombs
-  dur: 520,
+PATTERNS.jevil_carousel = {   // THE CAROUSEL: a fake-3D cylinder of 8 columns x 3 horse-ducks rotating around the
+  dur: 560,                    // box. ~3 columns are in FRONT at once, bobbing up/down as a unit - slip the gaps.
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const spawn = rate(30, tier);
-    if (f % spawn === 0) {
-      const col = f / spawn;
-      for (let row = 0; row < 3; row++) {
-        const baseY = box.y + 22 + row * (box.h - 44) / 2;
-        const phase = ((row + col) % 2) * Math.PI;   // adjacent horses/ducks bob opposite
-        add({ ...bulletProps('carousel'), x: box.x - 22, y: baseY,
-              vx: 1.5, vy: 0, sineA: 8, sineF: 0.05, phase0: phase, r: 9 });
+    const { f, box, add } = a;
+    if (f !== 0) return;
+    const cols = 8, rows = 3;
+    const cx = box.x + box.w / 2, R = box.w / 2 + 24;
+    const rowGap = box.h * 0.34, midY = box.y + box.h / 2;
+    for (let c = 0; c < cols; c++) {
+      const ang0 = c / cols * Math.PI * 2;
+      for (let r = 0; r < rows; r++) {
+        const rowY = midY + (r - 1) * rowGap;
+        add({ ...bulletProps('carousel0'), x: cx, y: rowY, vx: 0, vy: 0, r: 11,
+              animKeys: ['carousel0', 'carousel1', 'carousel2'], animRate: 6,
+              carousel: { ang: ang0, w: 0.018, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } });
       }
     }
-    if (every(f, rate(150, tier)))   // club bomb drops + bursts into a spread
-      add({ ...bulletProps('bclub'), x: box.x + 30 + rng() * (box.w - 60), y: box.y - 16,
-            vx: 0, vy: 1.6, r: 9, burst: 40, burstN: 6, burstSpeed: 2.0 });
   },
 };
-PATTERNS.jevil_ult = {   // DEVILSKNIFE / Final Chaos: orbiting scythes + spade spiral + giant scythe rain
-  dur: 620,
+PATTERNS.jevil_ult = {   // DEVILSKNIFE (turn-4): the arena fills the screen; giant Devilsknives fall and smash
+  dur: 680,               // into light pillars - random first, then edges->center->edges, then a screen-filler.
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f === 0 || f === 200 || f === 400) {   // 4 grey scythes orbit the center
-      for (let k = 0; k < 4; k++)
-        add({ ...bulletProps('scythe'), x: cx, y: cy, r: 10, spin: 0.3, vx: 0, vy: 0,
-              orbit: { cx, cy, R: 46, w: 0.05 * (k % 2 ? 1 : -1), ang: k * Math.PI / 2 }, life: 200 });
-    }
-    if (f < 300 && every(f, rate(24, tier))) {   // Ring of Spades spiral collapses inward
-      const dir = (Math.floor(f / 120) % 2) ? 1 : -1, ang = f * 0.16 * dir, R = Math.max(box.w, box.h) / 2 + 34;
-      const x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R, toC = Math.atan2(cy - y, cx - x);
-      add({ ...bulletProps('bspade'), x, y, vx: Math.cos(toC + dir * 0.5) * 1.6, vy: Math.sin(toC + dir * 0.5) * 1.6, spin: 0.2, r: 8 });
-    }
-    if (f >= 300 && every(f, rate(40, tier))) {  // Final Chaos: giant scythes rain, edges->center
-      const seqPos = [0.06, 0.94, 0.22, 0.78, 0.5][Math.floor(f / rate(40, tier)) % 5];
-      add({ ...bulletProps('scythebig'), x: box.x + 10 + seqPos * (box.w - 20), y: box.y - 40,
-            vx: 0, vy: 1.9 + rng() * 0.6, spin: 0.12, r: 13 });
+    a.fx.boxTarget = { x: 24, y: 58, w: 592, h: 384 };     // the arena grows to fill the whole screen
+    const gY = 58 + 384 - 8;
+    const drop = (x, vy, scale) => {
+      const k = { ...bulletProps('scythebig'), x, y: 34, vx: 0, vy: vy, spin: 0.06, r: 13, scale: scale || 1, _gy: gY };
+      k.emit = function (b, out) {
+        if (b.y >= b._gy && !b._smash) {   // smashes into a pillar of white light on the ground
+          b._smash = 1; b.dead = true;
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: b._gy - 88, rot: Math.PI / 2, len: 176, thick: 22 * (b.scale || 1),
+                     armed: true, life: 20, dmg: b.dmg, vx: 0, vy: 0 });
+          Snd.play('boarddmg', 0.35);
+        }
+      };
+      add(k);
+    };
+    if (f < 300 && every(f, rate(48, tier)))               // PHASE 1: random giant knives
+      drop(box.x + 34 + rng() * (box.w - 68), 2.6, 1.0);
+    const seq = f - 300;
+    if (seq >= 0 && seq % rate(64, tier) === 0) {           // PHASE 2: the set pattern
+      const n = Math.floor(seq / rate(64, tier));
+      if (n === 0 || n === 2) { drop(box.x + 44, 3.0, 1.0); drop(box.x + box.w - 44, 3.0, 1.0); }   // edges in
+      else if (n === 1) drop(box.x + box.w / 2, 3.0, 1.0);                                          // dead centre
+      else if (n === 3) { drop(box.x + 96, 3.0, 1.0); drop(box.x + box.w - 96, 3.0, 1.0); }          // edges again
+      else if (n === 4)   // FINAL: a screen-filling Devilsknife that stops partway - stay LOW to survive
+        add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: -70, vx: 0, vy: 0,
+              lerpY: box.y + box.h * 0.30, lerpRate: 0.03, spin: 0.03, r: 34, scale: 5.2, hitW: 330, hitH: 250, life: 240 });
     }
   },
 };
 
-// A++++ : dense A+ exam papers, aimed and accelerating (Berdly spell)
+// A++++ : streams of A+ exam papers (spr_chirashi) - readable, constant speed, NO homing accel
 PATTERNS.berdly_papers = {
   dur: 480,
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(20, tier))) {
+    if (every(f, rate(28, tier))) {
       const ox = box.x + box.w + 24, oy = box.y + 12 + rng() * (box.h - 24);
       const base = Math.atan2(soul.y - oy, soul.x - ox);
-      for (let i = -1; i <= 1; i++) {
-        const ang = base + i * 0.22;
-        add({ ...bulletProps('feather'), x: ox, y: oy, vx: Math.cos(ang) * 2.2, vy: Math.sin(ang) * 2.2,
-              ax: Math.cos(ang) * 0.05, ay: Math.sin(ang) * 0.05, maxv: 5, rot: ang, spin: 0.03 });
+      // 2 papers, gently aimed once at spawn (no acceleration) - the tumbling A+ flyer sprite
+      for (let i = 0; i < 2; i++) {
+        const ang = base + (i - 0.5) * 0.34;
+        add({ ...bulletProps('aplus' + Math.floor(rng() * 4)), x: ox, y: oy,
+              vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0.14, r: 7 });
       }
     }
   },
@@ -524,14 +550,14 @@ PATTERNS.sneo_heads = {   // FLYING HEADS: a row of 4 heads decelerates to ~66% 
   dur: 470, box: { w: 300, h: 150 },
   tick(a) {
     const { f, rng, box, tier, add } = a;
-    const period = rate(122, tier);
-    if (f % period === 0 && f < 360) {
-      const ly = box.y + 28 + rng() * (box.h - 56);          // random lane
-      for (let i = 0; i < 4; i++)                             // 4 heads in a straight row, entering from the right
-        add({ ...bulletProps('sneohead'), x: box.x + box.w + 24 + i * 24, y: ly,
-              vx: -4.1, ax: 0.046, vy: 0, r: 11, spin: 0, shootable: true, hp: 1,
+    const period = rate(84, tier);
+    if (f % period === 0 && f < 410) {
+      const ly = box.y + 24 + rng() * (box.h - 48);          // random lane
+      for (let i = 0; i < 5; i++)                             // 5 heads in a straight row - only a great shot clears them all
+        add({ ...bulletProps('sneohead'), x: box.x + box.w + 24 + i * 22, y: ly,
+              vx: -4.4, ax: 0.05, vy: 0, r: 11, spin: 0, shootable: true, hp: 1,
               // if not all shot in time they stop and burst into 5 small UN-shootable heads at RANDOM angles
-              burst: 88, burstN: 5, burstSpeed: 1.7, burstImg: 'sneohead', burstScale: 0.5, burstSpin: 0.08, burstScatter: true });
+              burst: 84, burstN: 5, burstSpeed: 1.7, burstImg: 'sneohead', burstScale: 0.5, burstSpin: 0.08, burstScatter: true });
     }
   },
 };
@@ -590,26 +616,37 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
     const { f, box, add } = a;
     if (f !== 0) return;
     const head = { ...bulletProps('sneohead'), x: box.x + box.w + 12, y: box.y + box.h / 2,
-      vx: -0.42, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 7, homing: 0.011, maxv: 0.85, _ball: 74 };
+      vx: -0.24, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 9, maxv: 3, _ball: 74 };
     head.emit = function (b, out, soul, bx, fx) {
-      // the two phones are its HANDS: they lie FLAT ON the border (receiver heads walking along it),
-      // ahead of the head, alternating like a hand-over-hand climb
+      // vertical tracking: gentle normally, but if the SOUL slips BEHIND (left of) the head it
+      // SNAPS to the soul's row and rams it - no more cheesing from behind (the head collides).
+      const behind = soul.x < b.x;
+      b.y += (soul.y - b.y) * (behind ? 0.3 : 0.03);
+      b.y = Math.max(bx.y + 12, Math.min(bx.y + bx.h - 12, b.y));
+      // the two phones are its HANDS: they lie FLAT ON the border ahead of the head, hand-over-hand
       const step = Math.sin(b.t * 0.1) * 8;
       const topPh = { ...bulletProps('sneophone'), x: b.x - 18 + step, y: bx.y + 3, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 0 };
       const botPh = { ...bulletProps('sneophone'), x: b.x - 18 - step, y: bx.y + bx.h - 3, vx: 0, vy: 0, r: 0, noHit: true, life: 2, rot: 0, flip: true };
       out.push(topPh, botPh);
       // DIAGONAL green arms: the head sits behind its phone-hands
       if (fx) fx.arms = [{ x1: b.x, y1: b.y - 6, x2: topPh.x, y2: topPh.y + 3 }, { x1: b.x, y1: b.y + 6, x2: botPh.x, y2: botPh.y - 3 }];
-      // spit a yellow ball that drifts left & decelerates, flashes ~1s, then bursts into 3 soundwaves over a 90 arc
+      // spit a SMALLER yellow ball that drifts left & decelerates, flashes, then bursts into 3 soundwaves
       if (--b._ball <= 0) {
-        b._ball = 68;
-        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -2.6, ax: 0.05, vy: 0, r: 8, flash: true,
-          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.3, burstImg: 'sneosound', burstR: 7 });
+        b._ball = 70;
+        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -2.2, ax: 0.04, vy: 0, r: 6, scale: 0.6, flash: true,
+          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.0, burstImg: 'sneosound', burstScale: 0.5, burstR: 5 });
       }
     };
     add(head);
   },
 };
+// face-part colour by state: BLUE (fine) -> PURPLE (hurt) -> VERY PURPLE (one big shot from gone) -> YELLOW (firing)
+function faceTint(b) {
+  if (b._fireT > 0) { b._fireT--; b.tint = '#ffd000'; return; }
+  if (b.hp <= 4) b.tint = '#7b2cbf';        // very purple
+  else if (b.hp < 12) b.tint = '#c77dff';   // purple
+  else b.tint = null;                        // blue (native sprite)
+}
 PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's rectangular face box ATTACHED to it
   dur: 580, box: { w: 170, h: 170 },   // the player's box stays SQUARE
   tick(a) {
@@ -624,27 +661,30 @@ PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's r
     // rebuilds Spamton's face exactly. Hitboxes sit at each feature's height via drawDY.
     add({ ...bulletProps('sneofacebg'), x: fcx, y: fcy, vx: 0, vy: 0, r: 0, noHit: true, life: 999999, scale: SC });
     const eyeOff = -21.5 * PX, mouthOff = 20.5 * PX;
-    const eye = { ...bulletProps('sneoeye'), x: fcx, y: fcy + eyeOff, drawDY: -eyeOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 60 };
+    const eye = { ...bulletProps('sneoeye'), x: fcx, y: fcy + eyeOff, drawDY: -eyeOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, breakShot: true, hp: 12, _fireT: 0, _cd: 60 };
     eye.emit = function (b, out, soul) {
-      if (--b._cd > 0) return; b._cd = 180;
+      faceTint(b);
+      if (--b._cd > 0) return; b._cd = 180; b._fireT = 28;   // flash YELLOW while firing
       const ang = Math.atan2(soul.y - b.y, soul.x - b.x), dx = Math.cos(ang), dy = Math.sin(ang);   // aim at captured soul pos
       for (let i = 0; i < 7; i++) out.push({ ...bulletProps('sneolaser'), x: b.x - dx * i * 15, y: b.y - dy * i * 15, vx: dx * 4.2, vy: dy * 4.2, r: 5 });
     };
     add(eye);
-    const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 12, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 120 };
+    const nose = { ...bulletProps('sneonose'), x: fcx, y: fcy, vx: 0, vy: 0, r: 12, scale: SC, shootable: true, noHit: true, breakShot: true, hp: 12, _fireT: 0, _cd: 120 };
     nose.emit = function (b, out, soul, bx) {
-      if (--b._cd > 0) return; b._cd = 180;
+      faceTint(b);
+      if (--b._cd > 0) return; b._cd = 180; b._fireT = 28;
       const rows = [bx.y + 10, bx.y + bx.h / 2, bx.y + bx.h - 10];   // rows RIDE the top edge / middle / bottom edge
       for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)        // 3x3 of the real NOSE TRIANGLES
         out.push({ ...bulletProps('sneonosetri'), x: b.x, y: b.y, vx: -2.6 - c * 0.35, vy: 0,
                    lerpY: rows[r], lerpRate: 0.1, r: 6, rot: 0 });   // ease onto the row and STAY on it
     };
     add(nose);
-    const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + mouthOff, drawDY: -mouthOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, hp: 12, _cd: 180 };
+    const mouth = { ...bulletProps('sneomouth'), x: fcx, y: fcy + mouthOff, drawDY: -mouthOff, vx: 0, vy: 0, r: 14, scale: SC, shootable: true, noHit: true, breakShot: true, hp: 12, _fireT: 0, _cd: 180 };
     mouth._openImg = bulletProps('sneomouth').img; mouth._kissImg = bulletProps('sneomouthk').img;
     mouth.emit = function (b, out) {
       if (b._kissT && --b._kissT <= 0) b.img = b._openImg;   // back to the normal mouth after the kiss
-      if (--b._cd > 0) return; b._cd = 180;
+      faceTint(b);
+      if (--b._cd > 0) return; b._cd = 180; b._fireT = 28;
       b.img = b._kissImg; b._kissT = 26;                     // pucker up while firing
       for (let i = 0; i < 6; i++)   // 6 kiss-wisps drift left then curl up out of the box
         out.push({ ...bulletProps('sneowisp'), x: b.x, y: b.y, vx: -1.4 - Math.random() * 0.9, vy: 0.3 - Math.random() * 0.6, ay: -0.02, r: 6 });
@@ -652,42 +692,49 @@ PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's r
     add(mouth);
   },
 };
-PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box eating $, then fires ONE massive BIG SHOT at a time
-  dur: 820, box: { w: 300, h: 180 },
+PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton advances while sucking $ (then firing
+  dur: 900, box: { w: 300, h: 180 },   // BIG SHOTs). He's SHOOTABLE - your big shots shove him back for room.
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    if (f === 0) this._base = { x: box.x, y: box.y, w: box.w, h: box.h };   // capture before the box warps
-    const B = this._base;
-    a.fx.blackout = true;                                                    // everything behind the box goes black
-    const cy = B.y + B.h / 2;
-    // PHASE 1 (f<300): GIANT SPAMTON leans in with his sucking face (blue mouth/eyes). The box's
-    // RIGHT side shrinks height-wise toward his mouth, so the top & bottom edges run diagonally,
-    // and the $ he's eating funnel INSIDE the box toward the mouth, shrinking as they go.
-    if (f < 300) {
-      const approach = Math.min(1, f / 220);                                 // he creeps closer over the phase
-      a.fx.boss = { key: 'sneofinalsuck', x: B.x + B.w + 165 - approach * 60, y: cy, scale: 1, flip: false };
-      a.fx.pinch = Math.min(1, f / 90) * 0.55;                               // the suck warps the box
-      a.fx.pull = { x: B.x + B.w + 40, y: cy, force: 0.35 };
-      if (every(f, rate(20, tier)))                                          // dodgeable $ spawning INSIDE the box's left side
-        add({ ...bulletProps('sneodollar'), x: B.x + 8, y: B.y + 14 + rng() * (B.h - 28),
-              vx: 2.1 + rng() * 0.6, vy: 0, lerpY: cy, lerpRate: 0.016, spin: 0.06, r: 7, shrink: 0.988 });
-    } else {
-      // PHASE 2: he backs off, stops sucking (normal face); the box snaps back and he bobs while firing
-      a.fx.boss = { key: 'sneofinal', x: B.x + B.w + 170, y: cy + Math.sin(f * 0.045) * 46, scale: 1, flip: false };
-      a.fx.pinch = Math.max(0, 0.55 * (1 - (f - 300) / 36));
-    }
-    // PHASE 2 (f>=340): ONE massive BIG SHOT bullet per beat - bottom, top, bottom, top, then the FINAL full-box shot
-    const p2 = f - 340, SHOT = rate(78, tier);
-    if (p2 >= 0 && p2 % SHOT === 0) {
-      const n = Math.floor(p2 / SHOT);
-      if (n < 4) {
-        const bottom = (n % 2) === 0;
-        const hitH = B.h * 0.66, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
-        add({ ...bulletProps('sneobig'), x: B.x + B.w + 90, y: cyy, vx: -3.2, vy: 0, hitW: 120, hitH, scale: hitH / 56, rot: 0 });
-      } else if (n === 4) {   // FINAL: ONE massive full-box bullet, slow - sit on the LEFT; it fizzles out harmlessly
-        add({ ...bulletProps('sneobig'), x: B.x + B.w + 130, y: B.y + B.h / 2, vx: -1.0, vy: 0, hitW: 150, hitH: B.h, scale: B.h / 52, rot: 0, life: 230 });
+    const { f, box, add } = a;
+    if (f !== 0) return;
+    const B = { x: box.x, y: box.y, w: box.w, h: box.h }, cy = B.y + B.h / 2;
+    const far = B.x + B.w + 150, near = B.x + B.w - 8;   // mouth aligns with the box's right edge up close
+    const SUCK = 460;   // the suck lasts noticeably longer now
+    // the boss himself is a shootable controller: he creeps closer each frame; your BIG SHOTs push him RIGHT
+    const boss = { x: far, y: cy, vx: 0, vy: 0, r: 52, noHit: true, shootable: true, hp: 9999999, pushOnShot: 9,
+                   _d: 0, _shotN: 0 };
+    boss.emit = function (b, out, soul, bx, fx) {
+      fx.blackout = true;
+      const approach = Math.max(0, Math.min(1, (far - b.x) / (far - near)));
+      if (b.t < SUCK) {
+        b.x -= 0.26; b.x = Math.max(near, Math.min(far, b.x));           // creeps closer as he sucks
+        fx.boss = { key: 'sneofinalsuck', x: b.x, y: cy, scale: 1.9, flip: false };
+        fx.pinch = 0.55 * approach;                                       // the box's right side warps toward his mouth
+        fx.pull = { x: near, y: cy, force: 0.32 + approach * 0.14 };
+        // he pulls in MORE $ over time (ramps the difficulty)
+        b._d++;
+        const rateD = Math.max(6, 18 - Math.floor(b.t / 70) * 3);
+        if (b._d % rateD === 0)
+          out.push({ ...bulletProps('sneodollar'), x: B.x + 8, y: B.y + 14 + Math.random() * (B.h - 28),
+                     vx: 2.1 + Math.random() * 0.6, vy: 0, lerpY: cy, lerpRate: 0.016, spin: 0.06, r: 7, shrink: 0.988 });
+      } else {
+        // FIRE phase: normal face, still advancing (less room after each shot); big shots keep him back
+        b.x -= 0.5; b.x = Math.max(near - 14, Math.min(far, b.x));
+        fx.boss = { key: 'sneofinal', x: b.x, y: cy + Math.sin(b.t * 0.05) * 30, scale: 1.9, flip: false };
+        fx.pinch = Math.max(0, 0.55 * (1 - (b.t - SUCK) / 40));
+        const p2 = b.t - SUCK, SHOT = 82;
+        if (p2 >= 0 && p2 % SHOT === 0) {
+          const n = b._shotN++;
+          if (n < 5) {   // BIG SHOTs fire from his mouth, alternating bottom/top
+            const bottom = (n % 2) === 0, hitH = B.h * 0.62, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
+            out.push({ ...bulletProps('sneobig'), x: b.x - 60, y: cyy, vx: -3.2, vy: 0, hitW: 120, hitH, scale: hitH / 56, rot: 0 });
+          } else if (n === 5) {   // FINALE: one massive full-box shot, slow - hug the LEFT; it fizzles out
+            out.push({ ...bulletProps('sneobig'), x: b.x - 40, y: B.y + B.h / 2, vx: -1.0, vy: 0, hitW: 150, hitH: B.h, scale: B.h / 52, rot: 0, life: 240 });
+          }
+        }
       }
-    }
+    };
+    add(boss);
   },
 };
 
@@ -708,125 +755,168 @@ PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): fast sword COLUMNS wit
       const col = Math.floor(f / per), ease = Math.min(1, col / 34);
       const wander = cy + Math.sin(col * 0.28) * box.h * 0.16;
       const gapC = this._gy * (1 - ease) + wander * ease;
-      const gapH = 34, L = 115;   // ~2 souls tall; fixed blade length, never scaled to the box
+      const gapH = 44, L = 115;   // a touch more forgiving (~2.5 souls tall); fixed blade length
       add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC - gapH / 2 - L / 2, vx: -7.4, vy: 0,
             rot: Math.PI / 2, scale: 1.65, sy: 0.33, hitW: 9, hitH: L });
       add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC + gapH / 2 + L / 2, vx: -7.4, vy: 0,
             rot: -Math.PI / 2, scale: 1.65, sy: 0.33, hitW: 9, hitH: L });
     }
-    // finale: the Knight fills the box with THIN red tell-lines, edge to edge (masked inside the box)
+    // finale: the Knight fills the box with red tell-lines - each is where a KNIFE will fly through
     if (f === 402)
-      for (let i = 0; i < 22; i++)
-        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,
-              x: box.x + rng() * box.w, y: box.y + rng() * box.h, rot: rng() * Math.PI, vx: 0, vy: 0, tellT: 62, armWindow: 12, dmg: 16 });
+      for (let i = 0; i < 28; i++) {
+        const line = { shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,
+              x: box.x + rng() * box.w, y: box.y + rng() * box.h, rot: rng() * Math.PI, vx: 0, vy: 0, tellT: 62, armWindow: 12, dmg: 16, _shot: 0 };
+        line.emit = function (b, out) {   // when the cut lands, KNIVES visibly streak along the line
+          if (b.armed && !b._shot) { b._shot = 1;
+            const dx = Math.cos(b.rot), dy = Math.sin(b.rot);
+            for (let k = 0; k < 5; k++)
+              out.push({ ...bulletProps('knightknife'), x: b.x - dx * (120 - k * 40), y: b.y - dy * (120 - k * 40),
+                         vx: dx * 11, vy: dy * 11, rot: b.rot, scale: 1.3, r: 0, noHit: true, life: 34 });
+          }
+        };
+        add(line);
+      }
   },
 };
 PATTERNS.knight_circle = {   // DIRECTIONAL SWORDS: swords appear on the 8 axes, track you ~1.5s, then fire fast
   dur: 560,
   tick(a) {
     const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) * 0.62;
-    // a sword materialises on one of the 8 compass axes, points inward, TRACKS the soul along its
-    // perpendicular for ~1.5s, then fires extremely fast - you only escape by moving along its axis.
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) * 0.9;
+    // a sword materialises FAR out on one of the 8 compass axes, points inward, TRACKS the soul along
+    // its perpendicular for ~1s, then fires extremely fast - you only escape by moving along its axis.
     const per = rate(44, tier);
     if (f > 8 && f % per === 0) {
       const slot = (Math.floor(f / per) * 3) % 8;             // cycle the 8 slots
       const dir = slot * Math.PI / 4;
-      // the KNIFE fades into existence red at 50%, tracks your axis, turns white + SFX when it fires
-      add({ ...bulletProps('knightknife'), x: cx - Math.cos(dir) * R, y: cy - Math.sin(dir) * R, vx: 0, vy: 0,
-            scale: 1.5, rot: dir, aim: { dir, delay: rate(90, tier), speed: 13 } });
+      // real roaringknight sword sprite; fades in red, tracks your axis, turns white + SFX when it fires
+      add({ ...bulletProps('knightswordol'), x: cx - Math.cos(dir) * R, y: cy - Math.sin(dir) * R, vx: 0, vy: 0,
+            scale: 1.3, rot: dir, aim: { dir, delay: rate(58, tier), speed: 14 } });
     }
   },
 };
-PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotate to a stop then CUT; 1 -> 2 -> 3 -> 4 lines
-  dur: 660,
+PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotate to a stop then CUT.
+  dur: 820,                  // Longer, harder formation: 1,2,2,3,3,4,4,4,6.
   tick(a) {
     const { f, box, tier, add, soul, rng } = a;
-    const SEQ = [1, 2, 2, 3, 3, 4], GAP = rate(74, tier);      // GAP == tell(62)+arm(10): the next set starts as this one cuts, no idle rest
+    const SEQ = [1, 2, 2, 3, 3, 4, 4, 4, 6], GAP = rate(74, tier);   // next set starts as this one cuts (no idle rest)
     for (let e = 0; e < SEQ.length; e++) {
       if (f !== 16 + e * GAP) continue;
       const n = SEQ[e], C = { x: soul.x, y: soul.y };           // centred on the soul's position at spawn
       // spins anywhere from 45 to 135 degrees before easing to a stop (total = spin0 / (1 - decay))
       const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.047 + rng() * 0.094);
       for (let i = 0; i < n; i++)
-        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,   // thin, reaches every edge (masked to the box)
+        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 5,   // slightly thicker; reaches every edge (masked to the box)
               x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.94, tellT: 62, armWindow: 10, dmg: 24 });
     }
   },
 };
-PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY splits (soul rides its half),
-  dur: 560,                  // teeth appear instantly on the cut, then fire in two random waves of 4
+const RK_FLAME = ['rkflame0', 'rkflame1', 'rkflame2', 'rkflame3', 'rkflame4', 'rkflame5'];
+PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY splits (soul rides its half) with
+  dur: 560,                  // mystical FLAME on the broken edges; teeth (pointing DOWN) fire in two waves of 4.
   tick(a) {
     const { f, box, tier, add, rng } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = rate(176, tier);
-    if (f >= 460) return;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = rate(160, tier);
+    if (f >= 470) return;
     const ev = f % GAP, k = Math.floor(f / GAP) % 2, horiz = k === 0;
-    if (ev === 0)   // the cut tell-line (harmless until the Knight strikes it)
+    if (ev === 0)   // the cut tell-line (harmless until the Knight strikes it) - a bit faster
       add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.05, thick: 4,
-            x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 54, armWindow: 10, dmg: 20 });
-    // THE SPLIT: halves slide apart after the cut, hold, then come back together
+            x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 40, armWindow: 10, dmg: 20 });
+    // THE SPLIT: halves slide apart faster, hold, then snap back
     let off = 0;
-    if (ev >= 56 && ev < 88) off = (ev - 56) / 32 * 26;
-    else if (ev >= 88 && ev < 122) off = 26;
-    else if (ev >= 122 && ev < 152) off = 26 * (1 - (ev - 122) / 30);
+    if (ev >= 42 && ev < 62) off = (ev - 42) / 20 * 26;
+    else if (ev >= 62 && ev < 96) off = 26;
+    else if (ev >= 96 && ev < 116) off = 26 * (1 - (ev - 96) / 20);
     if (off > 0) a.fx.split = { axis: horiz ? 'h' : 'v', offset: off };
-    // teeth spawn INSTANTLY when the cut lands - two rows of 8 riding the halves,
-    // then a RANDOM 4 of each row fire first (slow), and the remaining 4 after a delay
-    if (ev === 56) {
-      const firstWave = []; while (firstWave.length < 4) { const i = Math.floor(rng() * 8); if (!firstWave.includes(i)) firstWave.push(i); }
+    // teeth + FLAMES spawn when the cut lands
+    if (ev === 42) {
+      // FIRST WAVE: a random 4 of 8 - constrained so no more than 2 fire adjacently (always dodgeable)
+      let firstWave;
+      for (let tries = 0; tries < 40; tries++) {
+        firstWave = []; while (firstWave.length < 4) { const i = Math.floor(rng() * 8); if (!firstWave.includes(i)) firstWave.push(i); }
+        const s = firstWave.slice().sort((p, q) => p - q); let run = 1, ok = true;
+        for (let j = 1; j < s.length; j++) { run = s[j] === s[j - 1] + 1 ? run + 1 : 1; if (run >= 3) { ok = false; break; } }
+        if (ok) break;
+      }
       for (let i = 0; i < 8; i++) {
-        const t = (i + 0.5) / 8, when = firstWave.includes(i) ? 34 : 74;
+        const t = (i + 0.5) / 8, when = firstWave.includes(i) ? 30 : 66;   // teeth are smaller (0.8) + faster (2.6)
         if (horiz) {
           const x = box.x + t * box.w;
-          add({ ...bulletProps('knighttooth'), x, y: cy - 7, vx: 0, vy: 0, rot: 0, r: 7, noHit: true, ridesSplit: 1, fireAt: when, fireVY: -1.9 });
-          add({ ...bulletProps('knighttooth'), x, y: cy + 7, vx: 0, vy: 0, rot: Math.PI, r: 7, noHit: true, ridesSplit: -1, fireAt: when, fireVY: 1.9 });
+          add({ ...bulletProps('knighttooth'), x, y: cy - 7, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: 1, fireAt: when, fireVY: -2.6 });
+          add({ ...bulletProps('knighttooth'), x, y: cy + 7, vx: 0, vy: 0, rot: Math.PI, scale: 0.8, r: 6, noHit: true, ridesSplit: -1, fireAt: when, fireVY: 2.6 });
         } else {
-          const y = box.y + t * box.h;
-          add({ ...bulletProps('knighttooth'), x: cx - 7, y, vx: 0, vy: 0, rot: -Math.PI / 2, r: 7, noHit: true, ridesSplit: 1, fireAt: when, fireVX: -1.9 });
-          add({ ...bulletProps('knighttooth'), x: cx + 7, y, vx: 0, vy: 0, rot: Math.PI / 2, r: 7, noHit: true, ridesSplit: -1, fireAt: when, fireVX: 1.9 });
+          const y = box.y + t * box.h;   // vertical cut: teeth still point DOWN (rot 0), fire sideways into the gap
+          add({ ...bulletProps('knighttooth'), x: cx - 7, y, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: 1, fireAt: when, fireVX: -2.6 });
+          add({ ...bulletProps('knighttooth'), x: cx + 7, y, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: -1, fireAt: when, fireVX: 2.6 });
+        }
+      }
+      // MYSTICAL FLAME riding both broken edges (spr_rk_split_flame animation)
+      const N = 7;
+      for (let i = 0; i < N; i++) {
+        const t = (i + 0.5) / N;
+        const base = { animKeys: RK_FLAME, animRate: 4, r: 0, noHit: true, life: 74, vx: 0, vy: 0 };
+        if (horiz) { const x = box.x + t * box.w;
+          add({ ...bulletProps('rkflame0'), ...base, x, y: cy - 6, ridesSplit: 1 });
+          add({ ...bulletProps('rkflame0'), ...base, x, y: cy + 6, ridesSplit: -1, flip: true });
+        } else { const y = box.y + t * box.h;
+          add({ ...bulletProps('rkflame0'), ...base, x: cx - 6, y, ridesSplit: 1, rot: Math.PI / 2 });
+          add({ ...bulletProps('rkflame0'), ...base, x: cx + 6, y, ridesSplit: -1, rot: -Math.PI / 2 });
         }
       }
     }
   },
 };
-PATTERNS.knight_roar = {   // FINAL ROAR (ult): black full-screen arena, crystals pulled in + swirl, then a roar that
-  dur: 820,                  // spews stars which turn red and shatter into 6 shards; a diagonal cut ends it.
+// FINAL ROAR timeline: charge(flourish 0->4, stars pull in random then swirl) -> flourish 5->6
+// -> ROAR (roar 0<->1, spew stars OUT, can't explode yet) -> all stars shatter into slow fading
+// shards -> final diagonal cut (slash 0->5). Stars all shatter around EXPLODE regardless of when fired.
+const ROAR_ROAR = 300, ROAR_EXPLODE = 620, ROAR_CUT = 700;
+PATTERNS.knight_roar = {
+  dur: 860,
   tick(a) {
     const { f, rng, box, tier, add } = a;
     a.fx.blackout = true;
-    a.fx.bgHue = f < 520 ? (f * 2) % 360 : 0;                 // scrolling rainbow, then RED for the roar
-    a.fx.hideBox = true; a.fx.arena = true;                    // the battle box is GONE - the whole screen is the arena
-    a.fx.bgStars = true;                                       // little white star specks twinkle in the void
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;      // (the arena's centre = the screen centre)
-    // THE KNIGHT stands centre-screen: front facing, hands out while charging, roar sprites while spewing
-    const key = f < 320 ? 'knightfront' : (f < 640 ? (Math.floor(f / 12) % 2 ? 'knightroar1' : 'knightroar0') : 'knightfront');
-    a.fx.boss = { key, x: cx, y: cy, scale: 1.1 };
-    if (f >= 320 && f < 640) a.fx.shake = 5;                   // the roar itself shakes the screen
-    // PHASE 1 (f<300): TWO big spiralling rows of crystals sweep in toward the Knight - the player
-    // circles the Knight inside the moving gap. The soul is sucked inward the whole time.
-    if (f < 300) {
-      a.fx.pull = { x: cx, y: cy, force: 0.42 };
-      if (every(f, rate(5, tier))) {
-        const base = f * 0.045, R = Math.max(box.w, box.h) * 0.62 + 40, vr = 2.4, vt = 1.5;
-        for (const armOff of [0, Math.PI]) {                   // the two spiral arms
-          const th = base + armOff, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
-          add({ ...bulletProps('knightstar'), x, y, spin: 0, r: 8, life: 175,
-                vx: -Math.cos(th) * vr - Math.sin(th) * vt, vy: -Math.sin(th) * vr + Math.cos(th) * vt });
-        }
+    a.fx.bgHue = (f >= ROAR_ROAR && f < ROAR_EXPLODE) ? 0 : (f * 2) % 360;   // rainbow, RED during the roar
+    a.fx.hideBox = true; a.fx.arena = true; a.fx.bgStars = true;              // borderless full-screen arena
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    // THE KNIGHT centre-screen: idle-front -> flourish charge 0->4 -> 5->6 -> roar loop -> slash finale
+    let key = 'knightflourish0', scale = 2.1;
+    if (f < 24) key = 'knightflourish0';
+    else if (f < 200) key = 'knightflourish' + Math.min(4, Math.floor((f - 24) / 40));   // charge 0->4
+    else if (f < ROAR_ROAR) key = 'knightflourish' + Math.min(6, 5 + Math.floor((f - 260) / 20));   // 5->6 (held 4 until 260)
+    else if (f < ROAR_EXPLODE) { key = (Math.floor(f / 10) % 2) ? 'knightroar1' : 'knightroar0'; a.fx.shake = 5; }
+    else if (f < ROAR_CUT) key = 'knightroar1';
+    else { key = 'knightslashf' + Math.min(5, Math.floor((f - ROAR_CUT) / 8)); scale = 4.2; }   // the screen-cut
+    if (f >= 200 && f < 260) key = 'knightflourish4';
+    a.fx.boss = { key, x: cx, y: cy, scale };
+    // CHARGE: stars pull IN toward the Knight. First random, then two tight swirling arms (Dream-Chorus-like).
+    if (f < ROAR_ROAR) a.fx.pull = { x: cx, y: cy, force: 0.4 };
+    if (f >= 30 && f < 150 && every(f, rate(6, tier))) {           // random pull-in
+      const th = rng() * 6.28, R = 340, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, toC = Math.atan2(cy - y, cx - x);
+      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(toC) * 2.6, vy: Math.sin(toC) * 2.6, spin: 0, r: 8, life: 150 });
+    }
+    if (f >= 150 && f < ROAR_ROAR && every(f, rate(5, tier))) {    // two tight swirling arms pulling in
+      const base = f * 0.05, R = 350, vr = 2.7, vt = 1.9;
+      for (const armOff of [0, Math.PI]) {
+        const th = base + armOff, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+        add({ ...bulletProps('knightstar'), x, y, spin: 0, r: 8, life: 150,
+              vx: -Math.cos(th) * vr - Math.sin(th) * vt, vy: -Math.sin(th) * vr + Math.cos(th) * vt });
       }
     }
-    // PHASE 2 (f>=320): the ROAR spews stars outward (no spinning); each turns RED then shatters into 6 shards
-    if (f === 320)
-      for (let i = 0; i < 8; i++) { const th = i * Math.PI / 4;    // 8 in a star
-        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.7, vy: Math.sin(th) * 2.7, spin: 0, r: 8,
-              redAt: 62, burst: 78, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.4 }); }
-    if (f > 344 && f < 620 && every(f, rate(26, tier)))            // then bursts of 3 in a random spread
-      for (let i = 0; i < 3; i++) { const th = rng() * 6.28, sp = 2.2 + rng();
-        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp, spin: 0, r: 8,
-              redAt: 54, burst: 70, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.2 }); }
-    // FINALE (f=700): a harmless diagonal cut across the screen to end the attack
-    if (f === 700)
-      add({ shape: 'line', color: '#fff', len: 940, thick: 10, x: cx, y: cy, rot: Math.atan2(1, 1.5), vx: 0, vy: 0, tellT: 34, armWindow: 6, dmg: 0 });
+    // ROAR: spew stars OUT from the centre - they decelerate near the edges and CANNOT explode until
+    // ROAR_EXPLODE, when they ALL shatter into slightly-large, slow, short-range fading shards.
+    const outStar = (th, sp) => {
+      const burstIn = Math.max(24, ROAR_EXPLODE - f);
+      add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp,
+            ax: -Math.cos(th) * sp * 0.02, ay: -Math.sin(th) * sp * 0.02, spin: 0, r: 8,
+            redAt: burstIn - 18, burst: burstIn, burstN: 6, burstImg: 'knighttri',
+            burstSpeed: 1.1, burstScale: 0.95, burstLife: 180, burstShrink: 0.985, burstFade: true });
+    };
+    if (f === ROAR_ROAR) for (let i = 0; i < 8; i++) outStar(i * Math.PI / 4, 3.0);   // opening 8-star
+    if (f > ROAR_ROAR + 24 && f < ROAR_EXPLODE - 60 && every(f, rate(26, tier)))       // bursts of 3, random spread
+      for (let i = 0; i < 3; i++) outStar(rng() * 6.28, 2.4 + rng());
+    // FINAL diagonal cut across the whole screen (front_slash plays over it)
+    if (f === ROAR_CUT)
+      add({ shape: 'line', color: '#fff', len: 940, thick: 12, x: cx, y: cy, rot: Math.atan2(1, 1.5), vx: 0, vy: 0, tellT: 30, armWindow: 8, dmg: 40 });
   },
 };
 
