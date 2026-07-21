@@ -1156,6 +1156,32 @@ PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; devilsknif
   },
 };
 
+// GREEN SOUL test bench: locks the soul, you aim Susie's axe to BLOCK. Square (4-way) then octagon
+// (8-way), plus multi-hit turtle shells (colour = blocks left) — regular and spinning. Tester only.
+PATTERNS.green_test = {
+  dur: 1300, box: { w: 170, h: 170 },
+  tick(a) {
+    const { f, box, add, rng } = a;
+    const oct = f >= 520;                       // square first, octagon after ~8.7s
+    a.fx.greenSoul = oct ? { oct: true } : true;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = 190;
+    const fire = (dir, sp, dmg) => add({ ...bulletProps('knighttooth'), x: cx + Math.cos(dir) * R, y: cy + Math.sin(dir) * R,
+      vx: -Math.cos(dir) * sp, vy: -Math.sin(dir) * sp, r: 7, rot: dir + Math.PI, scale: 0.85, grazeR: 0, dmg: dmg || 14 });
+    // aimed bullets from a snapped side, telegraphed by the cadence
+    if (f > 40 && f % 26 === 0) {
+      const slots = oct ? 8 : 4, step = Math.PI * 2 / slots;
+      fire(Math.floor(rng() * slots) * step, 2.3);
+    }
+    // turtle shells: 1..5 blocks, ~40% spinning (return 90 deg CCW). Come from a random side.
+    if (f > 120 && f % 170 === 60) {
+      const slots = oct ? 8 : 4, step = Math.PI * 2 / slots, dir = Math.floor(rng() * slots) * step;
+      const n = 1 + Math.floor(rng() * 5), sp = 1.9;
+      add({ shape: 'shell', shell: true, blocksLeft: n, shellSpin: rng() < 0.4, shellSpeed: sp,
+            x: cx + Math.cos(dir) * R, y: cy + Math.sin(dir) * R, vx: -Math.cos(dir) * sp, vy: -Math.sin(dir) * sp, r: 10, dmg: 18 });
+    }
+  },
+};
+
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';

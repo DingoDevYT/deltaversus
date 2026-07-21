@@ -5,6 +5,47 @@
 const BOX = { x: 220, y: 116, w: 200, h: 200 };   // dodge box (square by default)
 const SOUL_R = 5;
 const GRAZE_R = 15;
+// GREEN SOUL (Hammer/Sound of Justice): shield-block mode. Shell colours = blocks still needed.
+const SHELL_COLORS = { 1: '#ffe100', 2: '#33d13a', 3: '#3a7bff', 4: '#ff2020', 5: '#a24bff' };
+// resolve a bullet against the green shield ring: block it if the axe covers its side, else take the hit.
+function resolveGreen(b) {
+  const B = Battle, bx = B.dodgeBox, cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
+  const GR = Math.min(bx.w, bx.h) * 0.29;                       // shield radius (green box half-size)
+  const inside = Math.hypot(b.x - cx, b.y - cy) < GR + (b.r || 6);
+  if (inside && !b._inRing) {
+    const inAng = Math.atan2(b.y - cy, b.x - cx);              // the side the bullet is coming from
+    if (b.transform) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.shake = 10; B.flash = 6; Snd.play('hurt', 0.4); b._inRing = inside; return; }
+    const coverHalf = Math.PI / (B.greenOct ? 8 : 4) + 0.02;
+    const diff = Math.abs(Math.atan2(Math.sin(inAng - B.shieldAng), Math.cos(inAng - B.shieldAng)));
+    if (diff <= coverHalf) {                                   // BLOCKED
+      const perfect = (B.anim.f - (B.shieldFreshF || -999)) <= (B.shieldDiag ? 6 : 4);
+      const gain = perfect ? 1 : 0.5;
+      B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
+      B.blockFx.push({ x: cx + Math.cos(inAng) * GR, y: cy + Math.sin(inAng) * GR, t: 0, perfect });
+      Snd.play('graze', perfect ? 0.5 : 0.3);
+      if (b.shell) {
+        b.blocksLeft = (b.blocksLeft || 1) - 1;
+        if (b.blocksLeft <= 0) b.dead = true;
+        else {                                                 // bounce back out: spinning shells return 90 deg CCW
+          const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = GR + 150;
+          b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
+          b.vx = -Math.cos(outAng) * sp; b.vy = -Math.sin(outAng) * sp; b.rot = outAng + Math.PI;
+          b._inRing = false; return;
+        }
+      } else b.dead = true;                                    // regular bullets shatter on the shield
+    } else {                                                   // NOT covered -> it does you in
+      if (B.iframes <= 0) {
+        const dmg = Math.max(1, Math.round((b.dmg || 10) * (b.dmgMult || 1) * (0.9 + Math.random() * 0.2)));
+        B.dmgTaken += dmg; const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
+        B.iframes = IFRAMES; B.shake = 14; B.flash = 8; Snd.play('hurt');
+        B.dmgPops.push({ x: cx, y: cy - 14, txt: '' + dmg, t: 0, color: '#f22' });
+        if (hit) { hit.pose = 'hurt'; hit.poseT = 0; }
+      }
+      b.dead = true;
+    }
+  }
+  b._inRing = inside;
+}
 const BOX_ANIM = 16;   // frames for the box open/close spin-in animation
 const SELECT_FRAMES = 60 * 60;   // 60s to pick your move
 const IFRAMES = 55;
@@ -673,6 +714,10 @@ Battle.startDodge = function () {
   B.soulYellow = oppAtkers.some(a => a.def.soulYellow);
   B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false; B.pendingLasers = []; B.shotFx = [];
   Snd.stop(B._chargeSnd); B._chargeSnd = null;
+  // GREEN SOUL: locked at centre, aim Susie's axe to BLOCK incoming bullets (no movement, no graze).
+  B._defGreen = oppAtkers.some(a => a.def.soulGreen);   // whole-attack green; patterns can also toggle it live
+  B.soulGreen = false; B._greenLatch = false; B._greenOctLatch = false; B.greenOct = false;
+  B.shieldAng = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = [];
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
 
@@ -797,6 +842,21 @@ Battle.updDodge = function () {
   B.soul.y = Math.max(y0, Math.min(y1, B.soul.y));
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
+  // GREEN SOUL: lock the soul dead-centre and aim Susie's axe with the direction keys (it snaps to the
+  // 4 sides of the square, or 8 with the octagon). A FRESH press timestamps the aim for the block-timing bonus.
+  B.greenOct = !!(CF.greenSoul && CF.greenSoul.oct) || B._greenOctLatch;
+  B.soulGreen = !!(B._defGreen || CF.greenSoul || B._greenLatch);
+  if (B.soulGreen) {
+    B.soul.x = bx.x + bx.w / 2; B.soul.y = bx.y + bx.h / 2;
+    const rawx = (Input.down.right ? 1 : 0) - (Input.down.left ? 1 : 0), rawy = (Input.down.down ? 1 : 0) - (Input.down.up ? 1 : 0);
+    if (rawx || rawy) {
+      const step = Math.PI * 2 / (B.greenOct ? 8 : 4);
+      const ang = Math.round(Math.atan2(rawy, rawx) / step) * step;
+      const diff = Math.abs(Math.atan2(Math.sin(ang - B.shieldAng), Math.cos(ang - B.shieldAng)));
+      if (diff > 0.01) { B.shieldAng = ang; B.shieldFreshF = B.anim.f; B.shieldDiag = !!(rawx && rawy); }
+    }
+  }
+
   // ---- YELLOW SOUL: HOLD the button to charge, RELEASE to fire a shot to the RIGHT.
   //      Hold time = shot size: a quick tap = a small pellet, a long hold = the BIG SHOT.
   //      You can't rapid-fire AND charge at once - it's one shot per press-release. ----
@@ -915,6 +975,7 @@ Battle.updDodge = function () {
       continue;
     }
     if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
+    if (B.soulGreen && b.shape !== 'line') { resolveGreen(b); continue; }   // green mode: block-or-take-it at the shield ring (no graze)
     if (b.shape === 'line' && !b.armed) continue;   // a tell-line only hurts once the Knight actually cuts (armed)
     // line hitbox: perpendicular distance to the (rotated) line through b, within its length
     let lineHit = false;
@@ -947,6 +1008,7 @@ Battle.updDodge = function () {
     }
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
+  if (B.blockFx && B.blockFx.length) { for (const fx of B.blockFx) fx.t++; B.blockFx = B.blockFx.filter(fx => fx.t < 8); }
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
   B.bullets = B.bullets.filter(b => !b.dead && b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
 
@@ -1313,10 +1375,25 @@ Battle.renderBoxAndBullets = function (ctx) {
         if (ch) drawSpr(ctx, ch, B.soul.x + Math.cos(a) * R, B.soul.y + Math.sin(a) * R, { scale: ready ? 1.3 : 1 }); }
     }
   }
+  // GREEN SOUL: the shield box (square, or octagon later) + Susie's axe on the guarded side + block sparks
+  if (B.soulGreen) {
+    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2, GR = Math.min(bx.w, bx.h) * 0.29;
+    ctx.strokeStyle = '#33d13a'; ctx.lineWidth = 2;
+    if (B.greenOct) { ctx.beginPath();
+      for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, px = gcx + Math.cos(a) * GR * 1.0824, py = gcy + Math.sin(a) * GR * 1.0824; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      ctx.closePath(); ctx.stroke();
+    } else ctx.strokeRect(gcx - GR, gcy - GR, GR * 2, GR * 2);
+    const axe = bulletProps('axe').img, sa = B.shieldAng == null ? Math.PI / 2 : B.shieldAng;
+    if (axe && axe.width) drawSpr(ctx, axe, gcx + Math.cos(sa) * GR, gcy + Math.sin(sa) * GR, { scale: 1.5, rot: sa });
+  }
+  for (const fx of (B.blockFx || [])) {   // block spark: bright ring, brighter/yellow on a perfect (well-timed) block
+    const r = 4 + fx.t * 1.6; ctx.strokeStyle = fx.perfect ? '#fff36b' : '#8affa0'; ctx.globalAlpha = Math.max(0, 1 - fx.t / 8); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(fx.x, fx.y, r, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+  }
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
   if (!blink) {
-    // the real heart sprites: the yellow "Justice" soul (2-frame pulse) or the normal red heart
-    const soulImg = B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
+    // the real heart sprites: yellow "Justice" soul, or a green-tinted heart in green mode, or the normal red heart
+    const soulImg = B.soulGreen ? tintedSoul('#33d13a') : B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
     drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: 1 });
   }
   if (B.grazeFx) {   // graze sparkle: spr_grazeappear_0..3 (yellow variant for the yellow soul)
@@ -1326,6 +1403,7 @@ Battle.renderBoxAndBullets = function (ctx) {
   }
   ctx.restore();
   if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
+  if (B.soulGreen) drawText(ctx, 'main', "GREEN SOUL - can't move! Aim [ARROWS] to BLOCK with Susie's AXE", bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#4de04d', align: 'center' });
   if (B.fxOnMe) {
     const tags = [];
     if (B.fxOnMe.boxScale) tags.push('CRAMPED');
@@ -1408,6 +1486,15 @@ function drawBullet(ctx, b, px, py, s) {
     return;
   }
   ctx.fillStyle = b.color || '#fff';
+  if (b.shape === 'shell') {   // green-soul turtle shell: colour = blocks still needed (yellow1..purple5)
+    const r = (b.r || 10) * s, col = SHELL_COLORS[b.blocksLeft] || b.color || '#ffe100';
+    ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = Math.max(1.5, 2 * s);
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.62, 0, 6.283); ctx.stroke();
+    ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.moveTo(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.62); ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.stroke();
+    ctx.restore(); return;
+  }
   if (b.shape === 'crescent') {
     const r = (b.r || 8) * 1.5 * s;
     ctx.save(); ctx.translate(px, py); ctx.rotate((b.rot || 0));

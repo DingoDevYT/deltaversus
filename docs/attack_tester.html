@@ -97,6 +97,13 @@ CHARS.jeviltest = {
   ],
   ult: { id: 'jx_finalchaos', name: 'Final Chaos', tp: 100, dmg: 50, dur: 900, kind: 'attack', text: '' },
 };
+// TESTER-ONLY: GREEN SOUL bench (Hammer/Sound of Justice mechanic). Lock + block with Susie's axe.
+CHARS.greentest = {
+  name: 'GREEN SOUL — TEST', shortName: 'GREEN', base: 'knight', color: '#33d13a', hp: 900,
+  secretBoss: true, level: 3, spare: {}, cost: 3, desc: 'GREEN SOUL MECHANIC TEST',
+  fight: { id: 'green_test', name: 'Hammer of Justice (block!)', dmg: 18, dur: 1300, kind: 'attack', text: '' },
+  spells: [], ult: { id: 'green_test', name: 'Hammer of Justice (block!)', tp: 100, dmg: 18, dur: 1300, kind: 'attack', text: '' },
+};
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;
 
