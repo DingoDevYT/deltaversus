@@ -982,6 +982,11 @@ Battle.updDodge = function () {
       continue;
     }
     if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
+    // DEFLECT (Gerson's Rude Buster orb): press OK while the orb is close to knock it back for TP, no damage.
+    if (b.deflectable) {
+      const dd = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
+      if (Input.down.ok && dd < (b.deflectR || 34)) { b.dead = true; B.myTP = Math.min(100, B.myTP + 3); B.tpGained += 3; B.flash = 6; B.shake = Math.max(B.shake, 6); Snd.play('criticalswing', 0.5); B.blockFx = B.blockFx || []; B.blockFx.push({ x: b.x, y: b.y, t: 0, perfect: true }); continue; }
+    }
     if (B.soulGreen && b.shape !== 'line') { resolveGreen(b); continue; }   // green mode: block-or-take-it at the shield ring (no graze)
     if (b.shape === 'line' && !b.armed) continue;   // a tell-line only hurts once the Knight actually cuts (armed)
     // line hitbox: perpendicular distance to the (rotated) line through b, within its length

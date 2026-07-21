@@ -1378,6 +1378,55 @@ PATTERNS.gerson_finale = {
       add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.6, thick: 60, x: cx, y: cy, rot: (f / 90) * Math.PI / 4, vx: 0, vy: 0, tellT: 12, armWindow: 4, dmg: 30, shakeOnCut: true, noHit: false });
   },
 };
+// #A BOX THROW (AP70, RED free-move) — despite the name it LOBS arcing hammers into the box: 16 fan-throws,
+// then 25 fast singles tracking a sine-swept x, then one giant hammer finisher.
+PATTERNS.gerson_boxthrow = {
+  dur: 403, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, gx = box.x + box.w + 40, gy = box.y - 18;
+    if (f >= 36 && f < 196 && (f - 36) % 10 === 0) {                 // PHASE 0: 16 fan-throws of 3-4 hammers
+      const n = 3 + Math.floor(rng() * 2);
+      for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
+        const vx = -Math.abs(gx - (cx + off)) / 45 + (-2 + (4 / (n - 1)) * i) + (rng() - 0.5), vy = -14 + (-1 + (2 / (n - 1)) * i) + (rng() * 2 - 1);
+        add({ ...bulletProps('ghammer'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 16, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
+      Snd.play('smallswing', 0.3);
+    }
+    const p1 = f - 196;                                              // PHASE 1: 25 fast singles at a sine-swept x
+    if (p1 >= 0 && p1 < 100 && p1 % 4 === 0) {
+      const tx = cx + Math.sin(f * 0.325) * 60;
+      add({ ...bulletProps('ghammer'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 16, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 });
+    }
+    if (f === 305) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - cx) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 120), r: 16, hitW: 60, hitH: 60, dmg: 40, life: 140 }); Snd.play('smallswing', 0.5); }
+  },
+};
+// #B SQUISH-BOX SPEAR RAIN (AP47, RED) — the box flattens into a wide thin strip, then hammer-smash columns
+// rain straight down at fixed x's; weave between the columns.
+PATTERNS.gerson_squish = {
+  dur: 460, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) {
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f > 34) a.fx.boxTarget = { x: cx - 190, y: cy - 24, w: 380, h: 48 };   // squash wide + flat
+    const COLS = [100, 150, 200, 250, 300, 350, 400, 450, 550, 500, 450, 400, 350, 300, 250, 200, 100, 150, 300, 350, 500, 550, 100, 150, 200, 250, 400, 450];
+    if (f >= 55 && (f - 55) % 5 === 0) {
+      const idx = (f - 55) / 5;
+      if (idx < COLS.length) { const colX = cx - 190 + (COLS[idx] - 80) / 470 * 380;
+        add({ ...bulletProps('gswdown'), x: colX, y: cy - 60, vx: 0, vy: 0, noHit: true, scale: GSC(40, 50), rot: 0, fireAt: 22, fireVX: 0, fireVY: 14, r: 7, grazeR: 12, dmg: 26, life: 90 });
+      }
+    }
+  },
+};
+// #C RUDE BUSTER (RED) — Gerson lobs a slow homing orb; press [Z] when it's CLOSE to knock it back for TP
+// (b.deflectable), or eat a big hit. A deflect duel.
+PATTERNS.gerson_rudebuster = {
+  dur: 300, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) {
+    const { f, box, add, soul } = a; const gx = box.x + box.w + 40, gy = box.y - 10;
+    if (f % 90 !== 10 || f >= 270) return;
+    const ang = Math.atan2(soul.y - gy, soul.x - gx);
+    add({ color: '#ff3b6b', x: gx, y: gy, vx: Math.cos(ang) * 4, vy: Math.sin(ang) * 4, r: 11, grazeR: 0, homing: 0.1, deflectable: 1, deflectR: 34, spin: 0.1, dmg: 44, life: 220 });
+    Snd.play('smallswing', 0.4);
+  },
+};
 
 // ============================================================================
 // PINK — Ch5 idol boss (mew magical-girl). Rebuilt from real GML (30fps -> hz30). Real ripped
