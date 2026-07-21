@@ -50,8 +50,8 @@ PATTERNS.kris_cross = {
   dur: 480,
   tick(api) {
     const { f, rng, box, tier, add } = api;
-    // rotating cross of knives converging on center — FAST so they clear the box quickly
-    if (every(f, rate(34, tier))) {
+    // rotating cross of knives converging on center — FAST bullets, but a longer gap between waves
+    if (every(f, rate(54, tier))) {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
       const R = Math.max(box.w, box.h) / 2 + 40;
       const base = f * 0.06;
@@ -317,18 +317,18 @@ PATTERNS.lancer_bike = {   // BIKE CHARGE: Lancer waits on his hog to the side (
   dur: 560,                 // telegraphed lane. His vertical position outside the box tells you the line. x6.
   tick(a) {
     const { f, box, tier, add } = a;
-    const CYC = rate(84, tier), TELL = 30, k = Math.floor(f / CYC), ev = f % CYC;
+    const CYC = rate(84, tier), TELL = 34, k = Math.floor(f / CYC), ev = f % CYC;
     if (k >= 6) return;                                   // ~6 charges
     const left = (k % 2) === 0;
     const lane = box.y + box.h * [0.22, 0.5, 0.78, 0.36, 0.64, 0.5][k];
-    const parkX = left ? box.x - 30 : box.x + box.w + 30;
+    const parkX = left ? box.x + 14 : box.x + box.w - 14;   // sits clearly ON-SCREEN at the edge so you SEE him rev
     if (ev === 0)   // rev up: the engine plays the HONK once as this marker spawns
       add({ x: parkX, y: lane, vx: 0, vy: 0, r: 0, noHit: true, life: 2, spawnSnd: 'lancerhonk', spawnVol: 0.6 });
-    if (ev < TELL) {   // TELEGRAPH: Lancer sits on the bike just outside the box at this lane (harmless)
+    if (ev < TELL) {   // TELEGRAPH: Lancer sits on the bike at this lane, revving (harmless), so you can read it
       add({ img: bulletProps(BIKE_KEYS[Math.floor(f / 4) % 6]).img, x: parkX, y: lane,
             vx: 0, vy: 0, r: 0, noHit: true, life: 2, flip: left, scale: 1.4 });
     } else if (ev === TELL) {   // RIDE: fast crossing on the telegraphed lane, spitting spades behind
-      const bike = { ...bulletProps('lancerbike0'), x: parkX, y: lane, vx: (left ? 1 : -1) * 6.4, vy: 0,
+      const bike = { ...bulletProps('lancerbike0'), x: left ? box.x - 30 : box.x + box.w + 30, y: lane, vx: (left ? 1 : -1) * 6.4, vy: 0,
                      r: 14, flip: left, scale: 1.4, animKeys: BIKE_KEYS, animRate: 3, _sp: 0 };
       bike.emit = function (b, out) {
         if ((b._sp = (b._sp || 0) + 1) % 4) return;
@@ -338,8 +338,8 @@ PATTERNS.lancer_bike = {   // BIKE CHARGE: Lancer waits on his hog to the side (
     }
   },
 };
-PATTERNS.lancer_ult = {   // SPECIAL BAD GUY ATTACK: spade spiral + bike blitz + bursting spade bombs (100% darkner ult)
-  dur: 600,
+PATTERNS.lancer_ult = {   // COOL ATTACK: spade spiral + TELEGRAPHED bike blitz + bursting spade bombs (100% darkner ult)
+  dur: 620,
   tick(a) {
     const { f, rng, box, tier, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -349,13 +349,15 @@ PATTERNS.lancer_ult = {   // SPECIAL BAD GUY ATTACK: spade spiral + bike blitz +
       for (let k = 0; k < 2; k++) { const a2 = ang + k * Math.PI;
         add({ ...bulletProps('spade_pink'), x: cx, y: cy, vx: Math.cos(a2) * 2.0, vy: Math.sin(a2) * 2.0, r: 7, scale: 1.2, spin: 0.2 }); }
     }
-    // bike blitz screaming across at alternating random lanes
-    const CYC = rate(72, tier);
-    if (f % CYC === 0) {
-      const left = (Math.floor(f / CYC) % 2) === 0, lane = box.y + 20 + rng() * (box.h - 40);
-      add({ ...bulletProps('lancerbike0'), x: left ? box.x - 40 : box.x + box.w + 40, y: lane,
-            vx: (left ? 1 : -1) * 6.8, vy: 0, r: 13, flip: left, scale: 1.4,
-            animKeys: BIKE_KEYS, animRate: 3, spawnSnd: 'lancerhonk', spawnVol: 0.4 });
+    // bike blitz - each bike APPEARS + HONKS on-screen, then charges (no more surprise spawns)
+    const CYC = rate(90, tier), TELL = 26, ev = f % CYC, bk = Math.floor(f / CYC);
+    if (f < 560) {
+      const left = (bk % 2) === 0, lane = box.y + 22 + ((bk * 97) % 100) / 100 * (box.h - 44);
+      const parkX = left ? box.x + 14 : box.x + box.w - 14;
+      if (ev === 0) add({ x: parkX, y: lane, vx: 0, vy: 0, r: 0, noHit: true, life: 2, spawnSnd: 'lancerhonk', spawnVol: 0.45 });
+      if (ev < TELL) add({ img: bulletProps(BIKE_KEYS[Math.floor(f / 4) % 6]).img, x: parkX, y: lane, vx: 0, vy: 0, r: 0, noHit: true, life: 2, flip: left, scale: 1.4 });
+      else if (ev === TELL) add({ ...bulletProps('lancerbike0'), x: left ? box.x - 34 : box.x + box.w + 34, y: lane,
+            vx: (left ? 1 : -1) * 6.8, vy: 0, r: 13, flip: left, scale: 1.4, animKeys: BIKE_KEYS, animRate: 3 });
     }
     // spade bombs fall + burst into a full ring of spades
     if (f > 30 && every(f, rate(120, tier)))
@@ -462,7 +464,7 @@ PATTERNS.jevil_diamond = {   // DIAMOND RAIN: small REAL diamonds rain down from
 PATTERNS.jevil_carousel = {   // THE CAROUSEL: a fake-3D cylinder of 8 columns x 3 horse-ducks rotating around the
   dur: 560,                    // box. ~3 columns are in FRONT at once, bobbing up/down as a unit - slip the gaps.
   tick(a) {
-    const { f, box, add } = a;
+    const { f, box, add, rng } = a;
     if (f !== 0) return;
     const cols = 8, rows = 3;
     const cx = box.x + box.w / 2, R = box.w / 2 + 24;
@@ -471,8 +473,8 @@ PATTERNS.jevil_carousel = {   // THE CAROUSEL: a fake-3D cylinder of 8 columns x
       const ang0 = c / cols * Math.PI * 2;
       for (let r = 0; r < rows; r++) {
         const rowY = midY + (r - 1) * rowGap;
-        add({ ...bulletProps('carousel0'), x: cx, y: rowY, vx: 0, vy: 0, r: 11,
-              animKeys: ['carousel0', 'carousel1', 'carousel2'], animRate: 6,
+        // each duck-horse is a RANDOM variant sprite (carousel0/1/2) for visual variety - not an animation
+        add({ ...bulletProps('carousel' + Math.floor(rng() * 3)), x: cx, y: rowY, vx: 0, vy: 0, r: 11,
               carousel: { ang: ang0, w: 0.018, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } });
       }
     }
@@ -486,30 +488,31 @@ PATTERNS.jevil_ult = {   // DEVILSKNIFE (turn-4): the arena fills the screen; gi
     const gY = 58 + 384 - 8;
     const drop = (x, vy, scale) => {
       const sc = scale || 1;
-      // wider falling knives (rectangular hitbox), and the light pillar spans the ENTIRE vertical screen
-      const k = { ...bulletProps('scythebig'), x, y: 34, vx: 0, vy: vy, spin: 0.06, scale: sc * 1.5,
-                  hitW: 42 * sc, hitH: 90 * sc, _gy: gY };
+      // SMALLER, MUCH FASTER falling knives; each smashes into a full-height pillar of white light
+      const k = { ...bulletProps('scythebig'), x, y: 24, vx: 0, vy: vy, spin: 0.08, scale: sc * 0.95,
+                  hitW: 26 * sc, hitH: 62 * sc, _gy: gY };
       k.emit = function (b, out) {
-        if (b.y >= b._gy && !b._smash) {   // smashes into a full-height pillar of white light
+        if (b.y >= b._gy && !b._smash) {
           b._smash = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: 240, rot: Math.PI / 2, len: 520, thick: 34 + 12 * sc,
-                     armed: true, life: 22, dmg: b.dmg, vx: 0, vy: 0 });
-          Snd.play('boarddmg', 0.35);
+          out.push({ shape: 'line', color: '#fff', x: b.x, y: 240, rot: Math.PI / 2, len: 520, thick: 26 + 8 * sc,
+                     armed: true, life: 20, dmg: b.dmg, vx: 0, vy: 0 });
+          Snd.play('boarddmg', 0.3);
         }
       };
       add(k);
     };
-    if (f < 300 && every(f, rate(48, tier)))               // PHASE 1: random giant knives
-      drop(box.x + 34 + rng() * (box.w - 68), 2.6, 1.0);
+    if (f < 300 && every(f, rate(26, tier))) {             // PHASE 1: MANY random fast knives
+      drop(box.x + 30 + rng() * (box.w - 60), 6.5 + rng() * 1.5, 1.0);
+    }
     const seq = f - 300;
-    if (seq >= 0 && seq % rate(64, tier) === 0) {           // PHASE 2: the set pattern
-      const n = Math.floor(seq / rate(64, tier));
-      if (n === 0 || n === 2) { drop(box.x + 44, 3.0, 1.0); drop(box.x + box.w - 44, 3.0, 1.0); }   // edges in
-      else if (n === 1) drop(box.x + box.w / 2, 3.0, 1.0);                                          // dead centre
-      else if (n === 3) { drop(box.x + 96, 3.0, 1.0); drop(box.x + box.w - 96, 3.0, 1.0); }          // edges again
-      else if (n === 4)   // FINAL: a screen-filling Devilsknife that stops partway - stay LOW to survive
-        add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: -70, vx: 0, vy: 0,
-              lerpY: box.y + box.h * 0.30, lerpRate: 0.03, spin: 0.03, r: 34, scale: 5.2, hitW: 330, hitH: 250, life: 240 });
+    if (seq >= 0 && seq % rate(52, tier) === 0) {           // PHASE 2: the set pattern (fast)
+      const n = Math.floor(seq / rate(52, tier));
+      if (n === 0 || n === 2) { drop(box.x + 44, 7.5, 1.0); drop(box.x + box.w / 2, 7.5, 1.0); drop(box.x + box.w - 44, 7.5, 1.0); }   // edges + centre
+      else if (n === 1) { drop(box.x + box.w * 0.3, 7.5, 1.0); drop(box.x + box.w * 0.7, 7.5, 1.0); }
+      else if (n === 3) { drop(box.x + 80, 7.5, 1.0); drop(box.x + box.w - 80, 7.5, 1.0); }
+      else if (n === 4)   // FINALE: one HUGE Devilsknife descends SLOWLY - DOUBLE damage if touched, but easy: move DOWN
+        add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: -80, vx: 0, vy: 0,
+              lerpY: box.y + box.h * 0.28, lerpRate: 0.02, spin: 0.03, scale: 5.4, hitW: 300, hitH: 240, dmgMult: 2, life: 260 });
     }
   },
 };
@@ -572,54 +575,63 @@ PATTERNS.sneo_heads = {   // FLYING HEADS: a row of 4 heads decelerates to ~66% 
 PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; fires 3 rounds of a 5-bullet 180 arc
   dur: 520, box: { w: 190, h: 190 },
   tick(a) {
-    const { f, box, tier, add } = a;
-    const cx0 = box.x + box.w * 0.85, amp = box.w * 0.28, cy = box.y + box.h * 0.44;   // never reaches past box middle
-    if (f === 0)   // the shootable heart - shots damage it AND knock it back toward Spamton
-      add({ ...bulletProps('sneowire'), x: cx0, y: cy, vx: 0, vy: 0,
-            swing: { cx: cx0, amp, spd: 0.028 }, shootable: true, hp: 16, pushOnShot: 12, spin: 0.05, r: 15, life: 514 });
-    const hx = cx0 + amp * Math.sin(0.028 * f);
-    // green connector "arm" from Spamton (right edge) to the heart, like the heart's chain
-    a.fx.arms = [{ x1: box.x + box.w + 40, y1: box.y + box.h * 0.3, x2: hx, y2: cy }];
-    // three rounds per cycle with delay between each: a 5-bullet fan across a leftward 180 arc.
-    // DIAMONDS pointing where they travel, no spin.
-    const cyc = f % rate(150, tier);
-    if (cyc === 0 || cyc === 26 || cyc === 52)
-      for (let k = 0; k < 5; k++) {
-        const ang = Math.PI / 2 + k * (Math.PI / 4);         // PI/2..3PI/2 : down -> left -> up
-        // small diamonds STRETCHED 200% along their travel direction, no spin
-        add({ ...bulletProps('diamond'), x: hx, y: cy, vx: Math.cos(ang) * 2.5, vy: Math.sin(ang) * 2.5, rot: ang, spin: 0, r: 5, scale: 0.8, sx: 2 });
+    const { f, box, add } = a;
+    if (f !== 0) return;
+    const anchorX = box.x + box.w + 40, anchorY = box.y + box.h * 0.3;   // Spamton's side (chain anchor)
+    const reach = box.w * 0.66;                                          // as far as the heart can extend toward you
+    // the heart PROACTIVELY reaches toward the player; when fully extended it fires 3 aimed shots.
+    // Shoot it to shove it back toward Spamton (buying space).
+    const heart = { ...bulletProps('sneowire'), x: box.x + box.w * 0.8, y: box.y + box.h / 2, vx: 0, vy: 0,
+                    shootable: true, hp: 9999, pushOnShot: 8, spin: 0.05, r: 15, _cd: 30 };
+    heart.emit = function (b, out, soul, bx, fx) {
+      b.x += (soul.x - b.x) * 0.055; b.y += (soul.y - b.y) * 0.055;      // ease toward the player
+      const dx = b.x - anchorX, dy = b.y - anchorY, d = Math.hypot(dx, dy) || 1;
+      if (d > reach) { b.x = anchorX + dx / d * reach; b.y = anchorY + dy / d * reach; }   // clamp to max reach
+      b.x = Math.max(bx.x + 18, Math.min(bx.x + bx.w - 8, b.x));
+      b.y = Math.max(bx.y + 12, Math.min(bx.y + bx.h - 12, b.y));
+      fx.arms = [{ x1: anchorX, y1: anchorY, x2: b.x, y2: b.y }];
+      if (b._cd > 0) b._cd--;
+      if (d >= reach - 8 && b._cd <= 0) {   // fully extended toward the player -> fire 3 aimed shots
+        b._cd = 64;
+        const base = Math.atan2(soul.y - b.y, soul.x - b.x);
+        for (let k = -1; k <= 1; k++) { const ang = base + k * (Math.PI / 7);
+          out.push({ ...bulletProps('diamond'), x: b.x, y: b.y, vx: Math.cos(ang) * 2.8, vy: Math.sin(ang) * 2.8, rot: ang, spin: 0, r: 5, scale: 0.8, sx: 2 }); }
       }
+    };
+    add(heart);
   },
 };
-PATTERNS.sneo_mail = {   // SPAM MAIL: cars carry towers R->L. A scripted escalation - easy singles, then a
-  dur: 820, box: { w: 260, h: 190 },   // bigshot-able batch, then bomb-heavy cars, then a 3-bomb no-head finale.
+// SPAM MAIL schedule: cars enter from the RIGHT and drive cleanly LEFT (constant speed, no decel/
+// reversing). Explicit timeline: easy singles -> a back-to-back batch of lined-head cars (one BIG SHOT
+// column clears them) -> harder cars -> a 3-bomb no-head finale. [frame, type]
+const MAIL_SCRIPT = [
+  [30, 'easy'], [122, 'easy'], [214, 'hard'],
+  [300, 'lined'], [342, 'lined'], [384, 'lined'], [426, 'lined'],
+  [504, 'hard'], [596, 'hard'],
+  [726, 'bomb'], [818, 'bomb'],
+];
+PATTERNS.sneo_mail = {
+  dur: 980, box: { w: 260, h: 190 },
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const period = rate(66, tier);
-    if (f % period === 0 && f < 760) {
-      const w = Math.floor(f / period);
+    const { f, rng, box, add } = a;
+    for (const [t, type] of MAIL_SCRIPT) {
+      if (f !== t) continue;
       let fill;
-      if (w <= 2) {                                   // EASY: a few separate cars, one head, well spaced
-        fill = ['m', 'm', 'm', 'm', 'm']; fill[1 + (w % 3)] = 'h';
-      } else if (w <= 6) {                            // BATCH of 4: head on the SAME slot each wave -> one BIG SHOT column clears them all
-        fill = ['m', 'm', 'm', 'm', 'm']; fill[2] = 'h';
-      } else if (w <= 9) {                            // HARDER: two bombs + a head, shuffled
-        fill = ['m', 'm', 'h', 'b', 'b'];
-        for (let i = fill.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [fill[i], fill[j]] = [fill[j], fill[i]]; }
-      } else {                                        // FINALE: 3 bombs, NO heads - shoot them, move, slip the gap
-        fill = ['b', 'm', 'b', 'm', 'b'];
-      }
-      const tx = box.x + box.w + 26, vx = -2.5, ax = 0.006;    // decelerates, but keeps drifting past the player
-      const slotH = box.h / 5;                                  // EXACTLY 5 slots between the two squares
-      add({ ...bulletProps('sneobox'), x: tx, y: box.y - 4, vx, ax, r: 9 });                 // top square
+      if (type === 'easy') { fill = ['m', 'm', 'm', 'm', 'm']; fill[1 + Math.floor(rng() * 3)] = 'h'; }
+      else if (type === 'lined') { fill = ['m', 'm', 'm', 'm', 'm']; fill[2] = 'h'; }   // head always slot 2 -> bigshot column
+      else if (type === 'hard') { fill = ['m', 'h', 'm', 'h', 'b']; for (let i = fill.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [fill[i], fill[j]] = [fill[j], fill[i]]; } }
+      else fill = ['b', 'm', 'b', 'm', 'b'];   // BOMB CAR: 3 bombs, no heads
+      const tx = box.x + box.w + 26, vx = -2.8;   // constant leftward speed - exits cleanly, never comes back
+      const slotH = box.h / 5;
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y - 4, vx, r: 9 });                    // top square
       for (let s = 0; s < 5; s++) {
-        const sy = box.y + (s + 0.5) * slotH, sc = slotH / (20 * 1.6);   // one sprite per slot, sized to FILL it
-        if (fill[s] === 'm') add({ ...bulletProps('sneomail'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc });
-        else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1 });
-        else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, ax, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1, bomb: true });   // shot -> cross laser
+        const sy = box.y + (s + 0.5) * slotH, sc = slotH / (20 * 1.6);
+        if (fill[s] === 'm') add({ ...bulletProps('sneomail'), x: tx, y: sy, vx, r: slotH * 0.42, scale: sc });
+        else if (fill[s] === 'h') add({ ...bulletProps('sneohead'), x: tx, y: sy, vx, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1 });
+        else add({ ...bulletProps('sneobomb'), x: tx, y: sy, vx, r: slotH * 0.42, scale: sc * 0.9, shootable: true, hp: 1, bomb: true });
       }
-      add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 4, vx, ax, r: 9 });         // bottom square
-      add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 22, vx, ax, r: 0, noHit: true });  // the car
+      add({ ...bulletProps('sneobox'), x: tx, y: box.y + box.h + 4, vx, r: 9 });            // bottom square
+      add({ ...bulletProps('sneocar'), x: tx, y: box.y + box.h + 22, vx, r: 0, noHit: true });   // the car
     }
   },
 };
@@ -629,7 +641,7 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
     const { f, box, add } = a;
     if (f !== 0) return;
     const head = { ...bulletProps('sneohead'), x: box.x + box.w, y: box.y + box.h / 2,
-      vx: -0.276, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 9, maxv: 3, _ball: 74 };
+      vx: -0.38, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 4.5, maxv: 3, _ball: 74 };
     head.emit = function (b, out, soul, bx, fx) {
       // can't be shot back past the box's right edge (no more knocking him off-screen)
       b.x = Math.min(bx.x + bx.w, b.x);
@@ -649,7 +661,7 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
       if (--b._ball <= 0) {
         b._ball = 70;
         out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -2.2, ax: 0.04, vy: 0, r: 6, scale: 0.6, flash: true,
-          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.0, burstImg: 'sneosound', burstScale: 0.5, burstR: 5 });
+          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.0, burstImg: 'sneosound', burstScale: 1.0, burstR: 10 });
       }
     };
     add(head);
@@ -708,19 +720,23 @@ PATTERNS.sneo_face = {   // EYES NOSE AND MOUTH: square player box + Spamton's r
   },
 };
 PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton advances while sucking $ (then firing
-  dur: 900, box: { w: 300, h: 180 },   // BIG SHOTs). He's SHOOTABLE - your big shots shove him back for room.
+  dur: 1000, box: { w: 300, h: 180 },   // BIG SHOTs). He's SHOOTABLE - your big shots shove him back for room.
   tick(a) {
     const { f, box, add } = a;
     if (f !== 0) return;
     const B = { x: box.x, y: box.y, w: box.w, h: box.h }, cy = B.y + B.h / 2, boxR = B.x + B.w;
     const far = boxR + 80, near = boxR - 4;   // b.x tracks his MOUTH; it aligns with the box's right edge up close
     const SUCK = 460;                          // the suck lasts noticeably longer now
-    const MOUTHDX = 150, MOUTHDY = -18;        // sprite-centre offset from the mouth (for the 233x240 sprite, ~2x)
-    // the boss is a shootable controller: he creeps closer each frame; your BIG SHOTs shove him RIGHT for room
-    const boss = { x: far, y: cy, vx: 0, vy: 0, r: 60, noHit: true, shootable: true, hp: 9999999, pushOnShot: 9,
-                   _d: 0, _shotN: 0 };
+    const MOUTHDX = 150, MOUTHDY = 34;         // sprite-centre offset from the mouth -> mouth lands on the box centre
+    // the boss is an INVISIBLE shootable controller (drawn via fx.boss); big shots shove him RIGHT for room
+    const boss = { x: far, y: cy, vx: 0, vy: 0, r: 60, noHit: true, noDraw: true, shootable: true, hp: 9999999, pushOnShot: 9,
+                   _d: 0, _shotN: 0, _boom: 0 };
     boss.emit = function (b, out, soul, bx, fx) {
       fx.blackout = true;
+      if (b.t > 956) {   // ENDING: white flash + explosion sound (the final shot detonating) - transition out
+        fx.whiteout = Math.min(1, (b.t - 956) / 30);
+        if (!b._boom) { b._boom = 1; Snd.play('sneoover', 0.75); }
+      }
       b.x = Math.max(near, Math.min(far, b.x));                         // clamp the mouth to its range
       const approach = Math.max(0, Math.min(1, (far - b.x) / (far - near)));
       if (b.t < SUCK) {
@@ -742,15 +758,18 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton
         const p2 = b.t - SUCK, SHOT = 82;
         if (p2 >= 0 && p2 % SHOT === 0) {
           const n = b._shotN++;
-          if (n < 5) {   // BIG SHOTs fire from his MOUTH into the box, alternating bottom/top
-            const bottom = (n % 2) === 0, hitH = B.h * 0.62, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
-            out.push({ ...bulletProps('sneobig'), x: b.x - 20, y: cyy + bob * 0.4, vx: -3.4, vy: 0, hitW: 116, hitH, scale: hitH / 58, rot: 0 });
-          } else if (n === 5) {   // FINALE: one massive full-box shot, slow - hug the LEFT; it fizzles out
-            out.push({ ...bulletProps('sneobig'), x: b.x - 20, y: cy, vx: -1.0, vy: 0, hitW: 150, hitH: B.h, scale: B.h / 54, rot: 0, life: 240 });
+          if (n < 5) {   // BIG SHOTs from his MOUTH; hitbox is tight to the sprite (hitDX shifts it to the front)
+            const bottom = (n % 2) === 0, hitH = B.h * 0.6, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
+            out.push({ ...bulletProps('sneobig'), x: b.x - 20, y: cyy + bob * 0.4, vx: -3.4, vy: 0, hitW: 82, hitDX: -14, hitH, scale: hitH / 58, rot: 0 });
+          } else if (n === 5) {   // FINALE: a full-height shot you MUST push back - else it reaches the left and hits
+            out.push({ ...bulletProps('sneobig'), x: b.x - 10, y: cy, vx: -0.9, vy: 0, hitW: 96, hitDX: -18, hitH: B.h, scale: B.h / 54, rot: 0,
+                       shootable: true, hp: 999999, pushOnShot: 6, life: 320 });
           }
         }
       }
     };
+    // ENDING: the box flashes WHITE with an explosion sound (the final shot detonating) - just the transition
+    boss._endEmit = true;
     add(boss);
   },
 };
@@ -828,17 +847,18 @@ PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotat
         add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 7,   // even thicker; reaches every edge (masked to the box)
               x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.93, tellT: 52, armWindow: 10, dmg: 24 });
     }
-    // FINALE - the SPINNING LINE: single centre lines keep appearing, each ~10% (of a turn) further
-    // around than the last (no spin velocity). Circle the centre to slip each cut. Dodgeable cadence.
+    // FINALE - the SPINNING-LINE SPAM: ~40 centre lines fire in a rapid sweep, each ~9deg further around
+    // (a full 360 in ~1.2s), each with a fast tell then cut + screenshake. Circle the centre to survive.
     const FIN = 16 + SEQ.length * GAP + 44;
-    if (f >= FIN && f < FIN + 360 && (f - FIN) % rate(20, tier) === 0) {
-      const k = Math.floor((f - FIN) / rate(20, tier));
+    if (f >= FIN && f < FIN + 80 && (f - FIN) % 2 === 0) {
+      const k = (f - FIN) / 2;   // 40 lines, 9deg apart
       add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 6,
-            x: cx, y: cy, rot: k * (Math.PI * 2 * 0.1), vx: 0, vy: 0, tellT: 34, armWindow: 9, dmg: 22 });
+            x: cx, y: cy, rot: k * (Math.PI * 2 / 40), vx: 0, vy: 0, tellT: 16, armWindow: 7, dmg: 22, shakeOnCut: true });
     }
   },
 };
 const RK_FLAME = ['rkflame0', 'rkflame1', 'rkflame2', 'rkflame3', 'rkflame4', 'rkflame5'];
+const RK_FLAME_BIG = ['rkflamebig0', 'rkflamebig1', 'rkflamebig2', 'rkflamebig3', 'rkflamebig4', 'rkflamebig5'];
 PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY splits (soul rides its half) with
   dur: 560,                  // mystical FLAME on the broken edges; teeth (pointing DOWN) fire in two waves of 4.
   tick(a) {
@@ -865,29 +885,30 @@ PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY
         for (let j = 1; j < s.length; j++) { run = s[j] === s[j - 1] + 1 ? run + 1 : 1; if (run >= 3) { ok = false; break; } }
         if (ok) break;
       }
+      // MYSTICAL FLAME on the broken edges FIRST (big split-flame sprite, scaled to sit within the box)
+      // so the TEETH draw on top of it.
+      const NF = 9, fbase = { animKeys: RK_FLAME_BIG, animRate: 4, r: 0, noHit: true, life: 74, vx: 0, vy: 0, scale: 0.5 };
+      for (let i = 0; i < NF; i++) {
+        const t = (i + 0.5) / NF;
+        if (horiz) { const x = box.x + t * box.w;
+          add({ ...bulletProps('rkflamebig0'), ...fbase, x, y: cy - 5, ridesSplit: 1 });
+          add({ ...bulletProps('rkflamebig0'), ...fbase, x, y: cy + 5, ridesSplit: -1, flip: true });
+        } else { const y = box.y + t * box.h;
+          add({ ...bulletProps('rkflamebig0'), ...fbase, x: cx - 5, y, ridesSplit: 1, rot: Math.PI / 2 });
+          add({ ...bulletProps('rkflamebig0'), ...fbase, x: cx + 5, y, ridesSplit: -1, rot: -Math.PI / 2 });
+        }
+      }
+      // TEETH (on top of the flame), pointing INTO the gap per the cut direction
       for (let i = 0; i < 8; i++) {
         const t = (i + 0.5) / 8, when = firstWave.includes(i) ? 20 : 46;   // teeth smaller (0.8) + FASTER fire
-        if (horiz) {
+        if (horiz) {   // horizontal cut: top teeth point DOWN into the gap, bottom teeth point UP
           const x = box.x + t * box.w;
           add({ ...bulletProps('knighttooth'), x, y: cy - 7, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: 1, fireAt: when, fireVY: -3.7 });
           add({ ...bulletProps('knighttooth'), x, y: cy + 7, vx: 0, vy: 0, rot: Math.PI, scale: 0.8, r: 6, noHit: true, ridesSplit: -1, fireAt: when, fireVY: 3.7 });
-        } else {
-          const y = box.y + t * box.h;   // vertical cut: teeth still point DOWN (rot 0), fire sideways into the gap
-          add({ ...bulletProps('knighttooth'), x: cx - 7, y, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: 1, fireAt: when, fireVX: -3.7 });
-          add({ ...bulletProps('knighttooth'), x: cx + 7, y, vx: 0, vy: 0, rot: 0, scale: 0.8, r: 6, noHit: true, ridesSplit: -1, fireAt: when, fireVX: 3.7 });
-        }
-      }
-      // MYSTICAL FLAME riding both broken edges (spr_rk_split_flame animation)
-      const N = 7;
-      for (let i = 0; i < N; i++) {
-        const t = (i + 0.5) / N;
-        const base = { animKeys: RK_FLAME, animRate: 4, r: 0, noHit: true, life: 74, vx: 0, vy: 0 };
-        if (horiz) { const x = box.x + t * box.w;
-          add({ ...bulletProps('rkflame0'), ...base, x, y: cy - 6, ridesSplit: 1 });
-          add({ ...bulletProps('rkflame0'), ...base, x, y: cy + 6, ridesSplit: -1, flip: true });
-        } else { const y = box.y + t * box.h;
-          add({ ...bulletProps('rkflame0'), ...base, x: cx - 6, y, ridesSplit: 1, rot: Math.PI / 2 });
-          add({ ...bulletProps('rkflame0'), ...base, x: cx + 6, y, ridesSplit: -1, rot: -Math.PI / 2 });
+        } else {   // vertical cut: left teeth point RIGHT into the gap, right teeth point LEFT
+          const y = box.y + t * box.h;
+          add({ ...bulletProps('knighttooth'), x: cx - 7, y, vx: 0, vy: 0, rot: -Math.PI / 2, scale: 0.8, r: 6, noHit: true, ridesSplit: 1, fireAt: when, fireVX: -3.7 });
+          add({ ...bulletProps('knighttooth'), x: cx + 7, y, vx: 0, vy: 0, rot: Math.PI / 2, scale: 0.8, r: 6, noHit: true, ridesSplit: -1, fireAt: when, fireVX: 3.7 });
         }
       }
     }
@@ -936,7 +957,8 @@ PATTERNS.knight_roar = {
       add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp,
             ax: -Math.cos(th) * sp * 0.02, ay: -Math.sin(th) * sp * 0.02, spin: 0, r: 8,
             redAt: burstIn - 18, burst: burstIn, burstN: 6, burstImg: 'knighttri',
-            burstSpeed: 1.1, burstScale: 0.95, burstLife: 180, burstShrink: 0.985, burstFade: true });
+            // shards keep full size; hold 1s then fade OPACITY only, and stop hurting once faint (<40%)
+            burstSpeed: 1.0, burstScale: 1.0, burstLife: 200, burstFade: true, burstFadeDelay: 60 });
     };
     if (f === ROAR_ROAR) for (let i = 0; i < 12; i++) outStar(i * Math.PI / 6, 3.0);   // opening 12-star
     if (f > ROAR_ROAR + 20 && f < ROAR_EXPLODE - 50 && every(f, rate(16, tier)))       // denser bursts of 4-5

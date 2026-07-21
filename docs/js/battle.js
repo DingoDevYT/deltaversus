@@ -825,7 +825,7 @@ Battle.updDodge = function () {
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
-  B.fx.bgStars = false; B.fx.shake = 0;
+  B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
@@ -849,7 +849,11 @@ Battle.updDodge = function () {
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
-    if (b.fade && b.life) b.alpha = Math.max(0, 1 - b.t / b.life);   // fade out over its lifetime (roar shards)
+    if (b.fade && b.life) {   // roar shards: hold full for fadeDelay, then fade OPACITY only; stop hurting once faint
+      const fd = b.fadeDelay || 0;
+      b.alpha = b.t <= fd ? 1 : Math.max(0, 1 - (b.t - fd) / Math.max(1, b.life - fd));
+      if (b.alpha < 0.4) b.noHit = true;
+    }
     if (b.redAt != null && b.t >= b.redAt) b.tint = '#f33';   // roar stars turn RED just before shattering
     // axis-tracking sword (Knight directional swords): fade in red at 50%, slide to line up
     // with the soul, then turn white and fire fast (with an SFX)
@@ -865,7 +869,7 @@ Battle.updDodge = function () {
       }
     }
     if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }   // parked teeth launch
-    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('boarddmg', 0.5); }   // tell -> live cut
+    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('boarddmg', 0.5); if (b.shakeOnCut) B.shake = Math.max(B.shake, 7); }   // tell -> live cut (+screenshake)
     if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
     // controller bullets (climbing head, face parts, giant Spamton) emit projectiles from their LIVE
     // position; emitted children INHERIT the controller's per-hit damage + target (else they'd be 10)
@@ -912,14 +916,15 @@ Battle.updDodge = function () {
       const along = Math.abs((B.soul.x - b.x) * Math.cos(b.rot || 0) + (B.soul.y - b.y) * Math.sin(b.rot || 0));
       lineHit = perp < (b.thick || 6) / 2 + SOUL_R && along < (b.len || 400) / 2 + SOUL_R;
     }
-    // rectangular hitbox (hitW/hitH) for wall-shaped bullets (BIG SHOT, teeth); else circular
-    const rectHit = b.hitW && Math.abs(b.x - B.soul.x) < b.hitW / 2 + SOUL_R && Math.abs(b.y - B.soul.y) < b.hitH / 2 + SOUL_R;
+    // rectangular hitbox (hitW/hitH) for wall-shaped bullets (BIG SHOT, teeth); hitDX shifts it toward the
+    // visible sprite (so the empty "tail" behind a BIG SHOT doesn't hit); else circular
+    const rectHit = b.hitW && Math.abs(b.x + (b.hitDX || 0) - B.soul.x) < b.hitW / 2 + SOUL_R && Math.abs(b.y - B.soul.y) < b.hitH / 2 + SOUL_R;
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
     if (lineHit || rectHit || (!b.hitW && b.shape !== 'line' && dist < (b.r || 6) + SOUL_R)) {
       if (B.iframes <= 0) {
         const tgtDef = (b.target != null && B.myTeam[b.target] && B.myTeam[b.target].action && B.myTeam[b.target].action.cmd === 'defend');
         const guard = B.myGuardBuff > 0 ? 0.5 : 1;   // Northernlight damage shield
-        const dmg = Math.max(1, Math.round((b.dmg || 10) * ((defending || tgtDef) ? 0.5 : 1) * guard * (0.9 + Math.random() * 0.2)));
+        const dmg = Math.max(1, Math.round((b.dmg || 10) * (b.dmgMult || 1) * ((defending || tgtDef) ? 0.5 : 1) * guard * (0.9 + Math.random() * 0.2)));
         B.dmgTaken += dmg;
         const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
         B.iframes = IFRAMES; B.shake = 14; B.flash = 8;
@@ -1145,6 +1150,7 @@ Battle.render = function (ctx) {
     drawText(ctx, 'big', p.txt, p.x, p.y - 20 - dy + (p.t > 50 ? (p.t - 50) : 0), { color: p.color, align: 'center', scale: 0.7 });
   }
   if (B.flash > 0) { ctx.fillStyle = 'rgba(255,0,0,' + (B.flash / 40) + ')'; ctx.fillRect(0, 0, 640, 480); }
+  if (B.fx && B.fx.whiteout > 0) { ctx.fillStyle = 'rgba(255,255,255,' + Math.min(1, B.fx.whiteout) + ')'; ctx.fillRect(0, 0, 640, 480); }
   ctx.restore();
 };
 
@@ -1320,7 +1326,7 @@ function updCarousel(b) {
   b.x = c.cx + Math.sin(c.ang) * c.R;
   b.y = c.rowY + Math.sin(c.ang * 3 + c.phase) * c.bob;   // the whole column bobs together
   b.scale = 0.62 + 0.5 * (depth * 0.5 + 0.5);
-  b.alpha = depth < -0.1 ? 0.35 : 1;
+  b.noDraw = depth < 0.02;                                 // the far (behind-the-box) side is NOT drawn
   b.noHit = depth < 0.12;                                  // only front-facing horses collide
   b.flip = depth < 0;                                      // face the way it's travelling
 }
@@ -1340,7 +1346,7 @@ function burstChildren(b) {
       dmg: b.dmg, target: b.target, x: b.x, y: b.y,
       vx: Math.cos(ang) * bsp, vy: Math.sin(ang) * bsp,
       rot: b.burstImg ? ang : 0, spin: b.burstSpin != null ? b.burstSpin : (b.burstImg ? 0 : 0.2),
-      life: b.burstLife, shrink: b.burstShrink, fade: b.burstFade, t: 0, phase0: 0 });
+      life: b.burstLife, shrink: b.burstShrink, fade: b.burstFade, fadeDelay: b.burstFadeDelay, t: 0, phase0: 0 });
   }
   return out;
 }
@@ -1373,6 +1379,7 @@ function tintImg(img, color) {
 }
 
 function drawBullet(ctx, b, px, py, s) {
+  if (b.noDraw) return;   // invisible controller bullets (e.g. the BIG SHOT boss anchor)
   if (b.drawDX) px += b.drawDX * s;   // visual offset from the hitbox (overlaid face layers)
   if (b.drawDY) py += b.drawDY * s;
   if (b.img && b.img.width) {
