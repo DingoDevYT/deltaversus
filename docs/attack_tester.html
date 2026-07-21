@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DELTAVERSUS — Attack Tester</title>
+<style>
+  :root { --bg:#0c0c14; --card:#15151f; --line:#2a2a3a; --ink:#e8e8f0; --dim:#8a8aa0; --accent:#ffe100; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; }
+  #menu { padding:16px; max-width:1100px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 0 2px; }
+  .sub { color:var(--dim); font-size:13px; margin-bottom:14px; }
+  .bar { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+  .bar label { font-size:13px; color:var(--dim); }
+  select, button { font:inherit; }
+  select { background:#20202e; color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:6px 9px; }
+  .grp { margin-bottom:14px; }
+  .grp h2 { font-size:13px; letter-spacing:.5px; text-transform:uppercase; color:var(--dim); margin:0 0 6px; border-bottom:1px solid var(--line); padding-bottom:4px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; }
+  .atk { cursor:pointer; border:1px solid var(--line); background:#1a1a26; color:var(--ink); border-radius:8px; padding:8px 12px; font-size:14px; }
+  .atk:hover { border-color:var(--accent); background:#23232e; }
+  .atk .k { color:var(--dim); font-size:11px; display:block; }
+  /* play view */
+  #play { display:none; position:fixed; inset:0; background:#000; z-index:10; }
+  #game { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); image-rendering:pixelated;
+          width:min(96vw, 176vh); height:auto; aspect-ratio:4/3; background:#000; }
+  #hud { position:fixed; top:10px; left:12px; z-index:11; font-size:15px; text-shadow:0 1px 2px #000; }
+  #hud b { color:var(--accent); }
+  #hud .dmg { color:#ff5a5a; font-weight:700; font-size:20px; }
+  #ctl { position:fixed; top:8px; right:12px; z-index:11; display:flex; gap:8px; }
+  #ctl button { background:#20202e; color:var(--ink); border:1px solid var(--line); border-radius:7px; padding:7px 12px; cursor:pointer; }
+  #ctl button:hover { border-color:var(--accent); }
+  #done { position:fixed; inset:0; z-index:12; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
+  #done .box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:24px 30px; text-align:center; min-width:280px; }
+  #done h3 { margin:0 0 6px; font-size:18px; }
+  #done .big { font-size:34px; color:#ff5a5a; font-weight:800; margin:10px 0; }
+  #done .g { color:#38d878; }
+  #done button { margin:6px; }
+  #loading { padding:40px; text-align:center; color:var(--dim); }
+  kbd { background:#20202e; border:1px solid var(--line); border-radius:4px; padding:1px 5px; font-size:12px; }
+</style>
+</head>
+<body>
+  <div id="menu">
+    <h1>DELTAVERSUS — Attack Tester</h1>
+    <div class="sub">Pick any attack and dodge it for real. Move with <kbd>←↑↓→</kbd>/<kbd>WASD</kbd>. Yellow-SOUL fights: hold <kbd>Z</kbd> to charge, release to fire. Damage taken is tracked live.</div>
+    <div class="bar">
+      <label>Difficulty <select id="tier"><option value="0">WEAK (0)</option><option value="1" selected>GOOD (1)</option><option value="2">PERFECT (2)</option></select></label>
+      <label>Defender <select id="defender"></select></label>
+      <label><input type="checkbox" id="invuln"> invulnerable (just watch/practice)</label>
+    </div>
+    <div id="list"><div id="loading">Loading assets…</div></div>
+  </div>
+
+  <div id="play">
+    <canvas id="game" width="640" height="480"></canvas>
+    <div id="hud"><div><b id="atkname"></b></div><div>Damage taken: <span class="dmg" id="dmg">0</span></div><div id="hits" style="color:#8a8aa0;font-size:12px"></div></div>
+    <div id="ctl"><button id="retry">↻ Retry (R)</button><button id="back">✕ Menu (Esc)</button></div>
+    <div id="done"><div class="box">
+      <h3 id="doneTitle">Attack complete</h3>
+      <div class="big" id="doneDmg">0</div>
+      <div id="doneSub" style="color:#8a8aa0;font-size:13px"></div>
+      <div style="margin-top:14px"><button id="doneRetry">↻ Retry</button><button id="doneMenu">Menu</button></div>
+    </div></div>
+  </div>
+
+<!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
+<script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
+<script src="js/rng.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/patterns.js"></script>
+<script src="js/battle.js"></script>
+<script>
+const ctx = document.getElementById('game').getContext('2d');
+const el = id => document.getElementById(id);
+const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
+let running = false, current = null, rafId = 0;
+
+// ---- build the list of every ATTACK move from the real character kits ----
+function moveAction(defId, move) {
+  const def = CHARS[defId];
+  if (move === def.fight) return { cmd: 'fight', target: 0 };
+  if (def.ult && move === def.ult) return { cmd: 'magic', move: def.ult.id, target: 0 };
+  if ((def.spells || []).includes(move)) return { cmd: 'magic', move: move.id, target: 0 };
+  if ((def.acts || []).includes(move)) return { cmd: 'act', move: move.id, target: 0 };
+  return null;
+}
+function buildList() {
+  const list = el('list'); list.innerHTML = '';
+  for (const id of CHAR_IDS) {
+    const def = CHARS[id];
+    const moves = [def.fight, ...(def.spells || []), def.ult, ...(def.acts || [])].filter(m => m && isAttack(m));
+    if (!moves.length) continue;
+    const grp = document.createElement('div'); grp.className = 'grp';
+    grp.innerHTML = '<h2>' + (def.shortName || def.name) + '</h2>';
+    const row = document.createElement('div'); row.className = 'row';
+    for (const m of moves) {
+      const b = document.createElement('button'); b.className = 'atk';
+      const kind = m === def.fight ? 'FIGHT' : m === def.ult ? 'ULT' : (def.acts || []).includes(m) ? 'ACT' : 'SPELL';
+      b.innerHTML = m.name + '<span class="k">' + kind + ' · ' + (m.dmg || '?') + ' dmg</span>';
+      b.onclick = () => startAttack(id, m);
+      row.appendChild(b);
+    }
+    grp.appendChild(row); list.appendChild(grp);
+  }
+  // defender dropdown
+  const dd = el('defender');
+  for (const id of CHAR_IDS) { const o = document.createElement('option'); o.value = id; o.textContent = (CHARS[id].shortName || CHARS[id].name); dd.appendChild(o); }
+  dd.value = 'kris';
+}
+
+// ---- start a chosen attack: set up a 1v1 dodge and run our own loop ----
+function startAttack(attackerId, move) {
+  const tier = +el('tier').value, defId = el('defender').value;
+  const seed = Math.floor(Math.random() * 1e9);
+  const B = Battle;
+  Battle.init({ myTeam: [defId], oppTeam: [attackerId], size: 1, myItems: [], oppItems: [], matchN: 1 });
+  const foe = B.oppTeam[0];
+  foe.action = { ...moveAction(attackerId, move), seed };
+  B.oppTiers = [{ mi: 0, tier }];
+  B.pacifyOpp = false; B.myGuardBuff = 0; B.myPowerBuff = 0; B.fxOnMe = null; B.myTP = 100;
+  const me = B.myTeam[0]; me.max = 99999; me.hp = 99999;   // survive the whole attack so we can measure it
+  B.startDodge(); B.phase = 'dodge';
+  current = { attackerId, move, defId, tier, seed, hits: 0, lastDmg: 0 };
+  el('atkname').textContent = (CHARS[attackerId].shortName || CHARS[attackerId].name) + ' — ' + move.name;
+  el('menu').style.display = 'none'; el('play').style.display = 'block'; el('done').style.display = 'none';
+  running = true; loop();
+}
+
+function loop() {
+  if (!running) return;
+  const B = Battle;
+  B.anim.f++;
+  if (B.phase === 'dodge') {
+    if (el('invuln').checked) B.iframes = 999;   // practice mode: watch without taking damage
+    B.updDodge();
+    // count hits (dmgTaken jumps up on a hit)
+    if (B.dmgTaken > current.lastDmg) { current.hits++; current.lastDmg = B.dmgTaken; }
+    el('dmg').textContent = B.dmgTaken;
+    el('hits').textContent = current.hits + ' hit' + (current.hits === 1 ? '' : 's');
+  }
+  Battle.render(ctx);
+  Input.flush();
+  if (B.phase !== 'dodge' && B.phase !== 'boxin') { finish(); return; }
+  rafId = requestAnimationFrame(loop);
+}
+
+function finish() {
+  running = false; cancelAnimationFrame(rafId);
+  Snd.stop && Snd.stop(Battle._chargeSnd);
+  el('doneDmg').textContent = Battle.dmgTaken;
+  el('doneDmg').className = Battle.dmgTaken === 0 ? 'big g' : 'big';
+  el('doneSub').textContent = current.hits + ' hit' + (current.hits === 1 ? '' : 's') + ' · ' +
+    (CHARS[current.attackerId].shortName || CHARS[current.attackerId].name) + ' ' + current.move.name +
+    ' · difficulty ' + ['WEAK', 'GOOD', 'PERFECT'][current.tier];
+  el('doneTitle').textContent = Battle.dmgTaken === 0 ? 'FLAWLESS!' : 'Attack complete';
+  el('done').style.display = 'flex';
+}
+function retry() { if (current) startAttack(current.attackerId, current.move); }
+function toMenu() {
+  running = false; cancelAnimationFrame(rafId); Snd.stop && Snd.stop(Battle._chargeSnd);
+  el('play').style.display = 'none'; el('done').style.display = 'none'; el('menu').style.display = 'block';
+}
+el('retry').onclick = retry; el('doneRetry').onclick = retry;
+el('back').onclick = toMenu; el('doneMenu').onclick = toMenu;
+window.addEventListener('keydown', e => {
+  if (el('play').style.display !== 'block') return;
+  if (e.key === 'r' || e.key === 'R') retry();
+  if (e.key === 'Escape') { e.stopPropagation(); toMenu(); }
+}, true);
+
+A.load(buildList);
+</script>
+</body>
+</html>
