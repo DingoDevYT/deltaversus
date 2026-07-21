@@ -193,12 +193,11 @@ const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
 // Every lightner can SPARE. Only KRIS can ACT (his MAGIC slot becomes ACT); the
 // other fun-gang members have no ACT (they only ACT via Kris's dual-acts).
-function oppIsDarkner() { return Battle.oppTeam && Battle.oppTeam.some(o => !isOut(o) && o.def.darkner); }
 function menuFor(mem) {
-  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];   // playing AS a darkner
-  const end = oppIsDarkner() ? 'charge' : 'spare';   // you can't SPARE a darkner boss - CHARGE instead
-  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', end, 'defend'];
-  return ['fight', 'magic', 'item', end, 'defend'];
+  // CHARGE is a DARKNER-only mechanic (Lancer / Jevil / Spamton / Knight). Everyone else SPAREs.
+  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];
+  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'spare', 'defend'];
+  return ['fight', 'magic', 'item', 'spare', 'defend'];
 }
 function spellCost(mem, d) { return isDarkner(mem) ? Math.ceil(d.tp * 0.6) : d.tp; }
 Battle.startSelect = function (fresh) {
@@ -627,7 +626,7 @@ Battle.startDodge = function () {
 
   // YELLOW SOUL: dodging a boss with soulYellow lets you shoot RIGHT (toward them)
   B.soulYellow = oppAtkers.some(a => a.def.soulYellow);
-  B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false; B.pendingLasers = [];
+  B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false; B.pendingLasers = []; B.shotFx = [];
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
 
@@ -761,6 +760,8 @@ Battle.updDodge = function () {
     B._okPrev = ok;
     for (const s of B.shots) s.x += s.vx;
     B.shots = B.shots.filter(s => !s.dead && s.x < bx.x + bx.w + 220);
+    for (const fx of B.shotFx) fx.t++;
+    B.shotFx = B.shotFx.filter(fx => fx.t < 15);
   }
 
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
@@ -815,6 +816,7 @@ Battle.updDodge = function () {
           if (b.pushOnShot) b.x += (s.big ? 2 : 1) * b.pushOnShot;   // small nudge back toward the boss
           b.hp = (b.hp || 1) - (s.power || (s.big ? 4 : 1));
           if (!s.big || --s.pierce <= 0) s.dead = true;
+          B.shotFx.push({ x: b.x, y: b.y, t: 0 });   // shot-hit sparkle vfx
           Snd.play('bosshit', 0.4);
           if (b.hp <= 0) {
             b.dead = true; B.myTP = Math.min(100, B.myTP + 2);
@@ -1178,24 +1180,32 @@ Battle.renderBoxAndBullets = function (ctx) {
   ctx.save(); ctx.beginPath(); ctx.rect(bx.x, bx.y, bx.w, bx.h); ctx.clip();
   for (const b of B.bullets) if (b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
   ctx.restore();
-  // yellow-soul player shots + charge glow
+  // yellow-soul player shots (real sprites: yshot / ybig + trail) + charge indicator
   if (B.soulYellow) {
-    const bigImg = bulletProps('sneobig').img;
+    const shot = A.soul('yshot'), big = A.soul('ybig'), trail = A.soul('ybigtrail');
     for (const s of B.shots) {
-      if (s.big && bigImg && bigImg.width) drawSpr(ctx, bigImg, s.x, s.y, { scale: 1.1, rot: 0 });   // Spamton's own BIG SHOT sprite
-      else if (s.big) { ctx.fillStyle = '#ffea00'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
-      else { ctx.fillStyle = '#fff36b'; ctx.fillRect(s.x - 5, s.y - 2, 10, 4); }
+      if (s.big) { if (trail) drawSpr(ctx, trail, s.x - 14, s.y, { scale: 1, alpha: 0.6 }); if (big) drawSpr(ctx, big, s.x, s.y, { scale: 1 }); }
+      else if (shot) drawSpr(ctx, shot, s.x, s.y, { scale: 1 });
     }
-    if (B.charge > 0) {   // charge ring grows while held; locks bright once it's a BIG SHOT
-      const ready = B.charge >= 26;
-      ctx.strokeStyle = ready ? 'rgba(255,234,0,' + (0.55 + 0.4 * Math.sin(B.anim.f * 0.4)) + ')' : 'rgba(255,243,107,0.6)';
-      ctx.lineWidth = ready ? 3 : 2; ctx.beginPath();
-      ctx.arc(B.soul.x, B.soul.y, 8 + Math.min(14, B.charge * 0.5), 0, 7); ctx.stroke();
+    // shot-hit VFX bursts
+    for (const fx of (B.shotFx || [])) { const im = A.soul('yhit' + Math.min(4, Math.floor(fx.t / 3))); if (im) drawSpr(ctx, im, fx.x, fx.y, { scale: 1 }); }
+    if (B.charge > 0) {   // yellow charge sparks orbit the soul; brighten once it's a BIG SHOT
+      const ch = A.soul('ycharge'), ready = B.charge >= 26, n = ready ? 5 : 3, R = 10 + Math.min(8, B.charge * 0.3);
+      for (let i = 0; i < n; i++) { const a = B.anim.f * 0.25 + i * (6.28 / n);
+        if (ch) drawSpr(ctx, ch, B.soul.x + Math.cos(a) * R, B.soul.y + Math.sin(a) * R, { scale: ready ? 1.3 : 1 }); }
     }
   }
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
-  if (!blink) drawSpr(ctx, B.soulYellow ? tintedSoul('#ffe100') : A.ui('soul'), B.soul.x, B.soul.y, { scale: 1, rot: B.soulYellow ? -Math.PI / 2 : 0 });
-  if (B.grazeFx) { ctx.strokeStyle = 'rgba(255,255,150,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(B.grazeFx.x, B.grazeFx.y, 14 - B.grazeFx.t, 0, 7); ctx.stroke(); }
+  if (!blink) {
+    // the real heart sprites: the yellow "Justice" soul (2-frame pulse) or the normal red heart
+    const soulImg = B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
+    drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: 1 });
+  }
+  if (B.grazeFx) {   // graze sparkle: yellow-soul graze frames, or the soul-shining anim otherwise
+    const el = 8 - B.grazeFx.t;
+    const g = B.soulYellow ? A.soul('ygraze' + Math.min(3, Math.floor(el / 2))) : A.soul('shine' + (Math.floor(el * 1.4) % 12));
+    if (g) drawSpr(ctx, g, B.grazeFx.x, B.grazeFx.y, { scale: 1, alpha: 0.9 });
+  }
   ctx.restore();
   if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.fxOnMe) {
@@ -1310,7 +1320,7 @@ Battle.renderMirror = function (ctx) {
   ctx.beginPath(); ctx.rect(mx - 20, my - 20, mw + 40, mh + 40); ctx.clip();
   for (const b of M.bullets) drawBullet(ctx, b, mx + b.x * s, my + b.y * s, s);
   ctx.globalAlpha = 0.95;
-  drawSpr(ctx, tintedSoul(od.color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
+  drawSpr(ctx, A.soul('red0') || tintedSoul(od.color), mx + M.soul.x * s, my + M.soul.y * s, { scale: 0.75 });
   ctx.restore();
   drawSpr(ctx, A.hued(A.ui('head_' + od.base), od.hue), mx - 18, my + 10, { scale: 1, alpha: 0.9 });
 };

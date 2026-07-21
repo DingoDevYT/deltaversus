@@ -6,7 +6,7 @@ const A = {
   ready: false,
 };
 
-const ASSET_V = 42;   // bump when sprite/manifest files change so browsers refetch
+const ASSET_V = 43;   // bump when sprite/manifest files change so browsers refetch
 A.load = function (done) {
   fetch('assets/manifest.json?a=' + ASSET_V).then(r => r.json()).then(man => {
     A.manifest = man;
@@ -20,6 +20,7 @@ A.load = function (done) {
     for (const ch of ['kris', 'susie', 'ralsei', 'noelle', 'lancer', 'berdly', 'jevil', 'spamton', 'knight'])
       paths.push(`assets/ui/head_${ch}.png`, `assets/ui/head_${ch}_gray.png`);
     for (const k in man.fonts) paths.push(`assets/ui/font_${k}.png`);
+    for (const s in (man.souls || {})) paths.push(`assets/ui/soul/${man.souls[s]}`);
     for (const b in (man.bullets || {})) paths.push(`assets/bullets/${man.bullets[b].f}`);
     for (const ch in (man.anims || {}))
       for (const pose in man.anims[ch])
@@ -53,6 +54,7 @@ A.chrFrames = function (ch, group) {
   return list.map(f => A.img[`assets/chars/${ch}/${f}`]);
 };
 A.ui = p => A.img[`assets/ui/${p}.png`];
+A.soul = k => (A.manifest.souls && A.manifest.souls[k]) ? A.img[`assets/ui/soul/${A.manifest.souls[k]}`] : null;
 
 // wiki-based animation: {frames: [Image], durs: [ms], total}
 // falls back through poses so a missing pose never crashes.

@@ -139,7 +139,7 @@ function makePlayer(canvas, spec) {
   const p = PATTERNS[spec.id];
   const bw = p.box ? p.box.w : 200, bh = p.box ? p.box.h : 200;
   const box = { x: Math.round(CW/2 - bw/2), y: Math.round(CH/2 - bh/2), w: bw, h: bh };
-  const soulImg = tintedSoul(SOULCOL[spec.soul]);
+  const soulImg = A.img[spec.soul === 'yellow' ? 'assets/ui/soul/yheart0.png' : 'assets/ui/soul/red0.png'] || tintedSoul(SOULCOL[spec.soul]);
   let bullets = [], f = 0, seed = spec.id.length + 3, t = 0;
   const rng = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
   const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
@@ -243,8 +243,7 @@ function makePlayer(canvas, spec) {
     for (const b of bullets) if (!b.dead && b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
     ctx.restore();
     // yellow souls FACE RIGHT (they shoot toward Spamton)
-    if (spec.soul === 'yellow') { ctx.save(); ctx.translate(soul.x, soul.y); ctx.rotate(-Math.PI/2); ctx.drawImage(soulImg, -8, -7); ctx.restore(); }
-    else ctx.drawImage(soulImg, soul.x-8, soul.y-7);
+    ctx.drawImage(soulImg, soul.x - soulImg.width/2, soul.y - soulImg.height/2);   // real heart sprite, drawn as-is
     ctx.restore();   // shake wrapper
   }
   return { step, reset };
@@ -327,7 +326,7 @@ A.manifest = { bullets: EMBEDDED_BULLETS, chars:{}, anims:{}, fonts:{} };
 (function loadSprites() {
   const need = [];
   for (const b in A.manifest.bullets) need.push('assets/bullets/' + A.manifest.bullets[b].f);
-  need.push('assets/ui/soul.png');
+  need.push('assets/ui/soul.png', 'assets/ui/soul/yheart0.png', 'assets/ui/soul/red0.png');   // real heart sprites
   let n = need.length;
   if (!n) { A.ready = true; build(); return; }
   for (const p of need) {
