@@ -148,20 +148,20 @@ const CHARS = {
            text: 'SPAMTON NEO: [[NOW\'S YOUR CHANCE TO BE A]] BIG SHOT!!' },
   },
   knight: {
-    name: 'ROARING KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
+    name: 'KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
     dscale: 0.82, bob: true, afterimage: 12,   // hovers + trails ghost afterimages
     desc: 'THE ROARING KNIGHT.\nFINAL SECRET BOSS - 1500 HP.',
-    fight: { id: 'knight_corridor', name: 'Sword Corridor', dmg: 28, dur: 560,
+    fight: { id: 'knight_corridor', name: 'Sword Corridor', dmg: 48, dur: 560,
              text: 'THE KNIGHT opens a SWORD CORRIDOR!' },
     spells: [
-      { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 32, dur: 560, kind: 'attack',
+      { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 56, dur: 560, kind: 'attack',
         text: 'THE KNIGHT aims SWORDS at you!' },
-      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 36, dur: 620, kind: 'attack',
+      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 660, kind: 'attack',
         text: 'THE KNIGHT carves RED SLASHES!' },
-      { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 38, dur: 560, kind: 'attack',
+      { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 64, dur: 560, kind: 'attack',
         text: 'THE KNIGHT BREAKS THE BOARD!' },
     ],
-    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 52, dur: 820, kind: 'attack',
+    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 90, dur: 820, kind: 'attack',
            text: 'THE KNIGHT lets out a ROAR!!' },
   },
 };
@@ -173,6 +173,7 @@ for (const id in CHARS) {
   if (CHARS[id].spare == null) CHARS[id].spare = {};
 }
 CHARS.lancer.cost = 2; CHARS.lancer.darkner = true;
+CHARS.spamton.darkner = true; CHARS.knight.darkner = true;   // dark-world bosses: you CHARGE, you can't SPARE them
 
 // ACT effects: statuses applied to the opponent, active during their next dodge
 // (and/or their next select phase). One turn only.
@@ -191,6 +192,7 @@ const ITEMS = {
   cdbagel:      { name: 'CD Bagel',      heal: 50, desc: 'Heals 50 HP' },
   chocodiamond: { name: 'ChocoDiamond',  heal: 40, tp: 16, desc: 'Heals 40 HP +16 TP' },
   darkcandy:    { name: 'Dark Candy',    heal: 30, desc: 'Heals 30 HP' },
+  revivemint:   { name: 'Revive Mint',   revivePct: 0.5, desc: 'Revives an ally to 50% HP (bypasses debt)' },
 };
 const LOADOUT_SIZE = 3;
 

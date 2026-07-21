@@ -81,7 +81,13 @@ const MOVE_SFX = {
   lancer_spade: 'swing', lancer_storm: 'spellcast', lancer_bike: 'heavyswing',
   lancer_ult: 'ultraswing',
   berdly_fight: 'swing', berdly_bolt: 'icespell', berdly_books: 'spellcast', berdly_ult: 'ultraswing',
-  jevil_spade: 'swing', jevil_diamond: 'spellcast', jevil_carousel: 'spellcast', jevil_ult: 'ultraswing',
+  jevil_spade: 'bell', jevil_diamond: 'bell', jevil_carousel: 'spellcast', jevil_ult: 'ultraswing',
+  // Spamton NEO - his fight sounds (gunshot / pipis mail / laser)
+  sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_mail: 'pipis', sneo_phones: 'laz',
+  sneo_face: 'laz', sneo_bigshot: 'sneogun',
+  // The Roaring Knight - the Ch3 board-battle sounds
+  knight_corridor: 'knightsword', knight_circle: 'knightsword', knight_slash: 'boarddmg',
+  knight_board: 'boardbomb', knight_roar: 'knightlaugh',
 };
 
 // ---------- init ----------
@@ -96,6 +102,7 @@ Battle.init = function (opts) {
   B.myTP = 0; B.oppTP = 0;
   B.myItems = (opts.myItems || []).slice();
   B.oppItems = (opts.oppItems || []).slice();
+  B.itemsUsed = [];   // shared bag: indices consumed for the whole battle (never refill)
   B.turn = 1;
   B.msg = []; B.msgT = 0;
   B.dmgPops = [];
@@ -186,14 +193,24 @@ const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
 // Every lightner can SPARE. Only KRIS can ACT (his MAGIC slot becomes ACT); the
 // other fun-gang members have no ACT (they only ACT via Kris's dual-acts).
+function oppIsDarkner() { return Battle.oppTeam && Battle.oppTeam.some(o => !isOut(o) && o.def.darkner); }
 function menuFor(mem) {
-  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];
-  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'spare', 'defend'];
-  return ['fight', 'magic', 'item', 'spare', 'defend'];
+  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];   // playing AS a darkner
+  const end = oppIsDarkner() ? 'charge' : 'spare';   // you can't SPARE a darkner boss - CHARGE instead
+  if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', end, 'defend'];
+  return ['fight', 'magic', 'item', end, 'defend'];
 }
 function spellCost(mem, d) { return isDarkner(mem) ? Math.ceil(d.tp * 0.6) : d.tp; }
 Battle.startSelect = function (fresh) {
   const B = Battle;
+  // passive regen: every downed ally recovers 1/8 max HP at the start of the party's turn,
+  // standing back up (min 1/6 max) if that clears their debt. (Not on the very first turn.)
+  if (!fresh) for (const m of B.myTeam) if (m.downed) {
+    const wasDown = m.downed;
+    healHP(m, Math.ceil(m.max / 8));
+    B.dmgPops.push({ x: 96, y: teamGroundY(B.myTeam.indexOf(m), B.myTeam.length) - 30,
+                     txt: wasDown && !m.downed ? 'UP!' : '+' + Math.ceil(m.max / 8), t: 0, color: '#2f2' });
+  }
   B.cmdOrder = B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed);
   B.cmdPos = 0;
   for (const m of B.myTeam) { m.action = null; m.tier = null; m.pose = 'idle'; m.poseT = 0; }
@@ -203,9 +220,10 @@ Battle.startSelect = function (fresh) {
   B.oppActs = null; B.oppTiers = null; B.oppResult = null; B.oppDodgeStart = null;
   B.tpSpent = 0;   // TP tentatively spent by chosen spells this turn
   B.tpSel = 0;     // TP tentatively GAINED (DEFEND) this turn, shown live
-  B.itemsUsed = [];
+  // B.itemsUsed persists across turns: one shared bag, items are gone once used.
   B.targeting = false; B.pendingCmd = null;
   B.phase = 'select';
+  if (!B.cmdOrder.length) { B.say('* ...'); return; }   // defensive: whole party down (normally gameover first)
   B.say('* ' + B.curMember().def.name + ', your move.');
 };
 Battle.curMember = function () { return Battle.myTeam[Battle.cmdOrder[Battle.cmdPos]]; };
@@ -346,7 +364,8 @@ Battle.choose = function (cmd, move) {
     let cand;
     if (side === 'ally') {
       const revive = md && md.kind === 'revive';
-      cand = B.myTeam.map((m, i) => i).filter(i => revive ? B.myTeam[i].downed : !isOut(B.myTeam[i]));
+      // heals may target DOWNED allies too (the heal is added to their negative balance / revives them)
+      cand = B.myTeam.map((m, i) => i).filter(i => revive ? B.myTeam[i].downed : !B.myTeam[i].spared);
     } else if (md && md.kind === 'spareTired') {
       cand = B.oppTeam.map((m, i) => i).filter(i => isTired(B.oppTeam[i]) && !(B.oppTeam[i].def.spare || {}).never);
     } else {
@@ -556,8 +575,10 @@ Battle.startDodge = function () {
     if (a.cmd === 'item') {
       const it = ITEMS[a.itemId];
       if (it) {
-        const tgt = (a.tside === 'ally' && B.myTeam[a.target] && !B.myTeam[a.target].downed) ? B.myTeam[a.target] : m;
-        tgt.hp = Math.min(tgt.max, tgt.hp + (it.heal || 0));
+        // items can target downed allies too (heal is added to their negative balance)
+        const tgt = (a.tside === 'ally' && B.myTeam[a.target]) ? B.myTeam[a.target] : m;
+        if (it.revivePct) { tgt.hp = Math.max(tgt.hp, Math.round(tgt.max * it.revivePct)); if (tgt.downed) { tgt.downed = false; tgt.pose = 'idle'; tgt.poseT = 0; } }  // revive items bypass the debt, never lower HP
+        else healHP(tgt, it.heal || 0);
         B.myTP = Math.min(100, B.myTP + (it.tp || 0));
         Snd.play('cure');
         const ti = B.myTeam.indexOf(tgt);
@@ -638,19 +659,27 @@ Battle.tickBoxAnim = function (dir) {
   B.boxGhosts = B.boxGhosts.filter(g => g.alpha > 0.03);
 };
 
-// targeted damage: a bullet damages the enemy member its attacker aimed at;
-// if that member is already down, it flows to the front living member.
-function applyTargetedDamage(team, dmg, target) {
-  let m = (target != null && team[target] && !team[target].downed) ? team[target] : frontLiving(team);
-  if (!m) return null;
-  const first = m;
-  let d = dmg;
-  while (d > 0 && m) {
-    const take = Math.min(m.hp, d);
-    m.hp -= take; d -= take;
-    if (m.hp <= 0) { m.downed = true; m.pose = 'downed'; m.poseT = 0; m = frontLiving(team); } else break;
+// Deltarune healing: adds to the (possibly negative) HP balance; a member stands back
+// up the moment healing pushes them above 0, bumped to at least 1/6 max HP.
+function healHP(m, amt) {
+  m.hp = Math.min(m.max, m.hp + amt);
+  if (m.downed && m.hp > 0) {
+    m.hp = Math.max(m.hp, Math.ceil(m.max / 6));   // minimum stand-up HP
+    m.downed = false; m.pose = 'idle'; m.poseT = 0;
   }
-  return first;
+}
+// targeted damage: hits the member the attacker aimed at (or the front if that one is down).
+// lethal damage sinks HP into a NEGATIVE debt, hard-capped at -50% max HP. No cascade.
+function applyTargetedDamage(team, dmg, target) {
+  const m = (target != null && team[target] && !team[target].downed) ? team[target] : frontLiving(team);
+  if (!m) return null;
+  m.hp -= dmg;
+  if (m.hp <= 0) {
+    const floor = -Math.floor(m.max * 0.5);
+    if (m.hp < floor) m.hp = floor;                // overkill is absorbed by the -50% floor
+    if (!m.downed) { m.downed = true; m.pose = 'downed'; m.poseT = 0; }
+  }
+  return m;
 }
 
 Battle.updDodge = function () {
@@ -720,10 +749,11 @@ Battle.updDodge = function () {
       B.charge = Math.min(60, B.charge + 1);
     } else if (B._okPrev) {                 // just released -> fire
       const c = B.charge, big = c >= BIG_AT;
-      B.shots.push({ x: B.soul.x + 8, y: B.soul.y, vx: big ? 9 : 8,
-                     r: big ? 12 + Math.min(10, (c - BIG_AT) * 0.4) : 4,
-                     big, power: big ? 4 : 1, pierce: big ? 8 : 1 });
-      Snd.play('shoot', big ? 0.7 : 0.4);
+      // big shot: modest size, its own sneobig sprite, damages each target ONCE (hit set),
+      // pierces up to 3 targets. push is small so it nudges rather than launches.
+      B.shots.push({ x: B.soul.x + 8, y: B.soul.y, vx: big ? 8.5 : 8,
+                     r: big ? 9 : 4, big, power: big ? 4 : 1, pierce: big ? 3 : 1, hitIds: [] });
+      Snd.play('sneogun', big ? 0.75 : 0.45);
       B.charge = 0;
     } else {
       B.charge = 0;
@@ -768,23 +798,26 @@ Battle.updDodge = function () {
         b.tint = '#f44'; b.alpha = Math.min(1, b.t / 16) * 0.5; b.noHit = true;
       } else if (b.t === b.aim.delay) {
         b.vx = Math.cos(b.aim.dir) * b.aim.speed; b.vy = Math.sin(b.aim.dir) * b.aim.speed;
-        b.tint = null; b.alpha = 1; b.noHit = false; Snd.play('shoot', 0.55);
+        b.tint = null; b.alpha = 1; b.noHit = false; Snd.play('knightsword', 0.6);
       }
     }
     if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }   // parked teeth launch
-    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('shoot', 0.4); }   // tell -> live cut
+    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('boarddmg', 0.5); }   // tell -> live cut
     if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
     // controller bullets (climbing head, face parts) emit projectiles from their LIVE position
     if (b.emit && !b.dead) b.emit(b, spawned, B.soul, B.dodgeBox, B.fx);
     // yellow-soul shots destroy shootable boss bullets (heads / mail / heart)
     if (B.soulYellow && b.shootable) {
       for (const s of B.shots) {
+        if (s.hitIds && s.hitIds.indexOf(b) >= 0) continue;   // a single shot damages each target only ONCE
         if (Math.hypot(b.x - s.x, b.y - s.y) < (b.r || 8) + s.r) {
-          if (b.pushOnShot) b.x += (s.big ? 3 : 1) * b.pushOnShot;   // shove it back toward the boss
+          if (s.hitIds) s.hitIds.push(b);
+          if (b.pushOnShot) b.x += (s.big ? 2 : 1) * b.pushOnShot;   // small nudge back toward the boss
           b.hp = (b.hp || 1) - (s.power || (s.big ? 4 : 1));
           if (!s.big || --s.pierce <= 0) s.dead = true;
+          Snd.play('bosshit', 0.4);
           if (b.hp <= 0) {
-            b.dead = true; B.myTP = Math.min(100, B.myTP + 2); Snd.play('graze', 0.3);
+            b.dead = true; B.myTP = Math.min(100, B.myTP + 2);
             if (b.bomb) B.pendingLasers.push({ x: b.x, y: b.y, t: b.bombDelay || 16 });   // cross laser after a beat
           }
           break;
@@ -873,8 +906,9 @@ Battle.endDodge = function () {
   // spell heals / revive / dual-heal resolve after dodging
   const healMember = (tgt, amt) => {
     if (!tgt || !amt) return;
-    tgt.hp = Math.min(tgt.max, tgt.hp + amt); Snd.play('cure');
-    B.dmgPops.push({ x: 96, y: teamGroundY(B.myTeam.indexOf(tgt), B.myTeam.length) - 30, txt: '+' + amt, t: 0, color: '#2f2' });
+    const wasDown = tgt.downed;
+    healHP(tgt, amt); Snd.play('cure');
+    B.dmgPops.push({ x: 96, y: teamGroundY(B.myTeam.indexOf(tgt), B.myTeam.length) - 30, txt: wasDown && !tgt.downed ? 'REVIVE' : '+' + amt, t: 0, color: '#2f2' });
   };
   B.usedSnowgrave = false;
   for (const m of B.myTeam) {
@@ -933,6 +967,8 @@ Battle.resolve = function () {
   if (myDead || oppDead) {
     B.result = myDead ? (oppDead ? 'draw' : 'lose') : 'win';
     B.phase = 'gameover';
+    // battle over: any surviving team's downed allies get back UP at 1/8 max HP (Deltarune rule)
+    if (!myDead) for (const m of B.myTeam) if (m.downed && !m.spared) { m.hp = Math.ceil(m.max / 8); m.downed = false; }
     for (const m of B.myTeam) if (!isOut(m)) { m.pose = B.result === 'win' ? 'victory' : 'idle'; m.poseT = 0; }
     for (const m of B.oppTeam) if (!isOut(m)) { m.pose = B.result === 'lose' ? 'victory' : 'idle'; m.poseT = 0; }
     if (B.result === 'win') { Snd.stopMusic(); Snd.play('won'); }
@@ -1144,10 +1180,11 @@ Battle.renderBoxAndBullets = function (ctx) {
   ctx.restore();
   // yellow-soul player shots + charge glow
   if (B.soulYellow) {
+    const bigImg = bulletProps('sneobig').img;
     for (const s of B.shots) {
-      ctx.fillStyle = s.big ? '#ffea00' : '#fff36b';
-      if (s.big) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
-      else ctx.fillRect(s.x - 5, s.y - 2, 10, 4);
+      if (s.big && bigImg && bigImg.width) drawSpr(ctx, bigImg, s.x, s.y, { scale: 1.1, rot: 0 });   // Spamton's own BIG SHOT sprite
+      else if (s.big) { ctx.fillStyle = '#ffea00'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
+      else { ctx.fillStyle = '#fff36b'; ctx.fillRect(s.x - 5, s.y - 2, 10, 4); }
     }
     if (B.charge > 0) {   // charge ring grows while held; locks bright once it's a BIG SHOT
       const ready = B.charge >= 26;
@@ -1204,7 +1241,7 @@ function tickPendingLasers(bullets, box) {
       bullets.push({ x, y: pl.y, vx: 0, vy: 0, r: 6, color: '#fff', life: 26, t: 0, phase0: 0, dmg: 8 });
     for (let y = box.y + 6; y <= box.y + box.h - 6; y += 12)   // vertical beam (its column)
       bullets.push({ x: pl.x, y, vx: 0, vy: 0, r: 6, color: '#fff', life: 26, t: 0, phase0: 0, dmg: 8 });
-    Snd.play('shoot', 0.5);
+    Snd.play('boardbomb', 0.55);
   }
   B.pendingLasers = B.pendingLasers.filter(pl => !pl.done);
 }

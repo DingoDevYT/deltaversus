@@ -1069,7 +1069,16 @@
 "hit": "hit.wav",
 "laz": "laz.wav",
 "ultraswing": "ultraswing.wav",
-"shineselect": "shineselect.wav"
+"shineselect": "shineselect.wav",
+"sneogun": "sneogun.wav",
+"pipis": "pipis.wav",
+"knightsword": "knightsword.wav",
+"boardbomb": "boardbomb.wav",
+"bosshit": "bosshit.wav",
+"boardsummon": "boardsummon.wav",
+"boarddmg": "boarddmg.wav",
+"splat": "splat.wav",
+"knightlaugh": "knightlaugh.wav"
 },
 "music": {
 "attack_of_the_killer_queen_queen": "attack_of_the_killer_queen_queen.mp3",

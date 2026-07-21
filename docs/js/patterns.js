@@ -24,26 +24,24 @@ function every(f, n) { return f % n === 0; }
 // density: higher tier = more frequent spawns
 function rate(base, tier) { return Math.max(2, Math.round(base * [1.25, 1.0, 0.72][tier])); }
 
-// ---------- KRIS (sword slashes: left / right / middle, randomized) ----------
+// ---------- KRIS (readable sword slashes that CYCLE left -> right -> middle) ----------
 PATTERNS.kris_slash = {
   dur: 440,
   tick(api) {
-    const { f, rng, box, tier, add } = api;
-    const period = rate(40, tier);
+    const { f, box, tier, add } = api;
+    const period = rate(46, tier);
     if (f % period === 0) {
-      const lane = Math.floor(rng() * 3);       // 0=left 1=right 2=middle, randomized
-      const n = 3 + Math.floor(rng() * 2);      // 3-4 knives per slash, count randomized
-      if (lane === 2) {                          // MIDDLE: slash cuts straight down the centre
-        for (let i = 0; i < n; i++)
-          add({ ...bulletProps('knife'), x: box.x + box.w * (0.25 + 0.5 * (n > 1 ? i / (n - 1) : 0.5)),
-                y: box.y - 26 - i * 6, vx: 0, vy: 2.4 + rng() * 0.5, rot: 0, spin: 0.3, r: 7 });
-      } else {                                    // LEFT/RIGHT: slash sweeps across, blade-first
+      const k = Math.floor(f / period), lane = k % 3;   // predictable cycle: LEFT, RIGHT, MIDDLE
+      if (lane === 2) {                                  // MIDDLE: a clean column falls with one safe gap
+        const gap = 1 + (k % 3);                         // gap slot shifts predictably (1..3 of 5)
+        for (let i = 0; i < 5; i++) { if (i === gap) continue;
+          add({ ...bulletProps('knife'), x: box.x + box.w * (0.1 + 0.2 * i), y: box.y - 24, vx: 0, vy: 2.6, rot: 0, spin: 0.3, r: 7 }); }
+      } else {                                           // SIDE: an evenly-spaced row sweeps across at one speed
         const left = lane === 0;
-        const y0 = box.y + 12 + rng() * Math.max(6, box.h - 24 - n * 12);
-        for (let i = 0; i < n; i++)
-          add({ ...bulletProps('knife'), x: left ? box.x - 30 - i * 8 : box.x + box.w + 30 + i * 8,
-                y: y0 + i * 12, vx: (left ? 1 : -1) * (2.4 + rng() * 0.5), vy: 0,
-                rot: left ? Math.PI / 2 : -Math.PI / 2, spin: 0.32, r: 7 });
+        for (let i = 0; i < 4; i++)
+          add({ ...bulletProps('knife'), x: left ? box.x - 30 - i * 10 : box.x + box.w + 30 + i * 10,
+                y: box.y + box.h * (0.2 + 0.2 * i), vx: (left ? 1 : -1) * 2.8, vy: 0,
+                rot: left ? Math.PI / 2 : -Math.PI / 2, spin: 0.3, r: 7 });
       }
     }
   },
@@ -70,24 +68,17 @@ PATTERNS.kris_cross = {
 PATTERNS.kris_giga = {
   dur: 560,
   tick(api) {
-    const { f, rng, box, tier, add, imgs } = api;
-    if (every(f, rate(24, tier))) {
-      const y = box.y + 8 + rng() * (box.h - 16);
-      const fromLeft = rng() < 0.5;
-      add({
-        ...bulletProps('knife'), x: fromLeft ? box.x - 30 : box.x + box.w + 30, y,
-        vx: (fromLeft ? 1 : -1) * (2.4 + rng() * 1.2), vy: 0,
-        rot: fromLeft ? Math.PI / 2 : -Math.PI / 2, spin: 0.4, r: 8,
-      });
+    const { f, box, tier, add, soul } = api;
+    const per = rate(30, tier);
+    if (f % per === 0) {          // rows of knives sweep across, ALTERNATING sides each wave
+      const left = (Math.floor(f / per) % 2) === 0;
+      for (let i = 0; i < 3; i++)
+        add({ ...bulletProps('knife'), x: left ? box.x - 30 - i * 40 : box.x + box.w + 30 + i * 40,
+              y: box.y + box.h * (0.25 + 0.25 * i), vx: (left ? 1 : -1) * 3.0, vy: 0,
+              rot: left ? Math.PI / 2 : -Math.PI / 2, spin: 0.35, r: 8 });
     }
-    if (every(f, rate(56, tier))) {
-      // guillotine knife drops near the soul
-      const x = api.soul.x + (rng() - 0.5) * 90;
-      add({
-        ...bulletProps('knife'), x, y: box.y - 30, vx: 0, vy: 0.4, ay: 0.1, maxv: 4.8,
-        rot: 0, spin: 0.2, r: 8,
-      });
-    }
+    if (every(f, rate(64, tier)))   // telegraphed guillotine straight down the soul's column
+      add({ ...bulletProps('knife'), x: soul.x, y: box.y - 30, vx: 0, vy: 0.6, ay: 0.12, maxv: 5, rot: 0, spin: 0.2, r: 8 });
   },
 };
 
@@ -96,24 +87,21 @@ PATTERNS.kris_giga = {
 PATTERNS.susie_axe = {   // axes thrown across the box in varied patterns (Susie+Lancer style)
   dur: 420,
   tick(api) {
-    const { f, rng, box, tier, add } = api;
-    const period = rate(34, tier);
+    const { f, box, tier, add } = api;
+    const period = rate(38, tier), k = Math.floor(f / period);
     if (f % period === 0) {
-      const mode = Math.floor(rng() * 3);
-      if (mode === 0) {                 // sweep of axes straight across
-        const left = rng() < 0.5;
+      const mode = k % 3;               // predictable cycle of the three throws
+      if (mode === 0) {                 // an even row sweeps across, alternating sides
+        const left = (k % 6) < 3;
         for (let i = 0; i < 3; i++)
-          add({ ...bulletProps('axe'), x: left ? box.x - 40 - i * 18 : box.x + box.w + 40 + i * 18,
-                y: box.y + 14 + rng() * (box.h - 28), vx: (left ? 1 : -1) * (2.6 + rng() * 0.5),
-                vy: (rng() - 0.5) * 0.4, r: 8, spin: left ? 0.16 : -0.16 });
-      } else if (mode === 1) {          // lobbed axe arcs up from the bottom
-        for (let i = 0; i < 2; i++)
-          add({ ...bulletProps('axe'), x: box.x + 20 + rng() * (box.w - 40), y: box.y + box.h + 20,
-                vx: (rng() - 0.5) * 1.6, vy: -(3 + rng()), ay: 0.06, r: 8, spin: 0.25 });
-      } else {                          // spinning axes drop from both top corners
+          add({ ...bulletProps('axe'), x: left ? box.x - 40 - i * 20 : box.x + box.w + 40 + i * 20,
+                y: box.y + box.h * (0.25 + 0.25 * i), vx: (left ? 1 : -1) * 3.0, vy: 0, r: 8, spin: left ? 0.16 : -0.16 });
+      } else if (mode === 1) {          // two lobbed axes arc up from fixed thirds
+        for (const fx of [0.34, 0.66])
+          add({ ...bulletProps('axe'), x: box.x + box.w * fx, y: box.y + box.h + 20, vx: 0, vy: -4, ay: 0.07, r: 8, spin: 0.25 });
+      } else {                          // spinning axes drop from both top corners inward
         for (const lx of [box.x - 20, box.x + box.w + 20])
-          add({ ...bulletProps('axe'), x: lx, y: box.y - 20,
-                vx: (lx < box.x ? 1 : -1) * 1.6, vy: 1.7, r: 8, spin: 0.3 });
+          add({ ...bulletProps('axe'), x: lx, y: box.y - 20, vx: (lx < box.x ? 1 : -1) * 1.8, vy: 1.8, r: 8, spin: 0.3 });
       }
     }
   },
@@ -602,7 +590,7 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
     const { f, box, add } = a;
     if (f !== 0) return;
     const head = { ...bulletProps('sneohead'), x: box.x + box.w + 12, y: box.y + box.h / 2,
-      vx: -0.42, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 20, homing: 0.011, maxv: 0.85, _ball: 74 };
+      vx: -0.42, vy: 0, r: 13, scale: 1.35, shootable: true, hp: 9999, pushOnShot: 7, homing: 0.011, maxv: 0.85, _ball: 74 };
     head.emit = function (b, out, soul, bx, fx) {
       // the two phones are its HANDS: they lie FLAT ON the border (receiver heads walking along it),
       // ahead of the head, alternating like a hand-over-hand climb
@@ -711,16 +699,16 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box e
 PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): fast sword COLUMNS with a ~3-soul gap that wanders, then a red-line cut
   dur: 560,
   tick(a) {
-    const { f, box, tier, add, rng } = a;
+    const { f, box, tier, add, rng, soul } = a;
     const cy = box.y + box.h / 2, per = rate(6, tier);
-    // ~60 columns in ~6s: each column is a sword pointing DOWN from the top + one pointing UP from the bottom,
-    // leaving a ~3-soul gap that wanders on a gentle randomised sine. They fly left VERY fast.
+    if (f === 0) this._gy = soul.y;   // remember the player's lane so the intro gap starts ON them
+    // ~60 columns in ~6s: each column is a sword pointing DOWN from the top + one pointing UP from the bottom.
+    // The gap starts on the player's lane (so they always begin safe + have time), then eases into a wander.
     if (f < 372 && f % per === 0) {
-      const col = Math.floor(f / per);
-      // gap wanders on a small incremental sine (LESS variance); blades keep a FIXED size,
-      // squashed to ~33% thickness, and spawn hanging outside the box edges
-      const gapC = cy + Math.sin(col * 0.30) * box.h * 0.12;
-      const gapH = 46, L = 115;   // fixed blade length - never scaled to the box
+      const col = Math.floor(f / per), ease = Math.min(1, col / 34);
+      const wander = cy + Math.sin(col * 0.28) * box.h * 0.16;
+      const gapC = this._gy * (1 - ease) + wander * ease;
+      const gapH = 34, L = 115;   // ~2 souls tall; fixed blade length, never scaled to the box
       add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC - gapH / 2 - L / 2, vx: -7.4, vy: 0,
             rot: Math.PI / 2, scale: 1.65, sy: 0.33, hitW: 9, hitH: L });
       add({ ...bulletProps('knightknife'), x: box.x + box.w + 18, y: gapC + gapH / 2 + L / 2, vx: -7.4, vy: 0,
@@ -750,19 +738,19 @@ PATTERNS.knight_circle = {   // DIRECTIONAL SWORDS: swords appear on the 8 axes,
     }
   },
 };
-PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotate to a stop then CUT; 1 -> 2(cross) -> 3(star)
-  dur: 620,
+PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotate to a stop then CUT; 1 -> 2 -> 3 -> 4 lines
+  dur: 660,
   tick(a) {
     const { f, box, tier, add, soul, rng } = a;
-    const SEQ = [1, 2, 2, 3, 3, 3], GAP = rate(96, tier);      // never compounds: each waits for the last to finish
+    const SEQ = [1, 2, 2, 3, 3, 4], GAP = rate(74, tier);      // GAP == tell(62)+arm(10): the next set starts as this one cuts, no idle rest
     for (let e = 0; e < SEQ.length; e++) {
-      if (f !== 20 + e * GAP) continue;
+      if (f !== 16 + e * GAP) continue;
       const n = SEQ[e], C = { x: soul.x, y: soul.y };           // centred on the soul's position at spawn
-      // spins a full 45-60 degrees before easing to a stop (total = spin0 / (1 - decay))
-      const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.047 + rng() * 0.016);
+      // spins anywhere from 45 to 135 degrees before easing to a stop (total = spin0 / (1 - decay))
+      const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.047 + rng() * 0.094);
       for (let i = 0; i < n; i++)
         add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 2.2, thick: 3,   // thin, reaches every edge (masked to the box)
-              x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.94, tellT: 62, armWindow: 10, dmg: 20 });
+              x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.94, tellT: 62, armWindow: 10, dmg: 24 });
     }
   },
 };
