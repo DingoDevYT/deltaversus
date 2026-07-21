@@ -531,13 +531,13 @@ PATTERNS.redbuster = {
 
 // ---------- SPAMTON NEO (Ch2 secret boss - real moveset) ----------
 // (rebuilt from the wiki attack GIFs in ref/spamton/)
-PATTERNS.sneo_heads = {   // Flying Heads: destructible heads stream in lanes toward the soul
+PATTERNS.sneo_heads = {   // Electric Orbs: destructible orbs stream in lanes toward the soul (shoot them)
   dur: 440, box: { w: 288, h: 150 },   // wide box
   tick(a) {
     const { f, rng, box, tier, add, soul } = a;
-    if (every(f, rate(30, tier)))   // heads launch from the right at the soul's lane + a random lane
+    if (every(f, rate(30, tier)))   // orbs launch from the right at the soul's lane + a random lane
       for (const ly of [soul.y, box.y + 20 + rng() * (box.h - 40)])
-        add({ ...bulletProps('sneohead'), x: box.x + box.w + 22, y: ly, vx: -(2.6 + rng() * 0.5), vy: 0, spin: 0.05, r: 9, shootable: true, hp: 2 });
+        add({ ...bulletProps('sneohead'), x: box.x + box.w + 22, y: ly, vx: -(2.6 + rng() * 0.5), vy: 0, spin: 0.14, r: 9, shootable: true, hp: 2 });
     if (every(f, rate(22, tier)))   // small bullets fall as they cross
       add({ ...bulletProps('sneosound'), x: box.x + box.w * (0.3 + rng() * 0.5), y: box.y - 14, vx: 0, vy: 2.0, r: 6 });
   },
@@ -595,8 +595,10 @@ PATTERNS.sneo_bigshot = {   // BIG SHOT: the giant arm-cannon fires a spreading 
     const ox = box.x + box.w + 30, oy = box.y + box.h * 0.5, base = Math.atan2(soul.y - oy, soul.x - ox);
     if (every(f, rate(9, tier)))    // dense cone of bullets from the cannon
       add({ ...bulletProps('sneosound'), x: ox, y: oy, vx: Math.cos(base + (rng() - 0.5) * 0.5) * 3.0, vy: Math.sin(base + (rng() - 0.5) * 0.5) * 3.0, r: 6 });
-    if (every(f, rate(40, tier)))   // periodic BIG shot down the middle
-      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(base) * 2.2, vy: Math.sin(base) * 2.2, spin: 0.1, r: 12 });
+    if (every(f, rate(40, tier))) {   // periodic BIG SHOT beam, pointed along its travel (no spin)
+      const ang = base + (rng() - 0.5) * 0.2;
+      add({ ...bulletProps('sneobig'), x: ox, y: oy, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4, rot: ang, spin: 0, r: 12 });
+    }
   },
 };
 

@@ -2316,8 +2316,8 @@
 },
 "sneohead": {
 "f": "sneohead.png",
-"w": 20,
-"h": 22
+"w": 24,
+"h": 24
 },
 "sneowire": {
 "f": "sneowire.png",
@@ -2336,8 +2336,8 @@
 },
 "sneobig": {
 "f": "sneobig.png",
-"w": 28,
-"h": 28
+"w": 50,
+"h": 36
 },
 "knightsword": {
 "f": "knightsword.png",
