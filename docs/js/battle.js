@@ -5,8 +5,9 @@
 const BOX = { x: 220, y: 116, w: 200, h: 200 };   // dodge box (square by default)
 const SOUL_R = 5;
 const GRAZE_R = 15;
-// GREEN SOUL (Hammer/Sound of Justice): shield-block mode. Shell colours = blocks still needed.
-const SHELL_COLORS = { 1: '#ffe100', 2: '#33d13a', 3: '#3a7bff', 4: '#ff2020', 5: '#a24bff' };
+// GREEN SOUL (Hammer/Sound of Justice): shield-block mode. Shell colour = hp (blocks still needed),
+// per the real Ch4 mapping: 1 cyan, 2 green, 3 yellow, 4 purple, 5 blue, 6-8 pink.
+const SHELL_COLORS = { 1: '#00ffff', 2: '#00ff00', 3: '#ffff00', 4: '#800080', 5: '#0000ff', 6: '#ff7fb8', 7: '#ffb2d4', 8: '#ffcce2' };
 // resolve a bullet against the green shield ring: block it if the axe covers its side, else take the hit.
 function resolveGreen(b) {
   const B = Battle, bx = B.dodgeBox, cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
@@ -15,7 +16,7 @@ function resolveGreen(b) {
   if (inside && !b._inRing) {
     const inAng = Math.atan2(b.y - cy, b.x - cx);              // the side the bullet is coming from
     if (b.transform) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.shake = 10; B.flash = 6; Snd.play('hurt', 0.4); b._inRing = inside; return; }
-    const coverHalf = Math.PI / (B.greenOct ? 8 : 4) + 0.02;
+    const coverHalf = b.blockArc != null ? b.blockArc * Math.PI / 180 : Math.PI / (B.greenOct ? 8 : 4) + 0.02;
     const diff = Math.abs(Math.atan2(Math.sin(inAng - B.shieldAng), Math.cos(inAng - B.shieldAng)));
     if (diff <= coverHalf) {                                   // BLOCKED
       const perfect = (B.anim.f - (B.shieldFreshF || -999)) <= (B.shieldDiag ? 6 : 4);
@@ -903,6 +904,7 @@ Battle.updDodge = function () {
     if (b.animKeys && b.animRate) b.img = bulletProps(b.animKeys[Math.floor(b.t / b.animRate) % b.animKeys.length]).img;   // frame-cycled sprite
     if (b.homing) { const d = Math.hypot(B.soul.x - b.x, B.soul.y - b.y) || 1; b.vx += (B.soul.x - b.x) / d * b.homing; b.vy += (B.soul.y - b.y) / d * b.homing; }
     b.vx += b.ax || 0; b.vy += b.ay || 0;
+    if (b.fric) { const v = Math.hypot(b.vx, b.vy); if (v > 0) { const nv = Math.max(0, v - b.fric); b.vx *= nv / v; b.vy *= nv / v; } }   // GML friction (neg = accelerate)
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
     if (b.orbit) { const o = b.orbit; o.ang += o.w;
@@ -1032,6 +1034,7 @@ Battle.tickMirror = function () {
       b.t++;
       if (b.homing) { const d = Math.hypot(M.soul.x - b.x, M.soul.y - b.y) || 1; b.vx += (M.soul.x - b.x) / d * b.homing; b.vy += (M.soul.y - b.y) / d * b.homing; }
       b.vx += b.ax || 0; b.vy += b.ay || 0;
+      if (b.fric) { const v = Math.hypot(b.vx, b.vy); if (v > 0) { const nv = Math.max(0, v - b.fric); b.vx *= nv / v; b.vy *= nv / v; } }
       if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
       b.x += b.vx; b.y += b.vy;
       if (b.orbit) { const o = b.orbit; o.ang += o.w; if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;

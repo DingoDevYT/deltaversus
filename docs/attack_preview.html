@@ -226,7 +226,9 @@ function makePlayer(canvas, spec) {
         if(o.center){ o.cx=o.center.cx0+o.center.ax*Math.sin(b.t*o.center.f); o.cy=o.center.cy0+o.center.ay*Math.cos(b.t*o.center.f); }
         if(o.pulse) o.R = o.pulse.base + o.pulse.amp*Math.sin(b.t*o.pulse.freq);
         b.x = o.cx + Math.cos(o.ang)*o.R; b.y = o.cy + Math.sin(o.ang)*o.R; }
-      else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
+      else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0);
+             if (b.fric) { const v = Math.hypot(b.vx, b.vy); if (v > 0) { const nv = Math.max(0, v - b.fric); b.vx *= nv/v; b.vy *= nv/v; } }
+             b.x += (b.vx||0); b.y += (b.vy||0); }
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
       if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
       if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);
