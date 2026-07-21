@@ -76,6 +76,7 @@
 <script src="js/battle.js"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
+ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
 const el = id => document.getElementById(id);
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0;
@@ -135,6 +136,11 @@ function loop() {
   if (!running) return;
   const B = Battle;
   B.anim.f++;
+  // per-frame housekeeping Battle.update() normally does (we bypass it) - else shake/flash never decay
+  if (B.shake > 0) B.shake--;
+  if (B.flash > 0) B.flash--;
+  for (const p of B.dmgPops) p.t++;
+  B.dmgPops = B.dmgPops.filter(p => p.t < 70);
   if (B.phase === 'dodge') {
     if (el('invuln').checked) B.iframes = 999;   // practice mode: watch without taking damage
     B.updDodge();
