@@ -328,7 +328,16 @@ function build() {
     notes.oninput = () => { rec.notes = notes.value; save(); };
   }
   updateCount();
-  function loop() { for (const pl of players) pl.step(); requestAnimationFrame(loop); }
+  // FIXED-TIMESTEP loop: step() (update+draw) runs at a locked 60Hz regardless of the display's
+  // refresh rate - otherwise the previews run 2-4x too fast on 120/144/240Hz screens (e.g. Linux).
+  let last = 0, acc = 0;
+  function loop(ts) {
+    if (!last) last = ts;
+    acc += Math.min(100, ts - last); last = ts;
+    let steps = 0;
+    while (acc >= 1000 / 60 && steps < 4) { acc -= 1000 / 60; for (const pl of players) pl.step(); steps++; }
+    requestAnimationFrame(loop);
+  }
   requestAnimationFrame(loop);
 }
 
