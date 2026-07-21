@@ -162,6 +162,7 @@ Battle.onMsg = function (m) {
     else if (B.mirror) B.mirror.target = Math.max(B.mirror.target, m.f || 0);
   } else if (m.t === 'spare') { const mm = B.myTeam[m.mi]; if (mm && !isOut(mm)) { mm.spared = true; mm.pose = 'idle'; mm.poseT = 0; } }
   else if (m.t === 'snowgrave') { applySnowgrave(B.myTeam, m.mi); }
+  else if (m.t === 'demercy') { for (const o of B.oppTeam) if (!isOut(o)) o.mercy = Math.max(0, o.mercy - (m.amt || 10)); }   // foe's MOTIVATE lowers our accrued MERCY on them
   else if (m.t === 'rematch') B.rematchOpp = true;
 };
 
@@ -174,6 +175,10 @@ Battle.say = function (lines) {
 Battle.update = function () {
   const B = Battle;
   B.anim.f++;
+  // advance character animation clocks HERE (fixed 60Hz), never in render - otherwise anims run at the
+  // display's refresh rate (2-2.4x too fast on 120/144Hz, and different host vs client).
+  for (const m of B.myTeam || []) m.poseT = (m.poseT || 0) + 1;
+  for (const m of B.oppTeam || []) m.poseT = (m.poseT || 0) + 1;
   B.tickMirror();
   if (B.msgT > 0) B.msgT--;
   if (B.shake > 0) B.shake--;
@@ -222,11 +227,16 @@ Battle.startSelect = function (fresh) {
   const B = Battle;
   // passive regen: every downed ally recovers 1/8 max HP at the start of the party's turn,
   // standing back up (min 1/6 max) if that clears their debt. (Not on the very first turn.)
-  if (!fresh) for (const m of B.myTeam) if (m.downed) {
-    const wasDown = m.downed;
-    healHP(m, Math.ceil(m.max / 8));
-    B.dmgPops.push({ x: 96, y: teamGroundY(B.myTeam.indexOf(m), B.myTeam.length) - 30,
-                     txt: wasDown && !m.downed ? 'UP!' : '+' + Math.ceil(m.max / 8), t: 0, color: '#2f2' });
+  if (!fresh) for (const m of B.myTeam) if (m.downed && !m.frozen) {
+    const amt = Math.ceil(m.max / 8), y = teamGroundY(B.myTeam.indexOf(m), B.myTeam.length) - 30;
+    if (m._freshDown) {   // the round right AFTER going down: heal the debt but stay DOWN (no cheap instant revive)
+      m._freshDown = false;
+      m.hp = Math.min(-1, m.hp + amt);
+      B.dmgPops.push({ x: 96, y, txt: '+' + amt, t: 0, color: '#2f2' });
+    } else {
+      healHP(m, amt);
+      B.dmgPops.push({ x: 96, y, txt: m.downed ? '+' + amt : 'UP!', t: 0, color: '#2f2' });
+    }
   }
   B.cmdOrder = B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed);
   B.cmdPos = 0;
@@ -259,7 +269,7 @@ function targetSide(cmd, def, move) {
   if (cmd === 'act') {
     const ad = findAct(move);
     if (!ad) return null;
-    return (ad.kind === 'attack' || ad.kind === 'mercy' || ad.kind === 'demercy') ? 'enemy' : null;
+    return (ad.kind === 'attack' || ad.kind === 'mercy') ? 'enemy' : null;   // demercy (MOTIVATE) hits your OWN party -> no target menu
   }
   if (cmd === 'magic') {
     const d = moveById(def, move);
@@ -343,12 +353,11 @@ Battle.subOptions = function () {
   }
   if (B.submenu === 'act') {
     const opts = [];
-    const lvl3 = oppMaxLevel() >= 3;
     const remaining = new Set(B.cmdOrder.slice(B.cmdPos + 1));   // allies not yet acted
     for (const ad of (c.acts || [])) {
-      // dual-acts whose partner ISN'T on the team at all are hidden entirely (don't waste menu space)
+      // dual-acts whose partner ISN'T on the team at all are hidden entirely (don't waste menu space);
+      // otherwise Kris's team-up acts always show (disabled if the partner has already acted / no TP)
       if (ad.ally && !B.myTeam.some(m => m.def.base === ad.ally)) continue;
-      if (ad.lvl3 && !lvl3) continue;                            // level-3-only acts hidden otherwise
       let disabled = false, cost = ad.tp ? ad.tp + '%' : 'FREE';
       if (ad.tp && B.tpAvail() < ad.tp) disabled = true;
       if (ad.ally) {
@@ -571,7 +580,7 @@ Battle.updTiming = function () {
 function attackersOf(team, pacifyCap) {
   const out = [];
   for (const m of team) {
-    if (!m.action) continue;
+    if (!m.action || isOut(m)) continue;   // spared / downed members never attack
     const md0 = moveDefOf(m.def, m.action);
     if (isAttack(md0)) {
       const md = { ...md0, id: patternIdOf(md0) };   // acts carry .pattern; sim keys off .id
@@ -722,7 +731,7 @@ function applyTargetedDamage(team, dmg, target) {
   if (m.hp <= 0) {
     const floor = -Math.floor(m.max * 0.5);
     if (m.hp < floor) m.hp = floor;                // overkill is absorbed by the -50% floor
-    if (!m.downed) { m.downed = true; m.pose = 'downed'; m.poseT = 0; }
+    if (!m.downed) { m.downed = true; m._freshDown = true; m.pose = 'downed'; m.poseT = 0; }
   }
   return m;
 }
@@ -858,8 +867,16 @@ Battle.updDodge = function () {
     if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }   // parked teeth launch
     if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('boarddmg', 0.5); }   // tell -> live cut
     if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
-    // controller bullets (climbing head, face parts) emit projectiles from their LIVE position
-    if (b.emit && !b.dead) b.emit(b, spawned, B.soul, B.dodgeBox, B.fx);
+    // controller bullets (climbing head, face parts, giant Spamton) emit projectiles from their LIVE
+    // position; emitted children INHERIT the controller's per-hit damage + target (else they'd be 10)
+    if (b.emit && !b.dead) {
+      const pre = spawned.length;
+      b.emit(b, spawned, B.soul, B.dodgeBox, B.fx);
+      for (let i = pre; i < spawned.length; i++) {
+        if (spawned[i].dmg == null) spawned[i].dmg = b.dmg;
+        if (spawned[i].target == null) spawned[i].target = b.target;
+      }
+    }
     // yellow-soul shots destroy shootable boss bullets (heads / mail / heart)
     if (B.soulYellow && b.shootable) {
       for (const s of B.shots) {
@@ -986,7 +1003,8 @@ Battle.endDodge = function () {
   }
   if (B.usedSnowgrave) Battle.send({ t: 'snowgrave', mi: B.snowgraveTarget });
   B.myResult = { t: 'result', dmgTaken: B.dmgTaken,
-                 hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP };
+                 hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP,
+                 oppMercy: B.oppTeam.map(o => o.mercy) };   // our accrued MERCY on the foe -> shown as THEIR own-team MERCY
   Battle.send(B.myResult);
   B.phase = 'waitresult';
   B.say('* Waiting for result...');
@@ -999,6 +1017,7 @@ Battle.resolve = function () {
   // apply opponent's authoritative team state
   if (r.hp) r.hp.forEach((hp, i) => { if (B.oppTeam[i]) B.oppTeam[i].hp = hp; });
   if (r.downed) r.downed.forEach((dn, i) => { if (B.oppTeam[i]) { B.oppTeam[i].downed = dn; if (dn) B.oppTeam[i].pose = 'downed'; } });
+  if (r.oppMercy) r.oppMercy.forEach((mc, i) => { if (B.myTeam[i] && !isOut(B.myTeam[i])) B.myTeam[i].mercy = mc; });   // how close the FOE is to sparing our members
   B.oppTP = r.tp != null ? r.tp : B.oppTP;
   if (r.dmgTaken > 0) {
     Snd.play('damage');
@@ -1059,22 +1078,17 @@ Battle.applyMyEffects = function () {
     } else if (a.cmd === 'act') {
       const ad = findAct(a.move); if (!ad) continue;
       if (ad.mercy) grantMercy(a.target, ad.mercy);
-      if (ad.kind === 'demercy') {   // Motivate: aggression undoes a foe's spare progress, rallies the party
-        const o = B.oppTeam[a.target]; if (o && !isOut(o)) o.mercy = Math.max(0, o.mercy - (ad.mercyDown || 20));
-        B.myPowerBuff = 3;
-        if (o) B.mercyMsg = '* ' + o.def.name + '\'s MERCY dropped!';
+      if (ad.kind === 'demercy') {   // MOTIVATE: Kris rallies his OWN party - shave MERCY off each of them
+        const amt = ad.mercyDown || 10;                                   // so the foe must rebuild to spare your team
+        for (const t of B.myTeam) if (!isOut(t)) t.mercy = Math.max(0, (t.mercy || 0) - amt);
+        B.send({ t: 'demercy', amt });                                    // authoritative: the foe lowers their accrued MERCY on us too
+        B.mercyMsg = '* KRIS motivates the party! Their MERCY drops!';
       }
       if (ad.kind === 'buff') { if (ad.buff === 'guard') B.myGuardBuff = 3; if (ad.buff === 'power') B.myPowerBuff = 3; }
       if (ad.kind === 'proceed') usedProceed = true;
     } else if (a.cmd === 'spare') { doSpare(a.target, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.'); }
   }
-  // per-enemy spare passives
-  for (const o of B.oppTeam) {
-    if (isOut(o)) continue;
-    // SUSIE shields her team: while she's up and not TIRED, her allies' MERCY slips
-    if ((o.def.spare || {}).alone && !isTired(o))
-      for (const a of B.oppTeam) if (a !== o && !isOut(a)) a.mercy = Math.max(0, a.mercy - 15);
-  }
+  // (MERCY now only ever drops via MOTIVATE - no passive drains)
   // using PROCEED sways an enemy NOELLE (+20% MERCY toward sparing her)
   if (usedProceed) for (const o of B.oppTeam) if (!isOut(o) && o.def.base === 'noelle') o.mercy = Math.min(100, o.mercy + 20);
   // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
@@ -1156,7 +1170,7 @@ Battle.renderChars = function (ctx) {
   function drawTeam(team, x, flip) {
     const n = team.length;
     team.forEach((m, i) => {
-      m.poseT++;
+      // (poseT is advanced in Battle.update at a fixed 60Hz - do NOT increment it here in render)
       const hurtFlash = m.pose === 'hurt' && (m.poseT % 8 < 4);
       const alpha = m.downed ? 0.35 : (hurtFlash ? 0.4 : 1);
       const sc = (n >= 3 ? 1.3 : 1.7) * (m.def.dscale || 1);   // per-char scale override

@@ -12,8 +12,8 @@ const CHARS = {
     // KRIS is the only character with the ACT menu (single acts + Kris multi-acts).
     acts: [
       { id: 'act_check', name: 'Check', kind: 'mercy', mercy: 20, text: 'KRIS sizes up the foe.' },
-      { id: 'act_motivate', name: 'Motivate', tp: 20, kind: 'demercy', mercyDown: 25,
-        text: 'KRIS motivates the team! Resolve rises (+POWER) as the foe\'s MERCY fades.' },
+      { id: 'act_motivate', name: 'Motivate', tp: 30, kind: 'demercy', mercyDown: 10,
+        text: 'KRIS motivates the party - shaving 10% MERCY off each ally so the foe can\'t SPARE them.' },
       { id: 'act_xslash', name: 'X-Slash', tp: 25, dmg: 34, dur: 480, kind: 'attack', pattern: 'kris_cross',
         mercy: 8, lvl3: true, text: 'KRIS carves an X into the air!' },
       { id: 'act_redbuster', name: 'Red-Buster', tp: 60, dmg: 46, dur: 500, kind: 'attack', pattern: 'redbuster',
@@ -63,7 +63,7 @@ const CHARS = {
            heal: 50, text: 'RALSEI sings a DREAM CHORUS!!' },
   },
   noelle: {
-    name: 'NOELLE', color: '#ffff00', hp: 130, level: 1, spare: { noKris: true },
+    name: 'NOELLE', color: '#ffff00', hp: 130, level: 1, spare: {},
     desc: 'FRAGILE ICE MAGE.\nTERRIFYING POTENTIAL.',
     fight: { id: 'noelle_snow', name: 'Snow Toss', dmg: 24, dur: 420,
              text: 'NOELLE tosses snow... sorry!' },
@@ -134,19 +134,19 @@ const CHARS = {
     soulYellow: true,   // dodging his attacks uses the yellow SOUL (shoots right)
     act: { id: 'act_deal', name: 'Deal', kind: 'mercy', mercy: 22, text: 'KRIS hears out [[SPAMTON]]\'s deal...' },
     desc: '[[BIG SHOT]] SECRET BOSS.\n1200 HP - NO ITEMS.',
-    fight: { id: 'sneo_heads', name: 'Flying Heads', dmg: 26, dur: 460,
+    fight: { id: 'sneo_heads', name: 'Flying Heads', dmg: 34, dur: 460,
              text: 'SPAMTON NEO launches his HEADS!' },
     spells: [
-      { id: 'sneo_heart', name: 'Heart Attack', tp: 40, dmg: 30, dur: 520, kind: 'attack',
+      { id: 'sneo_heart', name: 'Heart Attack', tp: 40, dmg: 44, dur: 520, kind: 'attack',
         text: 'SPAMTON NEO swings his [[HEART]]!' },
-      { id: 'sneo_mail', name: 'Spam Mail', tp: 48, dmg: 32, dur: 500, kind: 'attack',
+      { id: 'sneo_mail', name: 'Spam Mail', tp: 48, dmg: 46, dur: 500, kind: 'attack',
         text: 'SPAMTON NEO delivers SPAM MAIL!' },
-      { id: 'sneo_phones', name: 'Gripping Phones', tp: 56, dmg: 34, dur: 500, kind: 'attack',
+      { id: 'sneo_phones', name: 'Gripping Phones', tp: 56, dmg: 50, dur: 500, kind: 'attack',
         text: 'SPAMTON NEO GRIPS the PHONES!' },
-      { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 48, dur: 520, kind: 'attack',
+      { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 58, dur: 520, kind: 'attack',
         text: 'SPAMTON NEO shows his [[FACE]]!' },
     ],
-    ult: { id: 'sneo_bigshot', name: 'BIG SHOT', tp: 100, dmg: 50, dur: 900, kind: 'attack',
+    ult: { id: 'sneo_bigshot', name: 'BIG SHOT', tp: 100, dmg: 66, dur: 900, kind: 'attack',
            text: 'SPAMTON NEO: [[NOW\'S YOUR CHANCE TO BE A]] BIG SHOT!!' },
   },
   knight: {
@@ -158,7 +158,7 @@ const CHARS = {
     spells: [
       { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 56, dur: 560, kind: 'attack',
         text: 'THE KNIGHT aims SWORDS at you!' },
-      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 820, kind: 'attack',
+      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 940, kind: 'attack',
         text: 'THE KNIGHT carves RED SLASHES!' },
       { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 64, dur: 560, kind: 'attack',
         text: 'THE KNIGHT BREAKS THE BOARD!' },
