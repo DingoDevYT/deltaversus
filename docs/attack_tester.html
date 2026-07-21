@@ -78,6 +78,25 @@
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
 const el = id => document.getElementById(id);
+// TESTER-ONLY: Jevil "new set" (Gemini recipes). Registered on CHARS in THIS page's runtime only,
+// so they show up as playable test attacks here but are NOT part of the real game.
+CHARS.jeviltest = {
+  name: 'JEVIL — NEW SET', shortName: 'JEVIL·NEW', base: 'jevil', color: '#7a5cff', hp: 1000,
+  secretBoss: true, level: 3, spare: {}, cost: 3,
+  desc: 'GEMINI RECIPE TEST SET',
+  fight: { id: 'jx_spread', name: 'Five-Spade Spread', dmg: 26, dur: 340, kind: 'attack', text: '' },
+  spells: [
+    { id: 'jx_spiral',      name: 'Spade Spiral',        tp: 40, dmg: 30, dur: 280, kind: 'attack', text: '' },
+    { id: 'jx_heartbomb',   name: 'Heart Bomb',          tp: 40, dmg: 30, dur: 360, kind: 'attack', text: '' },
+    { id: 'jx_clubbomb',    name: 'Club Bomb',           tp: 40, dmg: 30, dur: 340, kind: 'attack', text: '' },
+    { id: 'jx_diamond',     name: 'Diamond Shower',      tp: 40, dmg: 28, dur: 360, kind: 'attack', text: '' },
+    { id: 'jx_carousel_h',  name: 'Carousel (Horses)',   tp: 48, dmg: 34, dur: 450, kind: 'attack', text: '' },
+    { id: 'jx_carousel_hd', name: 'Carousel (H & Ducks)', tp: 48, dmg: 34, dur: 450, kind: 'attack', text: '' },
+    { id: 'jx_scythes',     name: 'Orbiting Devilsknives', tp: 48, dmg: 36, dur: 420, kind: 'attack', text: '' },
+    { id: 'jx_redsweep',    name: 'Red Devilsknife Sweep', tp: 48, dmg: 40, dur: 380, kind: 'attack', text: '' },
+  ],
+  ult: { id: 'jx_finalchaos', name: 'Final Chaos', tp: 100, dmg: 50, dur: 760, kind: 'attack', text: '' },
+};
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;
 

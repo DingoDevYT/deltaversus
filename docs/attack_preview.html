@@ -96,6 +96,16 @@ const ATTACKS = [
   { boss:'Jevil',   base:'jevil',  id:'jevil_diamond',   name:'Diamond Rain',     soul:'red' },
   { boss:'Jevil',   base:'jevil',  id:'jevil_carousel',  name:'Carousel',         soul:'red' },
   { boss:'Jevil',   base:'jevil',  id:'jevil_ult',       name:'DEVILSKNIFE',      soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_spread',      name:'Five-Spade Spread',  soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_spiral',      name:'Spade Spiral',       soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_heartbomb',   name:'Heart Bomb',         soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_clubbomb',    name:'Club Bomb',          soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_diamond',     name:'Diamond Shower',     soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_carousel_h',  name:'Carousel (Horses)',  soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_carousel_hd', name:'Carousel (H & Ducks)', soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_scythes',     name:'Orbiting Devilsknives', soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_redsweep',    name:'Red Devilsknife Sweep', soul:'red' },
+  { boss:'Jevil — NEW SET', base:'jevil', id:'jx_finalchaos',  name:'Final Chaos (ult)',  soul:'red' },
   { boss:'Spamton NEO', base:'spamton', id:'sneo_heads',   name:'Flying Heads',        soul:'yellow' },
   { boss:'Spamton NEO', base:'spamton', id:'sneo_heart',   name:'Heart Attack',        soul:'yellow' },
   { boss:'Spamton NEO', base:'spamton', id:'sneo_mail',    name:'Spam Mail',           soul:'yellow' },
@@ -203,7 +213,9 @@ function makePlayer(canvas, spec) {
         const c = b.carousel; c.ang += c.w; const depth = Math.cos(c.ang);
         b.x = c.cx + Math.sin(c.ang)*c.R; b.y = c.rowY + Math.sin(c.ang*3 + c.phase)*c.bob;
         b.scale = 0.62 + 0.5*(depth*0.5+0.5); b.noDraw = depth < 0.02; b.flip = depth < 0;
-      } else if (b.orbit) { b.orbit.ang += b.orbit.w; b.x = b.orbit.cx + Math.cos(b.orbit.ang)*b.orbit.R; b.y = b.orbit.cy + Math.sin(b.orbit.ang)*b.orbit.R; }
+      } else if (b.orbit) { const o=b.orbit; o.ang += o.w; if(o.vx)o.cx+=o.vx; if(o.vy)o.cy+=o.vy;
+        if(o.pulse) o.R = o.pulse.base + o.pulse.amp*Math.sin(b.t*o.pulse.freq);
+        b.x = o.cx + Math.cos(o.ang)*o.R; b.y = o.cy + Math.sin(o.ang)*o.R; }
       else { b.vx = (b.vx||0)+(b.ax||0); b.vy = (b.vy||0)+(b.ay||0); b.x += (b.vx||0); b.y += (b.vy||0); }
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
       if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
