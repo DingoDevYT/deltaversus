@@ -693,91 +693,119 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout + he sucks the box e
 // montages ref/vidframes/scan_*.png + clip_*.png). The guide's own captions name each
 // attack: Sword Corridor (~114s), Spinning Swords (~164s), Red Slash (~172s),
 // Break the Board (~142/190s), and the FINAL "converge then spinning pattern" (~240s).
-PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): rows of vertical swords march left, weave the gap
-  dur: 480,
+PATTERNS.knight_corridor = {   // SWORD CORRIDOR (fight): fast sword COLUMNS with a ~3-soul gap that wanders, then a red-line cut
+  dur: 560,
   tick(a) {
-    const { f, box, tier, add, soul, rng } = a;
-    const period = rate(26, tier);
-    if (f < 380 && f % period === 0) {
-      const rows = 8, gap = 2 + Math.round(2.5 * (1 + Math.sin(f * 0.045)));   // gap drifts up/down
-      for (let r = 0; r < rows; r++) {
-        if (Math.abs(r - gap) <= 1) continue;                                  // 3-row gap to follow
-        const y = box.y + 12 + r * (box.h - 24) / (rows - 1);
-        add({ ...bulletProps('knightsword'), x: box.x + box.w + 24, y, vx: -2.5, vy: 0, rot: -Math.PI / 2, spin: 0, r: 7 });
-      }
+    const { f, box, tier, add, rng } = a;
+    const cy = box.y + box.h / 2, per = rate(6, tier);
+    // ~60 columns in ~6s: each column is a sword pointing DOWN from the top + one pointing UP from the bottom,
+    // leaving a ~3-soul gap that wanders on a gentle randomised sine. They fly left VERY fast.
+    if (f < 372 && f % per === 0) {
+      const col = Math.floor(f / per);
+      const gapC = cy + Math.sin(col * 0.35) * box.h * 0.20 + Math.sin(col * 0.13) * box.h * 0.08;
+      const gapH = 46;
+      const topH = Math.max(10, (gapC - gapH / 2) - box.y), botH = Math.max(10, (box.y + box.h) - (gapC + gapH / 2));
+      add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y: box.y + topH / 2, vx: -7.4, vy: 0, rot: Math.PI / 2, scale: topH / 46, hitW: 13, hitH: topH });
+      add({ ...bulletProps('knightsword'), x: box.x + box.w + 18, y: box.y + box.h - botH / 2, vx: -7.4, vy: 0, rot: -Math.PI / 2, scale: botH / 46, hitW: 13, hitH: botH });
     }
-    if (f === 396) {   // finale: swords converge inward from every side toward the soul
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      for (let k = 0; k < 12; k++) {
-        const th = k / 12 * 6.28 + rng() * 0.2, R = Math.max(box.w, box.h) * 0.85;
-        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, ang = Math.atan2(soul.y - y, soul.x - x);
-        add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.2, vy: Math.sin(ang) * 3.2, rot: ang, spin: 0, r: 7 });
-      }
-    }
+    // finale: the Knight fills the box with red tell-lines - find the gap before they all cut
+    if (f === 402)
+      for (let i = 0; i < 9; i++)
+        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h), thick: 9,
+              x: box.x + rng() * box.w, y: box.y + rng() * box.h, rot: rng() * Math.PI, vx: 0, vy: 0, tellT: 62, armWindow: 12, dmg: 16 });
   },
 };
-PATTERNS.knight_circle = {   // SPINNING SWORDS: a wreath of spinning blades orbits the border, one lunges in
-  dur: 500,
-  tick(a) {
-    const { f, rng, box, tier, add, soul } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) * 0.62;
-    if (f === 0)   // build the persistent rotating wreath
-      for (let k = 0; k < 14; k++)
-        add({ ...bulletProps('knightsword'), x: cx, y: cy, vx: 0, vy: 0, spin: 0.06, r: 7, life: 490,
-              orbit: { cx, cy, R, w: 0.011, ang: k * 6.28 / 14 } });
-    if (f > 30 && every(f, rate(32, tier))) {   // one blade peels off and lunges at the soul
-      const ang0 = rng() * 6.28, x = cx + Math.cos(ang0) * R, y = cy + Math.sin(ang0) * R;
-      const ang = Math.atan2(soul.y - y, soul.x - x);
-      add({ ...bulletProps('knightsword'), x, y, vx: Math.cos(ang) * 3.3, vy: Math.sin(ang) * 3.3, rot: ang, spin: 0, r: 7 });
-    }
-  },
-};
-PATTERNS.knight_slash = {   // RED SLASH: red slash-beams radiate from the centre in a rotating star
-  dur: 480,
+PATTERNS.knight_circle = {   // DIRECTIONAL SWORDS: swords appear on the 8 axes, track you ~1.5s, then fire fast
+  dur: 560,
   tick(a) {
     const { f, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, period = rate(44, tier);
-    if (f % period === 0) {
-      const k = Math.floor(f / period), n = 6, off = (k % 2) * (Math.PI / n);   // alternate orientation
-      for (let i = 0; i < n; i++) { const th = i * 6.28 / n + off;
-        add({ ...bulletProps('knightslash'), x: cx, y: cy, vx: Math.cos(th) * 3.2, vy: Math.sin(th) * 3.2, rot: th, spin: 0, r: 6 }); }
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = Math.max(box.w, box.h) * 0.62;
+    // a sword materialises on one of the 8 compass axes, points inward, TRACKS the soul along its
+    // perpendicular for ~1.5s, then fires extremely fast - you only escape by moving along its axis.
+    const per = rate(44, tier);
+    if (f > 8 && f % per === 0) {
+      const slot = (Math.floor(f / per) * 3) % 8;             // cycle the 8 slots
+      const dir = slot * Math.PI / 4;
+      add({ ...bulletProps('knightsword'), x: cx - Math.cos(dir) * R, y: cy - Math.sin(dir) * R, vx: 0, vy: 0,
+            scale: 1.6, rot: dir, aim: { dir, delay: rate(90, tier), speed: 13 } });
     }
   },
 };
-PATTERNS.knight_board = {   // BREAK THE BOARD: red slashes split the box (vertical/horizontal/diagonal) - go to a corner
-  dur: 480,
+PATTERNS.knight_slash = {   // RED SLASH: soul-centred red tell-lines that rotate to a stop then CUT; 1 -> 2(cross) -> 3(star)
+  dur: 620,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const period = rate(78, tier), cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % period === 0) {
-      const k = Math.floor(f / period) % 3, n = 11;
-      for (let i = 0; i < n; i++) { const t = i / (n - 1); let x, y, rot;
-        if (k === 0) { x = cx; y = box.y + t * box.h; rot = Math.PI / 2; }                     // vertical split
-        else if (k === 1) { x = box.x + t * box.w; y = cy; rot = 0; }                          // horizontal split
-        else { x = box.x + t * box.w; y = box.y + t * box.h; rot = Math.atan2(box.h, box.w); } // diagonal split
-        add({ ...bulletProps('knightslash'), x, y, vx: 0, vy: 0, rot, spin: 0, r: 6, life: 46 });
-      }
+    const { f, box, tier, add, soul, rng } = a;
+    const SEQ = [1, 2, 2, 3, 3, 3], GAP = rate(96, tier);      // never compounds: each waits for the last to finish
+    for (let e = 0; e < SEQ.length; e++) {
+      if (f !== 20 + e * GAP) continue;
+      const n = SEQ[e], C = { x: soul.x, y: soul.y };           // centred on the soul's position at spawn
+      const base = rng() * Math.PI, rotV = (rng() < 0.5 ? 1 : -1) * (0.028 + rng() * 0.03);   // spins ~<=30deg then stops
+      for (let i = 0; i < n; i++)
+        add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.1, thick: 9,
+              x: C.x, y: C.y, rot: base + i * Math.PI / n, vx: 0, vy: 0, spin: rotV, spinDecay: 0.94, tellT: 62, armWindow: 10, dmg: 20 });
     }
-    if (every(f, rate(22, tier)))   // white diamonds drift down in the safe zones
-      add({ ...bulletProps('diamond'), x: box.x + rng() * box.w, y: box.y - 12, vx: 0, vy: 2.0, spin: 0.1, r: 6 });
   },
 };
-PATTERNS.knight_roar = {   // FINAL ROAR (ult): shards fly in from outside onto the boss, then a spinning pattern
-  dur: 640,
+PATTERNS.knight_board = {   // BREAK THE BOARD: a red cut-line, then the board splits and two rows of teeth erupt from the cut
+  dur: 560,
   tick(a) {
-    const { f, rng, box, tier, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f < 240 && every(f, rate(8, tier))) {   // phase 1: shards converge from outside toward the centre
-      const th = rng() * 6.28, R = Math.max(box.w, box.h) * 1.05;
-      const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
-      add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.013, vy: (cy - y) * 0.013, spin: 0.12, r: 8 });
-    }
-    if (f >= 260 && every(f, rate(6, tier))) {   // phase 2: a growing spinning pattern from the centre
-      const th = f * 0.20;
-      for (const s of [0, 2.094, 4.189]) {
-        add({ ...bulletProps('knighttri'), x: cx, y: cy, vx: Math.cos(th + s) * 2.4, vy: Math.sin(th + s) * 2.4, spin: 0.15, r: 6 });
+    const { f, box, tier, add } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = rate(150, tier);
+    const ev = f % GAP, k = Math.floor(f / GAP) % 2, horiz = k === 0;
+    if (f >= 460) return;
+    if (ev === 0)   // the cut tell-line (harmless until it strikes)
+      add({ shape: 'line', color: '#f33', len: horiz ? box.w : box.h, thick: 8,
+            x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 56, armWindow: 12, dmg: 20 });
+    // teeth erupt from the cut: 4 first (ev 66), the remaining 4 after a beat (ev 96), pointing into each half
+    const rowShoot = (offset, parity) => {
+      if (ev !== offset) return;
+      for (let i = 0; i < 8; i++) {
+        if ((i % 2) !== parity) continue;
+        const t = (i + 0.5) / 8;
+        if (horiz) {
+          const x = box.x + t * box.w;
+          add({ ...bulletProps('knighttri'), x, y: cy - 6, vx: 0, vy: -2.7, rot: -Math.PI / 2, r: 7 });
+          add({ ...bulletProps('knighttri'), x, y: cy + 6, vx: 0, vy: 2.7, rot: Math.PI / 2, r: 7 });
+        } else {
+          const y = box.y + t * box.h;
+          add({ ...bulletProps('knighttri'), x: cx - 6, y, vx: -2.7, vy: 0, rot: Math.PI, r: 7 });
+          add({ ...bulletProps('knighttri'), x: cx + 6, y, vx: 2.7, vy: 0, rot: 0, r: 7 });
+        }
+      }
+    };
+    rowShoot(66, 0);
+    rowShoot(96, 1);
+  },
+};
+PATTERNS.knight_roar = {   // FINAL ROAR (ult): black full-screen arena, crystals pulled in + swirl, then a roar that
+  dur: 820,                  // spews stars which turn red and shatter into 6 shards; a diagonal cut ends it.
+  tick(a) {
+    const { f, rng, tier, add } = a;
+    const cx = 320, cy = 240;
+    a.fx.blackout = true;
+    a.fx.bgHue = f < 520 ? (f * 2) % 360 : 0;                 // scrolling rainbow, then RED for the roar
+    a.fx.boxTarget = { x: 18, y: 36, w: 604, h: 408 };         // the box opens up to (nearly) the whole screen
+    // PHASE 1 (f<300): crystals pulled from beyond the screen toward the Knight; the soul is sucked in too
+    if (f < 300) {
+      a.fx.pull = { x: cx, y: cy, force: 0.42 };
+      if (every(f, rate(7, tier))) {
+        const swirl = f > 150, th = swirl ? f * 0.16 : rng() * 6.28, R = 400;   // random first, then swirling
+        const x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
+        add({ ...bulletProps('knightstar'), x, y, vx: (cx - x) * 0.012, vy: (cy - y) * 0.012, spin: 0.1, r: 8 });
       }
     }
+    // PHASE 2 (f>=320): the ROAR spews stars outward; each turns red then bursts into 6 triangle shards
+    if (f === 320)
+      for (let i = 0; i < 8; i++) { const th = i * Math.PI / 4;    // 8 in a star
+        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * 2.7, vy: Math.sin(th) * 2.7, spin: 0.1, r: 8,
+              burst: 78, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.4 }); }
+    if (f > 344 && f < 620 && every(f, rate(26, tier)))            // then bursts of 3 in a random spread
+      for (let i = 0; i < 3; i++) { const th = rng() * 6.28, sp = 2.2 + rng();
+        add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp, spin: 0.1, r: 8,
+              burst: 70, burstN: 6, burstImg: 'knighttri', burstSpeed: 2.2 }); }
+    // FINALE (f=700): a harmless diagonal cut across the screen to end the attack
+    if (f === 700)
+      add({ shape: 'line', color: '#fff', len: 940, thick: 10, x: cx, y: cy, rot: Math.atan2(1, 1.5), vx: 0, vy: 0, tellT: 34, armWindow: 6, dmg: 0 });
   },
 };
 

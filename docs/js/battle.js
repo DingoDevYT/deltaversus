@@ -723,7 +723,18 @@ Battle.updDodge = function () {
     if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
+    if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
+    // axis-tracking sword (Knight directional swords): slide to line up with the soul, then fire fast
+    if (b.aim) {
+      if (b.t < b.aim.delay) {
+        const px = Math.cos(b.aim.dir + Math.PI / 2), py = Math.sin(b.aim.dir + Math.PI / 2);
+        const rel = (B.soul.x - b.x) * px + (B.soul.y - b.y) * py;
+        b.x += px * rel * 0.14; b.y += py * rel * 0.14; b.rot = b.aim.dir;   // points along its firing axis
+      } else if (b.t === b.aim.delay) { b.vx = Math.cos(b.aim.dir) * b.aim.speed; b.vy = Math.sin(b.aim.dir) * b.aim.speed; }
+    }
+    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('shoot', 0.4); }   // tell -> live cut
+    if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
     // controller bullets (climbing head, face parts) emit projectiles from their LIVE position
     if (b.emit && !b.dead) b.emit(b, spawned, B.soul, B.dodgeBox, B.fx);
     // yellow-soul shots destroy shootable boss bullets (heads / mail / heart)
@@ -748,10 +759,19 @@ Battle.updDodge = function () {
       continue;
     }
     if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
+    if (b.shape === 'line' && !b.armed) continue;   // a tell-line only hurts once the Knight actually cuts (armed)
+    // line hitbox: perpendicular distance to the (rotated) line through b, within its length
+    let lineHit = false;
+    if (b.shape === 'line') {
+      const nx = -Math.sin(b.rot || 0), ny = Math.cos(b.rot || 0);
+      const perp = Math.abs((B.soul.x - b.x) * nx + (B.soul.y - b.y) * ny);
+      const along = Math.abs((B.soul.x - b.x) * Math.cos(b.rot || 0) + (B.soul.y - b.y) * Math.sin(b.rot || 0));
+      lineHit = perp < (b.thick || 6) / 2 + SOUL_R && along < (b.len || 400) / 2 + SOUL_R;
+    }
     // rectangular hitbox (hitW/hitH) for wall-shaped bullets (BIG SHOT, teeth); else circular
     const rectHit = b.hitW && Math.abs(b.x - B.soul.x) < b.hitW / 2 + SOUL_R && Math.abs(b.y - B.soul.y) < b.hitH / 2 + SOUL_R;
     const dist = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
-    if (rectHit || (!b.hitW && dist < (b.r || 6) + SOUL_R)) {
+    if (lineHit || rectHit || (!b.hitW && b.shape !== 'line' && dist < (b.r || 6) + SOUL_R)) {
       if (B.iframes <= 0) {
         const tgtDef = (b.target != null && B.myTeam[b.target] && B.myTeam[b.target].action && B.myTeam[b.target].action.cmd === 'defend');
         const guard = B.myGuardBuff > 0 ? 0.5 : 1;   // Northernlight damage shield
@@ -1129,6 +1149,12 @@ function drawBullet(ctx, b, px, py, s) {
   } else if (b.shape === 'note') {
     ctx.fillRect(px - 2 * s, py - 6 * s, 3 * s, 10 * s);
     ctx.beginPath(); ctx.arc(px - 3 * s, py + 4 * s, 4 * s, 0, 7); ctx.fill();
+  } else if (b.shape === 'line') {   // full-length line (Knight red-slash TELL, then the cut)
+    const L = (b.len || 400) * s, th = (b.thick || 4) * s;
+    ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
+    ctx.globalAlpha = b.armed ? 1 : (b.tellFade != null ? b.tellFade : 0.5);
+    ctx.fillStyle = b.color || '#f33'; ctx.fillRect(-L / 2, -th / 2, L, th);
+    ctx.restore(); ctx.globalAlpha = 1;
   } else { ctx.beginPath(); ctx.arc(px, py, (b.r || 5) * s, 0, 7); ctx.fill(); }
 }
 

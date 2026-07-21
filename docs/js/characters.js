@@ -151,17 +151,17 @@ const CHARS = {
     name: 'ROARING KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
     dscale: 0.82, bob: true, afterimage: 12,   // hovers + trails ghost afterimages
     desc: 'THE ROARING KNIGHT.\nFINAL SECRET BOSS - 1500 HP.',
-    fight: { id: 'knight_corridor', name: 'Sword Corridor', dmg: 28, dur: 480,
+    fight: { id: 'knight_corridor', name: 'Sword Corridor', dmg: 28, dur: 560,
              text: 'THE KNIGHT opens a SWORD CORRIDOR!' },
     spells: [
-      { id: 'knight_circle', name: 'Spinning Swords', tp: 40, dmg: 32, dur: 500, kind: 'attack',
-        text: 'THE KNIGHT coils SWORDS around you!' },
-      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 36, dur: 480, kind: 'attack',
+      { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 32, dur: 560, kind: 'attack',
+        text: 'THE KNIGHT aims SWORDS at you!' },
+      { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 36, dur: 620, kind: 'attack',
         text: 'THE KNIGHT carves RED SLASHES!' },
-      { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 38, dur: 480, kind: 'attack',
+      { id: 'knight_board', name: 'Break the Board', tp: 56, dmg: 38, dur: 560, kind: 'attack',
         text: 'THE KNIGHT BREAKS THE BOARD!' },
     ],
-    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 52, dur: 640, kind: 'attack',
+    ult: { id: 'knight_roar', name: 'FINAL ROAR', tp: 100, dmg: 52, dur: 820, kind: 'attack',
            text: 'THE KNIGHT lets out a ROAR!!' },
   },
 };

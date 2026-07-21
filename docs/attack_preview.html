@@ -111,6 +111,12 @@ function drawBullet(ctx, b, px, py, s) {
     ctx.save(); ctx.translate(px, py); ctx.rotate((b.t || 0) * 0.1);
     for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-1 * s, -6 * s, 2 * s, 12 * s); }
     ctx.restore();
+  } else if (b.shape === 'line') {
+    const L = (b.len || 400) * s, th = (b.thick || 4) * s;
+    ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
+    ctx.globalAlpha = b.armed ? 1 : (b.tellFade != null ? b.tellFade : 0.5);
+    ctx.fillStyle = b.color || '#f33'; ctx.fillRect(-L / 2, -th / 2, L, th);
+    ctx.restore(); ctx.globalAlpha = 1;
   } else { ctx.beginPath(); ctx.arc(px, py, (b.r || 5) * s, 0, 7); ctx.fill(); }
 }
 
@@ -148,7 +154,11 @@ function makePlayer(canvas, spec) {
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t*b.swing.spd + (b.swing.ph||0));
       if (b.sineA) b.y += Math.sin(b.t*(b.sineF||0.05)*6.28 + b.phase0) * b.sineA;
       if (b.spin) b.rot = (b.rot||0) + b.spin;
+      if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
       if (b.shrink) b.scale = (b.scale||1) * b.shrink;
+      if (b.aim) { if (b.t < b.aim.delay) { const px=Math.cos(b.aim.dir+Math.PI/2), py=Math.sin(b.aim.dir+Math.PI/2), rel=(soul.x-b.x)*px+(soul.y-b.y)*py; b.x+=px*rel*0.14; b.y+=py*rel*0.14; b.rot=b.aim.dir; } else if (b.t === b.aim.delay) { b.vx=Math.cos(b.aim.dir)*b.aim.speed; b.vy=Math.sin(b.aim.dir)*b.aim.speed; } }
+      if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; }
+      if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
       if (b.emit && !b.dead) b.emit(b, spawned, soul, box, FX);
       if (b.burst && b.t >= b.burst) {
         b.dead = true;
