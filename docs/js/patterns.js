@@ -937,6 +937,25 @@ PATTERNS.knight_board = {   // BREAK THE BOARD: red cut tell, the board ACTUALLY
     }
   },
 };
+// STARS (obj_knight_pointing_cone) — the Knight's every-phase OPENER. Silver stars converge from the
+// edges onto an aim point, flash red, then blast outward into shard bursts. Waves escalate.
+PATTERNS.knight_stars = {
+  dur: 420,
+  tick(a) {
+    const { f, box, add, rng, tier } = a;
+    const WAVE = rate(116, tier);
+    if (f % WAVE === 0 && f < 360) {
+      const tx = box.x + box.w * (0.25 + rng() * 0.5), ty = box.y + box.h * (0.25 + rng() * 0.5), n = 10;
+      for (let i = 0; i < n; i++) {
+        const ang = i / n * 6.28 + rng() * 0.25, R = Math.max(box.w, box.h) * 1.05;
+        const sx = tx + Math.cos(ang) * R, sy = ty + Math.sin(ang) * R, toT = Math.atan2(ty - sy, tx - sx);
+        add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(toT) * 2.6, vy: Math.sin(toT) * 2.6, r: 6, grazeR: 13, scale: 0.9, spin: 0.12,
+              burst: 46, burstN: 6, burstImg: 'knighttri', burstSpeed: 3.5, burstScale: 0.8, burstLife: 80, redAt: 30, life: 200 });
+      }
+      Snd.play('boardsummon', 0.35);
+    }
+  },
+};
 // FINAL ROAR timeline: charge(flourish 0->4, stars pull in random then swirl) -> flourish 5->6
 // -> ROAR (roar 0<->1, spew stars OUT, can't explode yet) -> all stars shatter into slow fading
 // shards -> final diagonal cut (slash 0->5). Stars all shatter around EXPLODE regardless of when fired.

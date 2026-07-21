@@ -162,6 +162,8 @@ const CHARS = {
     fight: { id: 'knight_corridor', name: 'Sword Corridor', dmg: 48, dur: 560,
              text: 'THE KNIGHT opens a SWORD CORRIDOR!' },
     spells: [
+      { id: 'knight_stars', name: 'Stars', tp: 36, dmg: 52, dur: 420, kind: 'attack',
+        text: 'THE KNIGHT calls down STARS!' },
       { id: 'knight_circle', name: 'Directional Swords', tp: 40, dmg: 56, dur: 560, kind: 'attack',
         text: 'THE KNIGHT aims SWORDS at you!' },
       { id: 'knight_slash', name: 'Red Slash', tp: 48, dmg: 60, dur: 940, kind: 'attack',
