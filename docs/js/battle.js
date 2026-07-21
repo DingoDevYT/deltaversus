@@ -1150,16 +1150,13 @@ Battle.renderChars = function (ctx) {
       const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, gy, flip, alpha, sc);
       if (done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
       else if (done && m.pose === 'hurt' && m.poseT > 50) { m.pose = 'idle'; m.poseT = 0; }
-      // ALWAYS-visible enemy readout: a small HP bar + MERCY% so you can track a spare any time
-      if (team === B.oppTeam && !isOut(m)) {
-        const bw = 60, bx0 = x - bw / 2, by0 = gy - 66;
-        ctx.fillStyle = '#3c0d0d'; ctx.fillRect(bx0, by0, bw, 4);
-        ctx.fillStyle = m.def.color; ctx.fillRect(bx0, by0, Math.max(0, Math.round(bw * m.hp / m.max)), 4);
-        if (!(m.def.spare || {}).never) {
-          ctx.fillStyle = '#3a3000'; ctx.fillRect(bx0, by0 + 6, bw, 3);
-          ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(bx0, by0 + 6, Math.round(bw * m.mercy / 100), 3);
-          drawText(ctx, 'main', canSpare(m) ? 'SPARE!' : m.mercy + '%', x, by0 - 16, { color: canSpare(m) ? '#ff0' : '#dd0', align: 'center', scale: 0.9 });
-        }
+      // small MERCY readout, only on YOUR OWN party, only once MERCY has started building,
+      // tucked below the character (no HP - that's already on the panel)
+      if (team === B.myTeam && !isOut(m) && m.mercy > 0 && !(m.def.spare || {}).never) {
+        const bw = 30, bx0 = x - bw / 2, by0 = gy + 38;
+        ctx.fillStyle = '#3a3000'; ctx.fillRect(bx0, by0, bw, 2);
+        ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(bx0, by0, Math.round(bw * m.mercy / 100), 2);
+        drawText(ctx, 'main', canSpare(m) ? 'SPARE!' : m.mercy + '%', x, by0 + 3, { color: canSpare(m) ? '#ff0' : '#dd0', align: 'center', scale: 0.7 });
       }
     });
   }
