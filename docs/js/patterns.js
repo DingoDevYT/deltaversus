@@ -970,12 +970,16 @@ PATTERNS.knight_roar = {
 };
 
 // ============================================================================
-// JEVIL — "NEW SET" (from the Gemini recipes). These are TEST patterns wired only
-// into the attack tester + showcase, NOT Jevil's real in-game moveset.
-// Sprite map: spade->jspade, big spade->bspade, heart->bheart, club->bclub,
-// diamond->diamond, horse->carousel0, duck->carousel1, everyman->carousel2,
-// scythe->scythe, red/giant scythe->scythebig.
+// JEVIL — "NEW SET" (from the Gemini recipes). TEST patterns wired only into the
+// attack tester + showcase, NOT Jevil's real in-game moveset. Real suit sprites.
+//
+// AUTHENTIC SPEED IMPORT: DELTARUNE runs at 30 FPS; our dodge loop updates at a fixed
+// 60 Hz. So every per-FRAME value from the recipes (px/frame, rad/frame) is multiplied
+// by F below to reproduce the original real-world speed; absolute delays stay in real
+// seconds (seconds*60 = ticks). Recipe words: fast~=5.5px/f, medium~=4px/f (at 30 FPS).
 // ============================================================================
+const F = 0.5;                                   // per-frame(30fps) -> per-tick(60fps)
+const JX_FAST = 5.5 * F, JX_MED = 4 * F, JX_MEDFAST = 4.75 * F, JX_ULTRA = 7 * F, JX_SLOW = 2.5 * F;
 
 PATTERNS.jx_spread = {   // Five-Spade Teleport Spread: Jevil pops out alternating sides, fires a 5-spade fan (middle AIMED)
   dur: 340, box: { w: 160, h: 160 },
@@ -991,7 +995,7 @@ PATTERNS.jx_spread = {   // Five-Spade Teleport Spread: Jevil pops out alternati
       const base = Math.atan2(soul.y - oy, soul.x - ox);                   // middle spade aimed at the soul
       for (const off of [-0.52, -0.26, 0, 0.26, 0.52]) {                   // +/-30, +/-15 deg
         const ang = base + off;
-        add({ ...bulletProps('suitspade'), x: ox, y: oy, vx: Math.cos(ang) * 3.2, vy: Math.sin(ang) * 3.2, rot: ang + Math.PI / 2, spin: 0, r: 6, scale: 0.55 });   // spade points its travel direction
+        add({ ...bulletProps('suitspade'), x: ox, y: oy, vx: Math.cos(ang) * JX_FAST, vy: Math.sin(ang) * JX_FAST, rot: ang + Math.PI / 2, spin: 0, r: 6, scale: 0.55 });   // spade points its travel direction
       }
     }
   },
@@ -1007,7 +1011,8 @@ PATTERNS.jx_spiral = {   // Spade Spiral: a ring of 10 big spades appears, then 
       for (let i = 0; i < 10; i++) {
         const ang = i / 10 * Math.PI * 2, x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
         const toC = Math.atan2(cy - y, cx - x);                            // inward + tangential = spiral
-        const vx = Math.cos(toC) * 2.4 - Math.sin(toC) * dir * 1.3, vy = Math.sin(toC) * 2.4 + Math.cos(toC) * dir * 1.3;
+        const vr = JX_MEDFAST, vt = JX_MEDFAST * 0.55;
+        const vx = Math.cos(toC) * vr - Math.sin(toC) * dir * vt, vy = Math.sin(toC) * vr + Math.cos(toC) * dir * vt;
         add({ ...bulletProps('suitspade'), x, y, vx: 0, vy: 0, r: 8, scale: 0.8, spin: 0, rot: Math.atan2(vy, vx) + Math.PI / 2,   // NO spin - points its charge/travel direction
               noHit: true, fireAt: 22 + i * 4, fireVX: vx, fireVY: vy, life: 22 + i * 4 + 100 });   // park in the ring, then launch staggered
       }
@@ -1021,14 +1026,14 @@ PATTERNS.jx_heartbomb = {   // Heart Bomb: bombs fall + burst into a square of 4
     const CYC = rate(48, tier);
     if (f % CYC === 0 && f < 300) {
       const k = f / CYC, x = box.x + box.w * (0.15 + ((k * 53) % 100) / 100 * 0.7);
-      const bomb = { ...bulletProps('suitheart'), x, y: box.y - 16, vx: 0, vy: 2.2, r: 8, scale: 1.0 };
+      const bomb = { ...bulletProps('suitheart'), x, y: box.y - 16, vx: 0, vy: JX_MED, r: 8, scale: 1.0 };
       bomb.emit = function (b, out) {
         if (b.y >= box.y + 14 && !b._done) {
           b._done = 1; b.dead = true;
           const cx = b.x, cy = box.y + 14;
           for (let i = 0; i < 4; i++) { const ang = i / 4 * Math.PI * 2;
             out.push({ ...bulletProps('suitheart'), x: cx + Math.cos(ang) * 16, y: cy + Math.sin(ang) * 16, r: 6, scale: 0.7,
-                       orbit: { cx, cy, R: 16, w: 0.1, ang, vy: 1.6 }, life: 130 }); }   // cluster spins + falls
+                       orbit: { cx, cy, R: 16, w: 0.1 * F, ang, vy: JX_MED }, life: 130 }); }   // cluster spins (0.1 rad/f) + falls (medium)
         }
       };
       add(bomb);
@@ -1042,13 +1047,13 @@ PATTERNS.jx_clubbomb = {   // Club Bomb: bombs fall + burst into a 3-way club fa
     const CYC = rate(36, tier);
     if (f % CYC === 0 && f < 300) {
       const k = f / CYC, x = box.x + box.w * (0.1 + ((k * 61) % 100) / 100 * 0.8);
-      const bomb = { ...bulletProps('suitclub'), x, y: box.y - 16, vx: 0, vy: 3.0, r: 8, scale: 1.0 };
+      const bomb = { ...bulletProps('suitclub'), x, y: box.y - 16, vx: 0, vy: JX_FAST, r: 8, scale: 1.0 };
       bomb.emit = function (b, out, s) {
         if (b.y >= box.y + 14 && !b._done) {
           b._done = 1; b.dead = true;
           const base = Math.atan2(s.y - b.y, s.x - b.x);
           for (const off of [-0.35, 0, 0.35])
-            out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(base + off) * 3.4, vy: Math.sin(base + off) * 3.4, r: 6, scale: 1.0, spin: 0.15 });
+            out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(base + off) * JX_FAST, vy: Math.sin(base + off) * JX_FAST, r: 6, scale: 1.0, spin: 0.15 });
         }
       };
       add(bomb);
@@ -1059,8 +1064,8 @@ PATTERNS.jx_diamond = {   // Diamond Shower: dense diamonds stream straight UP f
   dur: 360, box: { w: 160, h: 160 },
   tick(a) {
     const { f, rng, box, add } = a;
-    if (f < 300 && f % (f < 180 ? 3 : 2) === 0)
-      add({ ...bulletProps('suitdiamondv'), x: box.x + box.w * (0.05 + rng() * 0.9), y: box.y + box.h + 12, vx: 0, vy: -(3.6 + rng() * 0.8), r: 5, spin: 0, scale: 0.85 });   // real vertical diamond, NO spin
+    if (f < 300 && f % (f < 180 ? 3 : 2) === 0)   // 20/sec, then 30/sec (at 60Hz)
+      add({ ...bulletProps('suitdiamondv'), x: box.x + box.w * (0.05 + rng() * 0.9), y: box.y + box.h + 12, vx: 0, vy: -(JX_FAST + rng() * 0.6), r: 5, spin: 0, scale: 0.85 });   // real vertical diamond, NO spin, FAST
   },
 };
 // Both carousels reuse the GAME'S proven fake-3D CYLINDER (updCarousel): 8 columns x 3 rows rotate
@@ -1089,8 +1094,8 @@ PATTERNS.jx_scythes = {   // Orbiting Devilsknives: 4 scythes self-spin while or
     const { f, box, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 10, spin: 0.15, vx: 0, vy: 0, life: 400,
-            orbit: { cx, cy, R: 65, w: 0.04, ang: k * Math.PI / 2, pulse: { base: 65, amp: 10, freq: 0.03 } } });
+      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 10, spin: 0.15 * F, vx: 0, vy: 0, life: 400,   // self-spin 0.15 rad/f
+            orbit: { cx, cy, R: 65, w: 0.04 * F, ang: k * Math.PI / 2, pulse: { base: 65, amp: 10, freq: 0.03 * F } } });   // orbit 0.04 rad/f, pulse 0.03 rad/f
   },
 };
 PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep: grey scythes orbit while a giant RED scythe sweeps top/bottom lanes
@@ -1099,13 +1104,13 @@ PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep: grey scythes orbit while a 
     const { f, box, add } = a;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 9, spin: 0.15, vx: 0, vy: 0, life: 380,
-            orbit: { cx, cy, R: 58, w: 0.04, ang: k * Math.PI / 2 } });
-    // 4 red sweeps alternating TOP/BOTTOM lanes
+      add({ ...bulletProps('scythe'), x: cx, y: cy, r: 9, spin: 0.15 * F, vx: 0, vy: 0, life: 380,
+            orbit: { cx, cy, R: 58, w: 0.04 * F, ang: k * Math.PI / 2 } });
+    // 4 red sweeps alternating TOP/BOTTOM lanes at 0.5 / 1.8 / 3.1 / 4.4s (60Hz ticks)
     const sweeps = [[30, 0.25, 1], [108, 0.75, -1], [186, 0.25, 1], [264, 0.75, -1]];
     for (const [t, laneP, dir] of sweeps) if (f === t)
       add({ ...bulletProps('scythebig'), tint: '#e83030', x: dir > 0 ? box.x - 42 : box.x + box.w + 42, y: box.y + box.h * laneP,
-            vx: dir * 4.6, vy: 0, r: 16, scale: 1.3, spin: 0.1, hitW: 40, hitH: 40 });
+            vx: dir * JX_FAST, vy: 0, r: 16, scale: 1.3, spin: 0.1 * F, hitW: 40, hitH: 40 });
   },
 };
 PATTERNS.jx_finalchaos = {   // Final Chaos (ult): full-screen arena, giant scythes rain (light pillars), edges->centre wave,
@@ -1125,14 +1130,14 @@ PATTERNS.jx_finalchaos = {   // Final Chaos (ult): full-screen arena, giant scyt
       };
       add(k);
     };
-    if (f >= 30 && f < 240 && (f - 30) % 9 === 0) drop(box.x + 20 + rng() * (box.w - 40), 9 + rng(), 1);   // PHASE 1: fast random rain
-    const seq = f - 240;                                                                                    // PHASE 2: edges -> centre
-    if (seq >= 0 && seq < 160 && seq % rate(30, tier) === 0) {
-      const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / rate(30, tier))];
-      if (pairs) for (const p of pairs) drop(box.x + box.w * p, 8, 1);
+    if (f >= 30 && f < 240 && (f - 30) % 9 === 0) drop(box.x + 20 + rng() * (box.w - 40), JX_ULTRA + rng() * 0.6, 1);   // PHASE 1: ULTRA-fast rain every 0.15s
+    const seq = f - 240;                                                                                    // PHASE 2: edges -> centre, 0.2s apart
+    if (seq >= 0 && seq < 60 && seq % 12 === 0) {
+      const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / 12)];
+      if (pairs) for (const p of pairs) drop(box.x + box.w * p, JX_ULTRA, 1);
     }
-    if (f === 470) add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: box.y - 100, vx: 0, vy: 0,   // PHASE 3: the ultimate scythe
-                         lerpY: box.y + box.h * 0.8 - 40, lerpRate: 0.02, spin: 0.02, scale: 5.6, hitW: box.w * 1.2, hitH: box.h * 0.85, life: 280 });
+    if (f === 470) add({ ...bulletProps('scythebig'), x: box.x + box.w / 2, y: box.y - 100, vx: 0, vy: 0,   // PHASE 3: the ultimate scythe descends slowly (~3s) then stops
+                         lerpY: box.y + box.h * 0.8 - 40, lerpRate: 0.016, spin: 0.02, scale: 5.6, hitW: box.w * 1.2, hitH: box.h * 0.85, life: 300 });
     if (f > 700) { a.fx.whiteout = Math.min(1, (f - 700) / 24); a.fx.shake = 8; }                            // white-flash ending
   },
 };
