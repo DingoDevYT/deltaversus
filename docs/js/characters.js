@@ -45,7 +45,7 @@ const CHARS = {
            text: 'SUSIE goes on a RAMPAGE!!' },
   },
   ralsei: {
-    name: 'RALSEI', color: '#00ff80', hp: 140, level: 1, spare: { downed: true },
+    name: 'RALSEI', color: '#00ff80', hp: 140, level: 1, spare: {},
     desc: 'FLUFFY PRINCE OF DARK.\nHEALS AND SOOTHES.',
     fight: { id: 'ralsei_scarf', name: 'Scarf Whip', dmg: 22, dur: 420,
              text: 'RALSEI whips the scarf!' },
@@ -63,7 +63,7 @@ const CHARS = {
            heal: 50, text: 'RALSEI sings a DREAM CHORUS!!' },
   },
   noelle: {
-    name: 'NOELLE', color: '#ffff00', hp: 130, level: 1, spare: {},
+    name: 'NOELLE', color: '#ffff00', hp: 130, level: 1, spare: { noKris: true },
     desc: 'FRAGILE ICE MAGE.\nTERRIFYING POTENTIAL.',
     fight: { id: 'noelle_snow', name: 'Snow Toss', dmg: 24, dur: 420,
              text: 'NOELLE tosses snow... sorry!' },

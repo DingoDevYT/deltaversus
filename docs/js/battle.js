@@ -27,26 +27,29 @@ function teamDead(team) { return team.every(isOut); }
 function frontLiving(team) { for (const m of team) if (!isOut(m)) return m; return null; }
 function isTired(m) { return !isOut(m) && (m.tiredFlag || m.hp <= m.max * 0.30); }
 function oppMaxLevel() { return Battle.oppTeam.reduce((mx, m) => isOut(m) ? mx : Math.max(mx, m.def.level || 1), 1); }
-// can this enemy member currently be SPARED? returns true/false (mercy + condition)
+// which team a member is on (spare conditions are checked against the member's OWN team,
+// so they read correctly whether the member is a foe or one of ours)
+function teamOf(m) { return Battle.myTeam.indexOf(m) >= 0 ? Battle.myTeam : Battle.oppTeam; }
+// can this member currently be SPARED? returns true/false (mercy 100% + their condition).
+// Conditions GATE the spare - they do NOT hand out free mercy.
 function canSpare(m) {
   if (isOut(m)) return false;
   const sp = m.def.spare || {};
   if (sp.never) return false;
   if (m.mercy < 100) return false;
-  if (sp.alone && living(Battle.oppTeam).length > 1) return false;
-  if (sp.downed && !m.downed) return false;   // (unreachable via normal flow; kept for intent)
+  const team = teamOf(m);
+  if (sp.alone && living(team).length > 1) return false;                                   // SUSIE: only when she's the last one standing
   if (sp.fullHp && m.hp < m.max) return false;
-  if (sp.noKris && Battle.oppTeam.some(o => !isOut(o) && o.def.base === 'kris')) return false;
+  if (sp.noKris && team.some(o => !isOut(o) && o.def.base === 'kris')) return false;         // NOELLE: not while a living KRIS is on her team
   return true;
 }
 // one-line description of what it takes to SPARE this foe (shown in the target menu)
 function spareHint(def) {
   const sp = def.spare || {};
   if (sp.never) return 'CANNOT be SPARED';
-  if (sp.alone) return 'SPARE: when ALONE (+100%)';
-  if (sp.downed) return 'SPARE: when DOWNED (+100%)';
-  if (sp.fullHp) return 'SPARE: at FULL HP (+100%)';
-  if (sp.noKris) return 'SPARE: no KRIS up (+100%)';
+  if (sp.alone) return 'SPARE: only when ALONE';
+  if (sp.fullHp) return 'SPARE: only at FULL HP';
+  if (sp.noKris) return 'SPARE: not while KRIS is on their team';
   return 'SPARE at 100% MERCY';
 }
 // an ACT id resolves to one of KRIS's own acts OR a living enemy's per-enemy mercy act
@@ -163,6 +166,7 @@ Battle.onMsg = function (m) {
   } else if (m.t === 'spare') { const mm = B.myTeam[m.mi]; if (mm && !isOut(mm)) { mm.spared = true; mm.pose = 'idle'; mm.poseT = 0; } }
   else if (m.t === 'snowgrave') { applySnowgrave(B.myTeam, m.mi); }
   else if (m.t === 'demercy') { for (const o of B.oppTeam) if (!isOut(o)) o.mercy = Math.max(0, o.mercy - (m.amt || 10)); }   // foe's MOTIVATE lowers our accrued MERCY on them
+  else if (m.t === 'mercysync') { if (m.vals) m.vals.forEach((v, i) => { if (B.myTeam[i] && !isOut(B.myTeam[i])) B.myTeam[i].mercy = v; }); }   // how close the FOE is to sparing our members - live
   else if (m.t === 'rematch') B.rematchOpp = true;
 };
 
@@ -238,7 +242,7 @@ Battle.startSelect = function (fresh) {
       B.dmgPops.push({ x: 96, y, txt: m.downed ? '+' + amt : 'UP!', t: 0, color: '#2f2' });
     }
   }
-  B.cmdOrder = B.myTeam.map((m, i) => i).filter(i => !B.myTeam[i].downed);
+  B.cmdOrder = B.myTeam.map((m, i) => i).filter(i => !isOut(B.myTeam[i]));   // skip downed AND spared members
   B.cmdPos = 0;
   for (const m of B.myTeam) { m.action = null; m.tier = null; m.pose = 'idle'; m.poseT = 0; }
   for (const m of B.oppTeam) { m.pose = 'idle'; m.poseT = 0; }
@@ -1008,8 +1012,7 @@ Battle.endDodge = function () {
   }
   if (B.usedSnowgrave) Battle.send({ t: 'snowgrave', mi: B.snowgraveTarget });
   B.myResult = { t: 'result', dmgTaken: B.dmgTaken,
-                 hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP,
-                 oppMercy: B.oppTeam.map(o => o.mercy) };   // our accrued MERCY on the foe -> shown as THEIR own-team MERCY
+                 hp: B.myTeam.map(m => m.hp), downed: B.myTeam.map(m => m.downed), tp: B.myTP };
   Battle.send(B.myResult);
   B.phase = 'waitresult';
   B.say('* Waiting for result...');
@@ -1022,7 +1025,6 @@ Battle.resolve = function () {
   // apply opponent's authoritative team state
   if (r.hp) r.hp.forEach((hp, i) => { if (B.oppTeam[i]) B.oppTeam[i].hp = hp; });
   if (r.downed) r.downed.forEach((dn, i) => { if (B.oppTeam[i]) { B.oppTeam[i].downed = dn; if (dn) B.oppTeam[i].pose = 'downed'; } });
-  if (r.oppMercy) r.oppMercy.forEach((mc, i) => { if (B.myTeam[i] && !isOut(B.myTeam[i])) B.myTeam[i].mercy = mc; });   // how close the FOE is to sparing our members
   B.oppTP = r.tp != null ? r.tp : B.oppTP;
   if (r.dmgTaken > 0) {
     Snd.play('damage');
@@ -1074,12 +1076,14 @@ Battle.applyMyEffects = function () {
     return false;
   };
   let usedProceed = false;
+  const spareCmds = [], spareTireds = [];   // SPARES are deferred to the very END (see below)
+  // PASS 1: all the MERCY-changing effects (grants / MOTIVATE / PROCEED), plus buffs
   for (const m of B.myTeam) {
     const a = m.action; if (!a) continue;
     if (a.cmd === 'magic') {
       const d = moveById(m.def, a.move); if (!d) continue;
       if (d.kind === 'mercy') grantMercy(a.target, d.mercy || 15);
-      else if (d.kind === 'spareTired') { if (d.scope === 'all') B.oppTeam.forEach((o, i) => doSpare(i, true)); else doSpare(a.target, true); }
+      else if (d.kind === 'spareTired') spareTireds.push(d.scope === 'all' ? 'all' : a.target);
     } else if (a.cmd === 'act') {
       const ad = findAct(a.move); if (!ad) continue;
       if (ad.mercy) grantMercy(a.target, ad.mercy);
@@ -1091,11 +1095,15 @@ Battle.applyMyEffects = function () {
       }
       if (ad.kind === 'buff') { if (ad.buff === 'guard') B.myGuardBuff = 3; if (ad.buff === 'power') B.myPowerBuff = 3; }
       if (ad.kind === 'proceed') usedProceed = true;
-    } else if (a.cmd === 'spare') { doSpare(a.target, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.'); }
+    } else if (a.cmd === 'spare') spareCmds.push(a.target);
   }
-  // (MERCY now only ever drops via MOTIVATE - no passive drains)
   // using PROCEED sways an enemy NOELLE (+20% MERCY toward sparing her)
   if (usedProceed) for (const o of B.oppTeam) if (!isOut(o) && o.def.base === 'noelle') o.mercy = Math.min(100, o.mercy + 20);
+  // PASS 2: SPARES resolve LAST, against the FINAL mercy - regardless of who acted in what order.
+  for (const t of spareTireds) { if (t === 'all') B.oppTeam.forEach((o, i) => doSpare(i, true)); else doSpare(t, true); }
+  for (const t of spareCmds) doSpare(t, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.');
+  // push the fresh enemy MERCY to the foe so their own-party bar updates immediately (both ends stay in sync)
+  B.send({ t: 'mercysync', vals: B.oppTeam.map(o => o.mercy) });
   // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
   const anyDown = B.myTeam.some(m => m.downed);
   if (B.usedSnowgrave || anyDown) B.proceedCount = 0;
@@ -1176,6 +1184,7 @@ Battle.renderChars = function (ctx) {
   function drawTeam(team, x, flip) {
     const n = team.length;
     team.forEach((m, i) => {
+      if (m.spared) return;   // SPARED members vanish from the field entirely (gone for the rest of the battle)
       // (poseT is advanced in Battle.update at a fixed 60Hz - do NOT increment it here in render)
       const hurtFlash = m.pose === 'hurt' && (m.poseT % 8 < 4);
       const alpha = m.downed ? 0.35 : (hurtFlash ? 0.4 : 1);
