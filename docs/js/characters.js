@@ -91,8 +91,7 @@ const CHARS = {
     ],
     ult: { id: 'lancer_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 48, dur: 560, kind: 'attack', darkReq: 85,
            text: 'LANCER spins like the DEVILSKNIFE!!' },
-    act: { id: 'hohoho', name: 'Ho Ho Ho!', desc: 'Flip foe controls',
-           text: 'LANCER giggles! Something feels backwards...' },
+    act: { id: 'act_praise', name: 'Praise', kind: 'mercy', mercy: 26, text: 'KRIS praises LANCER! He grins. Ho ho ho!' },
   },
   berdly: {
     name: 'BERDLY', color: '#2aa0ff', hp: 135, cost: 1, level: 3, spare: { fullHp: true, easyMercy: true },
@@ -113,7 +112,7 @@ const CHARS = {
            text: 'BERDLY goes ALL OUT!!' },
   },
   jevil: {
-    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: { never: true },
+    name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: {},
     desc: 'CHAOS, CHAOS!\nSECRET BOSS - 1000 HP, NO ITEMS.',
     fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 26, dur: 440,
              text: 'JEVIL flings spinning spades!' },
@@ -125,12 +124,13 @@ const CHARS = {
     ],
     ult: { id: 'jevil_ult', name: 'DEVILSKNIFE', tp: 100, dmg: 50, dur: 600, kind: 'attack', darkReq: 85,
            text: 'JEVIL unleashes DEVILSKNIFE!! Metamorphosis!' },
-    act: { id: 'intimidate', name: 'Chaos', desc: 'Slow foe soul',
-           text: 'JEVIL cackles! CHAOS, CHAOS!' },
+    act: { id: 'act_play', name: 'Play', kind: 'mercy', mercy: 20, text: 'KRIS plays JEVIL\'s game! CHAOS, CHAOS!' },
   },
   spamton: {
-    name: 'SPAMTON NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: { never: true },
+    name: 'SPAMTON NEO', shortName: 'S. NEO', color: '#ff5cc8', hp: 1200, cost: 3, secretBoss: true, level: 3, spare: {},
+    dscale: 0.6, yoff: 18,   // marionette puppet is a big multi-part sprite - scale down + sit it on the line
     soulYellow: true,   // dodging his attacks uses the yellow SOUL (shoots right)
+    act: { id: 'act_deal', name: 'Deal', kind: 'mercy', mercy: 22, text: 'KRIS hears out [[SPAMTON]]\'s deal...' },
     desc: '[[BIG SHOT]] SECRET BOSS.\n1200 HP - NO ITEMS.',
     fight: { id: 'sneo_heads', name: 'Flying Heads', dmg: 26, dur: 460,
              text: 'SPAMTON NEO launches his HEADS!' },
@@ -192,7 +192,7 @@ const ITEMS = {
   cdbagel:      { name: 'CD Bagel',      heal: 50, desc: 'Heals 50 HP' },
   chocodiamond: { name: 'ChocoDiamond',  heal: 40, tp: 16, desc: 'Heals 40 HP +16 TP' },
   darkcandy:    { name: 'Dark Candy',    heal: 30, desc: 'Heals 30 HP' },
-  revivemint:   { name: 'Revive Mint',   revivePct: 0.5, desc: 'Revives an ally to 50% HP (bypasses debt)' },
+  revivemint:   { name: 'Revive Mint',   revivePct: 1.0, desc: 'Fully heals + revives an ally to FULL HP' },
 };
 const LOADOUT_SIZE = 3;
 

@@ -40,6 +40,16 @@ Snd.play = function (k, vol) {
   a.play().catch(() => {});
 };
 
+// a held/looping sfx you can stop later (returns the Audio, or null). Used for the charge whir.
+Snd.hold = function (k, vol) {
+  if (Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return null;
+  const a = new Audio(Snd.sfxPath(k));
+  a.loop = true; a.volume = (vol != null ? vol : Snd.SVOL) * Snd.master;
+  a.play().catch(() => {});
+  return a;
+};
+Snd.stop = function (a) { if (a) { try { a.pause(); a.currentTime = 0; } catch (e) {} } };
+
 Snd.playMusic = function (key) {
   if (!A.manifest || !A.manifest.music[key]) return;
   if (Snd.musicKey === key && Snd.music && !Snd.music.paused) return;

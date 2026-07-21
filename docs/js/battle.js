@@ -39,11 +39,18 @@ function canSpare(m) {
   if (sp.noKris && Battle.oppTeam.some(o => !isOut(o) && o.def.base === 'kris')) return false;
   return true;
 }
+// an ACT id resolves to one of KRIS's own acts OR a living enemy's per-enemy mercy act
+function findAct(id) {
+  const k = (CHARS.kris.acts || []).find(a => a.id === id);
+  if (k) return k;
+  for (const o of (Battle.oppTeam || [])) if (o.def.act && o.def.act.id === id) return o.def.act;
+  return null;
+}
 function moveDefOf(def, a) {
   if (!a) return null;
   if (a.cmd === 'fight') return def.fight;
   if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult : (def.spells || []).find(s => s.id === a.move);
-  if (a.cmd === 'act') return (def.acts || []).find(s => s.id === a.move);
+  if (a.cmd === 'act') return findAct(a.move);
   return null;
 }
 function patternIdOf(d) { return d && (d.pattern || d.id); }
@@ -233,14 +240,14 @@ function isHealMove(d) { return !!(d && (d.kind === 'heal' || (d.kind == null &&
 function moveById(def, id) {
   if (!id) return null;
   if (def.ult && id === def.ult.id) return def.ult;
-  return (def.spells || []).find(s => s.id === id) || (def.acts || []).find(s => s.id === id) || null;
+  return (def.spells || []).find(s => s.id === id) || findAct(id) || null;
 }
 // which team an action targets: 'enemy', 'ally', or null (self/party/no target).
 function targetSide(cmd, def, move) {
   if (cmd === 'fight' || cmd === 'spare') return 'enemy';
   if (cmd === 'item') return 'ally';
   if (cmd === 'act') {
-    const ad = (def.acts || []).find(s => s.id === move);
+    const ad = findAct(move);
     if (!ad) return null;
     return (ad.kind === 'attack' || ad.kind === 'mercy') ? 'enemy' : null;
   }
@@ -329,6 +336,8 @@ Battle.subOptions = function () {
     const lvl3 = oppMaxLevel() >= 3;
     const remaining = new Set(B.cmdOrder.slice(B.cmdPos + 1));   // allies not yet acted
     for (const ad of (c.acts || [])) {
+      // dual-acts whose partner ISN'T on the team at all are hidden entirely (don't waste menu space)
+      if (ad.ally && !B.myTeam.some(m => m.def.base === ad.ally)) continue;
       if (ad.lvl3 && !lvl3) continue;                            // level-3-only acts hidden otherwise
       let disabled = false, cost = ad.tp ? ad.tp + '%' : 'FREE';
       if (ad.tp && B.tpAvail() < ad.tp) disabled = true;
@@ -338,6 +347,15 @@ Battle.subOptions = function () {
       }
       if (ad.id === 'act_proceed') cost = B.proceedCount >= 2 ? 'x3->SNOW' : 'x' + (B.proceedCount + 1);
       opts.push({ id: ad.id, label: ad.name, cost, disabled, ally: ad.ally, info: ad.text });
+    }
+    // per-enemy mercy ACTs: each living, sparable foe contributes its own mercy act
+    const seen = new Set();
+    for (const o of B.oppTeam) {
+      if (isOut(o) || (o.def.spare || {}).never || !o.def.act || seen.has(o.def.act.id)) continue;
+      seen.add(o.def.act.id);
+      const ad = o.def.act;
+      opts.push({ id: ad.id, label: ad.name, cost: ad.tp ? ad.tp + '%' : 'FREE',
+                  disabled: !!(ad.tp && B.tpAvail() < ad.tp), info: ad.text });
     }
     return opts;
   }
@@ -370,9 +388,12 @@ Battle.choose = function (cmd, move) {
       cand = B.oppTeam.map((m, i) => i).filter(i => isTired(B.oppTeam[i]) && !(B.oppTeam[i].def.spare || {}).never);
     } else {
       cand = B.livingEnemies();
+      // a per-enemy mercy ACT only targets the foe(s) that actually own it
+      if (cmd === 'act' && !(c.acts || []).some(a => a.id === move))
+        cand = cand.filter(i => B.oppTeam[i].def.act && B.oppTeam[i].def.act.id === move);
     }
     if (!cand.length) { Snd.play('cantselect'); B.say('* No valid target!'); B.submenu = null; return; }
-    if (cand.length > 1) {
+    if (cand.length >= 1) {   // ALWAYS open the target menu, even for one foe, so its HP/MERCY is visible
       B.pendingCmd = { cmd, move, side }; B.targetList = cand; B.targetIdx = 0;
       B.targetSideCur = side;
       if (side === 'ally') { const k = cand.indexOf(B.cmdOrder[B.cmdPos]); if (k >= 0) B.targetIdx = k; }
@@ -628,6 +649,7 @@ Battle.startDodge = function () {
   // YELLOW SOUL: dodging a boss with soulYellow lets you shoot RIGHT (toward them)
   B.soulYellow = oppAtkers.some(a => a.def.soulYellow);
   B.shots = []; B.charge = 0; B.shootCd = 0; B._okPrev = false; B.pendingLasers = []; B.shotFx = [];
+  Snd.stop(B._chargeSnd); B._chargeSnd = null;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
 
@@ -746,18 +768,20 @@ Battle.updDodge = function () {
     const ok = Input.down.ok;
     const BIG_AT = 26;   // frames held to graduate a tap into a BIG SHOT
     if (ok) {
-      if (B.charge === 0) Snd.play('sneocharge', 0.5);   // start-of-charge whir
+      if (B.charge === 0 && !B._chargeSnd) B._chargeSnd = Snd.hold('sneocharge', 0.5);   // charge whir, looped until release
       B.charge = Math.min(60, B.charge + 1);
     } else if (B._okPrev) {                 // just released -> fire
+      Snd.stop(B._chargeSnd); B._chargeSnd = null;
       const c = B.charge, big = c >= BIG_AT;
       // big shot: modest size, its own sneobig sprite, damages each target ONCE (hit set),
-      // pierces up to 3 targets. push is small so it nudges rather than launches.
+      // pierces a whole row (8) so it can clear all 4 heads. small nudge, not a launch.
       B.shots.push({ x: B.soul.x + 8, y: B.soul.y, vx: big ? 8.5 : 8,
-                     r: big ? 9 : 4, big, power: big ? 4 : 1, pierce: big ? 3 : 1, hitIds: [] });
+                     r: big ? 9 : 4, big, power: big ? 4 : 1, pierce: big ? 8 : 1, hitIds: [] });
       Snd.play(big ? 'sneofire' : 'heartshot', big ? 0.75 : 0.5);   // real heart-shot / big-shot fire
       B.charge = 0;
     } else {
       B.charge = 0;
+      if (B._chargeSnd) { Snd.stop(B._chargeSnd); B._chargeSnd = null; }
     }
     B._okPrev = ok;
     for (const s of B.shots) s.x += s.vx;
@@ -905,6 +929,7 @@ Battle.tickMirror = function () {
 
 Battle.endDodge = function () {
   const B = Battle;
+  Snd.stop(B._chargeSnd); B._chargeSnd = null;   // never let the charge whir bleed past the dodge
   B.bullets = []; B.sim = null;
   Battle.send({ t: 'soul', x: 0.5, y: 0.5, done: true });
   // spell heals / revive / dual-heal resolve after dodging
@@ -927,7 +952,7 @@ Battle.endDodge = function () {
       }
       if (d.snowgrave) B.usedSnowgrave = true;
     } else if (a.cmd === 'act') {
-      const ad = (m.def.acts || []).find(s => s.id === a.move);
+      const ad = findAct(a.move);
       if (ad && ad.kind === 'healAll') for (const tm of B.myTeam) if (!isOut(tm)) healMember(tm, ad.heal);
     }
   }
@@ -1002,7 +1027,7 @@ Battle.applyMyEffects = function () {
       if (d.kind === 'mercy') grantMercy(a.target, d.mercy || 15);
       else if (d.kind === 'spareTired') { if (d.scope === 'all') B.oppTeam.forEach((o, i) => doSpare(i, true)); else doSpare(a.target, true); }
     } else if (a.cmd === 'act') {
-      const ad = (m.def.acts || []).find(s => s.id === a.move); if (!ad) continue;
+      const ad = findAct(a.move); if (!ad) continue;
       if (ad.mercy) grantMercy(a.target, ad.mercy);
       if (ad.kind === 'buff') { if (ad.buff === 'guard') B.myGuardBuff = 3; if (ad.buff === 'power') B.myPowerBuff = 3; }
       if (ad.kind === 'proceed') usedProceed = true;
@@ -1076,7 +1101,7 @@ function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha, scale) {
   if (im && im.width) {
     if (def.hue) im = A.hued(im, def.hue);
     const fl = ENEMY_FACING[def.base] ? !flip : flip;
-    drawSpr(ctx, im, x, groundY - im.height / 2 * (scale || 1), { scale: scale || 1, flip: fl, alpha });
+    drawSpr(ctx, im, x, groundY - im.height / 2 * (scale || 1) + (def.yoff || 0), { scale: scale || 1, flip: fl, alpha });
   }
   return done;
 }
@@ -1339,7 +1364,7 @@ function drawPartyPanel(ctx, m, px, py, w, active) {
   ctx.strokeStyle = active ? m.def.color : '#333'; ctx.lineWidth = active ? 2 : 1; ctx.strokeRect(px + 1, py + 1, w - 2, PANEL_H - 2);
   let head = A.ui('head_' + m.def.base + (m.downed ? '_gray' : '')); if (!m.downed && m.def.hue) head = A.hued(head, m.def.hue);
   drawSpr(ctx, head, px + 16, py + PANEL_H / 2, { scale: 0.8, alpha: m.spared ? 0.5 : 1 });
-  drawText(ctx, 'main', m.def.name, px + 32, py + 10, { color: out ? '#666' : '#fff' });
+  drawText(ctx, 'main', m.def.shortName || m.def.name, px + 32, py + 10, { color: out ? '#666' : '#fff' });
   const barW = 82, barX = px + w - barW - 6, barY = py + 22;
   drawText(ctx, 'main', 'HP', barX - 22, py + 10, { color: out ? '#555' : '#c8c8c8' });
   drawText(ctx, 'main', m.spared ? 'SPARED' : (m.hp + '/' + m.max), barX, py + 4, { color: out ? '#888' : '#fff' });
@@ -1457,13 +1482,13 @@ Battle.renderTargetList = function (ctx, d) {
     const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
     let head = A.ui('head_' + m.def.base); if (m.def.hue) head = A.hued(head, m.def.hue);
     drawSpr(ctx, head, x + 24, y + 8, { scale: 0.7 });
-    drawText(ctx, 'main', (sel ? '> ' : '  ') + m.def.name, x + 36, y, { color: sel ? '#ff0' : '#fff' });
+    drawText(ctx, 'main', (sel ? '> ' : '  ') + (m.def.shortName || m.def.name), x + 36, y, { color: sel ? '#ff0' : '#fff' });
   }
   if (pages > 1) drawText(ctx, 'main', 'PG ' + (page + 1) + '/' + pages, d.x + optW - 56, d.y + d.h - 18, { color: '#888' });
   ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(infoX - 10, d.y + 8); ctx.lineTo(infoX - 10, d.y + d.h - 8); ctx.stroke();
   const tm = team[B.targetList[B.targetIdx]];
   if (tm) {
-    drawText(ctx, 'main', tm.def.name, infoX, d.y + 8, { color: '#fff' });
+    drawText(ctx, 'main', tm.def.shortName || tm.def.name, infoX, d.y + 8, { color: '#fff' });
     ctx.fillStyle = '#3c0d0d'; ctx.fillRect(infoX, d.y + 30, infoW, 7);
     ctx.fillStyle = tm.def.color; ctx.fillRect(infoX, d.y + 30, Math.max(0, Math.round(infoW * tm.hp / tm.max)), 7);
     drawText(ctx, 'main', tm.hp + '/' + tm.max, infoX + infoW, d.y + 28, { color: '#bbb', align: 'right' });
