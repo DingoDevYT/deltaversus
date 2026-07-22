@@ -719,9 +719,11 @@ Battle.startDodge = function () {
   B._defGreen = oppAtkers.some(a => a.def.soulGreen);   // whole-attack green; patterns can also toggle it live
   B.soulGreen = false; B._greenLatch = false; B._greenOctLatch = false; B.greenOct = false;
   B.shieldAng = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = [];
+  // PURPLE SOUL (Pink): heart rides a virtual grid inside the box (obj_purplecontrols).
+  B.soulPurple = false; B._pmode = -1; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0;
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
   // are correct as-written; we render at 60Hz (bullets step every 2nd frame = authentic choppy motion).
-  B.hz30 = oppAtkers.length === 1 && (/^(gerson|jevil|pink)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
+  B.hz30 = oppAtkers.length === 1 && (/^(gerson|jevil|pink|pinkn)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
   B._hzTick = false;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
@@ -792,7 +794,11 @@ function applyTargetedDamage(team, dmg, target) {
 
 Battle.updDodge = function () {
   const B = Battle;
-  if (B.hz30) { B._hzTick = !B._hzTick; if (!B._hzTick) return; }   // 30 FPS attack: process the sim every 2nd 60Hz frame
+  if (B.hz30) {
+    // buffer directional edge-presses across the SKIPPED 60Hz frame so the purple grid-soul never drops a hop
+    if ((B.fx || {}).purpleSoul) { B._pbuf = B._pbuf || {}; for (const k of ['up', 'down', 'left', 'right']) if (Input.hit[k]) B._pbuf[k] = 1; }
+    B._hzTick = !B._hzTick; if (!B._hzTick) return;   // 30 FPS attack: process the sim every 2nd 60Hz frame
+  }
   const fx = B.fxOnMe || {};
   let sp = 2.4 * (fx.soulSpeed || 1) * (B.hz30 ? 2 : 1);   // at 30Hz, move twice as far per processed frame to keep real-time speed
   let dx = (Input.down.right ? 1 : 0) - (Input.down.left ? 1 : 0);
@@ -861,6 +867,31 @@ Battle.updDodge = function () {
       const diff = Math.abs(Math.atan2(Math.sin(ang - B.shieldAng), Math.cos(ang - B.shieldAng)));
       if (diff > 0.01) { B.shieldAng = ang; B.shieldFreshF = B.anim.f; B.shieldDiag = !!(rawx && rawy); }
     }
+  }
+
+  // PURPLE SOUL (Pink): the heart rides a virtual GRID inside the box. Buffered direction presses hop
+  // it one cell at a time; x_ongrid/y_ongrid EASE to the target cell. mode 1 = 3 lanes + free X; mode 2 = 4x4.
+  B.soulPurple = !!CF.purpleSoul;
+  if (B.soulPurple) {
+    const pm = CF.purpleSoul.mode || 1, ccx = bx.x + bx.w / 2, ccy = bx.y + bx.h / 2;
+    const ap = (v, t, s) => Math.abs(t - v) <= s ? t : v + Math.sign(t - v) * s;
+    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0; }
+    const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
+    B._pbuf = {};
+    if (pm === 2) {                                   // 4x4 grid (lane_distance 40)
+      const xt = (B.pLaneX - 1.5) * 40, yt = (B.pLaneY - 1.5) * 40;
+      if (Math.abs(B.pOnX - xt) < 0.5 && Math.abs(B.pOnY - yt) < 0.5) {
+        if (H.left && B.pLaneX > 0) B.pLaneX--; else if (H.right && B.pLaneX < 3) B.pLaneX++;
+        else if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 3) B.pLaneY++;
+      }
+      B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 40, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 40, 22);
+    } else {                                          // mode 1: 3 horizontal lanes (y), free X within +/-63
+      const yt = (B.pLaneY - 1) * 56;
+      if (Math.abs(B.pOnY - yt) < 0.5) { if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 2) B.pLaneY++; }
+      B.pOnY = ap(B.pOnY, (B.pLaneY - 1) * 56, 20);
+      if (D.right) B.pOnX = Math.min(B.pOnX + wsp, 63); if (D.left) B.pOnX = Math.max(B.pOnX - wsp, -63);
+    }
+    B.soul.x = ccx + B.pOnX; B.soul.y = ccy + B.pOnY;
   }
 
   // ---- YELLOW SOUL: HOLD the button to charge, RELEASE to fire a shot to the RIGHT.
@@ -1404,10 +1435,20 @@ Battle.renderBoxAndBullets = function (ctx) {
     const r = 4 + fx.t * 1.6; ctx.strokeStyle = fx.perfect ? '#fff36b' : '#8affa0'; ctx.globalAlpha = Math.max(0, 1 - fx.t / 8); ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(fx.x, fx.y, r, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
   }
+  // PURPLE SOUL: draw the grid guides the heart hops between (lanes / 4x4 cells).
+  if (B.soulPurple) {
+    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2;
+    ctx.strokeStyle = 'rgba(181,105,214,0.45)'; ctx.lineWidth = 1;
+    if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 40;
+      ctx.beginPath(); ctx.moveTo(gcx - 60, gcy + o); ctx.lineTo(gcx + 60, gcy + o); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 60); ctx.lineTo(gcx + o, gcy + 60); ctx.stroke(); } }
+    else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
+      ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
+  }
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
   if (!blink) {
-    // the real heart sprites: yellow "Justice" soul, or a green-tinted heart in green mode, or the normal red heart
-    const soulImg = B.soulGreen ? tintedSoul('#33d13a') : B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
+    // the real heart sprites: yellow "Justice" soul, green (block), purple (Pink grid), or the normal red heart
+    const soulImg = B.soulPurple ? tintedSoul('#b25cff') : B.soulGreen ? tintedSoul('#33d13a') : B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
     drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: 1 });
   }
   if (B.grazeFx) {   // graze sparkle: spr_grazeappear_0..3 (yellow variant for the yellow soul)

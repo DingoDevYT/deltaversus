@@ -104,6 +104,16 @@ CHARS.greentest = {
   fight: { id: 'green_test', name: 'Hammer of Justice (block!)', dmg: 18, dur: 1300, kind: 'attack', text: '' },
   spells: [], ult: { id: 'green_test', name: 'Hammer of Justice (block!)', tp: 100, dmg: 18, dur: 1300, kind: 'attack', text: '' },
 };
+// TESTER-ONLY: PINK — NEW (GML-faithful rebuild, PURPLE GRID SOUL). Old 'pink' roster stays untouched.
+CHARS.pinknew = {
+  name: 'PINK — NEW', shortName: 'PINK·NEW', base: 'pink', color: '#ff5ca8', hp: 1300,
+  secretBoss: true, level: 3, spare: {}, cost: 3, desc: 'GML-FAITHFUL PINK (purple grid soul)',
+  fight: { id: 'pinkn_cats', name: 'Cats (purple lanes)', dmg: 24, dur: 360, kind: 'attack', text: '' },
+  spells: [
+    { id: 'pinkn_bombs', name: 'Pinata Bombs (4x4 grid)', tp: 44, dmg: 20, dur: 300, kind: 'attack', text: '' },
+  ],
+  ult: { id: 'pinkn_cats', name: 'Cats (purple lanes)', tp: 100, dmg: 24, dur: 360, kind: 'attack', text: '' },
+};
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;
 

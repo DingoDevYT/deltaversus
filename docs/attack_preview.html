@@ -201,7 +201,7 @@ function makePlayer(canvas, spec) {
   const soul = { x: box.x + box.w/2, y: box.y + box.h/2 };
   const base = { x: box.x, y: box.y, w: box.w, h: box.h };
   const FX = {};
-  const hz30 = /^(gerson|jevil)_/.test(spec.id) || !!p.hz30;   // DELTARUNE 30fps attacks: sim every 2nd frame
+  const hz30 = /^(gerson|jevil|pinkn)_/.test(spec.id) || !!p.hz30;   // DELTARUNE 30fps attacks: sim every 2nd frame
   let hzTick = false;
   function reset() { bullets = []; f = 0; box.x=base.x; box.y=base.y; box.w=base.w; box.h=base.h; }
   function step() {

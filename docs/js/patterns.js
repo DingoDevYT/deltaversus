@@ -1504,6 +1504,45 @@ PATTERNS.pink_idol = {
   },
 };
 
+// ---------- PINK — NEW (GML-faithful, PURPLE GRID SOUL). Tester/showcase only. ----------
+// TYPE 200 — Cats (purple mode 1: 3 lanes + free X). Cats stream from the sides in 3 rows (56 apart),
+// speed 8*s*(4/3). Ride the lanes; the doki hearts are collectibles (graze).
+PATTERNS.pinkn_cats = {
+  dur: 360, box: { w: 200, h: 168 }, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 11 === 0 && f < 320) {
+      const side = (Math.floor(f / 11) % 2) ? 1 : -1, lane = Math.floor(rng() * 3), s = 0.75 + rng() * 0.6, spd = 8 * s * (4 / 3);
+      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 50), y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 220 });
+    }
+    if (f % 40 === 20 && f < 300) {   // a doki heart drifts across a lane (collectible-ish; graze)
+      const side = (Math.floor(f / 40) % 2) ? 1 : -1, lane = Math.floor(rng() * 3);
+      add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 50), y: cy + (lane - 1) * 56, vx: -side * 6, vy: 0, r: 5, grazeR: 16, scale: PS(1.6), dmg: 14, life: 220 });
+    }
+  },
+};
+// TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid). Bombs land ON the grid cells the soul hops
+// between, fuse, then detonate into a row+column cross of beams (24px steps). Hop off the bomb's row+col.
+PATTERNS.pinkn_bombs = {
+  dur: 300, box: { w: 200, h: 168 }, hz30: 1,
+  tick(a) {
+    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f < 20 || f % 16 !== 0 || f > 260) return;
+    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx - 60 + gx * 40, y = cy - 60 + gy * 40;
+    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, r: 7, grazeR: 11, scale: PS(2.4), spin: 0.15, _fuse: 60, dmg: 20 };
+    bomb.emit = function (b, out) {
+      if (b.t >= b._fuse && !b._done) {
+        b._done = 1; b.dead = true; Snd.play('boardbomb', 0.35);
+        out.push({ ...bulletProps('pboom'), shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: 0, len: box.w * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
+        out.push({ shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: Math.PI / 2, len: box.h * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
+      }
+    };
+    add(bomb);
+  },
+};
+
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';
