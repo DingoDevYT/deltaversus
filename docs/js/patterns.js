@@ -1763,8 +1763,7 @@ function pinkDateN3Pattern(D) {
         v3: true, date: D.date, bg: S.bg, bgy: S.bgy, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
         spk: cur.spk || 'spktalk', ghost: ghostKey, talkF, who: cur.who || null, gtext: cur.gtext || Qh,
         sweat: !!cur.sweat && (S.timer < 84 || S.ph !== 'choose') ? 0 : (cur.sweat ? 1 : 0),
-        lines: (() => { let acc = 0; const c = Math.floor(S.chars); return S._t.map(ln => { const s = ln.slice(0, Math.max(0, c - acc)); acc += ln.length; return s; }); })(),
-        chars: Math.floor(S.chars), fullChars: full,
+        rawLines: S._t.slice(), chars: Math.floor(S.chars), fullChars: full,
         hearts: S.correct, heartY: S.heartY,
       }, extra || {}); };
       const typed = () => Math.floor(S.chars) >= full;
@@ -1959,6 +1958,7 @@ function pinkRotboxD1Pattern() {
       // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6)
       const d = S._rtar - S._rot; S._rot += Math.abs(d) < 6 ? d : Math.sign(d) * 6;
       a.fx.purpleSoul = { mode: 3, rot: S._rot };
+      a.fx.pinkRoll = { f };   // scrolling parallax backdrop (shows the box "rolling"): spr_pinkroll_background 0/1
       // ---- the GHOST (obj_huge_anime_face): RISES in from below-left (hspeed slide + rise), then bobs and LUNGES
       // right to bump the box — each bump is the 90° knock (the rotation telegraph). A big spr_pinkghost_angry. ----
       const gh = S._ghost;
@@ -1967,7 +1967,7 @@ function pinkRotboxD1Pattern() {
       // bumps -> approach speed multiplier (obj_huge_anime_face Step: 0->32, 1->1.5, 2->4, 3->9, >=4->11).
       const sm = gh.bumps <= 0 ? 32 : gh.bumps < 2 ? 1.5 : gh.bumps < 3 ? 4 : gh.bumps < 4 ? 9 : 11;
       const hitX = cx - box.w / 2 + 22;   // rams INSIDE the left edge -> the face covers part of the box (difficulty)
-      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; if (typeof Snd !== 'undefined') Snd.play('slidewhistle', 0.35); }   // lunge whoosh
+      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; if (typeof Snd !== 'undefined') Snd.play('heavyswing', 0.4); }   // lunge whoosh
       if (gh.ram === 1) {                                  // accelerate toward the box (GML accel tiers by hspeed)
         gh.hsp += gh.hsp < 2.5 ? 0.6 : gh.hsp < 4 ? 0.35 : 0.12;
         gh.hsp = Math.min(gh.hsp, 2 + sm * 0.55);
@@ -1975,7 +1975,7 @@ function pinkRotboxD1Pattern() {
         if (gh.x >= hitX) {                                // BUMP: rotate box 90°, flip sprite, KNOCK the box back
           gh.x = hitX; gh.ram = 2; gh.bumps++; S._rtar += 90; S._pendKnock--;
           gh.flip = !gh.flip; gh.frame ^= 1;               // image_xscale flip + image_index toggle each bump
-          if (typeof Snd !== 'undefined') { Snd.play('pinktrip', 0.5); Snd.play('impact', 0.55); Snd.play('punchheavythunder', 0.4); }
+          if (typeof Snd !== 'undefined') { Snd.play('bosshit', 0.6); Snd.play('explosionmmx', 0.35); Snd.play('boarddmg', 0.4); }
           if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 14);
           S._knock = 22;                                   // shove the box RIGHT (rolled from the impact), eases back
           gh.hsp = Math.max(1, gh.hsp * 0.5);
@@ -2209,8 +2209,8 @@ function pinkConcertPattern(diff) { return {
       show.sort((p, q) => p - q);
       const right = show.filter(i => i >= 21), rest = show.filter(i => i < 21); show = rest.concat(right);   // right column fires last
       const size = show.length;
-      // HARD: some members are HATERS (repeats 0-3 -> 1, else 4) that convert to lobbed mic-stand bombs
-      const nHaters = diff > 0 ? (wv.wi < 4 ? 1 : 4) : 0;
+      // HARD: HATERS (lobbed mic-stand bombs) only near the END, max 2 (wave 3 -> 1, final wave 4 -> 2)
+      const nHaters = diff > 0 ? (wv.wi >= 4 ? 2 : wv.wi === 3 ? 1 : 0) : 0;
       const haterSet = new Set(); while (haterSet.size < Math.min(nHaters, size)) haterSet.add(Math.floor(rng() * size));
       show.forEach((i, k) => {
         let st;                                              // shoottime = staggered sweep
@@ -2233,7 +2233,7 @@ function pinkConcertPattern(diff) { return {
     S.dummies = S.dummies.filter(d => d.t < 90);
     // draw the U-ring IN FRONT of the box + bullets, each popped inward from its edge
     a.fx.audienceFront = S.dummies.map(d => {
-      const off = d.pop * 12 * (d.hater ? 1.5 : 1);   // haters pop/jump ~1.5x higher
+      const off = d.pop * 12 * (d.hater ? 2.6 : 1);   // haters leap much higher (up over the top to threaten a high soul)
       const px = d.side === 'left' ? d.x + off : d.side === 'right' ? d.x - off : d.x;
       const py = d.side === 'bottom' ? d.y - off : d.y;
       return { x: px, y: py, side: d.side, pop: d.pop, hater: d.hater };
@@ -2253,10 +2253,11 @@ function mkAudienceHater(add, x, y, box) {
       b.tint = (b._wind < 9 && (b._wind % 2)) ? '#ffff88' : '#ff2a2a';    // yellow pre-throw flash
       b.x = x + (b._wind < 12 ? ((b._wind % 2) * 2 - 1) * 2 : 0);          // jitter windup
       if (b._wind === 0 && sl) {                                          // LAUNCH: lob at the soul with overshoot
-        const dist = Math.hypot(sl.x - b.x, sl.y - b.y), over = dist * dist / 900;
+        const dist = Math.hypot(sl.x - b.x, sl.y - b.y), over = dist * dist / 620;   // higher arc so it reaches the top
         const dir = Math.atan2((sl.y - over) - b.y, sl.x - b.x);
-        b._vx = Math.cos(dir) * 9; b._vy = Math.sin(dir) * 9; b._fly = 1; b.noHit = false; b.tint = '#ffffff'; b.tintMul = false;
-        if (typeof Snd !== 'undefined') Snd.play('explosionmmx', 0.35);
+        const spd = Math.max(13, Math.min(20, dist / 9 + 12));            // fast enough to reach a soul at the top of the box
+        b._vx = Math.cos(dir) * spd; b._vy = Math.sin(dir) * spd; b._fly = 1; b.noHit = false; b.tint = '#ffffff'; b.tintMul = false;
+        if (typeof Snd !== 'undefined') Snd.play('boardbomb', 0.35);
       }
       return;
     }
@@ -2266,7 +2267,7 @@ function mkAudienceHater(add, x, y, box) {
         out.push({ ...bulletProps('explround0'), animKeys: ['explround0', 'explround1', 'explround2', 'explround3', 'explround4', 'explround5', 'explround6', 'explround7', 'explround8'],
                    animRate: 2, x: b.x, y: b.y, vx: 0, vy: 0, r: 30, scale: PS(1), dmg: 26, life: 18, _pinkBoom: 1 });
         if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 10); }
-        if (typeof Snd !== 'undefined') Snd.play('explosion', 0.4);
+        if (typeof Snd !== 'undefined') Snd.play('explosionmmx', 0.4);
       }
     }
   };
@@ -2798,7 +2799,7 @@ PATTERNS.pinkn3_bombsg    = withPinkScene(PATTERNS.pinkn_bombsg);
 PATTERNS.pinkn3_bombsfin  = withPinkScene(PATTERNS.pinkn_bombsfin);
 PATTERNS.pinkn3_plusgrid  = withPinkScene(PATTERNS.pinkn_plusgrid);
 PATTERNS.pinkn3_plusgrid2 = withPinkScene(PATTERNS.pinkn_plusgrid2);
-PATTERNS.pinkn3_rotbox    = withPinkScene(PATTERNS.pinkn_rotbox);
+PATTERNS.pinkn3_rotbox    = PATTERNS.pinkn_rotbox;   // uses its own scrolling parallax backdrop (fx.pinkRoll), not the stage
 PATTERNS.pinkn3_tunnel    = withPinkScene(PATTERNS.pinkn_tunnel);
 PATTERNS.pinkn3_concert   = withPinkScene(PATTERNS.pinkn_concert);
 PATTERNS.pinkn3_concert2  = withPinkScene(PATTERNS.pinkn_concert2);   // hard concert (haters), phase-2 variant

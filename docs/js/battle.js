@@ -1024,6 +1024,7 @@ Battle.updDodge = function () {
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
   B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pinkn3_* patterns each tick)
+  B.fx.pinkRoll = null;     // rotating-grid scrolling parallax backdrop
   B.fx.attackDone = false;  // a normal attack can signal "wrap up now" (e.g. bombs, ~2s after the last blast)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.maze) {   // GHOST/BODY MAZE: full-screen takeover; the pattern drives movement/collision itself
@@ -1384,6 +1385,9 @@ Battle.render = function (ctx) {
       }
       ctx.globalAlpha = 1;
     }
+  } else if (B.fx && B.fx.pinkRoll) {
+    drawPinkRoll(ctx, B.fx.pinkRoll);   // rotating-grid: linear-scrolling parallax backdrop (box appears to roll)
+    B.renderChars(ctx);
   } else if (B.fx && B.fx.pinkScene) {
     drawPinkSceneBack(ctx);   // PINK stage: black void + MEWERS LIVE + bg dancers + petals
     B.renderChars(ctx);
@@ -1510,6 +1514,14 @@ function redTintSprite(im) {
   x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,42,42,0.62)'; x.fillRect(0, 0, im.width, im.height);
   im._redTint = c; return c;
 }
+// word-wrap `text` to fit maxW px (canvas has no auto-wrap); used by the date dialogue so long lines
+// never overflow the box or reflow mid-typewriter.
+function wrapText(ctx, text, maxW) {
+  const words = String(text == null ? '' : text).split(' '); const lines = []; let cur = '';
+  for (const w of words) { const test = cur ? cur + ' ' + w : w;
+    if (cur && ctx.measureText(test).width > maxW) { lines.push(cur); cur = w; } else cur = test; }
+  if (cur) lines.push(cur); return lines.length ? lines : [''];
+}
 // ---- PINK V3 dating-sim renderer: per-beat portrait swaps, ghost split (0.7a, facing), real UI ----
 function dsimImg(id) { const bp = (typeof bulletProps === 'function') ? bulletProps : null; const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; }
 function drawPortrait(ctx, key, frame, cx, bottomY, flip, alpha) {   // anchored by BOTTOM-CENTER (feet)
@@ -1527,26 +1539,31 @@ function drawDateUIV3(ctx, D) {
   if (dia) { ctx.globalAlpha = 0.5; for (let ty = -80 + ((D.bgy || 0) - 80); ty < 560; ty += 80) for (let tx = -(D.bg || 0) - 80; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80); ctx.globalAlpha = 1; }
   if (D.done) { ctx.restore(); return; }
   const hasGhost = !!D.ghost, inv = D.date >= 3;   // date3/final uses the inverted (dark) plate
-  // Layer 2 — sky window bg (spr_datingsim_ui_bg @ (106,24) 2x). The frame plate (drawn LAST) masks it.
+  // CLIP window content to the frame's opening so the oversized sky can't leak past the border
+  ctx.save(); ctx.beginPath(); ctx.rect(110, 22, 454, 276); ctx.clip();
+  // Layer 2 — sky window bg (spr_datingsim_ui_bg @ (106,24) 2x); the frame plate (drawn LAST) borders it
   const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);
   // Layer 3 — portraits, anchored by FEET at the window floor so different-sized sprites don't jump
   const feet = 288;
   if (hasGhost) { drawPortrait(ctx, D.spk, D.talkF || 0, 214, feet, false, 1); drawPortrait(ctx, D.ghost, D.talkF || 0, 426, feet, true, 0.7); }
   else drawPortrait(ctx, D.spk, D.talkF || 0, 320, feet, false, 1);
   if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 214 : 320) - sw.width, feet - 232, sw.width * 2, sw.height * 2); }
-  // Layer 4/5 — dialogue gradient + text (lower window, over the body); text centered flush in the box
-  const boxT = 226, boxB = 292, boxCY = (boxT + boxB) / 2;
-  const grad = ctx.createLinearGradient(0, boxT, 0, boxB); grad.addColorStop(0, 'rgba(102,86,177,0.12)'); grad.addColorStop(1, 'rgba(102,86,177,0.7)');
-  ctx.fillStyle = grad; ctx.fillRect(120, boxT, 400, boxB - boxT);
-  const lines = D.lines || [], flash = D.flash > 0 && (D.flash % 4 < 2);
+  // Layer 4/5 — dialogue gradient (enlarged to fill the rectangle) + RAISED, word-wrapped text
+  const boxT = 208, boxB = 288, flash = D.flash > 0 && (D.flash % 4 < 2);
+  const grad = ctx.createLinearGradient(0, boxT, 0, boxB); grad.addColorStop(0, 'rgba(102,86,177,0.1)'); grad.addColorStop(1, 'rgba(102,86,177,0.72)');
+  ctx.fillStyle = grad; ctx.fillRect(114, boxT, 452, boxB - boxT);
   ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const outline = (str, x, y, fillc) => { ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, x + dx, y + dy); ctx.fillStyle = fillc; ctx.fillText(str, x, y); };
-  const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0'), nz = lines.filter(Boolean);
-  if (hasGhost) {
-    if (D.who === 'ghost') nz.forEach((ln, i) => outline(ln, 426, boxCY + (i - (nz.length - 1) / 2) * 20, '#c7b9d7'));   // the GHOST is speaking
-    else { nz.forEach((ln, i) => outline(ln, 224, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));   // speaker LEFT (salmon)
-      if (D.gtext) outline(D.gtext, 426, boxCY, '#c7b9d7'); }   // ghost line RIGHT (lavender)
-  } else nz.forEach((ln, i) => outline(ln, 320, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
+  const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
+  const chars = D.chars != null ? D.chars : 999, textTop = boxT + 16, lh = 20;
+  // wrap the FULL text once (stable) then reveal `chars` across the wrapped lines -> single clean type-through
+  const reveal = (raw, maxW) => { let wrapped = []; for (const hl of (raw || [])) wrapped = wrapped.concat(wrapText(ctx, hl, maxW));
+    let rem = chars, out = []; for (const wl of wrapped) { if (rem <= 0) break; out.push(wl.slice(0, rem)); rem -= wl.length; } return out; };
+  if (hasGhost && D.who === 'ghost') reveal(D.rawLines, 300).forEach((ln, i) => outline(ln, 426, textTop + i * lh, '#c7b9d7'));
+  else if (hasGhost) { reveal(D.rawLines, 200).forEach((ln, i) => outline(ln, 224, textTop + i * lh, spkCol));   // speaker LEFT (salmon)
+    if (D.gtext) wrapText(ctx, D.gtext, 200).forEach((ln, i) => outline(ln, 426, textTop + i * lh, '#c7b9d7')); }   // ghost RIGHT (lavender)
+  else reveal(D.rawLines, 420).forEach((ln, i) => outline(ln, 320, textTop + i * lh, spkCol));
+  ctx.restore();   // end window clip
   // Layer 6 — OFFICIAL FRAME: nodiamonds plate frames (320x220 @2x -> fill 640x440) ON TOP; masks + borders
   const pfx = inv ? 'dsimplateinv' : 'dsimplate';
   for (const fr of [0, 1]) { const p = dsimImg(pfx + fr); if (p) ctx.drawImage(p, 0, 0, 640, 440); }
@@ -1812,6 +1829,20 @@ function drawPinkPetals(ctx, f) {
     pinkSceneSpr(ctx, 'pnpetal' + fr, x, y, 4, 4, { scale: 2, alpha: al, angle: age * 3 + sf });
   }
 }
+// rotating-grid scrolling parallax backdrop (spr_pinkroll_background 0/1): a linear-scrolling pattern that
+// makes the box + Pink read as "moving/rolling". Frame 1 scrolls at half speed behind frame 0 (parallax).
+function drawPinkRoll(ctx, R) {
+  const f = R.f || 0;
+  ctx.save(); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#180010'; ctx.fillRect(0, 0, 640, 480);
+  const layer = (key, speed, alpha) => { const im = A.img['assets/bullets/' + key]; if (!im || !im.width) return;
+    const tw = im.width * 2, th = im.height * 2, off = ((f * speed) % tw + tw) % tw; ctx.globalAlpha = alpha;
+    for (let y = 0; y < 480; y += th) for (let x = -tw; x < 640 + tw; x += tw) ctx.drawImage(im, Math.round(x - off), y, tw, th);
+    ctx.globalAlpha = 1; };
+  layer('pinkroll1.png', 1.5, 0.6);   // back (half speed)
+  layer('pinkroll0.png', 3.0, 0.92);  // front (full speed)
+  ctx.restore();
+}
 // back layer: backdrop + marquee + bg dancers + petals (drawn behind the bullet box)
 function drawPinkSceneBack(ctx) {
   const f = Battle.anim.f;
@@ -1852,18 +1883,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (im && im.width) drawSpr(ctx, im, bp.x, bp.y, { scale: bp.scale || 1, flip: bp.flip });
   }
   // PINK GHOST (obj_huge_anime_face): the big ghost that rams the box — the P3 rotation telegraph
-  if (B.fx && B.fx.pinkGhost) {
-    const g = B.fx.pinkGhost;
-    // obj_huge_anime_face sprite escalation: angry -> yell_full (natively faces the WRONG way, so its
-    // flip is inverted) -> shock_full at bumps==7. angry has 2 frames it toggles per bump.
-    let key, flip = g.flip != null ? g.flip : true;
-    if (g.kind === 'shock') { key = 'pinkshock'; }
-    else if (g.kind === 'yell') { key = 'pinkyell' + (g.frame || 0); flip = !flip; }   // X-flip: sprite points the wrong way
-    else { key = 'pinkghost' + (g.frame || 0); }
-    const gi = (A.manifest.bullets || {})[key] || (A.manifest.bullets || {}).pinkghost0;
-    const gim = gi && A.img['assets/bullets/' + gi.f];
-    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip, alpha: g.ramming ? 1 : 0.92 });
-  }
+  // (the obj_huge_anime_face GHOST rams the box; drawn ON TOP of the box + bullets — see drawPinkGhost after the soul)
   // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS (background pass; the CAT
   // CROWD is drawn later, in FRONT of the box + bullets — see the foreground pass after the soul).
   if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing;
@@ -2072,6 +2092,16 @@ Battle.renderBoxAndBullets = function (ctx) {
     const fr = Math.min(3, Math.floor((8 - B.grazeFx.t) / 2));
     const g = A.soul((B.soulYellow ? 'ygraze' : 'graze') + fr);
     if (g) drawSpr(ctx, g, B.grazeFx.x, B.grazeFx.y, { scale: 1, alpha: 0.9 });
+  }
+  // the obj_huge_anime_face GHOST rams the box — drawn ON TOP of the box + bullets + soul (may cover the play
+  // area briefly on a bump; that's intended difficulty)
+  if (B.fx && B.fx.pinkGhost) { const g = B.fx.pinkGhost;
+    let key, flip = g.flip != null ? g.flip : true;
+    if (g.kind === 'shock') key = 'pinkshock';
+    else if (g.kind === 'yell') { key = 'pinkyell' + (g.frame || 0); flip = !flip; }
+    else key = 'pinkghost' + (g.frame || 0);
+    const gi = (A.manifest.bullets || {})[key] || (A.manifest.bullets || {}).pinkghost0, gim = gi && A.img['assets/bullets/' + gi.f];
+    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip, alpha: g.ramming ? 1 : 0.92 });
   }
   ctx.restore();
   // IDOL CONCERT crowd (obj_pink_curtains): 28 dummies line the LEFT column, BOTTOM row and RIGHT column of the
