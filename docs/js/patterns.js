@@ -1586,26 +1586,37 @@ PATTERNS.pinkn_vrain = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
   { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
 ], 4, 230, 1, 22);
-// TYPE 202 — Rotating Box (purple mode 3: a spinning "+" cross, 5 cells). Pink's box rotates and
-// pinklanebullets stream INWARD down the arms; ride the cross to an arm that's currently clear. The box
-// spin + rotation-compensated controls are the defining mechanic (mode 3). Bullets telegraph then fire.
-PATTERNS.pinkn_rotbox = {
-  box: { w: 150, h: 150 }, hz30: 1, dur: 480,
-  tick(a) {
-    const { f, box, add, rng } = a;
-    const rot = 30 + f * 1.5;                         // box spin (deg); rotation-compensated soul controls
-    a.fx.purpleSoul = { mode: 3, rot };
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f > 24 && f % 20 === 0) {                     // fire a lane bullet down one (or two) arm(s)
-      const arms = rng() < 0.35 ? 2 : 1;
-      const base = Math.floor(rng() * 4);
-      for (let k = 0; k < arms; k++) {
-        const armDeg = rot + (base + k * 2) * 90, dir = armDeg * Math.PI / 180, spd = 6.4;
-        add({ ...bulletProps('planeb'), x: cx + Math.cos(dir) * 210, y: cy + Math.sin(dir) * 210, vx: -Math.cos(dir) * spd, vy: -Math.sin(dir) * spd, r: 8, grazeR: 12, scale: PS(2), rot: dir + Math.PI, dmg: 24, life: 130 });
+// TYPE 202 — Plus-grid box (purple mode 3: a "+" cross, 5 cells). Circles + half-circles approach INWARD
+// down the 4 arms; ride the cross to a clear arm. Two variants (per Pink's phase):
+//   spin=false (Phase 2): box is STATIC, no rotation.
+//   spin=true  (Phase 3): a giant Pink ghost knocks the box 90 degrees CLOCKWISE in discrete steps after
+//     each group of circles; the SOUL's controls stay screen-relative (the mode-3 movement compensates).
+function pinkPlusGrid(spin) {
+  return {
+    box: { w: 160, h: 160 }, hz30: 1, dur: 480,
+    tick(a) {
+      const { f, box, add, rng } = a;
+      if (f === 0) { this._rot = 0; this._rtar = 0; }
+      if (spin) {
+        if (f > 0 && f % 92 === 0) this._rtar += 90;   // knock +90 CW after each group
+        const d = this._rtar - this._rot; this._rot += Math.abs(d) < 9 ? d : Math.sign(d) * 9;   // fast knock ease
       }
-    }
-  },
-};
+      a.fx.purpleSoul = { mode: 3, rot: this._rot };
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      if (f > 22 && f % 24 === 0 && f < 460) {         // circle / half-circle inward down an arm
+        const arm = Math.floor(rng() * 4), armDeg = this._rot + arm * 90, dir = armDeg * Math.PI / 180, spd = 3.1;
+        const half = rng() < 0.4;
+        add({ ...bulletProps(half ? 'crescent' : 'pbell'), x: cx + Math.cos(dir) * 150, y: cy + Math.sin(dir) * 150, vx: -Math.cos(dir) * spd, vy: -Math.sin(dir) * spd, r: 9, grazeR: 12, scale: PS(1.6), rot: dir + Math.PI / 2, dmg: 24, life: 120 });
+      }
+      if (f % 96 === 60 && f < 440) {                  // a pink-heart collectable drifts down an arm too
+        const arm = Math.floor(rng() * 4), dir = (this._rot + arm * 90) * Math.PI / 180;
+        add({ ...bulletProps('pdoki'), x: cx + Math.cos(dir) * 150, y: cy + Math.sin(dir) * 150, vx: -Math.cos(dir) * 2.4, vy: -Math.sin(dir) * 2.4, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
+      }
+    },
+  };
+}
+PATTERNS.pinkn_plusgrid = pinkPlusGrid(false);   // Phase 2 — static
+PATTERNS.pinkn_rotbox = pinkPlusGrid(true);       // Phase 3 — 90-degree knocks
 // TYPE 208 — 3-D Tunnel (purple mode 7: the heart ORBITS a ring; L/R rotate around it). Rings of
 // pinkzap grow outward from the vanishing point with a telegraphed GAP; rotate to the gap before the
 // ring reaches your orbit. (A faithful ring-orbit take on the pseudo-3D tunnel — the mode-7 mechanic.)
