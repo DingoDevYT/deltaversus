@@ -2103,50 +2103,71 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
 // node connections) and HEARTS (obj_dokiheart). The heart hops node-to-node; a DIE! box on contact deals damage
 // and RESETS you to the start node. Collecting ALL the hearts spawns the GOAL — a "Stop!" box (mode 1) on the
 // start node; reaching it clears the maze (win). Difficulty-0 9-node graph.
+// Build one ROUND of the maze. Rounds progress on each win (obj_pinknodeact mode1 -> difficulty++, made=0):
+// r0 = the small star graph (goal "Stop!"), r1 = a 3x3 grid ("Calm down!"), r2 = a big winding SNAKE path
+// ("It's OK!" — the long final maze). Goal text per obj_pinknodeact Draw difficulty table.
+function mazeBuildRound(r, box) {
+  const W = box.w, H = box.h;
+  if (r <= 0) { const HD = 64 * 2.125, VD = 66;
+    return { nodes: [{ x: 0, y: 0 }, { x: HD, y: 0 }, { x: 0, y: -VD }, { x: -HD, y: 0 }, { x: 0, y: VD }, { x: HD, y: -VD }, { x: HD, y: VD }, { x: -HD, y: -VD }, { x: -HD, y: VD }],
+             edges: [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]], start: 0, hearts: [5, 8, 2], goalNode: 0, goalText: 'Stop!', dieN: 3 }; }
+  if (r === 1) { const gx = (W - 90) / 2, gy = (H - 80) / 2, nodes = [], edges = [], idx = (c, rw) => rw * 3 + c;
+    for (let rw = 0; rw < 3; rw++) for (let c = 0; c < 3; c++) nodes.push({ x: (c - 1) * gx, y: (rw - 1) * gy });
+    for (let rw = 0; rw < 3; rw++) for (let c = 0; c < 3; c++) { const e = []; if (c > 0) e.push(idx(c - 1, rw)); if (c < 2) e.push(idx(c + 1, rw)); if (rw > 0) e.push(idx(c, rw - 1)); if (rw < 2) e.push(idx(c, rw + 1)); edges.push(e); }
+    return { nodes, edges, start: idx(0, 2), hearts: [idx(2, 0), idx(0, 0), idx(2, 2)], goalNode: idx(1, 1), goalText: 'Calm down!', dieN: 4 }; }
+  // r>=2: the FINAL long winding SNAKE (3 rows, connected L->R, down, R->L, down, L->R)
+  const cols = 6, dxs = (W - 80) / (cols - 1), rowY = [-H / 2 + 34, 0, H / 2 - 34], nodes = [], edges = [], order = [];
+  for (let c = 0; c < cols; c++) { nodes.push({ x: (c - (cols - 1) / 2) * dxs, y: rowY[0] }); order.push(nodes.length - 1); }
+  for (let c = cols - 1; c >= 0; c--) { nodes.push({ x: (c - (cols - 1) / 2) * dxs, y: rowY[1] }); order.push(nodes.length - 1); }
+  for (let c = 0; c < cols; c++) { nodes.push({ x: (c - (cols - 1) / 2) * dxs, y: rowY[2] }); order.push(nodes.length - 1); }
+  for (let i = 0; i < nodes.length; i++) edges.push([]);
+  for (let i = 0; i < order.length - 1; i++) { edges[order[i]].push(order[i + 1]); edges[order[i + 1]].push(order[i]); }
+  return { nodes, edges, start: order[0], hearts: [order[3], order[cols + 2], order[2 * cols]], goalNode: order[order.length - 1], goalText: "It's OK!", dieN: 5 };
+}
 PATTERNS.pinkn_finalmaze = {
-  box: { w: 380, h: 250 }, hz30: 1, dur: 2000,
+  box: { w: 380, h: 250 }, hz30: 1, dur: 4000, ROUNDS: 3,
   tick(a) {
     const { f, box, add, rng } = a; const S = this;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    const HD = 64 * 2.125, VD = 66;   // arm lengths scaled to the bigger stage box
-    if (f === 0) {
-      S.nodes = [ { x: 0, y: 0 }, { x: HD, y: 0 }, { x: 0, y: -VD }, { x: -HD, y: 0 }, { x: 0, y: VD },
-                  { x: HD, y: -VD }, { x: HD, y: VD }, { x: -HD, y: -VD }, { x: -HD, y: VD } ];
-      S.edges = [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]];
-      S.start = 0; S.goal = -1; S._won = 0; S._spawnT = 30; S.die = [];
-      S.heartNodes = [5, 8, 2];   // collect all of these -> the GOAL ("Stop!") appears at the start
-      for (const hn of S.heartNodes) { const n = S.nodes[hn];   // place the collectable hearts on their nodes
-        add({ ...bulletProps('pdoki'), x: cx + n.x, y: cy + n.y, vx: 0, vy: 0, pickup: true, tp: 6, r: 11, scale: PS(1.5), life: 99999, _mazeHeart: 1 }); }
-    }
     const B = (typeof Battle !== 'undefined') ? Battle : null;
-    // all hearts collected -> reveal the GOAL box on the start node
-    if (B && B.bullets && S.goal < 0 && B.bullets.filter(b => b._mazeHeart && !b.dead).length === 0) { S.goal = S.start; Snd.play('pinkcoin', 0.5); if (B) B.flash = 8; }
-    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: [], start: S.start, goal: S.goal,
-      goalText: 'Stop!', dieBoxes: S.die.map(d => ({ x: cx + d.x, y: cy + d.y })) };
-    // Pink SPLIT: her BODY (spr_pink_very_hurt) looms at top-centre above the maze, with her detached GHOST
-    // floating overhead (obj_pink_enemy body-state + ghostmarker orbital float).
+    if (f === 0) { S.round = 0; S._roundBuilt = -1; S._won = 0; }
+    // (RE)BUILD the current round: new graph, spawn its hearts, reset the soul to its start
+    if (S._roundBuilt !== S.round) {
+      const R = mazeBuildRound(S.round, box);
+      S.nodes = R.nodes; S.edges = R.edges; S.start = R.start; S.goalNode = R.goalNode; S.goalText = R.goalText;
+      S.dieN = R.dieN; S.goal = -1; S.die = []; S._spawnT = 24; S._gen = (S._gen || 0) + 1; S._roundBuilt = S.round; S._won = 0;
+      for (const hn of R.hearts) { const n = S.nodes[hn];
+        add({ ...bulletProps('pdoki'), x: cx + n.x, y: cy + n.y, vx: 0, vy: 0, pickup: true, tp: 6, r: 11, scale: PS(1.5), life: 99999, _mazeHeart: 1 }); }
+      if (B) { B._pNode = S.start; B.pOnX = S.nodes[S.start].x; B.pOnY = S.nodes[S.start].y; B._mgen = S._gen; }
+    }
+    // all hearts collected -> reveal the GOAL box on the goal node
+    if (B && B.bullets && S.goal < 0 && B.bullets.filter(b => b._mazeHeart && !b.dead).length === 0) { S.goal = S.goalNode; Snd.play('pinkcoin', 0.5); B.flash = 8; }
+    a.fx.purpleSoul = { mode: 8, gen: S._gen, nodes: S.nodes, edges: S.edges, acts: [], start: S.start, goal: S.goal,
+      goalText: S.goalText, dieBoxes: S.die.map(d => ({ x: d.x, y: d.y })) };   // RELATIVE offsets (render adds gcx/gcy)
+    // Pink SPLIT: body at top-centre, detached GHOST floating overhead (orbital)
     a.fx.boss = { key: 'pinksing' + (Math.floor(f / 12) % 2), x: cx, y: box.y - 66, scale: 2.2, flip: false };
     const gt = f / 12;
     a.fx.pinkGhost = { x: cx + Math.sin(gt) * 26, y: box.y - 118 + Math.cos(gt) * 12, frame: Math.floor(f / 10) % 2, ramming: false, scale: 1.5, flip: false };
-    // WIN: reach the GOAL box (obj_pinknodeact mode 1 -> maze cleared)
+    // WIN a round: reach the GOAL box -> next round; after the FINAL round, clear the attack
     if (B && S.goal >= 0 && B.pNodeReached === S.goal && !S._won) {
-      S._won = 1; Snd.play('pinkcoin', 0.7); B.flash = 12;
+      S._won = 1; Snd.play('pinkcoin', 0.7); B.flash = 14;
       if (B.bullets) for (const bb of B.bullets) if (bb._mazeHeart) bb.dead = true;
-      B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout';
+      if (S.round + 1 < S.ROUNDS) { S.round++; }   // advance to the next, harder round
+      else { B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; }
     }
     // ---- DIE! boxes travel the connections (obj_pinknodeact pattern 3, ~11/frame). Contact = damage + RESET ----
     S._spawnT--;
-    if (S._spawnT <= 0 && S.die.length < 3 && !S._won) {
+    if (S._spawnT <= 0 && S.die.length < S.dieN && !S._won) {
       const from = Math.floor(rng() * S.nodes.length), nbrs = S.edges[from];
       if (nbrs && nbrs.length) { const n = S.nodes[from]; S.die.push({ x: n.x, y: n.y, from, to: nbrs[Math.floor(rng() * nbrs.length)] }); }
-      S._spawnT = 60;
+      S._spawnT = 55;
     }
     for (const d of S.die) {
       const B2 = S.nodes[d.to], dx = B2.x - d.x, dy = B2.y - d.y, dd = Math.hypot(dx, dy);
       if (dd <= 11) { d.x = B2.x; d.y = B2.y; const nb = S.edges[d.to] || [d.from]; d.from = d.to; d.to = nb[Math.floor(rng() * nb.length)]; }
       else { d.x += (dx / dd) * 11; d.y += (dy / dd) * 11; }
-      if (B && B.iframes <= 0 && Math.abs(B.soul.x - (cx + d.x)) < 38 && Math.abs(B.soul.y - (cy + d.y)) < 22) {
-        const dmg = 18; B.dmgTaken = (B.dmgTaken || 0) + dmg; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
+      if (B && B.iframes <= 0 && Math.abs(B.soul.x - (cx + d.x)) < 26 && Math.abs(B.soul.y - (cy + d.y)) < 17) {   // 48x32 hitbox
+        const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
         B.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; Snd.play('hurt', 0.5);
         B._pNode = S.start; B.pOnX = S.nodes[S.start].x; B.pOnY = S.nodes[S.start].y;   // RESET to the start node
       }

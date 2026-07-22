@@ -1745,19 +1745,19 @@ Battle.renderBoxAndBullets = function (ctx) {
       for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isStart = i === start;
         if (isStart) { ctx.fillStyle = 'rgba(247,91,200,' + (0.5 + glow * 0.4) + ')'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow, 0, 6.2832); ctx.fill(); }
         else { ctx.fillStyle = '#b58bd6'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 4, 0, 6.2832); ctx.fill(); } }
-      // DIE! boxes (obj_pinknodeact mode 0): pulsing yellow->red bordered boxes with red "DIE!" text; travel edges
-      ctx.font = "bold 15px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      const bw = 38, bh = 22;   // half-extents (matches the pattern's collision box)
-      for (const d of (ps.dieBoxes || [])) { const p = (lt % 40) / 40, bc = p < 0.5 ? '#ffdd33' : '#ff2b2b';
-        ctx.fillStyle = bc; ctx.fillRect(gcx + d.x - bw - 2, gcy + d.y - bh - 2, bw * 2 + 4, bh * 2 + 4);
-        ctx.fillStyle = '#000'; ctx.fillRect(gcx + d.x - bw, gcy + d.y - bh, bw * 2, bh * 2);
-        ctx.fillStyle = '#ff3b3b'; ctx.fillText('DIE!', gcx + d.x, gcy + d.y); }
-      // the GOAL box ("Stop!"): appears (after all hearts collected) on the goal node — white box, white text
-      if (ps.goal != null && ps.goal >= 0 && nodes[ps.goal]) { const gn = nodes[ps.goal];
-        ctx.fillStyle = '#fff'; ctx.fillRect(gcx + gn.x - bw - 2, gcy + gn.y - bh - 2, bw * 2 + 4, bh * 2 + 4);
-        ctx.fillStyle = '#1a0d20'; ctx.fillRect(gcx + gn.x - bw, gcy + gn.y - bh, bw * 2, bh * 2);
-        ctx.fillStyle = '#fff'; ctx.fillText(ps.goalText || 'Stop!', gcx + gn.x, gcy + gn.y); }
-      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      // DIE! boxes (obj_pinknodeact mode 0): pulsing yellow->red bordered boxes with red "DIE!" text (DELTARUNE
+      // font via drawText). Hitbox 48x32 (per spec) -> half-extents 24x16 + a little border. Coords are RELATIVE
+      // to the box centre (the pattern passes offsets, render adds gcx/gcy — matches the collision exactly).
+      const bw = 26, bh = 17;
+      const drawNodeBox = (nx, ny, txt, border, fill, tcol) => {
+        ctx.fillStyle = border; ctx.fillRect(gcx + nx - bw - 2, gcy + ny - bh - 2, bw * 2 + 4, bh * 2 + 4);
+        ctx.fillStyle = fill; ctx.fillRect(gcx + nx - bw, gcy + ny - bh, bw * 2, bh * 2);
+        drawText(ctx, 'main', txt, gcx + nx, gcy + ny - 8, { color: tcol, align: 'center', scale: 1 });
+      };
+      const flash = (lt % 40) < 20;
+      for (const d of (ps.dieBoxes || [])) drawNodeBox(d.x, d.y, 'DIE!', flash ? '#ffdd33' : '#ff2b2b', '#000', '#ff3b3b');
+      if (ps.goal != null && ps.goal >= 0 && nodes[ps.goal]) { const gn = nodes[ps.goal];   // GOAL box ("Stop!"/"It's OK!")
+        drawNodeBox(gn.x, gn.y, ps.goalText || 'Stop!', flash ? '#fff' : '#ff9fd0', '#1a0d20', '#fff'); }
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }

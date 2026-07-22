@@ -23,8 +23,9 @@
   .atk .k { color:var(--dim); font-size:11px; display:block; }
   /* play view */
   #play { display:none; position:fixed; inset:0; background:#000; z-index:10; }
+  /* INTEGER pixel scaling — identical to the live game (main.js fitCanvas), so the tester feels the same */
   #game { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); image-rendering:pixelated;
-          width:min(96vw, 176vh); height:auto; aspect-ratio:4/3; background:#000; }
+          image-rendering:crisp-edges; background:#000; }
   #hud { position:fixed; top:10px; left:12px; z-index:11; font-size:15px; text-shadow:0 1px 2px #000; }
   #hud b { color:var(--accent); }
   #hud .dmg { color:#ff5a5a; font-weight:700; font-size:20px; }
@@ -77,6 +78,13 @@
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
+// INTEGER-scale the canvas exactly like the live game (main.js fitCanvas) so the tester feels identical.
+function fitCanvas() {
+  const c = document.getElementById('game');
+  const s = Math.max(1, Math.floor(Math.min(innerWidth / 640, innerHeight / 480)));
+  c.style.width = 640 * s + 'px'; c.style.height = 480 * s + 'px';
+}
+addEventListener('resize', fitCanvas); fitCanvas();
 const el = id => document.getElementById(id);
 // TESTER-ONLY: Jevil "new set" (Gemini recipes). Registered on CHARS in THIS page's runtime only,
 // so they show up as playable test attacks here but are NOT part of the real game.
