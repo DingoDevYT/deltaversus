@@ -1435,74 +1435,10 @@ PATTERNS.gerson_rudebuster = {
 // ============================================================================
 const PS = g => g / 1.6;   // GML image_xscale -> our scale
 // TYPE 200 — CATS: cat bullets stream in from the sides in 3 rows (56px apart).
-PATTERNS.pink_cats = {
-  dur: 340, hz30: 1,
-  tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 13 !== 0 || f > 300) return;
-    const side = rng() < 0.5 ? -1 : 1, lane = Math.floor(rng() * 3);
-    add({ ...catP(), x: cx + side * (box.w / 2 + 30), y: cy + (lane - 1) * 52, vx: -side * 9, vy: 0, r: 8, grazeR: 13, scale: PS(2), dmg: 24, life: 170 });
-    if (rng() < 0.4) add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 7, vy: 0, r: 6, grazeR: 12, scale: PS(1.4), dmg: 20, life: 170 });
-    Snd.play('boardsummon', 0.25);
-  },
-};
 // TYPE 206 — PIÑATA BOMBS: fusebombs land on a 4x4 grid, then detonate into a row+column cross of beams.
-PATTERNS.pink_bombs = {
-  dur: 300, hz30: 1,
-  tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f < 20 || f % 16 !== 0 || f > 260) return;
-    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx - 60 + gx * 40, y = cy - 60 + gy * 40;
-    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, r: 7, grazeR: 11, scale: PS(2.4), spin: 0.15, _fuse: 60, dmg: 20 };
-    bomb.emit = function (b, out) {
-      if (b.t >= b._fuse && !b._done) {
-        b._done = 1; b.dead = true; Snd.play('boardbomb', 0.35);
-        out.push({ ...bulletProps('pboom'), shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: 0, len: box.w * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
-        out.push({ shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: Math.PI / 2, len: box.h * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
-      }
-    };
-    add(bomb);
-  },
-};
 // TYPE 204 — BELL/CAT LANES: three vertical cat streams at cx-28/cx/cx+28, different rates.
-PATTERNS.pink_lanes = {
-  dur: 340, hz30: 1,
-  tick(a) {
-    const { f, box, add } = a; const cx = box.x + box.w / 2;
-    const lanes = [[7, -28, 1, 3.2], [10, 0, -1, 2.0], [36, 28, 1, 1.25]];   // [interval, xoff, dir(1=down/-1=up), speed]
-    for (const [intv, xo, dir, spd] of lanes) if (f % intv === 0 && f < 300) {
-      const y = dir === 1 ? box.y - 16 : box.y + box.h + 16;
-      add({ ...catP(), x: cx + xo, y, vx: 0, vy: dir * spd * 2, r: 7, grazeR: 12, scale: PS(2), dmg: 22, life: 170 });
-    }
-    if (f % 44 === 0 && f < 300) add({ ...bulletProps('pbell'), x: cx, y: box.y - 18, vx: 0, vy: 3, r: 8, grazeR: 13, scale: PS(2), spin: 0.08, dmg: 22, life: 160 });
-  },
-};
 // TYPE 202 — ROTATING BOX: lane bullets fire inward from a rotating cardinal, with perpendicular offshoots.
-PATTERNS.pink_rotbox = {
-  dur: 300, hz30: 1,
-  tick(a) {
-    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 20 !== 0 || f < 20 || f > 260) return;
-    const dir = (Math.floor(f / 20) % 4) * 90, va = -dir * Math.PI / 180, D = box.w * 0.9;
-    const sx = cx - Math.cos(va) * D, sy = cy - Math.sin(va) * D;
-    add({ ...bulletProps('planeb'), x: sx, y: sy, vx: Math.cos(va) * 8, vy: Math.sin(va) * 8, rot: va, r: 7, grazeR: 12, scale: PS(2), dmg: 24, life: 130 });
-    const px = Math.cos(va + Math.PI / 2) * 52, py = Math.sin(va + Math.PI / 2) * 52;
-    for (const s of [-1, 1]) add({ ...bulletProps('plane'), x: sx + px * s, y: sy + py * s, vx: Math.cos(va) * 8, vy: Math.sin(va) * 8, rot: va, r: 6, grazeR: 11, scale: PS(1.7), dmg: 20, life: 130 });
-    Snd.play('boardsummon', 0.25);
-  },
-};
 // TYPE 209 — SINGING (ult, idol concert): cats from the sides + bells raining + a doki flourish finale.
-PATTERNS.pink_idol = {
-  dur: 460, hz30: 1,
-  tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 10 === 0 && f < 400) { const side = rng() < 0.5 ? -1 : 1;
-      add({ ...catP(), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 9, vy: 0, r: 7, grazeR: 12, scale: PS(2), dmg: 22, life: 170 }); }
-    if (f % 16 === 8 && f < 400) add({ ...bulletProps('pbell'), x: box.x + rng() * box.w, y: box.y - 18, vx: 0, vy: 4, r: 7, grazeR: 12, scale: PS(2), spin: 0.1, dmg: 22, life: 160 });
-    if (f === 410) { for (let i = 0; i < 16; i++) { const ang = i / 16 * 6.28; add({ ...bulletProps('pdoki'), x: cx, y: cy, vx: Math.cos(ang) * 5, vy: Math.sin(ang) * 5, rot: ang, r: 6, grazeR: 11, scale: PS(1.6), dmg: 24, life: 130 }); } Snd.play('boardbomb', 0.5); }
-    if (f > 430) a.fx.shake = 6;
-  },
-};
 
 // ---------- PINK — NEW (GML-faithful, PURPLE GRID SOUL). Tester/showcase only. ----------
 // TYPE 200 — Cats (purple mode 1: 3 lanes + free X). This is the REAL attack: the exact ds_bullet_list
@@ -1550,8 +1486,6 @@ function pinkCatsPattern(chart) {
     },
   };
 }
-PATTERNS.pinkn_cats = pinkCatsPattern(PINK_CATS_D0);       // the "Cats" attack (difficulty 0)
-PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (difficulty 1) — conga + fast finale
 
 // ============ DATE minigame (obj_date_controller): 1:1 movement/selection model ============
 // The PURPLE SOUL sits at the bottom of the screen ON A LINE; the answer options are a horizontal strip
@@ -1562,122 +1496,6 @@ PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (di
 // or the timer running out (datetimeleft, only while idle) plays the awkward reaction and REPEATS the same
 // question — no HP damage in date 1 (the real dodging is date 3/4's type-210 attack). All correct -> won.
 // Content is the real script (obj_date_controller Create/Other_11). "|" = an explicit line break.
-const PINK_DATE1 = {
-  intro: ["Wh-what's going on!?|School!?", "I don't... I don't even|go to school anymore..."],
-  qs: [
-    { q: "And you wanna WALK|ME HOME!?", opts: ["Yes"], correct: [0], single: true, timed: false },
-    { q: "It's because you think|this body's CUTE, right!?", opts: ["No", "Yes", "Yes"], correct: [1, 2], timed: true },
-    { q: "You... wish you never|met me, right...?", opts: ["Right", "Exactly", "Of course", "No", "Of course", "Exactly"], correct: [3], timed: true },
-  ],
-  outro: "ARRRGH, enough already!|This is OVER!",
-};
-const PINK_DATE2 = {   // Date 2 (datecount 2): the GHOST side of Pink (second_text) blurts a hint that points to the
-  // correct pun answer (rand_array[0]) — obj_date_controller Other_11 first_text/second_text pairs.
-  intro: ["Let's date, mew!"],
-  qs: [
-    { q: "Date location?", ghost: "Take a HIKE!!!", opts: ["Go to mountain", "Get lost!", "Planetarium"], correct: [0], timed: true },
-    { q: "Were you... moved?", ghost: "Destroy her letter!", opts: ["Tear up", "Rip up", "Cry"], correct: [0], timed: true },
-    { q: "A gift for me?", ghost: "Call me ROTTEN!", opts: ["Stinky fish", "Rotten", "Diamond"], correct: [0], timed: true },
-  ],
-  outro: "...H-heh. Not bad, mew.",
-};
-function pinkDatePattern(D) {
-  return {
-    box: { w: 300, h: 190 }, hz30: false, dur: 100000,   // 60Hz menu input; ends itself when the date is won
-    tick(a) {
-      const { f } = a; const S = this;
-      const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
-      const HIT = k => IN.hit && IN.hit[k];
-      if (f === 0) {
-        S.ph = D.intro.length ? 'cut' : 'ask'; S.line = 0; S.qi = 0; S.sel = 0;
-        S.boxCon = 0; S.boxOff = 0; S.bt = 0; S.heartY = 385; S.chars = 0; S.talk = 0;
-        S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240; S.react = 0; S.reactT = 0; S.done = false; S.lives = 3;
-      }
-      S.bg = (S.bg + 0.7) % 80; S.bgy = (S.bgy + 0.4) % 80; S.talk += 0.167;
-      if (S.flash > 0) S.flash--;
-      const emit = extra => { a.fx.date = Object.assign({
-        bg: S.bg, bgy: S.bgy, talk: Math.floor(S.talk) % 2, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
-        heartY: S.heartY, line1: S._l1 || '', line2: S._l2 || '', chars: Math.floor(S.chars), lives: S.lives,
-      }, extra || {}); };
-      const setText = str => { const p = (str || '').split('|'); S._l1 = p[0] || ''; S._l2 = p[1] || ''; S.chars = 0; };
-
-      if (S.done) { emit({ done: true }); return; }
-
-      // ---- CUTSCENE: Pink talks; type each line, advance on OK (or auto after it finishes + a beat) ----
-      if (S.ph === 'cut') {
-        if (S._l1 == null || S._shownLine !== S.line) { setText(D.intro[S.line]); S._shownLine = S.line; }
-        S.chars += 1; const full = (S._l1.length + S._l2.length);
-        if ((HIT('ok') || HIT('up')) && S.chars > 4) {
-          if (S.chars < full) S.chars = full + 1;           // first press finishes the line
-          else { S.line++; if (S.line >= D.intro.length) { S.ph = 'ask'; S._shownLine = -1; } }
-        }
-        emit({}); return;
-      }
-
-      const Q = D.qs[S.qi], n = Q.opts.length;
-
-      // ---- ASK: show the question text; once it's typed the options become interactive ----
-      if (S.ph === 'ask') {
-        if (S._shownLine !== ('q' + S.qi)) { setText(Q.q); S._shownLine = 'q' + S.qi; S.sel = 0; S.heartY = 385; S.timer = 240; }
-        S.chars += 1;
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghost: Q.ghost, timer: null });
-        if (S.chars > (S._l1.length + S._l2.length) + 6) { S.ph = 'choose'; S.bt = 0; }
-        return;
-      }
-
-      // ---- CHOOSE (con==2): the soul is on the line; L/R loops the options, UP selects ----
-      if (S.ph === 'choose') {
-        // timer only ticks while idle (draw_box_con==0), per obj_date_controller Step
-        if (Q.timed && S.boxCon === 0) S.timer -= 0.5;      // 240 @30fps == 480 ticks @60Hz -> 0.5/frame
-        if (S.boxCon === 0) {
-          // INTUITIVE direction: RIGHT brings the right-hand option to centre, LEFT the left-hand one
-          if (!Q.single && HIT('right')) { S.boxCon = -1; S.bt = 0; Snd.play('menumove', 0.5); }
-          else if (!Q.single && HIT('left')) { S.boxCon = 1; S.bt = 0; Snd.play('menumove', 0.5); }
-          else if (HIT('up')) { S.boxCon = 2; S.bt = 0; }
-        } else if (S.boxCon === -1) {                        // slide left -> selected++
-          S.bt++; S.boxOff = lerp2(0, -200, S.bt / 10);
-          if (S.bt >= 10) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel + 1) % n; }
-        } else if (S.boxCon === 1) {                         // slide right -> selected--
-          S.bt++; S.boxOff = lerp2(0, 200, S.bt / 10);
-          if (S.bt >= 10) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel - 1 + n) % n; }
-        } else if (S.boxCon === 2) {                         // UP: heart rises into the option, then commit
-          S.bt++; S.heartY = lerp2(390, 319, S.bt / 6);
-          if (S.bt >= 6) {
-            S.boxCon = 0; S.heartY = 385;
-            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S.react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }   // snd_coin
-            else { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; S.lives = Math.max(0, S.lives - 1); wrongReactSfx(); }
-          }
-        }
-        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; S.lives = Math.max(0, S.lives - 1); wrongReactSfx(); }   // timeout = wrong (lose a life)
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single, ghost: Q.ghost,
-               timer: Q.timed ? Math.max(0, S.timer / 240) : null });
-        return;
-      }
-
-      // ---- REACT (con 3 correct / con 4 wrong): brief reaction, then advance or repeat ----
-      if (S.ph === 'react') {
-        S.reactT++;
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghost: Q.ghost, correct: S.react > 0,
-               timer: Q.timed ? Math.max(0, S.timer / 240) : null });
-        if (S.reactT >= 34) {
-          if (S.react > 0) {                                 // correct -> next question (or win)
-            if (S.qi + 1 >= D.qs.length) { S.ph = 'outro'; S.reactT = 0; setText(D.outro); Snd.play('boost', 0.5); }   // keep qi valid during outro
-            else { S.qi++; S.ph = 'ask'; S._shownLine = -1; }
-          } else { S.ph = 'ask'; S._shownLine = -1; }        // wrong -> repeat SAME question
-        }
-        return;
-      }
-
-      // ---- OUTRO: Pink's closing line, then the date ends (engine boxout via fx.date.done) ----
-      if (S.ph === 'outro') {
-        S.chars += 1; S.reactT++;
-        emit({});
-        if (S.reactT > (S._l1.length + S._l2.length) + 40) S.done = true;
-        return;
-      }
-    },
-  };
-}
 function lerp2(a, b, t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return a + (b - a) * t; }
 function wrongReactSfx() {   // a wrong/timeout answer: Pink lashes out — the party takes damage (registers in the tester)
   if (typeof Snd !== 'undefined') Snd.play('pinkgasp', 0.5);
@@ -1688,8 +1506,6 @@ function wrongReactSfx() {   // a wrong/timeout answer: Pink lashes out — the 
     if (typeof Snd !== 'undefined') Snd.play('hurt', 0.4);
   }
 }
-PATTERNS.pinkn_date1 = pinkDatePattern(PINK_DATE1);
-PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
 
 // ===== PINK V3 DATE (obj_date_controller) — per-beat portrait swaps, ghost split, real UI =====
 // Text is PARAPHRASED (the real script is copyrighted). Each beat carries the exact `pinkportrait`
@@ -1839,37 +1655,6 @@ PATTERNS.pinkn3_date4 = pinkDateN3Pattern(PINK_N3_DATE4);   // the confession th
 // TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
 // columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
 // frames. Ported 1:1 from the btimer_array burst/break logic. Swap lanes L/R, weave vertically.
-function pinkVLaneBurst(streams, mode, boxH, spdMod, dmg, corners) {
-  return {
-    box: { w: 169, h: boxH }, hz30: 1, dur: 420,   // 150 x1.125 = 169 wide
-    tick(a) {
-      const { f, box, add } = a; a.fx.purpleSoul = { mode, diff: 0 };
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, bh = box.h;
-      if (f === 0) {
-        this._vt = streams.map(s => ({ t: s.interval - 2, acc: 0 }));
-        if (corners) for (const sx of [-63, 63]) for (const sy of [-(bh / 2 - 6), bh / 2 - 6])   // 4 stationary "wall" cats (destroyonhit 0)
-          add({ ...catP(), x: cx + sx, y: cy + sy, vx: 0, vy: 0, noHit: true, scale: PS(2), life: 460 });
-      }
-      streams.forEach((s, i) => {
-        const st = this._vt[i];
-        st.acc += spdMod;
-        while (st.acc >= 1) {
-          st.acc -= 1; st.t++;
-          if (st.t > 0 && (st.t % s.interval) === (s.interval - 1)) {
-            if (st.t >= s.interval * (s.number - 1)) st.t = s.break;
-            const down = s.dir === 'down';
-            add({ ...catP(), x: cx + s.xoff, y: cy + (down ? -1 : 1) * (24 + bh / 2), vx: 0, vy: (down ? 1 : -1) * s.speed * spdMod, r: 9, grazeR: 13, scale: PS(2), dmg, life: 240 });
-          }
-        }
-      });
-    },
-  };
-}
-PATTERNS.pinkn_vrain = pinkVLaneBurst([
-  { xoff: -28, dir: 'down', interval: 7, number: 3, break: -30, speed: 3.2 },
-  { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
-  { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
-], 4, 225, 1, 22);
 // ============ TYPE 202 — PLUS-GRID / ROTATING BOX: 1:1 port ============
 // purple mode 3 (5-cell "+" cross). obj_dbulletcontroller(202) plays a ds_bullet_list of [shot, dir,
 // interval, speed]. dir = 0/90/180/270 (GML: right/up/left/down) = which of the 4 arms the bullet streams
@@ -1930,8 +1715,6 @@ function pinkPlusGridPattern(chart, spin) {
     },
   };
 }
-PATTERNS.pinkn_plusgrid = pinkPlusGridPattern(PINK_PLUS_D0, false);   // P2 T1 — static
-PATTERNS.pinkn_plusgrid2 = pinkPlusGridPattern(PINK_PLUS_D2, false);  // P2 T5 — static, faster
 // ---- TYPE 202 difficulty 1 (P3): the PROCEDURAL doki-queue generator (obj_dbulletcontroller case 1). Each
 // refill emits a small group of [shot, dir, delay, speed] tuples: a shot, then the shot transitions and the
 // dir rotates by ±90 (choose 1 or 2 steps) twice, then a DOKI-HEART variant of the shot (6/7/8) is queued;
@@ -2023,7 +1806,6 @@ function pinkRotboxD1Pattern() {
     },
   };
 }
-PATTERNS.pinkn_rotbox = pinkRotboxD1Pattern();                        // P3 T1 — procedural D1 doki-queue + 90° knocks
 // ============ TYPE 208 — 3-D TUNNEL (purple mode 7): FULL 1:1 port ============
 // obj_purplecontrols mode 7, EXACT constants: 8 tunnel_radius[] rings; grow r = r*(1 + r/(32000/speed))
 // + 0.0375*speed; recycle at 224; new ring at radius 12 every 188 tunnel-units; tunnel_speed_base =
@@ -2035,7 +1817,7 @@ PATTERNS.pinkn_rotbox = pinkRotboxD1Pattern();                        // P3 T1 �
 // (exact _atk switch), walls of `repeats` zaps spaced 10 degrees (ends harmless, mask_empty), variants:
 // 0=6@cardinal, 1=15@diagonal, 2=29 near-full ring, 3=6-8 MOVING (spr_pinkzap_arrow, drifts ±2.5/5),
 // 4=6x2 opposite. Dokis ride rings on non-attack shifts. tunnel_lane_direction = 270 rotates all spawns.
-PATTERNS.pinkn_tunnel = {
+const pinkTunnelPattern = {
   box: { w: 281, h: 281 }, hz30: 1, dur: 900,
   tick(a) {
     const { f, box, add, rng } = a;
@@ -2262,8 +2044,6 @@ function pinkConcertPattern(diff) { return {
     });
   },
 }; }
-PATTERNS.pinkn_concert = pinkConcertPattern(0);
-PATTERNS.pinkn_concert2 = pinkConcertPattern(1);   // hard (phase-2) concert: hearts + lobbed hater bombs
 // obj_audiencehater: a hard-mode member converts to a mic-stand bomb that LOBS at the soul (overshoot arc,
 // speed ~9 + gravity 0.5) then EXPLODES (spr_explosion_round) on contact / landing (concert.md §5).
 function mkAudienceHater(add, x, y, box) {
@@ -2327,11 +2107,6 @@ function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
 }
 // TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
 // lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
-PATTERNS.pinkn_conveyor = pinkVLaneBurst([
-  { xoff: -28, dir: 'down', interval: 4, number: 2, break: -20, speed: 5.4 },
-  { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
-  { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
-], 5, 225, 1, 22, true);
 // ============ TYPE 210 — GHOST/BODY MAZE (obj_purplecontrols mode 8): FULL-SCREEN 1:1 port ============
 // The battle box is DESTROYED — the maze plays on the whole 640x480 purple void. obj_pinknode form a graph;
 // the purple heart HOPS node-to-node (arrows). obj_pinknodeact boxes patrol (pattern 0 static, 1 vertical bob
@@ -2386,72 +2161,6 @@ function mazeBuild(r, rng) {
   for (const n of N) { n.x += 320; n.y += 360; n.dx = n.x; n.dy = n.y; }
   return { nodes: N, start, acts, dokis, rootHp, goalText, path };
 }
-PATTERNS.pinkn_finalmaze = {
-  box: { w: 565, h: 372 }, hz30: 1, dur: 12000, fullscreen: true, ROUNDS: 4,
-  tick(a) {
-    const { f, rng } = a; const S = this;
-    const B = (typeof Battle !== 'undefined') ? Battle : null;
-    const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
-    const HIT = k => IN.hit && IN.hit[k];
-    if (f === 0) { S.round = 0; S._built = -1; S._done = false; S.hits = 0; }
-    if (S._built !== S.round) {
-      const R = mazeBuild(S.round, rng);
-      S.nodes = R.nodes; S.start = R.start; S.acts = R.acts; S.dokis = R.dokis; S.rootHp = R.rootHp; S.goalText = R.goalText;
-      S._built = S.round; S._won = 0; S._winT = 0; S.iframes = 0;
-      S.soulNode = S.start; const s0 = S.nodes[S.start]; S.soul = { x: s0.x, y: s0.y }; S.heartTravel = 0; S.target = S.start; S.moveDir = 0;
-      for (const ac of S.acts) { const n = S.nodes[ac.node]; ac.x = n.x; ac.y = n.y; ac.pdir = ac.pdir || 0; ac.life = 0; ac._tnode = ac.node; }
-      for (const dk of S.dokis) { dk._t = dk.delay; dk.spawned = false; dk.collected = false; }
-    }
-    if (S.iframes > 0) S.iframes--;
-    // ---- SOUL node-hop movement (obj_purplecontrols mode 8): _laneswap_speed 22 ----
-    if (S.heartTravel <= 0 && !S._won) {
-      let dir = -1; if (HIT('right')) dir = 0; else if (HIT('up')) dir = 1; else if (HIT('left')) dir = 2; else if (HIT('down')) dir = 3;
-      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
-        if (c >= 0) { S.target = c; const t = S.nodes[c]; S.heartTravel = Math.hypot(t.x - S.soul.x, t.y - S.soul.y); S.moveDir = Math.atan2(t.y - S.soul.y, t.x - S.soul.x); if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
-    }
-    if (S.heartTravel > 0) { const t = S.nodes[S.target], mv = Math.min(22, S.heartTravel);
-      S.soul.x += Math.cos(S.moveDir) * mv; S.soul.y += Math.sin(S.moveDir) * mv; S.heartTravel -= mv;
-      if (S.heartTravel <= 0) { S.soulNode = S.target; S.soul.x = t.x; S.soul.y = t.y;
-        if (t.checkpoint === 1) { for (const n of S.nodes) if (n.checkpoint > 1) n.checkpoint = 1; t.checkpoint = 2; } }
-    }
-    // ---- ACTS: obj_pinknodeact movement patterns ----
-    for (const ac of S.acts) { ac.life++; const n = S.nodes[ac.node] || { x: 320, y: 268 };
-      if (ac.pattern === 1) { ac.pdir = (ac.pdir + 4) % 360; ac.x = n.x; ac.y = n.y - Math.sin(ac.pdir * Math.PI / 180) * 62; }
-      else if (ac.pattern === 2) { ac.pdir = (ac.pdir + 1.5) % 360; const base = (ac.pdir > 90 && ac.pdir < 270) ? 704 : -64; ac.x = base + Math.cos(ac.pdir * Math.PI / 180) * 288; ac.y = n.y; }
-      else if (ac.pattern === 3) { const tg = S.nodes[ac._tnode] || n, dx = tg.x - ac.x, dy = tg.y - ac.y, dd = Math.hypot(dx, dy) || 1;
-        const spd = Math.min(4 + ac.life / 2, Math.max(12, Math.min(15, 15 - (S.hits - 1) * 0.75))), mv = Math.min(spd, dd);
-        ac.x += dx / dd * mv; ac.y += dy / dd * mv;
-        if (dd <= spd) { const sN = S.nodes[S.soulNode]; let best = -1, bd = 1e9;   // hop to the child nearest the soul
-          for (const c of S.nodes[ac._tnode].child) { if (c < 0) continue; const cn = S.nodes[c], dist = Math.hypot(cn.x - sN.x, cn.y - sN.y); if (dist < bd) { bd = dist; best = c; } }
-          ac._tnode = best >= 0 ? best : ac._tnode; } }
-      else { ac.x = n.x; ac.y = n.y; }
-    }
-    // ---- DOKI hearts: spawn after delay, collect by proximity -> convert an act to goal / dock root hp ----
-    for (const dk of S.dokis) {
-      if (!dk.spawned) { dk._t--; if (dk._t <= 0) { dk.spawned = true; const n = S.nodes[dk.node]; dk.x = n.x; dk.y = n.y; } }
-      else if (!dk.collected && Math.hypot(S.soul.x - dk.x, S.soul.y - dk.y) < 26) { dk.collected = true; if (typeof Snd !== 'undefined') Snd.play('mercyadd', 0.5); if (B) B.flash = 8;
-        if (dk.changeActIdx != null && S.acts[dk.changeActIdx]) S.acts[dk.changeActIdx].mode = 1;
-        else if (dk.rootHp) { S.rootHp--; if (S.rootHp <= 0 && !S.acts.some(x => x.mode === 1)) { const n = S.nodes[S.start]; S.acts.push({ node: S.start, mode: 1, pattern: 0, x: n.x, y: n.y, life: 0, pdir: 0, _tnode: S.start }); } } }
-    }
-    // ---- CONTACT: DIE (mode 0) = damage + reset to checkpoint; GOAL (mode 1) = win the difficulty ----
-    if (!S._won) for (const ac of S.acts) {
-      if (!(Math.abs(S.soul.x - ac.x) < 24 && Math.abs(S.soul.y - ac.y) < 16)) continue;   // 48x32 hitbox
-      if (ac.mode === 0 && S.iframes <= 0 && B) { const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg;
-        for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
-        S.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; if (typeof Snd !== 'undefined') Snd.play('hurt', 0.5); S.hits++;
-        let cp = S.nodes.findIndex(n => n.checkpoint === 2); if (cp < 0) cp = S.start;   // reset to checkpoint node
-        S.soulNode = cp; const c = S.nodes[cp]; S.soul.x = c.x; S.soul.y = c.y; S.heartTravel = 0; }
-      else if (ac.mode === 1) { S._won = 1; S._winT = 0; if (typeof Snd !== 'undefined') Snd.play('pinkcoin', 0.7); if (B) B.flash = 14; }
-    }
-    if (S._won) { S._winT++; if (S._winT >= 25) { if (S.round + 1 < S.ROUNDS) S.round++; else S._done = true; } }
-    // ---- Pink SPLIT: wave-distorted body + detached ghost (sine-sliced sprites) ----
-    const gt = f / 12;
-    a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText,
-      dokis: S.dokis.filter(d => d.spawned && !d.collected).map(d => ({ x: d.x, y: d.y })),
-      soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2,
-      body: { x: 148, y: 88 }, ghost: { x: 470 + Math.sin(gt) * 22, y: 84 + Math.cos(gt) * 12 } };
-  },
-};
 // ============ PINK V3 — FINAL MAZE (obj_purplecontrols mode 8), exact re-port ============
 // Fixes over V2: node DRIFT (diff3, speed 0.25 / 10deg steer), soul tracks the LIVE (drifting)
 // node so it sits heart_travel px behind it (spec §4), a REPEATING hunter launched from
@@ -2827,28 +2536,24 @@ function pinkBombPattern(chart) {
     },
   };
 }
-PATTERNS.pinkn_bombs = pinkBombPattern(PINK_BOMB_D0);        // P1 T2 — volleys 1,1,1,2,3,3,4 + laugh
-PATTERNS.pinkn_bombs2 = pinkBombPattern(PINK_BOMB_D1);       // P1 T4 — faster, final volley of 4
-PATTERNS.pinkn_bombsg = pinkBombPattern(PINK_BOMB_D3);       // P2 T3 — smalls + giant centre bomb ender
-PATTERNS.pinkn_bombsfin = pinkBombPattern(PINK_BOMB_D2);     // P3 T2 — 4x giant volleys + slide FINALE
 
 // ===== PINK V3 — promote the verified V2 box attacks onto the real STAGE SCENE =====
 // Charts/mechanics were confirmed exact in V2 (cats/bombs/plusgrid/tunnel/concert); the V3 uplift
 // is that they now render on the actual Pink stage (MEWERS LIVE + dancers + petals) via fx.pinkScene
 // instead of the default battle bg. Wrap each so it flags the scene, keeping the V2 logic intact.
 function withPinkScene(p) { return Object.assign({}, p, { tick(a) { a.fx.pinkScene = true; return p.tick.call(this, a); } }); }
-PATTERNS.pinkn3_cats      = withPinkScene(PATTERNS.pinkn_cats);
-PATTERNS.pinkn3_cats2     = withPinkScene(PATTERNS.pinkn_cats2);
-PATTERNS.pinkn3_bombs     = withPinkScene(PATTERNS.pinkn_bombs);
-PATTERNS.pinkn3_bombs2    = withPinkScene(PATTERNS.pinkn_bombs2);
-PATTERNS.pinkn3_bombsg    = withPinkScene(PATTERNS.pinkn_bombsg);
-PATTERNS.pinkn3_bombsfin  = withPinkScene(PATTERNS.pinkn_bombsfin);
-PATTERNS.pinkn3_plusgrid  = withPinkScene(PATTERNS.pinkn_plusgrid);
-PATTERNS.pinkn3_plusgrid2 = withPinkScene(PATTERNS.pinkn_plusgrid2);
-PATTERNS.pinkn3_rotbox    = PATTERNS.pinkn_rotbox;   // uses its own scrolling parallax backdrop (fx.pinkRoll), not the stage
-PATTERNS.pinkn3_tunnel    = withPinkScene(PATTERNS.pinkn_tunnel);
-PATTERNS.pinkn3_concert   = withPinkScene(PATTERNS.pinkn_concert);
-PATTERNS.pinkn3_concert2  = withPinkScene(PATTERNS.pinkn_concert2);   // hard concert (haters), phase-2 variant
+PATTERNS.pinkn3_cats      = withPinkScene(pinkCatsPattern(PINK_CATS_D0));
+PATTERNS.pinkn3_cats2     = withPinkScene(pinkCatsPattern(PINK_CATS_D1));
+PATTERNS.pinkn3_bombs     = withPinkScene(pinkBombPattern(PINK_BOMB_D0));
+PATTERNS.pinkn3_bombs2    = withPinkScene(pinkBombPattern(PINK_BOMB_D1));
+PATTERNS.pinkn3_bombsg    = withPinkScene(pinkBombPattern(PINK_BOMB_D3));
+PATTERNS.pinkn3_bombsfin  = withPinkScene(pinkBombPattern(PINK_BOMB_D2));
+PATTERNS.pinkn3_plusgrid  = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D0, false));
+PATTERNS.pinkn3_plusgrid2 = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D2, false));
+PATTERNS.pinkn3_rotbox    = pinkRotboxD1Pattern();   // its own scrolling parallax backdrop (fx.pinkRoll)
+PATTERNS.pinkn3_tunnel    = withPinkScene(pinkTunnelPattern);
+PATTERNS.pinkn3_concert   = withPinkScene(pinkConcertPattern(0));
+PATTERNS.pinkn3_concert2  = withPinkScene(pinkConcertPattern(1));   // hard concert (haters), phase-2 variant
 
 // ===== PINK V3 (pinkn3_*) — from-scratch rebuild on the real STAGE SCENE =====
 // pinkn3_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).

@@ -68,13 +68,13 @@
 
 <!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
 <script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
-<script src="js/rng.js?v=131"></script>
-<script src="js/assets.js?v=131"></script>
-<script src="js/audio.js?v=131"></script>
-<script src="js/input.js?v=131"></script>
-<script src="js/characters.js?v=131"></script>
-<script src="js/patterns.js?v=131"></script>
-<script src="js/battle.js?v=131"></script>
+<script src="js/rng.js?v=133"></script>
+<script src="js/assets.js?v=133"></script>
+<script src="js/audio.js?v=133"></script>
+<script src="js/input.js?v=133"></script>
+<script src="js/characters.js?v=133"></script>
+<script src="js/patterns.js?v=133"></script>
+<script src="js/battle.js?v=133"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
@@ -117,22 +117,7 @@ CHARS.pinknew = {
   name: 'PINK — NEW', shortName: 'PINK·NEW', base: 'pink', color: '#ff5ca8', hp: 1300,
   secretBoss: true, level: 3, spare: {}, cost: 3, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
   desc: 'GML-FAITHFUL PINK (purple grid soul)',
-  fight: { id: 'pinkn_cats', name: 'Cats (purple lanes)', dmg: 24, dur: 360, kind: 'attack', text: '' },
   spells: [
-    { id: 'pinkn_bombs', name: 'Pinata Bombs (P1 T2)', tp: 44, dmg: 20, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn_bombs2', name: 'Pinata Bombs (P1 T4, fast)', tp: 44, dmg: 20, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn_bombsg', name: 'Bombs + Giant ender (P2 T3)', tp: 44, dmg: 24, dur: 620, kind: 'attack', text: '' },
-    { id: 'pinkn_bombsfin', name: 'Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 26, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn_plusgrid', name: 'Plus-Grid (P2 T1, static)', tp: 44, dmg: 24, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn_plusgrid2', name: 'Plus-Grid (P2 T5, fast)', tp: 44, dmg: 24, dur: 420, kind: 'attack', text: '' },
-    { id: 'pinkn_rotbox', name: 'Plus-Grid (P3 T1, 90° knocks)', tp: 44, dmg: 24, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn_tunnel', name: '3-D Tunnel (ring orbit)', tp: 44, dmg: 26, dur: 500, kind: 'attack', text: '' },
-    { id: 'pinkn_cats2', name: 'Cats — hard (conga+finale)', tp: 44, dmg: 24, dur: 360, kind: 'attack', text: '' },
-    { id: 'pinkn_vrain', name: 'Vertical Cat Rain (UNUSED/cut)', tp: 44, dmg: 22, dur: 420, kind: 'attack', text: '' },
-    { id: 'pinkn_conveyor', name: 'Conveyor Cat Rush (UNUSED/cut)', tp: 44, dmg: 22, dur: 420, kind: 'attack', text: '' },
-    { id: 'pinkn_date1', name: 'DATE 1 (quiz — Yes/Yes/No)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn_date2', name: 'DATE 2 (quiz — puns)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn_finalmaze', name: 'FINAL: Ghost/Body Maze', tp: 44, dmg: 24, dur: 900, kind: 'attack', text: '' },
     { id: 'pinkn3_scene', name: 'V3: STAGE SCENE (scenery test)', tp: 44, dmg: 1, dur: 900, kind: 'attack', text: '' },
     { id: 'pinkn3_finalmaze', name: 'V3: FINAL Ghost/Body Maze', tp: 44, dmg: 24, dur: 900, kind: 'attack', text: '' },
     { id: 'pinkn3_date1', name: 'V3: DATE 1 (portraits)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
