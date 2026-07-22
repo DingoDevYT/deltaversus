@@ -96,6 +96,7 @@ function dokiMaxFor() { const f = dokiFoe(); return f ? ((Battle.dokiPhase || 0)
 function dokiCollect(amt) {
   if (!dokiFoe()) return;
   Battle.doki = Math.min(dokiMaxFor(), (Battle.doki || 0) + (amt || 8));
+  if (typeof Snd !== 'undefined') Snd.play('mercyadd', 0.6);   // scr_dokiadd: snd_mercyadd
   if (Battle.doki >= dokiMaxFor()) Battle.dokiReady = true;   // the DOKI meter is FULL -> Pink's next turn is a DATE minigame
 }
 function dokiAdvancePhase() {   // a DATE minigame was cleared -> advance the phase; after the final date she's sparable

@@ -1642,7 +1642,7 @@ function pinkDatePattern(D) {
           S.bt++; S.heartY = lerp2(390, 319, S.bt / 6);
           if (S.bt >= 6) {
             S.boxCon = 0; S.heartY = 385;
-            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S.react = 1; S.reactT = 0; Snd.play('healspark', 0.6); }
+            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S.react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }   // snd_coin
             else { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }
           }
         }
@@ -1767,7 +1767,62 @@ function pinkPlusGridPattern(chart, spin) {
 }
 PATTERNS.pinkn_plusgrid = pinkPlusGridPattern(PINK_PLUS_D0, false);   // P2 T1 — static
 PATTERNS.pinkn_plusgrid2 = pinkPlusGridPattern(PINK_PLUS_D2, false);  // P2 T5 — static, faster
-PATTERNS.pinkn_rotbox = pinkPlusGridPattern(PINK_PLUS_D0, true);      // P3 T1 — 90° box knocks (giant ghost)
+// ---- TYPE 202 difficulty 1 (P3): the PROCEDURAL doki-queue generator (obj_dbulletcontroller case 1). Each
+// refill emits a small group of [shot, dir, delay, speed] tuples: a shot, then the shot transitions and the
+// dir rotates by ±90 (choose 1 or 2 steps) twice, then a DOKI-HEART variant of the shot (6/7/8) is queued;
+// certain shot/dir relations flag a doki_queue that changes the tail. Between groups the giant ghost
+// (obj_huge_anime_face) knocks the box 90°. Played through the same obj_pinklanebullet geometry as D0.
+function pinkPlusD1Group(rng) {
+  const ir = n => Math.floor(rng() * (n + 1)), pk = (...xs) => xs[Math.floor(rng() * xs.length)];
+  const wrap = d => ((d % 360) + 360) % 360;
+  const _delay = 0.3, sv = 0.9, sh = 1, s12 = 1.5, s3 = 1.25, _doki_dist = 1, _nextdelay = 1.2;
+  const spd = (d, m) => (d === 90 || d === 270 ? sv : sh) * m;
+  let dir = ir(3) * 90, shot = pk(0, 1, 2); const diradd = pk(-90, 90);
+  const out = [];
+  let sf = spd(dir, s12);
+  out.push([shot, dir, _delay, sf]);
+  const shot_prev0 = shot, dir_prev0 = dir, spd_prev = sf;                          // 1st shot's saved prev
+  shot = shot === 0 ? pk(0, 1) : shot === 1 ? pk(0, 2) : pk(1, 2);                  // transition 1
+  dir = wrap(dir + diradd * pk(1, 2)); sf = spd(dir, s12);
+  const shot_prev = shot, dir_prev = dir;                                          // 2nd prev (overwrites)
+  shot = pk(0, 1);                                                                  // transition 2 (all -> 0/1)
+  dir = wrap(dir + diradd * pk(1, 2)); sf = spd(dir, s3);
+  let heart = shot <= 2 ? shot + 6 : shot === 3 ? 7 : shot === 4 ? 6 + pk(0, 2) : 7;
+  let doki = 0;
+  if (shot_prev === 1 && ((heart === 6 && (dir === wrap(dir_prev + 90) || dir === wrap(dir_prev - 270))) ||
+      (heart === 8 && (dir === wrap(dir_prev - 90) || dir === wrap(dir_prev + 270))))) doki = 1;
+  if ((dir === wrap(dir_prev + 180) || dir === wrap(dir_prev - 180)) &&
+      ((shot_prev === 0 && heart === 8) || (shot_prev === 1 && heart === 7) || (shot_prev === 2 && heart === 6))) doki = 1;
+  out.push([shot_prev, dir_prev, doki === 0 ? _delay * (1 - _doki_dist) : _delay, spd_prev]);
+  if (doki === 0) out.push([heart, dir, _delay * _doki_dist, sf]);
+  if (doki !== 1) out.push([shot, dir, _nextdelay, sf]);
+  else {
+    out.push([shot, dir, _delay * _doki_dist, sf]);
+    const h2 = shot <= 2 ? shot + 6 : shot === 3 ? 7 : shot === 4 ? 6 + pk(0, 2) : 7;
+    out.push([h2, dir, _nextdelay - (_delay * (1 - _doki_dist)), sf]);
+  }
+  return out;
+}
+function pinkRotboxD1Pattern() {
+  return {
+    box: { w: 150, h: 150 }, hz30: 1, dur: 640,
+    tick(a) {
+      const { f, box, add, rng } = a;
+      if (f === 0) { this._q = []; this._t = 8; this._rot = 0; this._rtar = 0; this._groups = 0; }
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      const d = this._rtar - this._rot; this._rot += Math.abs(d) < 9 ? d : Math.sign(d) * 9;   // eased 90° knock
+      a.fx.purpleSoul = { mode: 3, rot: this._rot };
+      if (f < 8) return;
+      if (this._q.length === 0 && f < this.dur - 120) {   // refill: generate the next group + a 90° box knock
+        const g = pinkPlusD1Group(rng); let t = this._t;
+        for (const e of g) { this._q.push({ f: Math.round(t), shot: e[0], dir: e[1], spd: e[3] }); t += Math.max(0, Math.floor(0.5 + 32 * e[2])); }
+        this._t = t; this._rtar += 90;                    // huge_anime_face knocks the box after each circle group
+      }
+      while (this._q.length && this._q[0].f <= f) pinkLaneFire(add, cx, cy, this._q.shift(), this._rot);
+    },
+  };
+}
+PATTERNS.pinkn_rotbox = pinkRotboxD1Pattern();                        // P3 T1 — procedural D1 doki-queue + 90° knocks
 // ============ TYPE 208 — 3-D TUNNEL (purple mode 7): FULL 1:1 port ============
 // obj_purplecontrols mode 7, EXACT constants: 8 tunnel_radius[] rings; grow r = r*(1 + r/(32000/speed))
 // + 0.0375*speed; recycle at 224; new ring at radius 12 every 188 tunnel-units; tunnel_speed_base =
@@ -1910,37 +1965,56 @@ PATTERNS.pinkn_concert = {
   tick(a) {
     const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // 6 audience seats around the lower stage (l_patterns indices map here)
-    const seat = i => [
-      { x: box.x + box.w * 0.5, y: box.y + box.h + 20 },     // 0 bottom centre
-      { x: box.x + box.w * 0.22, y: box.y + box.h + 14 },    // 1 bottom-left
-      { x: box.x + box.w * 0.78, y: box.y + box.h + 14 },    // 2 bottom-right
-      { x: box.x - 18, y: box.y + box.h * 0.72 },            // 3 left
-      { x: box.x + box.w * 0.36, y: box.y + box.h + 20 },    // 4 bottom-left-mid
-      { x: box.x + box.w + 18, y: box.y + box.h * 0.72 },    // 5 right
-    ][i % 6];
+    // The AUDIENCE (obj_pink_curtains: 28 dummies seated below the stage). Each l_patterns value selects a
+    // CLUSTER of seats: 0 = the central rows, 1 = the left side, 2 = the right side, 4/5 = the front-centre
+    // pair, 3 = a scattered handful. We seat them across a wide 2-row arc under the stage and pop out ~3 per
+    // cluster so it reads as a crowd rather than a lone shooter.
+    const rowY = k => box.y + box.h + [14, 30, 46][k % 3];
+    const cluster = v => {
+      const W = box.w, L = box.x, seats = [];
+      const put = (fx, k) => seats.push({ x: L + W * fx, y: rowY(k) });
+      if (v === 0) { put(0.34, 0); put(0.5, 1); put(0.66, 0); }          // centre rows
+      else if (v === 1) { put(0.08, 1); put(0.2, 0); put(0.14, 2); }     // left
+      else if (v === 2) { put(0.92, 1); put(0.8, 0); put(0.86, 2); }     // right
+      else if (v === 3) { put(rng(), 1); put(rng(), 0); put(rng(), 2); } // scattered
+      else if (v === 4) { put(0.4, 2); put(0.5, 2); }                    // front-centre pair
+      else { put(0.5, 2); put(0.6, 2); }                                 // v===5 front-centre pair
+      return seats;
+    };
     if (f === 0) { this._q = []; this._wait = 20; this._rep = 0; }
     if (this._wait > 0) this._wait--;
-    else if (this._q.length === 0 && f < 500) {   // refill the shoot order (l_patterns + l_timings)
+    else if (this._q.length === 0 && f < 500) {   // refill the shoot order (l_patterns + l_timings, obj_pink_curtains)
       const pats = this._rep === 0 ? [[4, 1, 5, 2, 0], [4, 2, 5, 1, 0]] : [[3, 1, 5, 2, 0], [3, 2, 5, 1, 0], [3, 1, 2, 5, 0], [3, 2, 1, 5, 0]];
       const seq = pats[Math.floor(rng() * pats.length)], timings = this._rep === 0 ? [80, 40, 40, 60] : [90, 60, 60, 90];
-      for (let i = 0; i < seq.length; i++) this._q.push({ seat: seq[i], wait: (timings[i] != null ? timings[i] : 50) });
+      const haters = this._rep >= 1;   // difficulty>0: some audience members are HATERS (red, homing)
+      for (let i = 0; i < seq.length; i++) this._q.push({ cluster: seq[i], wait: (timings[i] != null ? timings[i] : 50), haters });
       this._rep++;
     } else if (this._q.length) {
       const job = this._q.shift(); this._wait = job.wait;
-      const d = seat(job.seat);
-      const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: 0, vy: 0, noHit: true, scale: PS(1.4), dmg: 22, life: 260, _w: 0, _aim: null };
-      h.emit = function (b, out, sl) {   // phase 0 windup+aim, then phase 1 launch, then collectable at the top
-        if (b._phase !== 1) {
-          b._w++;
-          b.scale = PS(1.4 * (b._w < 22 ? 1 + 0.2 * Math.abs(Math.sin(b._w * 0.5)) : 1.2 + Math.min(4, b._w - 22) * 0.05));
-          if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);
-            if (b._aim == null) b._aim = dest; else { let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.14, Math.min(0.14, dd)); } }
-          if (b._w >= 32) { b._phase = 1; b.noHit = false; const A = b._aim != null ? b._aim : Math.atan2(cy - b.y, cx - b.x); b.vx = Math.cos(A) * 5; b.vy = Math.sin(A) * 5; }
-        } else if (b.y < box.y - 4 && !b._done) { b._done = 1; b.dead = true;
-          out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 }); }
-      };
-      add(h);
+      const seats = cluster(job.cluster);
+      seats.forEach((d, si) => {
+        const hater = job.haters && (si === 0);   // one hater per cluster (obj_audiencehater: red, tracks the soul)
+        const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: 0, vy: 0, noHit: true, scale: PS(1.4), dmg: 22, life: 320, _w: 0, _aim: null, _hater: hater };
+        if (hater) { h.tint = '#ff3b3b'; h.tintMul = true; }
+        h.emit = function (b, out, sl) {   // phase 0 windup+aim, then phase 1 launch (haters keep homing), then collectable
+          if (b._phase !== 1) {
+            b._w++;
+            b.scale = PS(1.4 * (b._w < 22 ? 1 + 0.2 * Math.abs(Math.sin(b._w * 0.5)) : 1.2 + Math.min(4, b._w - 22) * 0.05));
+            if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);
+              if (b._aim == null) b._aim = dest; else { let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.14, Math.min(0.14, dd)); } }
+            if (b._w >= 32) { b._phase = 1; b.noHit = false; const A = b._aim != null ? b._aim : Math.atan2(cy - b.y, cx - b.x); b.vx = Math.cos(A) * 5; b.vy = Math.sin(A) * 5; }
+          } else {
+            if (b._hater && sl) {   // hater homes toward the soul (capped turn), obj_audiencehater
+              const want = Math.atan2(sl.y - b.y, sl.x - b.x), cur = Math.atan2(b.vy, b.vx);
+              let dd = ((want - cur + Math.PI * 3) % (Math.PI * 2)) - Math.PI; const na = cur + Math.max(-0.05, Math.min(0.05, dd));
+              b.vx = Math.cos(na) * 5; b.vy = Math.sin(na) * 5;
+            }
+            if (b.y < box.y - 4 && !b._hater && !b._done) { b._done = 1; b.dead = true;
+              out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 }); }
+          }
+        };
+        add(h);
+      });
     }
   },
 };
@@ -1971,7 +2045,7 @@ const PINK_BOMB_D3 = [0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0
 const PINK_BOMB_D4 = [0, 0.85, 0, 0.7, 0, 0.6, 0, 0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.65, 0, 0, 0, 0, 0, 0.9, 2, 1.5, 1, 0];
 
 function pinkBombExplode(b, out, box, giant) {
-  Snd.play('boardbomb', giant ? 0.7 : 0.5);
+  Snd.play(giant ? 'explosionmmx' : 'boardbomb', giant ? 0.8 : 0.5);   // obj_fusebomb_big: snd_explosion_mmx
   if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, giant ? 16 : 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
   const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 46 : 13;   // giant arm is 3 lanes thick (~±46); overlaps 48px step -> contiguous
   out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg });
@@ -2155,6 +2229,7 @@ function pinkBombPattern(chart) {
       else if (S.wind === 0 && S.queue.length) {
         const q = S.queue.shift(), left = S.queue.length;
         const tx = box.x + box.w + 58, ty = box.y - 46;   // thrown from Pink (right of the box)
+        if (q.k !== 1 && q.k !== 3) Snd.play(rng() < 0.5 ? 'pinkthrow' : 'pinkthrow2', 0.4);   // snd_pink_throw(2)
         if (q.k === 0) {
           S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
           mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 55 + left * 2 - S.rep * 2, heart, dmg: 20 });
