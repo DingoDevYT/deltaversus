@@ -1627,10 +1627,14 @@ function drawMaze(ctx, M) {
   const gf = Math.floor((M.life || 0) / 6) % 5;   // Pink SPLIT: wave-distorted ghost + body behind the maze
   drawWaveSprite(ctx, 'pinkghost2x' + gf, M.ghost.x, M.ghost.y, M.wave, 0.85);
   drawWaveSprite(ctx, 'pinkhurt' + gf, M.body.x, M.body.y, M.wave, 1);
-  const s = drawMaze._s || (drawMaze._s = document.createElement('canvas'));   // glow surface
-  s.width = 640; s.height = 480; const g = s.getContext('2d'); g.clearRect(0, 0, 640, 480);
+  // glow surface — allocate ONCE (assigning canvas.width/height reallocates+clears the whole
+  // backing store, which is what made the maze lag when done every frame). Reuse + clearRect.
+  let s = drawMaze._s;
+  if (!s) { s = drawMaze._s = document.createElement('canvas'); s.width = 640; s.height = 480; s.getContext('2d').imageSmoothingEnabled = false; }
+  const g = s._g || (s._g = s.getContext('2d')); g.clearRect(0, 0, 640, 480);
   renderMazeGraph(g, M);
-  ctx.globalAlpha = 0.30; for (const [dx, dy] of [[3, 0], [-3, 0], [0, 3], [0, -3]]) ctx.drawImage(s, dx, dy);   // 8-dir bleed glow
+  // GML mode-8 bloom: 8 black drop-shadow offsets (dark neon outline) + 1 crisp pass.
+  ctx.globalAlpha = 0.25; for (const [dx, dy] of [[0, -4], [0, 4], [-4, 0], [4, 0]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 0.45; for (const [dx, dy] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 1; ctx.drawImage(s, 0, 0);
   // the purple SOUL (drawn crisp, outside the bloom)

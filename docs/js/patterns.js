@@ -2256,6 +2256,114 @@ PATTERNS.pinkn_finalmaze = {
       body: { x: 148, y: 88 }, ghost: { x: 470 + Math.sin(gt) * 22, y: 84 + Math.cos(gt) * 12 } };
   },
 };
+// ============ PINK V3 — FINAL MAZE (obj_purplecontrols mode 8), exact re-port ============
+// Fixes over V2: node DRIFT (diff3, speed 0.25 / 10deg steer), soul tracks the LIVE (drifting)
+// node so it sits heart_travel px behind it (spec §4), a REPEATING hunter launched from
+// (320,140) toward node_start at cadence 36+clamp(hits-1,0,4)*2 (spec §9), and doki RELOCATION
+// to a backup node when the soul camps the doki's node (spec §6). Shares mazeBuild + drawMaze
+// (drawMaze's per-frame surface realloc — the lag — is fixed).
+PATTERNS.pinkn3_finalmaze = {
+  box: { w: 565, h: 372 }, hz30: 1, dur: 12000, fullscreen: true, ROUNDS: 4,
+  tick(a) {
+    const { f, rng } = a; const S = this;
+    const B = (typeof Battle !== 'undefined') ? Battle : null;
+    const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
+    const HIT = k => IN.hit && IN.hit[k];
+    const D2R = Math.PI / 180, STEER = 10 * D2R;
+    if (f === 0) { S.round = 0; S._built = -1; S._done = false; S.hits = 0; }
+    if (S._built !== S.round) {
+      const R = mazeBuild(S.round, rng);
+      S.nodes = R.nodes; S.start = R.start; S.acts = R.acts.filter(ac => ac.pattern !== 3); // hunters spawned live
+      S.dokis = R.dokis; S.rootHp = R.rootHp; S.goalText = R.goalText;
+      S._built = S.round; S._won = 0; S._winT = 0; S.iframes = 0;
+      S.soulNode = S.start; const s0 = S.nodes[S.start]; S.soul = { x: s0.x, y: s0.y }; S.heartTravel = 0; S.target = S.start; S.moveDir = 0;
+      for (const ac of S.acts) { const n = S.nodes[ac.node]; ac.x = n.x; ac.y = n.y; ac.pdir = ac.pdir || 0; ac.life = 0; ac._tnode = ac.node; }
+      // node drift only on diff3 (speed 0.25); each node wanders around its home dx/dy
+      S.drift = (S.round === 3);
+      for (const n of S.nodes) { n.dir = rng() * Math.PI * 2; n.spd = S.drift ? 0.25 : 0; }
+      // doki backup node = the farthest OTHER doki node (relocation target if the soul camps)
+      for (const dk of S.dokis) { dk._t = dk.delay; dk.spawned = false; dk.collected = false;
+        let best = -1, bd = -1; for (const o of S.dokis) { if (o === dk) continue; const dd = Math.hypot(S.nodes[o.node].x - S.nodes[dk.node].x, S.nodes[o.node].y - S.nodes[dk.node].y); if (dd > bd) { bd = dd; best = o.node; } }
+        dk.backup = best; }
+      // hunter controller (diff3): phase 0 waits for soul in right half, phase 1 spawns on a timer
+      S.hphase = 0; S.htime = 0;
+    }
+    if (S.iframes > 0) S.iframes--;
+    // ---- NODE DRIFT (diff3): steer `dir` toward home by <=10deg/frame, wander when home ----
+    if (S.drift) for (const n of S.nodes) {
+      const dh = Math.hypot(n.x - n.dx, n.y - n.dy);
+      if (dh >= 1.5) { const aim = Math.atan2(n.dy - n.y, n.dx - n.x); let d = aim - n.dir;
+        while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+        n.dir += Math.max(-STEER, Math.min(STEER, d)); }
+      else n.dir += (rng() < 0.5 ? -1 : 1) * STEER;
+      n.x += Math.cos(n.dir) * n.spd; n.y += Math.sin(n.dir) * n.spd;
+    }
+    // ---- SOUL node-hop movement: heart_travel = home edge length; soul rides behind LIVE node ----
+    if (S.heartTravel <= 0 && !S._won) {
+      let dir = -1; if (HIT('right')) dir = 0; else if (HIT('up')) dir = 1; else if (HIT('left')) dir = 2; else if (HIT('down')) dir = 3;
+      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
+        if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
+          S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
+          if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
+    }
+    if (S.heartTravel > 0) { const t = S.nodes[S.target];
+      const md = Math.atan2(t.y - S.soul.y, t.x - S.soul.x);              // live point_direction soul->node
+      const dist = Math.hypot(t.x - S.soul.x, t.y - S.soul.y);
+      const mv = Math.min(22, Math.max(1, dist)); S.heartTravel -= mv; S.moveDir = md;
+      if (S.heartTravel <= 0 || dist <= mv) { S.heartTravel = 0; S.soulNode = S.target; S.soul.x = t.x; S.soul.y = t.y;
+        if (t.checkpoint === 1) { for (const n of S.nodes) if (n.checkpoint > 1) n.checkpoint = 1; t.checkpoint = 2; } }
+      else { S.soul.x = t.x - Math.cos(md) * S.heartTravel; S.soul.y = t.y - Math.sin(md) * S.heartTravel; }
+    }
+    // ---- HUNTER (diff3): launch from (320,140) toward node_start every _frequency frames ----
+    if (S.drift && !S._won) {
+      const freq = 36 + Math.max(0, Math.min(4, S.hits - 1)) * 2;
+      if (S.hphase === 0) { if (S.soul.x > 320 + 96) { S.hphase = 1; S.htime = freq; } }
+      else { S.htime++; if (S.htime >= freq) { S.htime = 0;
+        S.acts.push({ node: S.start, _tnode: S.start, mode: 0, pattern: 3, x: 320, y: 140, life: 0, pdir: 0, _hunter: 1 }); } }
+    }
+    // ---- ACTS: obj_pinknodeact movement patterns ----
+    for (const ac of S.acts) { ac.life++; const n = S.nodes[ac.node] || { x: 320, y: 268 };
+      if (ac.pattern === 1) { ac.pdir = (ac.pdir + 4) % 360; ac.x = n.x; ac.y = n.y - Math.sin(ac.pdir * Math.PI / 180) * 62; }
+      else if (ac.pattern === 2) { ac.pdir = (ac.pdir + 1.5) % 360; const base = (ac.pdir > 90 && ac.pdir < 270) ? 704 : -64; ac.x = base + Math.cos(ac.pdir * Math.PI / 180) * 288; ac.y = n.y; }
+      else if (ac.pattern === 3) { const tg = S.nodes[ac._tnode] || n, dx = tg.x - ac.x, dy = tg.y - ac.y, dd = Math.hypot(dx, dy) || 1;
+        const spd = Math.min(4 + ac.life / 2, Math.max(12, Math.min(15, 15 - (S.hits - 1) * 0.75))), mv = Math.min(spd, dd);
+        ac.x += dx / dd * mv; ac.y += dy / dd * mv;
+        if (dd <= spd) { const sN = S.nodes[S.soulNode]; let best = -1, bd = 1e9;   // hop toward the child nearest the soul
+          for (const c of S.nodes[ac._tnode].child) { if (c < 0) continue; const cn = S.nodes[c], dist = Math.hypot(cn.x - sN.x, cn.y - sN.y); if (dist < bd) { bd = dist; best = c; } }
+          if (best >= 0) ac._tnode = best; else ac._dead = 1; } }   // dead-end -> retire hunter
+      else { ac.x = n.x; ac.y = n.y; }
+    }
+    S.acts = S.acts.filter(ac => !ac._dead && !(ac._hunter && ac.life > 600));   // retire spent hunters
+    // ---- DOKI hearts: spawn after delay (RELOCATE to backup if soul camps the node), collect ----
+    for (const dk of S.dokis) {
+      if (!dk.spawned) { dk._t--; if (dk._t <= 0) { dk.spawned = true;
+        let nd = dk.node; if (dk.backup >= 0 && S.soulNode === dk.node) nd = dk.backup;   // doki relocation
+        dk._at = nd; const n = S.nodes[nd]; dk.x = n.x; dk.y = n.y; } }
+      else if (!dk.collected) { const n = S.nodes[dk._at != null ? dk._at : dk.node]; dk.x = n.x; dk.y = n.y;   // glued to node
+        if (Math.hypot(S.soul.x - dk.x, S.soul.y - dk.y) < 26) { dk.collected = true; if (typeof Snd !== 'undefined') Snd.play('mercyadd', 0.5); if (B) B.flash = 8;
+          if (dk.changeActIdx != null && S.acts[dk.changeActIdx]) { S.acts[dk.changeActIdx].mode = 1; S.acts[dk.changeActIdx].life = 0; }
+          else if (dk.rootHp) { S.rootHp--; if (S.rootHp <= 0 && !S.acts.some(x => x.mode === 1)) { const n2 = S.nodes[S.start]; S.acts.push({ node: S.start, mode: 1, pattern: 0, x: n2.x, y: n2.y, life: 0, pdir: 0, _tnode: S.start }); } } } }
+    }
+    // ---- CONTACT: DIE (mode 0) = damage + reset to checkpoint; GOAL (mode 1) = win the difficulty ----
+    if (!S._won) for (const ac of S.acts) {
+      if (!(Math.abs(S.soul.x - ac.x) < 24 && Math.abs(S.soul.y - ac.y) < 16)) continue;   // 48x32 hitbox
+      if (ac.mode === 0 && S.iframes <= 0 && B) { const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg;
+        for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
+        S.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; if (typeof Snd !== 'undefined') Snd.play('hurt', 0.5); S.hits++;
+        let cp = S.nodes.findIndex(n => n.checkpoint === 2); if (cp < 0) cp = S.start;   // reset to checkpoint node
+        S.soulNode = cp; const c = S.nodes[cp]; S.soul.x = c.x; S.soul.y = c.y; S.heartTravel = 0; }
+      else if (ac.mode === 1) { S._won = 1; S._winT = 0; if (typeof Snd !== 'undefined') Snd.play('pinkcoin', 0.7); if (B) B.flash = 14; }
+    }
+    if (S._won) { S._winT++; if (S._winT >= 25) { if (S.round + 1 < S.ROUNDS) S.round++; else S._done = true; } }   // mode1 timer 2/frame->50 ~= 25 real frames
+    // ---- Pink SPLIT: wave-distorted body + detached ghost (obj_pink_ghost_marker) ----
+    const gt = f / 12;
+    a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText,
+      dokis: S.dokis.filter(d => d.spawned && !d.collected).map(d => ({ x: d.x, y: d.y })),
+      soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2,
+      body: { x: 150, y: 92 }, ghost: { x: 150 + Math.sin(gt) * 10, y: 92 - 35 + Math.cos(gt) * 8 } };
+  },
+};
+
 // ============ TYPE 203 — PINATA BOMBS: full 1:1 port ============
 // obj_dbulletcontroller(203) chart = [cmd, interval] pairs, wait after each = round(0.5 + 45*interval).
 //   cmd 0 = queue a small fusebomb   cmd 1 = Pink laughs (cosmetic)   cmd 2 = giant centre bomb
