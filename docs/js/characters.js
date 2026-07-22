@@ -210,13 +210,13 @@ const CHARS = {
     dscale: 1.0, yoff: 4,
     desc: 'PINK - the mew magical-girl idol (Ch5).\nFill her DOKI to trigger the DATES; clear them to SPARE.',
     // PINK V3: from-scratch rebuild on the real STAGE SCENE (pinkn3_*). Old pinkn_* kept in patterns.js.
-    fight: { id: 'pinkn3_cats', name: 'Cats', dmg: 24, dur: 340, text: 'PINK sends in the CATS!' },
+    fight: { id: 'pinkn3_cats', name: 'Cats', dmg: 46, dur: 340, text: 'PINK sends in the CATS!' },
     spells: [
-      { id: 'pinkn3_bombs', name: 'Pinata Bombs', tp: 42, dmg: 20, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
-      { id: 'pinkn3_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 24, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
-      { id: 'pinkn3_tunnel', name: '3-D Tunnel', tp: 46, dmg: 26, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
+      { id: 'pinkn3_bombs', name: 'Pinata Bombs', tp: 42, dmg: 50, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
+      { id: 'pinkn3_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 48, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
+      { id: 'pinkn3_tunnel', name: '3-D Tunnel', tp: 46, dmg: 50, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
     ],
-    ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 26, dur: 520, kind: 'attack',
+    ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack',
            text: 'PINK starts the CONCERT!! DOKI DOKI!' },
     // DATE minigames — played instead of an attack when the DOKI meter fills (obj_pink_enemy datecount++)
     dokiDates: [

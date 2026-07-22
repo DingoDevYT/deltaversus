@@ -1514,9 +1514,10 @@ function redTintSprite(im) {
   x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,42,42,0.62)'; x.fillRect(0, 0, im.width, im.height);
   im._redTint = c; return c;
 }
-// word-wrap `text` to fit maxW px (canvas has no auto-wrap); used by the date dialogue so long lines
-// never overflow the box or reflow mid-typewriter.
-function wrapText(ctx, text, maxW) {
+// word-wrap `text` to fit maxW px, RETURNING the lines (canvas has no auto-wrap). Named dsimWrap to avoid
+// colliding with the existing text-drawing wrapText(). Used by the date dialogue so long lines never
+// overflow the box or reflow mid-typewriter.
+function dsimWrap(ctx, text, maxW) {
   const words = String(text == null ? '' : text).split(' '); const lines = []; let cur = '';
   for (const w of words) { const test = cur ? cur + ' ' + w : w;
     if (cur && ctx.measureText(test).width > maxW) { lines.push(cur); cur = w; } else cur = test; }
@@ -1557,11 +1558,11 @@ function drawDateUIV3(ctx, D) {
   const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
   const chars = D.chars != null ? D.chars : 999, textTop = boxT + 16, lh = 20;
   // wrap the FULL text once (stable) then reveal `chars` across the wrapped lines -> single clean type-through
-  const reveal = (raw, maxW) => { let wrapped = []; for (const hl of (raw || [])) wrapped = wrapped.concat(wrapText(ctx, hl, maxW));
+  const reveal = (raw, maxW) => { let wrapped = []; for (const hl of (raw || [])) wrapped = wrapped.concat(dsimWrap(ctx, hl, maxW));
     let rem = chars, out = []; for (const wl of wrapped) { if (rem <= 0) break; out.push(wl.slice(0, rem)); rem -= wl.length; } return out; };
   if (hasGhost && D.who === 'ghost') reveal(D.rawLines, 300).forEach((ln, i) => outline(ln, 426, textTop + i * lh, '#c7b9d7'));
   else if (hasGhost) { reveal(D.rawLines, 200).forEach((ln, i) => outline(ln, 224, textTop + i * lh, spkCol));   // speaker LEFT (salmon)
-    if (D.gtext) wrapText(ctx, D.gtext, 200).forEach((ln, i) => outline(ln, 426, textTop + i * lh, '#c7b9d7')); }   // ghost RIGHT (lavender)
+    if (D.gtext) dsimWrap(ctx, D.gtext, 200).forEach((ln, i) => outline(ln, 426, textTop + i * lh, '#c7b9d7')); }   // ghost RIGHT (lavender)
   else reveal(D.rawLines, 420).forEach((ln, i) => outline(ln, 320, textTop + i * lh, spkCol));
   ctx.restore();   // end window clip
   // Layer 6 — OFFICIAL FRAME: nodiamonds plate frames (320x220 @2x -> fill 640x440) ON TOP; masks + borders
@@ -1734,7 +1735,7 @@ function drawPossessedPink(ctx, M) {
   const spr = k => { const info = (A.manifest.bullets || {})[k + fr]; return info && A.img['assets/bullets/' + info.f]; };
   // 10 green eye-laser beams radiating down-and-out FROM THE EYES (d_line_color 0,255,0). Two eyes, offset up.
   ctx.save(); ctx.strokeStyle = 'rgba(0,255,0,0.5)'; ctx.lineWidth = 2;
-  const eyeY = ey - 40;   // the eyes sit high on the face
+  const eyeY = ey - 64;   // the white eyes sit high on the face
   for (const eyeX of [ex - 26, ex + 26]) for (let i = 0; i < 5; i++) { const ang = Math.PI * 0.5 + (i - 2) * 0.22;
     ctx.beginPath(); ctx.moveTo(eyeX, eyeY); ctx.lineTo(eyeX + Math.cos(ang) * 460, eyeY + Math.sin(ang) * 460); ctx.stroke(); }
   ctx.restore();
@@ -1747,6 +1748,14 @@ function drawPossessedPink(ctx, M) {
 function drawMaze(ctx, M) {
   ctx.save();
   ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, 640, 480);   // the possessed date-screen backdrop (box destroyed)
+  const life = M.life || 0;
+  // INVERTED dating-sim backdrop (behind everything, so the maze graph stays fully visible on top):
+  // scrolling inverted diamond tiles + the inverted portrait-window bg
+  const dia = A.img['assets/bullets/dsimdiainv' + (Math.floor(life / 12) % 3) + '.png'];
+  if (dia && dia.width) { const ox = (life * 0.7) % 80, oy = (life * 0.4) % 80; ctx.globalAlpha = 0.5;
+    for (let ty = -80 + oy; ty < 560; ty += 80) for (let tx = -80 - ox; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80);
+    ctx.globalAlpha = 1; }
+  const uibg = A.img['assets/bullets/dsimbginv0.png']; if (uibg && uibg.width) ctx.drawImage(uibg, 106, 24, 480, 280);
   drawPossessedPink(ctx, M);
   const dk = [0, 0.4, 0.6, 0.8, 0][M.round || 0] || 0;   // per-difficulty darkener (date3darkner_alpha): diff3 = 80% black
   if (dk > 0) { ctx.fillStyle = 'rgba(0,0,0,' + dk + ')'; ctx.fillRect(0, 0, 640, 480); }
@@ -1838,11 +1847,11 @@ function drawPinkRoll(ctx, R) {
   ctx.save(); ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = '#180010'; ctx.fillRect(0, 0, 640, 480);
   const layer = (key, speed, alpha) => { const im = A.img['assets/bullets/' + key]; if (!im || !im.width) return;
-    const tw = im.width * 2, th = im.height * 2, off = ((f * speed) % tw + tw) % tw; ctx.globalAlpha = alpha;
-    for (let y = 0; y < 480; y += th) for (let x = -tw; x < 640 + tw; x += tw) ctx.drawImage(im, Math.round(x - off), y, tw, th);
+    const tw = im.width * 4, th = im.height * 4, off = ((f * speed) % tw + tw) % tw, y = 240 - th / 2; ctx.globalAlpha = alpha;   // DOUBLE size, ONE centered strip (no vertical repeat)
+    for (let x = -tw; x < 640 + tw; x += tw) ctx.drawImage(im, Math.round(x - off), y, tw, th);
     ctx.globalAlpha = 1; };
-  layer('pinkroll1.png', 1.5, 0.6);   // back (half speed)
-  layer('pinkroll0.png', 3.0, 0.92);  // front (full speed)
+  layer('pinkroll1.png', 2.25, 0.6);   // back (half the front speed) — 1.5x the old
+  layer('pinkroll0.png', 4.5, 0.92);   // front (full speed) — 1.5x the old
   ctx.restore();
 }
 // back layer: backdrop + marquee + bg dancers + petals (drawn behind the bullet box)

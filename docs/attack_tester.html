@@ -68,13 +68,13 @@
 
 <!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
 <script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
-<script src="js/rng.js?v=127"></script>
-<script src="js/assets.js?v=127"></script>
-<script src="js/audio.js?v=127"></script>
-<script src="js/input.js?v=127"></script>
-<script src="js/characters.js?v=127"></script>
-<script src="js/patterns.js?v=127"></script>
-<script src="js/battle.js?v=127"></script>
+<script src="js/rng.js?v=129"></script>
+<script src="js/assets.js?v=129"></script>
+<script src="js/audio.js?v=129"></script>
+<script src="js/input.js?v=129"></script>
+<script src="js/characters.js?v=129"></script>
+<script src="js/patterns.js?v=129"></script>
+<script src="js/battle.js?v=129"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
@@ -138,20 +138,20 @@ CHARS.pinknew = {
     { id: 'pinkn3_date1', name: 'V3: DATE 1 (portraits)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
     { id: 'pinkn3_date2', name: 'V3: DATE 2 (split+ghost)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
     { id: 'pinkn3_date4', name: 'V3: DATE 4 (CONFESSION finale)', tp: 44, dmg: 1, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn3_cats', name: 'V3: Cats (on stage)', tp: 44, dmg: 24, dur: 360, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombs', name: 'V3: Pinata Bombs (on stage)', tp: 44, dmg: 20, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn3_plusgrid', name: 'V3: Plus-Grid (on stage)', tp: 44, dmg: 24, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_tunnel', name: 'V3: 3-D Tunnel (on stage)', tp: 44, dmg: 26, dur: 500, kind: 'attack', text: '' },
-    { id: 'pinkn3_concert', name: 'V3: IDOL CONCERT (on stage)', tp: 100, dmg: 26, dur: 520, kind: 'attack', text: '' },
-    { id: 'pinkn3_cats2', name: 'V3: Cats — hard (conga+finale)', tp: 44, dmg: 24, dur: 360, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombs2', name: 'V3: Bombs (P1 T4, fast)', tp: 44, dmg: 20, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombsg', name: 'V3: Bombs + Giant ender (P2 T3)', tp: 44, dmg: 24, dur: 620, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombsfin', name: 'V3: Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 26, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn3_plusgrid2', name: 'V3: Plus-Grid (P2 T5, fast)', tp: 44, dmg: 24, dur: 420, kind: 'attack', text: '' },
-    { id: 'pinkn3_rotbox', name: 'V3: Rotating 90° Grid (running Pink)', tp: 44, dmg: 24, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_concert2', name: 'V3: IDOL CONCERT — hard (haters)', tp: 100, dmg: 26, dur: 560, kind: 'attack', text: '' },
+    { id: 'pinkn3_cats', name: 'V3: Cats (on stage)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
+    { id: 'pinkn3_bombs', name: 'V3: Pinata Bombs (on stage)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
+    { id: 'pinkn3_plusgrid', name: 'V3: Plus-Grid (on stage)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
+    { id: 'pinkn3_tunnel', name: 'V3: 3-D Tunnel (on stage)', tp: 44, dmg: 50, dur: 500, kind: 'attack', text: '' },
+    { id: 'pinkn3_concert', name: 'V3: IDOL CONCERT (on stage)', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
+    { id: 'pinkn3_cats2', name: 'V3: Cats — hard (conga+finale)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
+    { id: 'pinkn3_bombs2', name: 'V3: Bombs (P1 T4, fast)', tp: 44, dmg: 50, dur: 480, kind: 'attack', text: '' },
+    { id: 'pinkn3_bombsg', name: 'V3: Bombs + Giant ender (P2 T3)', tp: 44, dmg: 50, dur: 620, kind: 'attack', text: '' },
+    { id: 'pinkn3_bombsfin', name: 'V3: Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
+    { id: 'pinkn3_plusgrid2', name: 'V3: Plus-Grid (P2 T5, fast)', tp: 44, dmg: 48, dur: 420, kind: 'attack', text: '' },
+    { id: 'pinkn3_rotbox', name: 'V3: Rotating 90° Grid (running Pink)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
+    { id: 'pinkn3_concert2', name: 'V3: IDOL CONCERT — hard (haters)', tp: 100, dmg: 52, dur: 560, kind: 'attack', text: '' },
   ],
-  ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 26, dur: 520, kind: 'attack', text: '' },
+  ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
 };
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;

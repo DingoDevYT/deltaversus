@@ -5582,6 +5582,42 @@
       "oh": 64,
       "ox": 0,
       "oy": 0
+    },
+    "dsimdiainv0": {
+      "f": "dsimdiainv0.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimdiainv1": {
+      "f": "dsimdiainv1.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimdiainv2": {
+      "f": "dsimdiainv2.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimbginv0": {
+      "f": "dsimbginv0.png",
+      "w": 428,
+      "h": 280,
+      "ow": 428,
+      "oh": 280,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

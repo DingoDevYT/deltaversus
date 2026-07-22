@@ -1988,7 +1988,7 @@ function pinkRotboxD1Pattern() {
       gh.bob += 0.22;
       // bumps -> approach speed multiplier (obj_huge_anime_face Step: 0->32, 1->1.5, 2->4, 3->9, >=4->11).
       const sm = gh.bumps <= 0 ? 32 : gh.bumps < 2 ? 1.5 : gh.bumps < 3 ? 4 : gh.bumps < 4 ? 9 : 11;
-      const hitX = cx - box.w / 2 + 22;   // rams INSIDE the left edge -> the face covers part of the box (difficulty)
+      const hitX = cx - box.w / 2 - 66;   // stops when the portrait's EDGE meets the box edge (barely overlaps)
       if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; if (typeof Snd !== 'undefined') Snd.play('heavyswing', 0.4); }   // lunge whoosh
       if (gh.ram === 1) {                                  // accelerate toward the box (GML accel tiers by hspeed)
         gh.hsp += gh.hsp < 2.5 ? 0.6 : gh.hsp < 4 ? 0.35 : 0.12;
@@ -2120,7 +2120,7 @@ PATTERNS.pinkn_tunnel = {
           const zapKeys = moving !== 0 ? ['pinkzaparrow0', 'pinkzaparrow1', 'pinkzaparrow2', 'pinkzaparrow3', 'pinkzaparrow4', 'pinkzaparrow5']
                                         : ['pinkzap0', 'pinkzap1', 'pinkzap2', 'pinkzap3', 'pinkzap4', 'pinkzap5'];
           const b = { ...bulletProps(zapKeys[0]), animKeys: zapKeys, animRate: 4, x: cx, y: cy, vx: 0, vy: 0,
-                      r: 7, grazeR: 10, scale: PS(1), dmg: 26, life: 9000, noHit: true, alpha: 0,
+                      r: 7, grazeR: 10, scale: PS(1), dmg: 50, life: 9000, noHit: true, alpha: 0,
                       _zap: 1, _cap: !!cap, _layer: 0, _ss: S.shiftN, _angDeg: angDeg, _spin: moving };
           const SS = S;
           b.emit = function (b) {
@@ -2268,7 +2268,7 @@ PATTERNS.pinkn_concert2 = pinkConcertPattern(1);   // hard (phase-2) concert: he
 // speed ~9 + gravity 0.5) then EXPLODES (spr_explosion_round) on contact / landing (concert.md §5).
 function mkAudienceHater(add, x, y, box) {
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.3);
-  const b = { ...bulletProps('dummyaud1'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(1), dmg: 26, life: 320,
+  const b = { ...bulletProps('dummyaud1'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(1), dmg: 50, life: 320,
               rot: 0, tint: '#ff2a2a', tintMul: true, _wind: 32 };   // haters are RED (easy to see)
   b.emit = function (b, out, sl) {
     if (b._wind > 0) { b._wind--;
@@ -2297,7 +2297,7 @@ function mkAudienceHater(add, x, y, box) {
 }
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
   // obj_audienceheart: the REAL projectile is spr_heartbullet (18px red heart). Grows from tiny, aims, launches.
-  const b = { ...bulletProps('heartbullet'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
+  const b = { ...bulletProps('heartbullet'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 48, life: 340,
               r: 7, grazeR: 11, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };
   if (hater) { b.tint = '#d000d0'; b.tintMul = true; }   // haters (spr_dummyaudience frame1) fire a purple homing heart
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
@@ -2494,17 +2494,15 @@ PATTERNS.pinkn3_finalmaze = {
       else n.dir += (rng() < 0.5 ? -1 : 1) * STEER;
       n.x += Math.cos(n.dir) * n.spd; n.y += Math.sin(n.dir) * n.spd;
     }
-    // ---- INPUT: move on HELD direction (continuous, like every other purple-soul mode) + buffer a tap made
-    // mid-slide so it fires the instant the soul lands. This is what makes it feel instant. ----
-    const DOWN = k => IN.down && IN.down[k];
+    // ---- INPUT: ONE press = ONE node move (NOT hold-to-repeat). A tap made mid-slide is buffered (~10f) and
+    // fired the instant the soul lands, so it feels instant without auto-repeating while a key is held. ----
     let pressDir = -1; if (HIT('right')) pressDir = 0; else if (HIT('up')) pressDir = 1; else if (HIT('left')) pressDir = 2; else if (HIT('down')) pressDir = 3;
     if (pressDir >= 0) { S.bufDir = pressDir; S.bufAge = 0; }
     else if (S.bufDir != null) { S.bufAge = (S.bufAge || 0) + 1; if (S.bufAge > 10) S.bufDir = null; }
-    let heldDir = -1; if (DOWN('right')) heldDir = 0; else if (DOWN('up')) heldDir = 1; else if (DOWN('left')) heldDir = 2; else if (DOWN('down')) heldDir = 3;
     // ---- SOUL node-hop movement: heart_travel = home edge length; soul rides behind LIVE node ----
     if (S.heartTravel <= 0 && !S._won) {
-      const dir = S.bufDir != null ? S.bufDir : heldDir;   // buffered tap first, else the held direction
-      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
+      const dir = S.bufDir;   // only a fresh (buffered) tap moves — no auto-repeat on hold
+      if (dir != null && dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
         if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
           S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
           if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
@@ -2525,7 +2523,7 @@ PATTERNS.pinkn3_finalmaze = {
       if (!S.trainStarted && S.soulNode !== S.start) {   // spawns once the player first leaves the start node
         S.trainStarted = true; S.train = []; const NB = 4, tpN = S.trainPath.length;
         for (let i = 0; i < NB; i++) S.train.push({ seg: Math.floor(i * tpN / NB) % tpN, prog: 0, x: 0, y: 0 }); }
-      if (S.trainStarted) { const tp = S.trainPath, tpN = tp.length, spd = 2.4 + S.hits * 0.18;   // speeds up as you get hit
+      if (S.trainStarted) { const tp = S.trainPath, tpN = tp.length, spd = 9.5 + S.hits * 0.4;   // ~soul speed minus a ~0.1s/node reaction window; faster as you get hit
         for (const btn of S.train) {
           let na = S.nodes[tp[btn.seg]], nb = S.nodes[tp[(btn.seg + 1) % tpN]], edge = Math.hypot(nb.x - na.x, nb.y - na.y) || 1;
           btn.prog += spd; let guard = 0;
@@ -2807,14 +2805,14 @@ function pinkBombPattern(chart) {
         if (q.k !== 1 && q.k !== 3) Snd.play(rng() < 0.5 ? 'pinkthrow' : 'pinkthrow2', 0.4);   // snd_pink_throw(2)
         if (q.k === 0) {
           S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
-          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 54 + left * 2 - S.rep * 2, heart, dmg: 20 });
+          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 54 + left * 2 - S.rep * 2, heart, dmg: 50 });
         } else if (q.k === 1) {   // GIANT ENDER: sits OUTSIDE an edge and blasts one 3-lane band into the box (leaving an outer safe lane)
           const edge = pick(0, 1, 2, 3), lane = 1 + ir(1);
           const gp = edge === 0 ? [-2, lane] : edge === 1 ? [5, lane] : edge === 2 ? [lane, -2] : [lane, 5];
-          mkPinkBomb(add, box, cell(gp[0], gp[1]), tx, ty, { fuse: 60, giant: true, dmg: 24 });
+          mkPinkBomb(add, box, cell(gp[0], gp[1]), tx, ty, { fuse: 60, giant: true, dmg: 50 });
         }
-        else if (q.k === 2) mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 52 + left * 3, giant: true, heart: q.heart, dmg: 24 });
-        else if (q.k === 3) mkPinkSlideBomb(add, box, { fuse: 120, dmg: 26, wspd: pick(3.85, 4.725, 5.15, 5.95) });
+        else if (q.k === 2) mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 52 + left * 3, giant: true, heart: q.heart, dmg: 50 });
+        else if (q.k === 3) mkPinkSlideBomb(add, box, { fuse: 120, dmg: 50, wspd: pick(3.85, 4.725, 5.15, 5.95) });
         S.wind = S.queue.length ? 6 : -1;
         if (!S.queue.length) S.rep++;
       } else if (!S.queue.length) S.wind = -1;
