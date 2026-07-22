@@ -1629,8 +1629,9 @@ function pinkDatePattern(D) {
         // timer only ticks while idle (draw_box_con==0), per obj_date_controller Step
         if (Q.timed && S.boxCon === 0) S.timer -= 0.5;      // 240 @30fps == 480 ticks @60Hz -> 0.5/frame
         if (S.boxCon === 0) {
-          if (!Q.single && HIT('left'))  { S.boxCon = -1; S.bt = 0; Snd.play('menumove', 0.5); }
-          else if (!Q.single && HIT('right')) { S.boxCon = 1; S.bt = 0; Snd.play('menumove', 0.5); }
+          // INTUITIVE direction: RIGHT brings the right-hand option to centre, LEFT the left-hand one
+          if (!Q.single && HIT('right')) { S.boxCon = -1; S.bt = 0; Snd.play('menumove', 0.5); }
+          else if (!Q.single && HIT('left')) { S.boxCon = 1; S.bt = 0; Snd.play('menumove', 0.5); }
           else if (HIT('up')) { S.boxCon = 2; S.bt = 0; }
         } else if (S.boxCon === -1) {                        // slide left -> selected++
           S.bt++; S.boxOff = lerp2(0, -200, S.bt / 10);
@@ -1677,7 +1678,15 @@ function pinkDatePattern(D) {
   };
 }
 function lerp2(a, b, t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return a + (b - a) * t; }
-function wrongReactSfx() { if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 8); } if (typeof Snd !== 'undefined') Snd.play('hurt', 0.4); }
+function wrongReactSfx() {   // a wrong/timeout answer: Pink lashes out — the party takes damage (registers in the tester)
+  if (typeof Snd !== 'undefined') Snd.play('pinkgasp', 0.5);
+  if (typeof Battle !== 'undefined') {
+    const B = Battle; B.shake = Math.max(B.shake || 0, 12); B.flash = Math.max(B.flash || 0, 8);
+    const dmg = 30; B.dmgTaken = (B.dmgTaken || 0) + dmg;
+    for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
+    if (typeof Snd !== 'undefined') Snd.play('hurt', 0.4);
+  }
+}
 PATTERNS.pinkn_date1 = pinkDatePattern(PINK_DATE1);
 PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
 
@@ -1731,10 +1740,15 @@ function pinkLaneFire(add, cx, cy, e, rotDeg) {
   const d = e.dir + (rotDeg || 0), spd = e.spd * 8, dist = 352, off = 52;
   const [tx, ty] = gmlVec(d), [sx, sy] = [cx - tx * dist, cy - ty * dist];   // spawn far out, opposite travel
   const [p2x, p2y] = gmlVec(d + 270), [p9x, p9y] = gmlVec(d + 90), rot = Math.atan2(ty, tx);
-  const mk = (ox, oy, sp) => add({ ...bulletProps(sp), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, r: 8, grazeR: 12, scale: PS(2), rot, dmg: 24, life: 130 });
+  // half-circles curve toward the lane centre so a PAIR reads as a CUT CIRCLE: the +270-offset half is drawn
+  // at image_angle = dir+180 (flip), the +90-offset half at image_angle = dir (obj_dbulletcontroller L2299-2342).
+  const mk = (ox, oy, sp, flip) => add({ ...bulletProps(sp), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd,
+    r: 8, grazeR: 12, scale: PS(2), rot: rot + (flip ? Math.PI : 0), dmg: 24, life: 130 });
   if (e.shot < 6) {
-    if (e.shot === 0 || e.shot === 3 || e.shot === 4) mk(p2x * off, p2y * off, 'planeb'); else if (e.shot === 2) mk(p9x * off, p9y * off, 'planeb'); else mk(0, 0, 'plane');
-    if (e.shot >= 3) { if (e.shot === 4 || e.shot === 5) mk(p9x * off, p9y * off, 'planeb'); else mk(0, 0, 'plane'); }   // pair's 2nd bullet
+    if (e.shot === 0 || e.shot === 3 || e.shot === 4) mk(p2x * off, p2y * off, 'planeb', true);   // +270 half, flipped
+    else if (e.shot === 2) mk(p9x * off, p9y * off, 'planeb', false);                             // +90 half
+    else mk(0, 0, 'plane', false);
+    if (e.shot >= 3) { if (e.shot === 4 || e.shot === 5) mk(p9x * off, p9y * off, 'planeb', false); else mk(0, 0, 'plane', false); }   // pair's 2nd bullet
   } else {
     const o2 = 66; let ox = 0, oy = 0;
     if (e.shot === 6 || e.shot === 9 || e.shot === 10) { ox = p2x * o2; oy = p2y * o2; } else if (e.shot === 8) { ox = p9x * o2; oy = p9y * o2; }
@@ -1743,7 +1757,11 @@ function pinkLaneFire(add, cx, cy, e, rotDeg) {
 }
 function pinkPlusSchedule(chart) {
   const s = []; let t = 8;   // btimer starts 32, fires at >=40 -> 8-frame lead
-  for (let k = 0; k < chart.length; k += 4) { s.push({ f: t, shot: chart[k], dir: chart[k + 1], spd: chart[k + 3] }); t += Math.max(0, Math.floor(0.5 + 32 * chart[k + 2])); }
+  for (let k = 0; k < chart.length; k += 4) {
+    s.push({ f: t, shot: chart[k], dir: chart[k + 1], spd: chart[k + 3] });
+    if (chart[k + 2] >= 90) { t += 30; break; }   // interval 99 = the LIST TERMINATOR (attack ends), NOT a huge delay
+    t += Math.max(0, Math.floor(0.5 + 32 * chart[k + 2]));
+  }
   s.total = t; return s;
 }
 function pinkPlusGridPattern(chart, spin) {
@@ -1846,14 +1864,17 @@ PATTERNS.pinkn_tunnel = {
                  list: [], phase: -2, laneDir: 270, lastAtk: -1, cx, cy };
     }
     const S = this.S;
-    if (!S.started && ((typeof Input !== 'undefined' && Input.down && Input.down.up) || f > 150)) S.started = true;
+    S.started = true;                                                   // AUTO-START: the tunnel runs immediately (no waiting for input)
     const L = S.life;
     const scale = 3.75 - Math.min(L * 0.0025, (L + 30) * 0.002, (L + 135) * 0.0015, (L + 390) * 0.001);
     const moveLimit = 35 * scale;
     const bw = Math.round(75 * scale);
     a.fx.boxTarget = { x: cx - bw / 2, y: cy - bw / 2, w: bw, h: bw };   // the box SHRINKS over the attack
-    a.fx.purpleSoul = { mode: 7, rings: S.rings.slice(), moveLimit, shiftN: S.shiftN, elec: S.started ? Math.floor(f / 4) % 3 : null };
-    if (!S.started) return;
+    // the electric WALL is DANGEROUS: once your ring passes the move limit you are pinned against the box
+    // edge and it zaps you — you MUST hop inward (UP) to escape (obj_pink3durgenter). Flag it for the engine.
+    const hlNow = (typeof Battle !== 'undefined' && Battle.pLayer != null) ? Battle.pLayer : 0;
+    const wallDanger = (S.rings[hlNow] || 0) > moveLimit + 6;
+    a.fx.purpleSoul = { mode: 7, rings: S.rings.slice(), moveLimit, shiftN: S.shiftN, elec: Math.floor(f / 4) % 3, wall: wallDanger };
     S.life++;
     // ---- tunnel_speed (exact) ----
     let speed = Math.min(L / 10, 1.5 + L / 50, 11);
@@ -1913,8 +1934,8 @@ PATTERNS.pinkn_tunnel = {
         let dir = wrap((dir0 - (dirAdd / 2) * (repeats - 1)) + S.laneDir);
         const mkZap = (angDeg, cap) => {
           const b = { ...bulletProps(moving !== 0 ? 'pzaparrow' : 'pzap'), x: cx, y: cy, vx: 0, vy: 0,
-                      r: 7, grazeR: 10, scale: PS(1), dmg: 26, life: 9000, noHit: !!cap, alpha: 0,
-                      _zap: 1, _layer: 0, _ss: S.shiftN, _angDeg: angDeg, _spin: moving };
+                      r: 7, grazeR: 10, scale: PS(1), dmg: 26, life: 9000, noHit: true, alpha: 0,
+                      _zap: 1, _cap: !!cap, _layer: 0, _ss: S.shiftN, _angDeg: angDeg, _spin: moving };
           const SS = S;
           b.emit = function (b) {
             while (b._ss < SS.shiftN) { b._layer++; b._ss++; }
@@ -1925,6 +1946,11 @@ PATTERNS.pinkn_tunnel = {
             b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;   // GML lengthdir (y = -sin)
             b.scale = PS(Math.max(0.5, R / 48));                              // pseudo-3D zoom with the ring
             b.rot = Math.atan2(-Math.cos(ar), -Math.sin(ar)) + (b._spin < 0 ? Math.PI : 0);   // tangent
+            // COLLISION: a zap only hurts when it's on the HEART's OWN ring layer (obj_pinkzap: active=1 &&
+            // mask_index=-1 only when tunnel_lane_layer==heart layer; else mask_empty). Fixes zaps on the
+            // next ring out hitting you. End-caps (cap) are always harmless.
+            const hLayer = (typeof Battle !== 'undefined' && Battle.pLayer != null) ? Battle.pLayer : 0;
+            b.noHit = b._cap || (b._layer !== hLayer);
             if (b.alpha < 1) b.alpha = Math.min(1, (b.alpha || 0) + 0.2);
           };
           add(b);
@@ -2172,7 +2198,7 @@ function mkPinkSlideBomb(add, box, o) {   // the FINALE bomb Pink holds while sl
 function pinkBombPattern(chart) {
   const sched = []; let t = 8;
   // GML round(0.5) = 0 (banker's): interval-0 commands queue the SAME frame — that's what forms volleys
-  for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 45 * chart[k + 1])); }
+  for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 58 * chart[k + 1])); }
   return {
     box: { w: 150, h: 150 }, hz30: 1, dur: t + 190,   // base 150x150 box (bombs overhang edge cells slightly, as in GML)
     tick(a) {
@@ -2223,7 +2249,7 @@ function pinkBombPattern(chart) {
             }
           }
         }
-        S.wind = S.rep <= 0 ? 14 : S.rep <= 3 ? 12 : 10;   // windup speeds up per repeat (GML anim rates)
+        S.wind = S.rep <= 0 ? 20 : S.rep <= 3 ? 18 : 16;   // windup speeds up per repeat (GML anim rates)
       }
       if (S.wind > 0) S.wind--;
       else if (S.wind === 0 && S.queue.length) {
@@ -2232,7 +2258,7 @@ function pinkBombPattern(chart) {
         if (q.k !== 1 && q.k !== 3) Snd.play(rng() < 0.5 ? 'pinkthrow' : 'pinkthrow2', 0.4);   // snd_pink_throw(2)
         if (q.k === 0) {
           S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
-          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 55 + left * 2 - S.rep * 2, heart, dmg: 20 });
+          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 66 + left * 2 - S.rep * 2, heart, dmg: 20 });
         } else if (q.k === 1) {   // GIANT ENDER: sits OUTSIDE an edge and blasts one 3-lane band into the box (leaving an outer safe lane)
           const edge = pick(0, 1, 2, 3), lane = 1 + ir(1);
           const gp = edge === 0 ? [-2, lane] : edge === 1 ? [5, lane] : edge === 2 ? [lane, -2] : [lane, 5];

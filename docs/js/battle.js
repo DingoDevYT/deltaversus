@@ -940,6 +940,10 @@ Battle.updDodge = function () {
       B.pViewRot = 270 - B.pAng;
       B.pOnX = 0; B.pOnY = B.pR;                                     // soul fixed at screen-bottom (angle 270)
       B.pHScale = Math.max(0.4, B.pR / 48);                          // pseudo-3D zoom (image_xscale = radius/48)
+      if (T.wall && B.iframes <= 0) {                               // the electric WALL zaps you if you sit pinned at the edge
+        const dmg = 8; B.dmgTaken += dmg; applyTargetedDamage(B.myTeam, dmg, 0);
+        B.iframes = IFRAMES; B.shake = 12; B.flash = 6; Snd.play('pinkelectric', 0.5);
+      }
     } else if (pm === 3) {                            // ROTATING "+" cross: 5 cells (center + 4 arms at 56), whole box spins
       const ang = ((CF.purpleSoul.rot || 0)) * Math.PI / 180, cs = Math.cos(ang), sn = Math.sin(ang);
       const gx = B.pLaneX * 56, gy = B.pLaneY * 56;   // on-grid (pre-rotation) target
