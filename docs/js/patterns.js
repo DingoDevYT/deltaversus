@@ -1966,21 +1966,28 @@ function pinkRotboxD1Pattern() {
       gh.bob += 0.22;
       // bumps -> approach speed multiplier (obj_huge_anime_face Step: 0->32, 1->1.5, 2->4, 3->9, >=4->11).
       const sm = gh.bumps <= 0 ? 32 : gh.bumps < 2 ? 1.5 : gh.bumps < 3 ? 4 : gh.bumps < 4 ? 9 : 11;
-      const hitX = cx - box.w / 2 - 18;
-      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; }   // knock queued -> lunge
+      const hitX = cx - box.w / 2 + 22;   // rams INSIDE the left edge -> the face covers part of the box (difficulty)
+      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; if (typeof Snd !== 'undefined') Snd.play('slidewhistle', 0.35); }   // lunge whoosh
       if (gh.ram === 1) {                                  // accelerate toward the box (GML accel tiers by hspeed)
         gh.hsp += gh.hsp < 2.5 ? 0.6 : gh.hsp < 4 ? 0.35 : 0.12;
         gh.hsp = Math.min(gh.hsp, 2 + sm * 0.55);
         gh.x += gh.hsp;
-        if (gh.x >= hitX) {                                // BUMP: rotate box 90°, flip sprite, halve speed
+        if (gh.x >= hitX) {                                // BUMP: rotate box 90°, flip sprite, KNOCK the box back
           gh.x = hitX; gh.ram = 2; gh.bumps++; S._rtar += 90; S._pendKnock--;
           gh.flip = !gh.flip; gh.frame ^= 1;               // image_xscale flip + image_index toggle each bump
-          Snd.play('pinktrip', 0.5); Snd.play('pinktrip', 0.28);
-          if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 9);
+          if (typeof Snd !== 'undefined') { Snd.play('pinktrip', 0.5); Snd.play('impact', 0.55); Snd.play('punchheavythunder', 0.4); }
+          if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 14);
+          S._knock = 22;                                   // shove the box RIGHT (rolled from the impact), eases back
           gh.hsp = Math.max(1, gh.hsp * 0.5);
         }
       } else if (gh.ram === 2) { gh.x -= 6; if (gh.x <= restX) { gh.x = restX; gh.ram = 0; } }   // recoil back left
       else gh.x = restX;
+      // BOX KNOCKBACK: the whole box + bullets lurch in the ram direction then spring back to rest
+      if (typeof Battle !== 'undefined' && Battle.dodgeBox) {
+        const want = S._knock || 0, applied = S._knockApplied || 0, delta = want - applied;
+        if (delta) { Battle.dodgeBox.x += delta; for (const b of (Battle.bullets || [])) b.x += delta; }
+        S._knockApplied = want; S._knock = want * 0.8;   // decay toward 0 (net displacement returns to rest)
+      }
       const riseY = (1 - gh.enter) * 150;                  // starts 150px below, rises to rest
       const kind = gh.bumps >= 7 ? 'shock' : gh.bumps >= 6 ? 'yell' : 'angry';   // angry -> yell_full -> shock_full
       a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10 + riseY, frame: gh.frame, kind, ramming: gh.ram === 1, scale: 1.6 + gh.enter * 0.4, flip: gh.flip };
