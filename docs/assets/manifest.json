@@ -4097,6 +4097,492 @@
       "oh": 116,
       "ox": 0,
       "oy": 0
+    },
+    "catface0": {
+      "f": "catface0.png",
+      "w": 19,
+      "h": 21,
+      "ow": 19,
+      "oh": 21,
+      "ox": 0,
+      "oy": 0
+    },
+    "catface1": {
+      "f": "catface1.png",
+      "w": 19,
+      "h": 21,
+      "ow": 19,
+      "oh": 21,
+      "ox": 0,
+      "oy": 0
+    },
+    "catface2": {
+      "f": "catface2.png",
+      "w": 19,
+      "h": 21,
+      "ow": 19,
+      "oh": 21,
+      "ox": 0,
+      "oy": 0
+    },
+    "catface3": {
+      "f": "catface3.png",
+      "w": 19,
+      "h": 21,
+      "ow": 19,
+      "oh": 21,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun0": {
+      "f": "catrun0.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun1": {
+      "f": "catrun1.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun2": {
+      "f": "catrun2.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun3": {
+      "f": "catrun3.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun4": {
+      "f": "catrun4.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "catrun5": {
+      "f": "catrun5.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "planebullet0": {
+      "f": "planebullet0.png",
+      "w": 19,
+      "h": 19,
+      "ow": 19,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "planebullet1": {
+      "f": "planebullet1.png",
+      "w": 19,
+      "h": 19,
+      "ow": 19,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "planebullet2": {
+      "f": "planebullet2.png",
+      "w": 19,
+      "h": 19,
+      "ow": 19,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkstar0": {
+      "f": "pinkstar0.png",
+      "w": 32,
+      "h": 32,
+      "ow": 32,
+      "oh": 32,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkstar1": {
+      "f": "pinkstar1.png",
+      "w": 32,
+      "h": 32,
+      "ow": 32,
+      "oh": 32,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkstar2": {
+      "f": "pinkstar2.png",
+      "w": 32,
+      "h": 32,
+      "ow": 32,
+      "oh": 32,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap0": {
+      "f": "pinkzap0.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap1": {
+      "f": "pinkzap1.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap2": {
+      "f": "pinkzap2.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap3": {
+      "f": "pinkzap3.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap4": {
+      "f": "pinkzap4.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzap5": {
+      "f": "pinkzap5.png",
+      "w": 17,
+      "h": 17,
+      "ow": 17,
+      "oh": 17,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow0": {
+      "f": "pinkzaparrow0.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow1": {
+      "f": "pinkzaparrow1.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow2": {
+      "f": "pinkzaparrow2.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow3": {
+      "f": "pinkzaparrow3.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow4": {
+      "f": "pinkzaparrow4.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkzaparrow5": {
+      "f": "pinkzaparrow5.png",
+      "w": 17,
+      "h": 19,
+      "ow": 17,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkwave0": {
+      "f": "pinkwave0.png",
+      "w": 24,
+      "h": 12,
+      "ow": 24,
+      "oh": 12,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkwave1": {
+      "f": "pinkwave1.png",
+      "w": 24,
+      "h": 12,
+      "ow": 24,
+      "oh": 12,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkwave2": {
+      "f": "pinkwave2.png",
+      "w": 24,
+      "h": 12,
+      "ow": 24,
+      "oh": 12,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinkwave3": {
+      "f": "pinkwave3.png",
+      "w": 24,
+      "h": 12,
+      "ow": 24,
+      "oh": 12,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebomb0": {
+      "f": "fusebomb0.png",
+      "w": 20,
+      "h": 20,
+      "ow": 20,
+      "oh": 20,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebomb1": {
+      "f": "fusebomb1.png",
+      "w": 20,
+      "h": 20,
+      "ow": 20,
+      "oh": 20,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebomb2": {
+      "f": "fusebomb2.png",
+      "w": 20,
+      "h": 20,
+      "ow": 20,
+      "oh": 20,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebomb3": {
+      "f": "fusebomb3.png",
+      "w": 20,
+      "h": 20,
+      "ow": 20,
+      "oh": 20,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebomb4": {
+      "f": "fusebomb4.png",
+      "w": 20,
+      "h": 20,
+      "ow": 20,
+      "oh": 20,
+      "ox": 0,
+      "oy": 0
+    },
+    "fusebombbig0": {
+      "f": "fusebombbig0.png",
+      "w": 64,
+      "h": 64,
+      "ow": 64,
+      "oh": 64,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl0": {
+      "f": "bombexpl0.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl1": {
+      "f": "bombexpl1.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl2": {
+      "f": "bombexpl2.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl3": {
+      "f": "bombexpl3.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl4": {
+      "f": "bombexpl4.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl5": {
+      "f": "bombexpl5.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl6": {
+      "f": "bombexpl6.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl7": {
+      "f": "bombexpl7.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl8": {
+      "f": "bombexpl8.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl9": {
+      "f": "bombexpl9.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl10": {
+      "f": "bombexpl10.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl11": {
+      "f": "bombexpl11.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl12": {
+      "f": "bombexpl12.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl13": {
+      "f": "bombexpl13.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl14": {
+      "f": "bombexpl14.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "bombexpl15": {
+      "f": "bombexpl15.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

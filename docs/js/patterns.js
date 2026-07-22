@@ -221,7 +221,7 @@ PATTERNS.noelle_snow = {
       add({
         x: rng() < 0.5 ? box.x - 26 : box.x + box.w + 26, y: box.y + rng() * box.h,
         vx: 0, vy: 0, homing: 0.03, maxv: 1.6,
-        ...bulletProps('icesnow'), r: 9, spin: 0.05,
+        ...bulletProps('icesnow'), r: 9,
       });
     }
   },
@@ -605,7 +605,7 @@ PATTERNS.sneo_heart = {   // A HEART ATTACK: heart emerges from Spamton's side; 
     // the heart PROACTIVELY reaches toward the player; when fully extended it fires 3 aimed shots.
     // Shoot it to shove it back toward Spamton (buying space).
     const heart = { ...bulletProps('sneowire'), x: box.x + box.w * 0.8, y: box.y + box.h / 2, vx: 0, vy: 0,
-                    shootable: true, hp: 9999, pushOnShot: 8, spin: 0.05, r: 15, _cd: 30 };
+                    shootable: true, hp: 9999, pushOnShot: 8, r: 15, _cd: 30 };
     heart.emit = function (b, out, soul, bx, fx) {
       b.x += (soul.x - b.x) * 0.055; b.y += (soul.y - b.y) * 0.055;      // ease toward the player
       const dx = b.x - anchorX, dy = b.y - anchorY, d = Math.hypot(dx, dy) || 1;
@@ -1193,7 +1193,7 @@ PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; devilsknif
     }
     // PHASE 3: the ULTIMATE scythe (190px, hurtbox 150x46) descends over ~2.5s, stops with a 30px safe zone at the bottom
     if (f === 580) add({ ...bulletProps('jdevil'), x: box.x + box.w / 2, y: box.y - 90, vx: 0, vy: 0,
-                         lerpY: box.y + box.h - 30 - 20, lerpRate: 0.035, spin: 0.02, scale: SC_DEVILULT, hitW: 150, hitH: 46, life: 320 });
+                         lerpY: box.y + box.h - 30 - 20, lerpRate: 0.035, scale: SC_DEVILULT, hitW: 150, hitH: 46, life: 320 });
     if (f > 860) { a.fx.whiteout = Math.min(1, (f - 860) / 24); a.fx.shake = 8; }                     // white-flash ending (well after the ultimate is on-screen)
   },
 };
@@ -1441,7 +1441,7 @@ PATTERNS.pink_cats = {
     const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f % 13 !== 0 || f > 300) return;
     const side = rng() < 0.5 ? -1 : 1, lane = Math.floor(rng() * 3);
-    add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 30), y: cy + (lane - 1) * 52, vx: -side * 9, vy: 0, r: 8, grazeR: 13, scale: PS(2), spin: 0.05, dmg: 24, life: 170 });
+    add({ ...catP(), x: cx + side * (box.w / 2 + 30), y: cy + (lane - 1) * 52, vx: -side * 9, vy: 0, r: 8, grazeR: 13, scale: PS(2), dmg: 24, life: 170 });
     if (rng() < 0.4) add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 7, vy: 0, r: 6, grazeR: 12, scale: PS(1.4), dmg: 20, life: 170 });
     Snd.play('boardsummon', 0.25);
   },
@@ -1472,7 +1472,7 @@ PATTERNS.pink_lanes = {
     const lanes = [[7, -28, 1, 3.2], [10, 0, -1, 2.0], [36, 28, 1, 1.25]];   // [interval, xoff, dir(1=down/-1=up), speed]
     for (const [intv, xo, dir, spd] of lanes) if (f % intv === 0 && f < 300) {
       const y = dir === 1 ? box.y - 16 : box.y + box.h + 16;
-      add({ ...bulletProps('pcat'), x: cx + xo, y, vx: 0, vy: dir * spd * 2, r: 7, grazeR: 12, scale: PS(2), spin: 0.05, dmg: 22, life: 170 });
+      add({ ...catP(), x: cx + xo, y, vx: 0, vy: dir * spd * 2, r: 7, grazeR: 12, scale: PS(2), dmg: 22, life: 170 });
     }
     if (f % 44 === 0 && f < 300) add({ ...bulletProps('pbell'), x: cx, y: box.y - 18, vx: 0, vy: 3, r: 8, grazeR: 13, scale: PS(2), spin: 0.08, dmg: 22, life: 160 });
   },
@@ -1497,7 +1497,7 @@ PATTERNS.pink_idol = {
   tick(a) {
     const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f % 10 === 0 && f < 400) { const side = rng() < 0.5 ? -1 : 1;
-      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 9, vy: 0, r: 7, grazeR: 12, scale: PS(2), spin: 0.05, dmg: 22, life: 170 }); }
+      add({ ...catP(), x: cx + side * (box.w / 2 + 30), y: cy + (Math.floor(rng() * 3) - 1) * 52, vx: -side * 9, vy: 0, r: 7, grazeR: 12, scale: PS(2), dmg: 22, life: 170 }); }
     if (f % 16 === 8 && f < 400) add({ ...bulletProps('pbell'), x: box.x + rng() * box.w, y: box.y - 18, vx: 0, vy: 4, r: 7, grazeR: 12, scale: PS(2), spin: 0.1, dmg: 22, life: 160 });
     if (f === 410) { for (let i = 0; i < 16; i++) { const ang = i / 16 * 6.28; add({ ...bulletProps('pdoki'), x: cx, y: cy, vx: Math.cos(ang) * 5, vy: Math.sin(ang) * 5, rot: ang, r: 6, grazeR: 11, scale: PS(1.6), dmg: 24, life: 130 }); } Snd.play('boardbomb', 0.5); }
     if (f > 430) a.fx.shake = 6;
@@ -1529,7 +1529,7 @@ function pinkFireCat(add, cx, cy, e) {
   const vx = -e.side * spd;                   // side 1 spawns right (+416) moving left; -1 spawns left moving right
   if (e.lane < 3) {
     const y = cy + Math.floor(e.lane - 1) * 56;
-    add({ ...bulletProps('pcat'), x: cx + e.side * 416, y, vx, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: e.speed >= 1.5 ? 0.14 : 0.03, dmg: 24, life: 420 });
+    add({ ...catP(), x: cx + e.side * 416, y, vx, vy: 0, r: 9, grazeR: 14, scale: PS(2), dmg: 24, life: 420 });
     const nd = Math.round((e.lane % 1) * 10);   // frac(lane)*10 trailing doki-heart collectables
     for (let i = 1; i <= nd; i++)
       add({ ...bulletProps('pdoki'), x: cx + e.side * (416 - i * 72 * e.speed), y, vx, vy: 0, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1.5), life: 460 });
@@ -1703,7 +1703,7 @@ function pinkVLaneBurst(streams, mode, boxH, spdMod, dmg, corners) {
       if (f === 0) {
         this._vt = streams.map(s => ({ t: s.interval - 2, acc: 0 }));
         if (corners) for (const sx of [-63, 63]) for (const sy of [-(bh / 2 - 6), bh / 2 - 6])   // 4 stationary "wall" cats (destroyonhit 0)
-          add({ ...bulletProps('pcat'), x: cx + sx, y: cy + sy, vx: 0, vy: 0, noHit: true, scale: PS(2), life: 460 });
+          add({ ...catP(), x: cx + sx, y: cy + sy, vx: 0, vy: 0, noHit: true, scale: PS(2), life: 460 });
       }
       streams.forEach((s, i) => {
         const st = this._vt[i];
@@ -1713,7 +1713,7 @@ function pinkVLaneBurst(streams, mode, boxH, spdMod, dmg, corners) {
           if (st.t > 0 && (st.t % s.interval) === (s.interval - 1)) {
             if (st.t >= s.interval * (s.number - 1)) st.t = s.break;
             const down = s.dir === 'down';
-            add({ ...bulletProps('pcat'), x: cx + s.xoff, y: cy + (down ? -1 : 1) * (24 + bh / 2), vx: 0, vy: (down ? 1 : -1) * s.speed * spdMod, r: 9, grazeR: 13, scale: PS(2), spin: 0.02, dmg, life: 240 });
+            add({ ...catP(), x: cx + s.xoff, y: cy + (down ? -1 : 1) * (24 + bh / 2), vx: 0, vy: (down ? 1 : -1) * s.speed * spdMod, r: 9, grazeR: 13, scale: PS(2), dmg, life: 240 });
           }
         }
       });
@@ -1743,8 +1743,9 @@ function pinkLaneFire(add, cx, cy, e, rotDeg) {
   const [p2x, p2y] = gmlVec(d + 270), [p9x, p9y] = gmlVec(d + 90), rot = Math.atan2(ty, tx);
   // half-circles curve toward the lane centre so a PAIR reads as a CUT CIRCLE: the +270-offset half is drawn
   // at image_angle = dir+180 (flip), the +90-offset half at image_angle = dir (obj_dbulletcontroller L2299-2342).
-  const mk = (ox, oy, sp, flip) => add({ ...bulletProps(sp), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd,
-    r: 8, grazeR: 12, scale: PS(2.5), rot: rot + (flip ? Math.PI : 0), dmg: 24, life: 130 });
+  // obj_pinklanebullet: spr_pinklanebullet_animation (3-frame anim, image_speed 1), scale 2, image_angle = travel dir
+  const mk = (ox, oy, sp, flip) => add({ ...bulletProps('planebullet'), animKeys: ['planebullet0', 'planebullet1', 'planebullet2'], animRate: 2,
+    x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, r: 8, grazeR: 12, scale: PS(2), rot: rot + (flip ? Math.PI : 0), dmg: 24, life: 130 });
   if (e.shot < 6) {
     if (e.shot === 0 || e.shot === 3 || e.shot === 4) mk(p2x * off, p2y * off, 'planeb', true);   // +270 half, flipped
     else if (e.shot === 2) mk(p9x * off, p9y * off, 'planeb', false);                             // +90 half
@@ -2280,7 +2281,8 @@ function pinkBombExplode(b, out, box, giant) {
   Snd.play(giant ? 'explosionmmx' : 'boardbomb', giant ? 0.8 : 0.5);   // obj_fusebomb_big: snd_explosion_mmx
   if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, giant ? 16 : 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
   const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 46 : 13;   // giant arm is 3 lanes thick (~±46); overlaps 48px step -> contiguous
-  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg, _pinkBoom: 1 });
+  const explAnim = Array.from({ length: 16 }, (_, i) => 'bombexpl' + i);   // spr_fusebomb_explosion_1: 16-frame blast
+  out.push({ ...bulletProps('bombexpl0'), animKeys: explAnim, animRate: 1, x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 16, dmg: b.dmg, _pinkBoom: 1 });
   for (const [dx, dy] of [[step, 0], [0, -step], [-step, 0], [0, step]]) {
     let px = b.x, py = b.y;
     for (let s = 0; s < 30; s++) {
@@ -2288,7 +2290,7 @@ function pinkBombExplode(b, out, box, giant) {
       if (px < -48 || px > 688 || py < 20 || py > 520) break;
       // rectangular hitbox on each arm (hitW/hitH) so the whole 3-lane row/column is a reliable kill band
       const horiz = dx !== 0;
-      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg, _pinkBoom: 1,
+      out.push({ ...bulletProps('bombexpl0'), animKeys: explAnim, animRate: 1, x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg, _pinkBoom: 1,
                  hitW: giant ? (horiz ? 50 : 96) : undefined, hitH: giant ? (horiz ? 96 : 50) : undefined,
                  rot: Math.atan2(dy, dx) + Math.PI / 2 });
     }
@@ -2319,7 +2321,7 @@ function pinkBombExplode(b, out, box, giant) {
 
 function mkPinkBomb(add, box, dest, x0, y0, o) {
   const giant = !!o.giant;
-  const b = { ...bulletProps(giant ? 'pbombbig' : 'pbomb4'), x: x0, y: y0, vx: 0, vy: 0, noHit: true,
+  const b = { ...bulletProps(giant ? 'fusebombbig0' : 'fusebomb4'), x: x0, y: y0, vx: 0, vy: 0, noHit: true,
               scale: PS(2), _pinkBomb: 1, _giant: giant, _air: 1, _fuse: o.fuse, _heart: !!o.heart, _dx: dest.x, _dy: dest.y,
               _x0: x0, _y0: y0, _land: -1, _pt: 0, _sc: 2, dmg: o.dmg, life: 900 };
   if (b._heart) { b.tint = '#ff6699'; b.tintMul = true; }   // has_heart bombs are PINK (GML image_blend)
@@ -2351,7 +2353,7 @@ function mkPinkBomb(add, box, dest, x0, y0, o) {
       }
     }
     if (!giant) {
-      b.img = bulletProps('pbomb' + Math.max(0, Math.min(4, Math.floor(fu / 10)))).img;   // fuse burn-down frames
+      b.img = bulletProps('fusebomb' + Math.max(0, Math.min(4, Math.floor(fu / 10)))).img;   // fuse burn-down frames
       if (fu > 8) {   // periodic pulse decaying toward x2 (pulse every 15, every 6 once fuse<=36)
         b._pt++;
         if (b._pt >= 15 || (b._pt >= 6 && fu <= 36)) { b._pt = 0; b._sc = 2.75; }
@@ -2496,6 +2498,9 @@ PATTERNS.pinkn_bombs2 = pinkBombPattern(PINK_BOMB_D1);       // P1 T4 — faster
 PATTERNS.pinkn_bombsg = pinkBombPattern(PINK_BOMB_D3);       // P2 T3 — smalls + giant centre bomb ender
 PATTERNS.pinkn_bombsfin = pinkBombPattern(PINK_BOMB_D2);     // P3 T2 — 4x giant volleys + slide FINALE
 
+// obj_pinkcatbullet: the cat FACE bullet (spr_bullet_catface, 4-frame anim at image_speed 0.334, scale 2).
+// It ANIMATES through its frames and does NOT rotate (spin_dir is a movement spiral, not sprite rotation).
+function catP() { return { ...bulletProps('catface'), animKeys: ['catface0', 'catface1', 'catface2', 'catface3'], animRate: 3 }; }
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {
     const col = bid === 'crescent' ? '#fff' : bid === 'star' ? '#7fff9f' : '#ff9fff';
