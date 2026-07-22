@@ -1760,8 +1760,6 @@ function drawMaze(ctx, M) {
   ctx.globalAlpha = 0.25; for (const [dx, dy] of [[0, -4], [0, 4], [-4, 0], [4, 0]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 0.45; for (const [dx, dy] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 1; ctx.drawImage(s, 0, 0);
-  // dating-sim UI frame (INVERTED variants) around the maze — same as the DATE screens, dark palette
-  for (const fr of [0, 1]) { const p = dsimImg('dsimplateinv' + fr); if (p) ctx.drawImage(p, 0, 0, 640, 440); }
   // the purple SOUL (drawn crisp, on top)
   const ph = A.soul(((Math.floor((M.life || 0) / 8) % 2) ? 'pheart1' : 'pheart0')) || A.ui('soul');
   if (ph && ph.width) drawSpr(ctx, ph, M.soul.x, M.soul.y, { scale: 1 });
