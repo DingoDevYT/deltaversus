@@ -1551,6 +1551,48 @@ function pinkCatsPattern(chart) {
 }
 PATTERNS.pinkn_cats = pinkCatsPattern(PINK_CATS_D0);       // the "Cats" attack (difficulty 0)
 PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (difficulty 1) — conga + fast finale
+
+// TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
+// columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
+// frames. Ported 1:1 from the btimer_array burst/break logic. Swap lanes L/R, weave vertically.
+function pinkVLaneBurst(streams, mode, boxH, spdMod, dmg, corners) {
+  return {
+    box: { w: 168, h: boxH }, hz30: 1, dur: 420,
+    tick(a) {
+      const { f, box, add } = a; a.fx.purpleSoul = { mode, diff: 0 };
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2, bh = box.h;
+      if (f === 0) {
+        this._vt = streams.map(s => ({ t: s.interval - 2, acc: 0 }));
+        if (corners) for (const sx of [-63, 63]) for (const sy of [-(bh / 2 - 6), bh / 2 - 6])   // 4 stationary "wall" cats (destroyonhit 0)
+          add({ ...bulletProps('pcat'), x: cx + sx, y: cy + sy, vx: 0, vy: 0, noHit: true, scale: PS(2), life: 460 });
+      }
+      streams.forEach((s, i) => {
+        const st = this._vt[i];
+        st.acc += spdMod;
+        while (st.acc >= 1) {
+          st.acc -= 1; st.t++;
+          if (st.t > 0 && (st.t % s.interval) === (s.interval - 1)) {
+            if (st.t >= s.interval * (s.number - 1)) st.t = s.break;
+            const down = s.dir === 'down';
+            add({ ...bulletProps('pcat'), x: cx + s.xoff, y: cy + (down ? -1 : 1) * (24 + bh / 2), vx: 0, vy: (down ? 1 : -1) * s.speed * spdMod, r: 9, grazeR: 13, scale: PS(2), spin: 0.02, dmg, life: 240 });
+          }
+        }
+      });
+    },
+  };
+}
+PATTERNS.pinkn_vrain = pinkVLaneBurst([
+  { xoff: -28, dir: 'down', interval: 7, number: 3, break: -30, speed: 3.2 },
+  { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
+  { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
+], 4, 230, 1, 22);
+// TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
+// lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
+PATTERNS.pinkn_conveyor = pinkVLaneBurst([
+  { xoff: -28, dir: 'down', interval: 4, number: 2, break: -20, speed: 5.4 },
+  { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
+  { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
+], 5, 230, 1, 22, true);
 // TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid, lane_distance 40). Bombs (obj_fusebomb) land ON
 // the grid cells, fuse (pulsing faster near the end), then detonate: obj_pinkbombexplosion marches out
 // 24px at a time in all 4 directions to the screen edge — a full row+column CROSS of explosion sprites.

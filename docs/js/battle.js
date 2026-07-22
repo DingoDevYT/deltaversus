@@ -875,7 +875,7 @@ Battle.updDodge = function () {
   if (B.soulPurple) {
     const pm = CF.purpleSoul.mode || 1, ccx = bx.x + bx.w / 2, ccy = bx.y + bx.h / 2;
     const ap = (v, t, s) => Math.abs(t - v) <= s ? t : v + Math.sign(t - v) * s;
-    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0; }
+    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : 1; B.pLaneY = 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
     if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
@@ -885,6 +885,16 @@ Battle.updDodge = function () {
         else if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 3) B.pLaneY++;
       }
       B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 40, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 40, 22);
+    } else if (pm === 4 || pm === 5) {                // 2 vertical lanes (lane_distance 126 -> x = +/-63); free Y (mode 4) or conveyor (mode 5)
+      const xt = (B.pLaneX - 0.5) * 126, ymax = bx.h / 2 - 14;
+      if (Math.abs(B.pOnX - xt) < 0.5) { if (H.left && B.pLaneX > 0) B.pLaneX--; else if (H.right && B.pLaneX < 1) B.pLaneX++; }
+      B.pOnX = ap(B.pOnX, (B.pLaneX - 0.5) * 126, 24);   // _laneswap_speed 24
+      const onLane = Math.abs(B.pOnX - (B.pLaneX - 0.5) * 126) < 0.5;
+      if (pm === 4 || !onLane) {                      // free vertical
+        if (D.down) B.pOnY = Math.min(B.pOnY + wsp, ymax); if (D.up) B.pOnY = Math.max(B.pOnY - wsp, -ymax);
+      } else {                                        // mode 5 conveyor: lane 0 pushes DOWN, lane 1 pushes UP (1.25/frame)
+        if (B.pLaneX === 0) B.pOnY = Math.min(B.pOnY + 1.25, ymax); else B.pOnY = Math.max(B.pOnY - 1.25, -ymax);
+      }
     } else {                                          // mode 1: 3 horizontal lanes (y), free X within +/-63
       const yt = (B.pLaneY - 1) * 56;
       if (Math.abs(B.pOnY - yt) < 0.5) { if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 2) B.pLaneY++; }
@@ -1460,6 +1470,8 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 40;
       ctx.beginPath(); ctx.moveTo(gcx - 60, gcy + o); ctx.lineTo(gcx + 60, gcy + o); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 60); ctx.lineTo(gcx + o, gcy + 60); ctx.stroke(); } }
+    else if (B._pmode === 4 || B._pmode === 5) { for (let i = 0; i < 2; i++) { const o = (i - 0.5) * 126;   // 2 vertical lanes
+      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - bx.h / 2 + 6); ctx.lineTo(gcx + o, gcy + bx.h / 2 - 6); ctx.stroke(); } }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }
