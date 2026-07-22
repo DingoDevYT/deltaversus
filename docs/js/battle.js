@@ -915,8 +915,11 @@ Battle.updDodge = function () {
         if (Math.abs(B.pRotT) < 0.5) { B.pRotT = 0; B.pAng = Math.round(B.pAng / 90) * 90 % 360; }
       }
       B.pR = ap(B.pR, Math.max(12, rings[B.pLayer] || 12), 9);       // radius follows the ring (eased hop transitions)
-      const ar = B.pAng * Math.PI / 180;
-      B.pOnX = Math.cos(ar) * B.pR; B.pOnY = -Math.sin(ar) * B.pR;   // GML lengthdir: y is NEGATIVE sin
+      // CAMERA RIDES THE SOUL (GML keeps heart_angle=270, rotates the world via image_angle): the soul stays
+      // pinned at the screen bottom and the whole tunnel (rings/zaps/dokis) rotates by viewRot instead, so
+      // LEFT/RIGHT never flip meaning at the "top". Everything angular is drawn at worldAngle + pViewRot.
+      B.pViewRot = 270 - B.pAng;
+      B.pOnX = 0; B.pOnY = B.pR;                                     // soul fixed at screen-bottom (angle 270)
       B.pHScale = Math.max(0.4, B.pR / 48);                          // pseudo-3D zoom (image_xscale = radius/48)
     } else if (pm === 3) {                            // ROTATING "+" cross: 5 cells (center + 4 arms at 56), whole box spins
       const ang = ((CF.purpleSoul.rot || 0)) * Math.PI / 180, cs = Math.cos(ang), sn = Math.sin(ang);

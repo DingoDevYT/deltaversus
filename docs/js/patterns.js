@@ -1813,7 +1813,8 @@ PATTERNS.pinkn_tunnel = {
             while (b._ss < SS.shiftN) { b._layer++; b._ss++; }
             if (b._layer > 7 || (SS.rings[b._layer] || 0) <= 0) { b.dead = true; return; }
             b._angDeg = wrap(b._angDeg + b._spin);
-            const R = SS.rings[b._layer], ar = b._angDeg * Math.PI / 180;
+            const vr = (typeof Battle !== 'undefined' && Battle.pViewRot) || 0;   // camera rides the soul
+            const R = SS.rings[b._layer], ar = wrap(b._angDeg + vr) * Math.PI / 180;
             b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;   // GML lengthdir (y = -sin)
             b.scale = PS(Math.max(0.5, R / 48));                              // pseudo-3D zoom with the ring
             b.rot = Math.atan2(-Math.cos(ar), -Math.sin(ar)) + (b._spin < 0 ? Math.PI : 0);   // tangent
@@ -1836,7 +1837,8 @@ PATTERNS.pinkn_tunnel = {
         b.emit = function (b) {
           while (b._ss < SS.shiftN) { b._layer++; b._ss++; }
           if (b._layer > 7 || (SS.rings[b._layer] || 0) <= 0) { b.dead = true; return; }
-          const R = SS.rings[b._layer], ar = b._angDeg * Math.PI / 180;
+          const vr = (typeof Battle !== 'undefined' && Battle.pViewRot) || 0;   // camera rides the soul
+          const R = SS.rings[b._layer], ar = wrap(b._angDeg + vr) * Math.PI / 180;
           b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;
           b.scale = PS(Math.max(0.5, R / 48));
         };
