@@ -4952,6 +4952,348 @@
       "oh": 8,
       "ox": 0,
       "oy": 0
+    },
+    "spktalk0": {
+      "f": "spktalk0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktalk1": {
+      "f": "spktalk1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkhappy0": {
+      "f": "spkhappy0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkhappy1": {
+      "f": "spkhappy1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkangry0": {
+      "f": "spkangry0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkangry1": {
+      "f": "spkangry1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkangb0": {
+      "f": "spkangb0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkangb1": {
+      "f": "spkangb1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spksad0": {
+      "f": "spksad0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spksad1": {
+      "f": "spksad1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spksadb0": {
+      "f": "spksadb0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spksadb1": {
+      "f": "spksadb1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spknya0": {
+      "f": "spknya0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spknya1": {
+      "f": "spknya1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spknya20": {
+      "f": "spknya20.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spknya21": {
+      "f": "spknya21.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktongue0": {
+      "f": "spktongue0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkwink0": {
+      "f": "spkwink0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkwink1": {
+      "f": "spkwink1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkjoy0": {
+      "f": "spkjoy0.png",
+      "w": 111,
+      "h": 116,
+      "ow": 111,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkjoy1": {
+      "f": "spkjoy1.png",
+      "w": 111,
+      "h": 116,
+      "ow": 111,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkconc0": {
+      "f": "spkconc0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkconc1": {
+      "f": "spkconc1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghangry0": {
+      "f": "ghangry0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghangry1": {
+      "f": "ghangry1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghconc0": {
+      "f": "ghconc0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghconc1": {
+      "f": "ghconc1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghshock0": {
+      "f": "ghshock0.png",
+      "w": 150,
+      "h": 130,
+      "ow": 150,
+      "oh": 130,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghnya10": {
+      "f": "ghnya10.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghnya11": {
+      "f": "ghnya11.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghnya20": {
+      "f": "ghnya20.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghnya21": {
+      "f": "ghnya21.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate0": {
+      "f": "dsimplate0.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate1": {
+      "f": "dsimplate1.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate2": {
+      "f": "dsimplate2.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate3": {
+      "f": "dsimplate3.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate4": {
+      "f": "dsimplate4.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplate5": {
+      "f": "dsimplate5.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

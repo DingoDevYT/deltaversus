@@ -1691,6 +1691,120 @@ function wrongReactSfx() {   // a wrong/timeout answer: Pink lashes out — the 
 PATTERNS.pinkn_date1 = pinkDatePattern(PINK_DATE1);
 PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
 
+// ===== PINK V3 DATE (obj_date_controller) — per-beat portrait swaps, ghost split, real UI =====
+// Text is PARAPHRASED (the real script is copyrighted). Each beat carries the exact `pinkportrait`
+// emotion from spec §3.3/§6 so the FACE changes per line (the prior port used one idle face).
+// spk/ghost = imported portrait keys; frames are the 2-frame lipsync. Ghost draws at 0.7 alpha
+// and the two face each other (spec §3.1). date2 SPLITS the body+ghost apart mid-cutscene.
+const PINK_N3_DATE1 = {
+  date: 1,
+  cut: [
+    { spk: 'spkshock', text: "S-school…?|What are you even|talking about?!", sfx: 'pinkgasp' },
+    { spk: 'spkhappy', sweat: 1, text: "I don't… I don't|do the school thing.|Not anymore." },
+    { spk: 'spksad', text: "And NOW you wanna|walk me home?!", sfx: 'pinkmew' },
+  ],
+  qs: [
+    { spk: 'spksad', text: "…Well? Are you|gonna answer me?", opts: ["…Sure"], correct: [0], single: true },
+    { spk: 'spkhappy', sweat: 1, text: "You only like this|body 'cause it's CUTE,|huh?!", opts: ["Nope", "Yeah", "Yeah"], correct: [1, 2], timed: true },
+    { spk: 'spksad', text: "Bet you wish you'd|never even met me…", opts: ["True", "For sure", "Obviously", "Not at all", "Obviously", "For sure"], correct: [3], timed: true },
+  ],
+  outro: { spk: 'spkangb', text: "Ghh— that's ENOUGH!|We're DONE here!" },
+};
+const PINK_N3_DATE2 = {
+  date: 2,
+  cut: [
+    { spk: 'spkhappy', text: "Let's go on a date,|mew!" },
+    { spk: 'spkangb', text: "I am NOT|doing this!!" },
+    { spk: 'spknya', text: "C'mon, let's|date already!!" },
+    { spk: 'spkangb', text: "I! Said! NO!!" },
+    { spk: 'spkconc', ghost: 'ghconc', split: 1, text: "Wh— we came|APART?!", sfx: 'ghostappear' },
+    { spk: 'spkshock', ghost: 'ghshock', text: "H-hey! There's|TWO of us now!" },
+    { spk: 'spkjoy', ghost: 'ghconc', text: "Now we can BOTH|date you!" },
+    { spk: 'spknya', ghost: 'ghconc', text: "So… say something|sweet to us?" },
+    { spk: 'spknya', ghost: 'ghangry', text: "No way— say|something MEAN!!" },
+  ],
+  qs: [   // ghost (nasty side) blurts the "mean" hint that is ALSO the correct pun answer
+    { spk: 'spkwink', ghost: 'ghangry', text: "Where should we|take our date?", ghostHint: "Tell us to get LOST!", opts: ["A mountain hike", "Get lost!", "Stargazing"], correct: [0], timed: true },
+    { spk: 'spkwink', ghost: 'ghangry', text: "Did our letter|move you at all?", ghostHint: "Rip it to SHREDS!", opts: ["Tore me up", "Ripped me apart", "Made me cry"], correct: [0], timed: true },
+    { spk: 'spkwink', ghost: 'ghangry', text: "Got a little|gift for me?", ghostHint: "Call us ROTTEN!", opts: ["A rotten fish", "You're rotten", "A diamond"], correct: [0], timed: true },
+  ],
+  outro: { spk: 'spkhappy', ghost: 'ghconc', text: "…Heh.|Not bad, mew." },
+};
+function pinkDateN3Pattern(D) {
+  return {
+    box: { w: 300, h: 190 }, hz30: false, dur: 100000,
+    tick(a) {
+      const { f } = a; const S = this;
+      const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
+      const HIT = k => IN.hit && IN.hit[k];
+      if (f === 0) { S.ph = 'cut'; S.ci = 0; S.qi = 0; S.sel = 0; S.boxCon = 0; S.boxOff = 0; S.bt = 0;
+        S.heartY = 385; S.chars = 0; S.talk = 0; S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240;
+        S.reactT = 0; S.done = false; S.correct = 0; S.ghostOn = false; S._shown = null; }
+      S.bg = (S.bg + 0.7) % 80; S.bgy = (S.bgy + 0.4) % 80; S.talk += 0.167;
+      if (S.flash > 0) S.flash--;
+      const beat = () => (S.ph === 'cut' ? D.cut[S.ci] : S.ph === 'outro' ? D.outro : D.qs[S.qi]);
+      const setText = str => { const p = (str || '').split('|'); S._t = p; S.chars = 0; };
+      const cur = beat() || {};
+      if (S._shown !== S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi)) { setText(cur.text); S._shown = S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi);
+        if (cur.split) S.ghostOn = true; if (cur.sfx && typeof Snd !== 'undefined') Snd.play(cur.sfx, 0.5); if (S.ph === 'ask' || S.ph === 'cut') { S.sel = 0; S.heartY = 385; S.timer = 240; } }
+      const full = S._t.join('').length;
+      S.chars = Math.min(full + 2, S.chars + 2);
+      const talkF = (S.chars < full && (Math.floor(S.talk) % 2)) ? 1 : 0;
+      const ghostKey = (S.ghostOn || S.ph === 'outro') ? (cur.ghost || 'ghconc') : (cur.ghost || null);
+      const emit = extra => { a.fx.date = Object.assign({
+        v3: true, date: D.date, bg: S.bg, bgy: S.bgy, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
+        spk: cur.spk || 'spktalk', ghost: ghostKey, talkF, sweat: !!cur.sweat && (S.timer < 84 || S.ph !== 'choose') ? 0 : (cur.sweat ? 1 : 0),
+        lines: S._t.map((ln, i) => ln.slice(0, Math.max(0, Math.floor(S.chars) - i * 0))), chars: Math.floor(S.chars), fullChars: full,
+        hearts: S.correct, heartY: S.heartY,
+      }, extra || {}); };
+      const typed = () => Math.floor(S.chars) >= full;
+
+      if (S.done) { emit({ done: true }); return; }
+
+      if (S.ph === 'cut') {
+        if ((HIT('ok') || HIT('up')) && S.chars > 4) { if (!typed()) S.chars = full + 2; else { S.ci++; if (S.ci >= D.cut.length) { S.ph = 'ask'; S._shown = null; } } }
+        emit({}); return;
+      }
+      const Q = D.qs[S.qi], n = Q.opts.length;
+      if (S.ph === 'ask') { emit({ opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghostHint: Q.ghostHint, timer: null });
+        if (typed() && S.chars > full + 6) { S.ph = 'choose'; S.bt = 0; } return; }
+      if (S.ph === 'choose') {
+        if (Q.timed && S.boxCon === 0) S.timer -= 0.5;
+        if (S.boxCon === 0) {
+          if (!Q.single && HIT('right')) { S.boxCon = -1; S.bt = 0; Snd.play('menumove', 0.5); }
+          else if (!Q.single && HIT('left')) { S.boxCon = 1; S.bt = 0; Snd.play('menumove', 0.5); }
+          else if (HIT('up')) { S.boxCon = 2; S.bt = 0; }
+        } else if (S.boxCon === -1) { S.bt++; S.boxOff = lerp2(0, -200, S.bt / 5); if (S.bt >= 5) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel + 1) % n; } }
+        else if (S.boxCon === 1) { S.bt++; S.boxOff = lerp2(0, 200, S.bt / 5); if (S.bt >= 5) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel - 1 + n) % n; } }
+        else if (S.boxCon === 2) { S.bt++; S.heartY = lerp2(390, 319, S.bt / 3);
+          if (S.bt >= 3) { S.boxCon = 0; S.heartY = 385;
+            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S._react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }
+            else { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); } } }
+        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); }
+        emit({ opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single, ghostHint: Q.ghostHint, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        return;
+      }
+      if (S.ph === 'react') { S.reactT++;
+        const spk = S._react > 0 ? (['spknya', 'spknya2', 'spktongue'][S.qi % 3]) : 'spkangry';
+        emit({ opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghostHint: Q.ghostHint, correct: S._react > 0, spk, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        if (S.reactT >= 30) {
+          if (S._react > 0) { S.correct++; if (S.qi + 1 >= D.qs.length) { S.ph = 'outro'; S.reactT = 0; S._shown = null; Snd.play('boost', 0.5); } else { S.qi++; S.ph = 'ask'; S._shown = null; } }
+          else { S.ph = 'ask'; S._shown = null; }
+        }
+        return;
+      }
+      if (S.ph === 'outro') { S.reactT++; emit({}); if (typed() && S.reactT > full + 40) S.done = true; return; }
+    },
+  };
+}
+function pinkDateWrong() {   // wrong/timeout: Pink lashes out — party takes damage
+  if (typeof Snd !== 'undefined') Snd.play('pinkgasp', 0.5);
+  if (typeof Battle !== 'undefined') { const B = Battle; B.shake = Math.max(B.shake || 0, 12); B.flash = Math.max(B.flash || 0, 8);
+    const dmg = 30; B.dmgTaken = (B.dmgTaken || 0) + dmg; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg); Snd.play('hurt', 0.4); }
+}
+PATTERNS.pinkn3_date1 = pinkDateN3Pattern(PINK_N3_DATE1);
+PATTERNS.pinkn3_date2 = pinkDateN3Pattern(PINK_N3_DATE2);
+
 // TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
 // columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
 // frames. Ported 1:1 from the btimer_array burst/break logic. Swap lanes L/R, weave vertically.

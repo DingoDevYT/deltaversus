@@ -1500,7 +1500,81 @@ function drawDokiBar(ctx) {
   if ((B.dokiPhase || 0) >= phases) { ctx.fillStyle = '#ffe14d'; ctx.fillText('SPARE READY', 320, y + h + 12); }
   ctx.restore();
 }
+// ---- PINK V3 dating-sim renderer: per-beat portrait swaps, ghost split (0.7a, facing), real UI ----
+function dsimImg(id) { const bp = (typeof bulletProps === 'function') ? bulletProps : null; const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; }
+function drawPortrait(ctx, key, frame, cx, y, flip, alpha) {
+  const im = dsimImg(key + frame) || dsimImg(key + '0'); if (!im) return;
+  ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.imageSmoothingEnabled = false;
+  const w = im.width * 2, h = im.height * 2;
+  ctx.translate(cx, y); if (flip) ctx.scale(-1, 1);
+  ctx.drawImage(im, -w / 2, 0, w, h); ctx.restore();
+}
+function drawDateUIV3(ctx, D) {
+  ctx.save(); ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
+  // Layer 1 — scrolling diamond bg
+  const dia = dsimImg('dsimdiamond') || dsimImg('dsimdia1');
+  if (dia) { ctx.globalAlpha = 0.5; for (let ty = -80 + ((D.bgy || 0) - 80); ty < 560; ty += 80) for (let tx = -(D.bg || 0) - 80; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80); ctx.globalAlpha = 1; }
+  // Layer 6 base — UI frame plate (spr_datingsim_ui_nodiamonds frame 0) 2x
+  const plate0 = dsimImg('dsimplate0'); if (plate0) ctx.drawImage(plate0, 0, 0, 640, 440);
+  // Layer 2 — sky/window bg (spr_datingsim_ui_bg) at (106,24) 2x
+  const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);
+  if (D.done) { ctx.restore(); return; }
+  // Layer 3 — portraits. Ghost present -> the two face each other (speaker flips), ghost at 0.7a.
+  const hasGhost = !!D.ghost;
+  if (hasGhost) {
+    drawPortrait(ctx, D.spk, D.talkF || 0, 196, 40, true, 1);                 // speaker LEFT, facing right
+    drawPortrait(ctx, D.ghost, D.talkF || 0, 452, 40, false, 0.7);            // ghost RIGHT (translucent)
+  } else {
+    drawPortrait(ctx, D.spk, D.talkF || 0, 320, 40, false, 1);               // single speaker, centered
+  }
+  // sweat drop
+  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 196 : 320) - sw.width, 40, sw.width * 2, sw.height * 2); }
+  // Layer 9 — 3-question progress hearts (fill left->right as answered), top-left of the plate
+  for (let i = 0; i < 3; i++) { const hi = dsimImg('dsimheart' + (i < (D.hearts || 0) ? 0 : 8)); if (hi) { ctx.save(); if (i >= (D.hearts || 0)) ctx.globalAlpha = 0.85; ctx.drawImage(hi, 42 + i * 26, 40, hi.width, hi.height); ctx.restore(); } }
+  // Layer 4 — dialogue box gradient
+  ctx.save(); const gA = 0.7; const grad = ctx.createLinearGradient(0, 210, 0, 273); grad.addColorStop(0, 'rgba(102,86,177,' + (gA * 0.25) + ')'); grad.addColorStop(1, 'rgba(102,86,177,' + (gA * 0.85) + ')');
+  ctx.fillStyle = grad; ctx.fillRect(106, 210, 420, 63); ctx.restore();
+  // Layer 5 — dialogue text (paraphrased), 8-dir outline; salmon when ghost present
+  const lines = D.lines || []; const flash = D.flash > 0 && (D.flash % 4 < 2);
+  ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const fill = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
+  for (let i = 0; i < lines.length; i++) { const str = lines[i]; if (!str) continue; const y = 214 + i * 22;
+    ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, 320 + dx, y + dy);
+    ctx.fillStyle = fill; ctx.fillText(str, 320, y); }
+  // ghost HINT (date2): the nasty side blurts the pun answer
+  if (D.ghostHint) { ctx.font = "13px 'Determination Mono', monospace"; const gy = 150;
+    ctx.fillStyle = '#3a0d2e'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) ctx.fillText('"' + D.ghostHint + '"', 486 + dx, gy + dy);
+    ctx.fillStyle = '#ff9fe0'; ctx.fillText('"' + D.ghostHint + '"', 486, gy); }
+  // Layer 10 — choice carousel on a semicircle arc (radius 240, bulge up), + soul + arrows
+  if (D.opts) {
+    const n = D.opts.length, off = D.boxOff || 0, R = 240, ccx = 320, ccy = 291 + R, kmax = D.single ? 0 : 2;
+    for (let k = kmax; k >= -kmax; k--) {   // draw edges first, center last
+      const ang = (k * 18 + (off / 200) * 18) * Math.PI / 180;
+      const bx = ccx + Math.sin(ang) * R, by = ccy - Math.cos(ang) * R, sc = Math.cos(ang);
+      const idx = ((D.sel + k) % n + n) % n, bw = 150 * sc, bh = 44 * sc, centred = (k === 0 && Math.abs(off) < 40);
+      if (bx < -120 || bx > 760) continue;
+      ctx.fillStyle = centred && D.correct ? '#7dff7d' : '#fff'; ctx.fillRect(bx - bw / 2, by, bw, bh);
+      ctx.fillStyle = '#120b1f'; ctx.fillRect(bx - bw / 2 + 2, by + 2, bw - 4, bh - 4);
+      ctx.font = "18px 'Determination Mono', monospace"; ctx.textBaseline = 'middle';
+      let tw = ctx.measureText(D.opts[idx]).width, ts = Math.min(sc, tw > bw - 14 ? (bw - 14) / tw : 1);
+      ctx.save(); ctx.translate(bx, by + bh / 2); ctx.scale(ts, sc); ctx.fillStyle = centred ? '#fff' : '#b58bd6'; ctx.fillText(D.opts[idx], 0, 0); ctx.restore();
+    }
+    const ph = A.soul((Math.floor((D.bg || 0) / 6) % 2) ? 'pheart1' : 'pheart0') || A.ui('soul');
+    if (ph) drawSpr(ctx, ph, 320, (D.heartY != null ? D.heartY : 385), { scale: 1 });
+    const arw = dsimImg('pkarrow0') || dsimImg('pkarrow');
+    if (arw && D.ph === 'choose') { const bob = Math.abs(Math.sin((D.bg || 0) * 0.13)) * 4;
+      ctx.save(); ctx.translate(320, 352 - bob); ctx.rotate(-Math.PI / 2); ctx.globalAlpha = 0.9; ctx.drawImage(arw, -13, -13, 26, 26); ctx.restore();
+      if (!D.single) for (const s of [-1, 1]) { ctx.save(); ctx.translate(320 + s * (28 + bob), 385); ctx.rotate(s < 0 ? Math.PI : 0); ctx.globalAlpha = 0.7; ctx.drawImage(arw, -12, -12, 24, 24); ctx.restore(); }
+    }
+  }
+  // Layer 8 — timer bar (date1/2 only), anchored (186,416), 0..300px
+  if (D.timer != null) { ctx.fillStyle = '#241a33'; ctx.fillRect(186, 416, 300, 12);
+    ctx.fillStyle = D.timer < 0.3 ? '#ff5050' : '#c060e0'; ctx.fillRect(186, 416, 300 * D.timer, 12); }
+  ctx.restore(); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
 function drawDateUI(ctx, D) {
+  if (D && D.v3) { drawDateUIV3(ctx, D); return; }
   const bp = (typeof bulletProps === 'function') ? bulletProps : null;
   const img = id => { const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; };
   ctx.save();
