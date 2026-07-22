@@ -1553,6 +1553,69 @@ function pinkCatsPattern(chart) {
 PATTERNS.pinkn_cats = pinkCatsPattern(PINK_CATS_D0);       // the "Cats" attack (difficulty 0)
 PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (difficulty 1) — conga + fast finale
 
+// ============ DATE minigame (obj_date_controller): interactive dating-sim quiz ============
+// Fills in place of a regular attack once the DOKI meter is full. A scrolling list of answer options;
+// UP/DOWN move, Z/OK confirm. A WRONG answer (or the timer running out) damages all party members and
+// repeats the question. Clears after all questions are answered right. Date 1's first question has no
+// timer; later ones do (obj_date_controller questiondowntime). Content = the real Date-1 script (wiki).
+const PINK_DATE1 = [
+  { q: "SCHOOL!? And you wanna WALK ME HOME!?", opts: ["Yes", "No"], correct: 0, timed: false },
+  { q: "It's because you think this body's CUTE, right!?", opts: ["Yes", "No"], correct: 0, timed: true },
+  { q: "You... wish you never met me, right...?", opts: ["Yes", "No"], correct: 1, timed: true },
+];
+const PINK_DATE2 = [   // Date 2: pick the pun answer (a few of the real pairs)
+  { q: "My bike part? | Act Bored!", opts: ["Frank", "I tire", "Husky"], correct: 1, timed: true },
+  { q: "Susie's jeans? | Female dog!!!", opts: ["Husky", "Tender", "Stinky fish"], correct: 0, timed: true },
+  { q: "Be honest? | Be a weenie!", opts: ["Frank", "Match her style", "Tear up"], correct: 0, timed: true },
+];
+function pinkDatePattern(questions) {
+  return {
+    box: { w: 300, h: 190 }, hz30: false, dur: 100000,   // 60Hz (menu input); ends itself when all questions cleared
+    tick(a) {
+      const { f, box } = a;
+      const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
+      if (f === 0) { this._qi = 0; this._sel = 0; this._timer = 0; this._flash = 0; this._con = 0; this._done = false; }
+      if (this._done) { a.fx.date = { done: true }; return; }
+      const Q = questions[this._qi], n = Q.opts.length;
+      this._timer++;
+      const LIMIT = Q.timed ? 300 : 1e9;   // ~10s at 30Hz for timed questions
+      if (this._flash > 0) this._flash--;
+      // navigate
+      if (this._con === 0) {
+        if (IN.hit && (IN.hit.up)) this._sel = (this._sel - 1 + n) % n;
+        else if (IN.hit && (IN.hit.down)) this._sel = (this._sel + 1) % n;
+        const confirm = (IN.hit && IN.hit.ok) || (IN.down && IN.down.ok && this._timer % 6 === 0 && this._timer > 6);
+        if (confirm) {
+          if (this._sel === Q.correct) { this._con = 1; this._conT = 0; }   // correct -> advance
+          else { this._wrong(); }
+        }
+        if (this._timer >= LIMIT) this._wrong();   // timeout = wrong
+      } else {   // brief "correct!" beat then next question
+        this._conT = (this._conT || 0) + 1;
+        if (this._conT >= 24) {
+          this._qi++; this._sel = 0; this._timer = 0; this._con = 0;
+          if (this._qi >= questions.length) this._done = true;
+        }
+      }
+      a.fx.date = {
+        q: Q.q, opts: Q.opts, sel: this._sel, qi: this._qi, total: questions.length,
+        timer: Q.timed ? Math.max(0, 1 - this._timer / LIMIT) : null,
+        flash: this._flash, correct: this._con === 1,
+      };
+    },
+    _wrong() {
+      this._flash = 12; this._timer = 0;
+      if (typeof Battle !== 'undefined') {
+        Battle.shake = Math.max(Battle.shake || 0, 12); Battle.flash = 8;
+        Snd.play('hurt', 0.5);
+        for (const m of (Battle.myTeam || [])) if (m && m.hp > 0) { m.hp = Math.max(m.hp > 100 ? m.hp - 40 : 1, m.hp - 40); }   // damages the whole party
+      }
+    },
+  };
+}
+PATTERNS.pinkn_date1 = pinkDatePattern(PINK_DATE1);
+PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
+
 // TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
 // columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
 // frames. Ported 1:1 from the btimer_array burst/break logic. Swap lanes L/R, weave vertically.

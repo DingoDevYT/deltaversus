@@ -723,7 +723,7 @@ Battle.startDodge = function () {
   B.soulPurple = false; B._pmode = -1; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0;
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
   // are correct as-written; we render at 60Hz (bullets step every 2nd frame = authentic choppy motion).
-  B.hz30 = oppAtkers.length === 1 && (/^(gerson|jevil|pink|pinkn)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
+  B.hz30 = oppAtkers.length === 1 && (PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30 !== false && (/^(gerson|jevil|pink|pinkn)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
   B._hzTick = false;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
@@ -957,6 +957,10 @@ Battle.updDodge = function () {
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
+  if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
+    if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1; if (B._dateEnd > 24) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
+    return;
+  }
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
@@ -1385,6 +1389,37 @@ function drawBoxRect(ctx, cx, cy, w, h, rot, alpha) {
   ctx.strokeRect(-w / 2 - 1.5, -h / 2 - 1.5, w + 3, h + 3);
   ctx.restore();
 }
+// DATE minigame quiz: question + scrolling answer options + selection cursor + a timer bar.
+function drawDateUI(ctx, bx, D) {
+  ctx.save();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  if (D.done) { ctx.fillStyle = '#ff8fe0'; ctx.font = "16px 'Determination Mono', monospace";
+    ctx.textAlign = 'center'; ctx.fillText('♥  DATE CLEARED  ♥', bx.x + bx.w / 2, bx.y + bx.h / 2 - 8); ctx.restore(); return; }
+  const pad = 12, ox = bx.x + pad, top = bx.y + 10;
+  // question (wraps)
+  ctx.fillStyle = D.flash > 0 && (D.flash % 4 < 2) ? '#ff5a5a' : '#fff';
+  ctx.font = "12px 'Determination Mono', monospace";
+  const words = (D.q || '').split(' '); let line = '', ly = top, maxw = bx.w - pad * 2;
+  for (const w of words) { const t = line ? line + ' ' + w : w;
+    if (ctx.measureText(t).width > maxw && line) { ctx.fillText(line, ox, ly); ly += 15; line = w; } else line = t; }
+  if (line) ctx.fillText(line, ox, ly);
+  ly += 24;
+  // options (scrolling list) with the heart cursor on the selected one
+  for (let i = 0; i < D.opts.length; i++) {
+    const sel = i === D.sel, y = ly + i * 20;
+    if (sel) { const im = A.soul('red0') || A.ui('soul'); if (im) drawSpr(ctx, im, ox + 6, y + 6, { scale: 1 }); }
+    ctx.fillStyle = sel ? (D.correct ? '#7dff7d' : '#ffe100') : '#c9c9c9';
+    ctx.fillText(D.opts[i], ox + 20, y);
+  }
+  // timer bar
+  if (D.timer != null) { const bw = bx.w - pad * 2, y = bx.y + bx.h - 12;
+    ctx.fillStyle = '#333'; ctx.fillRect(ox, y, bw, 4);
+    ctx.fillStyle = D.timer < 0.3 ? '#ff5a5a' : '#ff8fe0'; ctx.fillRect(ox, y, bw * D.timer, 4); }
+  // progress dots
+  for (let i = 0; i < D.total; i++) { ctx.fillStyle = i < D.qi ? '#7dff7d' : i === D.qi ? '#ff8fe0' : '#555';
+    ctx.beginPath(); ctx.arc(bx.x + bx.w - 12 - i * 10, bx.y + 8, 3, 0, 6.283); ctx.fill(); }
+  ctx.restore();
+}
 // The battle box only exists during the dodge (and its spin-in / spin-out).
 Battle.renderBoxAndBullets = function (ctx) {
   const B = Battle;
@@ -1428,6 +1463,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.lineTo(bx.x + bx.w, bx.y + bx.h - p); ctx.lineTo(bx.x, bx.y + bx.h); ctx.closePath();
     ctx.fill(); ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3; ctx.stroke();
   } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, (B.fx && B.fx.purpleSoul && B.fx.purpleSoul.mode === 3 ? (B.fx.purpleSoul.rot || 0) * Math.PI / 180 : (B.fx && B.fx.boxRot) || 0), 1);
+  if (B.fx && B.fx.date) { drawDateUI(ctx, bx, B.fx.date); return; }   // DATE minigame quiz UI (no bullets/soul)
   // pattern-driven overlays: a second non-enterable box (face attack) + green connector arms (phones/heart)
   if (B.fx) {
     if (B.fx.arms) { ctx.strokeStyle = '#49d049'; ctx.lineWidth = 3; ctx.lineCap = 'round';
