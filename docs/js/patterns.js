@@ -1591,13 +1591,13 @@ function pinkDatePattern(D) {
       if (f === 0) {
         S.ph = D.intro.length ? 'cut' : 'ask'; S.line = 0; S.qi = 0; S.sel = 0;
         S.boxCon = 0; S.boxOff = 0; S.bt = 0; S.heartY = 385; S.chars = 0; S.talk = 0;
-        S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240; S.react = 0; S.reactT = 0; S.done = false;
+        S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240; S.react = 0; S.reactT = 0; S.done = false; S.lives = 3;
       }
       S.bg = (S.bg + 0.7) % 80; S.bgy = (S.bgy + 0.4) % 80; S.talk += 0.167;
       if (S.flash > 0) S.flash--;
       const emit = extra => { a.fx.date = Object.assign({
         bg: S.bg, bgy: S.bgy, talk: Math.floor(S.talk) % 2, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
-        heartY: S.heartY, line1: S._l1 || '', line2: S._l2 || '', chars: Math.floor(S.chars),
+        heartY: S.heartY, line1: S._l1 || '', line2: S._l2 || '', chars: Math.floor(S.chars), lives: S.lives,
       }, extra || {}); };
       const setText = str => { const p = (str || '').split('|'); S._l1 = p[0] || ''; S._l2 = p[1] || ''; S.chars = 0; };
 
@@ -1645,10 +1645,10 @@ function pinkDatePattern(D) {
           if (S.bt >= 6) {
             S.boxCon = 0; S.heartY = 385;
             if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S.react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }   // snd_coin
-            else { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }
+            else { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; S.lives = Math.max(0, S.lives - 1); wrongReactSfx(); }
           }
         }
-        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }   // timeout = wrong
+        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; S.lives = Math.max(0, S.lives - 1); wrongReactSfx(); }   // timeout = wrong (lose a life)
         emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single, ghost: Q.ghost,
                timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         return;

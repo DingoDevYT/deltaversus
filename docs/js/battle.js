@@ -1508,8 +1508,13 @@ function drawDateUI(ctx, D) {
   const talking = D.chars != null && D.chars < full0 + 2;
   const tailA = img('spktail' + (Math.floor((D.bg || 0) / 3) % 11));
   if (tailA) { ctx.save(); ctx.globalAlpha = 0.9; ctx.drawImage(tailA, 320 - 112, 21, tailA.width * 2, tailA.height * 2); ctx.restore(); }
-  const face = img('spkface' + (talking ? (Math.floor((D.bg || 0) / 6) % 2) : 0)) || img('spkface0');
+  // expression: shocked on a wrong answer (react con 4 / flash), else the idle talking face (2-frame lipsync)
+  const wrong = D.correct === false || D.flash > 0;
+  const face = wrong ? img('spkshock0') : (img('spkface' + (talking ? (Math.floor((D.bg || 0) / 6) % 2) : 0)) || img('spkface0'));
   if (face) ctx.drawImage(face, 320 - 114, 21, 228, 232);
+  // 3-LIVES HUD (spr_datingsim_ui_heart): full heart = life left, greyed = lost. Top-left of the panel (xx+14, yy+170).
+  if (D.lives != null) for (let i = 0; i < 3; i++) { const hi = img('dsimheart' + (i < D.lives ? 0 : 8));
+    if (hi) { ctx.save(); if (i >= D.lives) ctx.globalAlpha = 0.4; ctx.drawImage(hi, 118 + i * 26, 32, hi.width * 2, hi.height * 2); ctx.restore(); } }
   // DATE 2: the GHOST side of Pink (spr_pinkghost_tail) floats beside her and blurts a HINT that points to the
   // pun answer (obj_date_controller second_text). Drawn semi-transparent with its own speech line.
   if (D.ghost) {
