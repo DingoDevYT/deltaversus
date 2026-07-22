@@ -2235,6 +2235,11 @@ function drawBullet(ctx, b, px, py, s) {
     ctx.save(); ctx.translate(px, py); ctx.rotate((b.t || 0) * 0.1);
     for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-1 * s, -6 * s, 2 * s, 12 * s); }
     ctx.restore();
+  } else if (b.shape === 'diamond') {   // DELTARUNE white bullet-diamond (Gerson squish barrage)
+    const r = (b.r || 6) * 1.5 * s;
+    ctx.save(); ctx.translate(px, py); ctx.rotate((b.rot || 0) + Math.PI / 4);
+    ctx.fillStyle = b.color || '#fff'; ctx.fillRect(-r, -r, r * 2, r * 2);
+    ctx.restore();
   } else if (b.shape === 'note') {
     ctx.fillRect(px - 2 * s, py - 6 * s, 3 * s, 10 * s);
     ctx.beginPath(); ctx.arc(px - 3 * s, py + 4 * s, 4 * s, 0, 7); ctx.fill();

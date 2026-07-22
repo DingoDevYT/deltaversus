@@ -7,7 +7,12 @@
 import sys, os, json
 from PIL import Image
 
-EXPORT = r"C:\Users\lando\Desktop\DELTARUNE - EXPORT\DELTARUNE Chapter 5 - EXPORT\sprites"
+# Default Ch5; override with env EXPORT_CH (e.g. EXPORT_CH=4) or EXPORT_DIR (full path to a sprites/ dir).
+_CH = os.environ.get("EXPORT_CH", "5")
+EXPORT = os.environ.get(
+    "EXPORT_DIR",
+    rf"C:\Users\lando\Desktop\DELTARUNE - EXPORT\DELTARUNE Chapter {_CH} - EXPORT\sprites",
+)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BULLETS = os.path.join(ROOT, "docs", "assets", "bullets")
 MANIFEST = os.path.join(ROOT, "docs", "assets", "manifest.json")

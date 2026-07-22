@@ -1388,42 +1388,62 @@ PATTERNS.gerson_boxthrow = {
       const n = 3 + Math.floor(rng() * 2);
       for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
         const vx = -Math.abs(gx - (cx + off)) / 45 + (-2 + (4 / (n - 1)) * i) + (rng() - 0.5), vy = -14 + (-1 + (2 / (n - 1)) * i) + (rng() * 2 - 1);
-        add({ ...bulletProps('ghammer'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 16, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
+        add({ ...bulletProps('ghammer'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
       Snd.play('smallswing', 0.3);
     }
-    const p1 = f - 196;                                              // PHASE 1: 25 fast singles at a sine-swept x
+    const p1 = f - 196;                                              // PHASE 1: 25 bigger fast singles at a sine-swept x (GML sin*80, x3 size)
     if (p1 >= 0 && p1 < 100 && p1 % 4 === 0) {
-      const tx = cx + Math.sin(f * 0.325) * 60;
-      add({ ...bulletProps('ghammer'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 16, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 });
+      const tx = cx + Math.sin(f * 0.325) * 80;
+      add({ ...bulletProps('ghammer'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(23, 44) * 1.5, spin: 0.24, dmg: 28, life: 130 });
     }
     if (f === 305) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - cx) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 120), r: 16, hitW: 60, hitH: 60, dmg: 40, life: 140 }); Snd.play('smallswing', 0.5); }
   },
 };
-// #B SQUISH-BOX SPEAR RAIN (AP47, RED) — the box flattens into a wide thin strip, then hammer-smash columns
-// rain straight down at fixed x's; weave between the columns.
+// #B SQUISH-BOX DIAMOND BARRAGE (AP47/code13, RED) — Gerson SQUISHES the box: it snaps WIDE, then rows of
+// white diamonds fire HORIZONTALLY across it from alternating edges, decelerating (GML friction 0.14). The
+// box also SHOVES side to side (box_rumble). Weave up/down between the rows and ride the shove.
 PATTERNS.gerson_squish = {
   dur: 460, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f > 34) a.fx.boxTarget = { x: cx - 190, y: cy - 24, w: 380, h: 48 };   // squash wide + flat
-    const COLS = [100, 150, 200, 250, 300, 350, 400, 450, 550, 500, 450, 400, 350, 300, 250, 200, 100, 150, 300, 350, 500, 550, 100, 150, 200, 250, 400, 450];
-    if (f >= 55 && (f - 55) % 5 === 0) {
-      const idx = (f - 55) / 5;
-      if (idx < COLS.length) { const colX = cx - 190 + (COLS[idx] - 80) / 470 * 380;
-        add({ ...bulletProps('gswdown'), x: colX, y: cy - 60, vx: 0, vy: 0, noHit: true, scale: GSC(40, 50), rot: 0, fireAt: 22, fireVX: 0, fireVY: 14, r: 7, grazeR: 12, dmg: 26, life: 90 });
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    // squish: the box widens (GML xscale settles ~6, yscale ~1) and shoves L/R every ~32 frames.
+    const shove = f > 40 ? Math.sin((f - 40) / 32 * Math.PI) * 44 : 0;
+    if (f === 30) { Battle.shake = 16; Snd.play('bosshit', 0.55); }              // the squish slam
+    if (f > 28) a.fx.boxTarget = { x: cx - 214 + shove, y: cy - 74, w: 430, h: 148 };
+    // barrage: 10-diamond horizontal bursts, staggered rows 15px apart, GML friction 0.14 (ax opposes vx).
+    const BURSTS = [54, 116, 178, 240, 302, 364], SPEEDS = [7.6, 4.4, 6.8, 5.2, 7.2, 4.8];
+    for (let bi = 0; bi < BURSTS.length; bi++) {
+      if (f !== BURSTS[bi]) continue;
+      const fromLeft = bi % 2 === 0, dir = fromLeft ? 1 : -1, sp0 = SPEEDS[bi % SPEEDS.length];
+      const top = (cy - 74) + 12, edge = cx - 214 + shove;
+      for (let i = 0; i < 10; i++) {
+        const y = top + 15 * i + (rng() * 4 - 2);
+        const sp = sp0 - (i % 3) * 1.1;                                          // some slow "gap" diamonds (2-3.5)
+        add({ shape: 'diamond', color: '#fff', x: fromLeft ? edge - 12 : edge + 430 + 12, y,
+              vx: dir * sp, vy: 0, ax: -dir * 0.14, r: 6, grazeR: 11, spin: 0.14, dmg: 26, life: 200 });
       }
+      Snd.play('smallswing', 0.32);
     }
   },
 };
-// #C RUDE BUSTER (RED) — Gerson lobs a slow homing orb; press [Z] when it's CLOSE to knock it back for TP
-// (b.deflectable), or eat a big hit. A deflect duel.
+// #C RUDE BUSTER (RED, obj_gerson_rudebuster) — Gerson hurls an ACCELERATING homing orb (GML speed 9,
+// friction -1.5, homing turn = angle_diff/4). Press [Z] when it's CLOSE to knock it back for TP; if it
+// reaches you undeflected it BURSTS into 8 radial bolts (GML: 8 shots @45+90i, speed 25). A deflect duel.
 PATTERNS.gerson_rudebuster = {
   dur: 300, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
     const { f, box, add, soul } = a; const gx = box.x + box.w + 40, gy = box.y - 10;
-    if (f % 90 !== 10 || f >= 270) return;
+    if (f % 96 !== 12 || f >= 264) return;
     const ang = Math.atan2(soul.y - gy, soul.x - gx);
-    add({ color: '#ff3b6b', x: gx, y: gy, vx: Math.cos(ang) * 4, vy: Math.sin(ang) * 4, r: 11, grazeR: 0, homing: 0.1, deflectable: 1, deflectR: 34, spin: 0.1, dmg: 44, life: 220 });
+    const orb = { color: '#ff3b6b', x: gx, y: gy, vx: Math.cos(ang) * 2.4, vy: Math.sin(ang) * 2.4,
+                  r: 12, grazeR: 0, homing: 0.55, maxv: 9, deflectable: 1, deflectR: 38, spin: 0.14, dmg: 50, life: 260, _bo: 0 };
+    orb.emit = function (b, out, s) {                                            // burst if it reaches the soul undeflected
+      if (b._bo || Math.hypot(b.x - s.x, b.y - s.y) > 40) return;
+      b._bo = 1; b.dead = true; Battle.shake = 14; Battle.flash = 6; Snd.play('boardbomb', 0.5);
+      for (let i = 0; i < 8; i++) { const aa = (45 + i * 90) * Math.PI / 180;
+        out.push({ color: '#ff5c7d', x: b.x, y: b.y, vx: Math.cos(aa) * 6.5, vy: Math.sin(aa) * 6.5, r: 7, grazeR: 12, spin: 0.12, dmg: 50, life: 64 }); }
+    };
+    add(orb);
     Snd.play('smallswing', 0.4);
   },
 };
