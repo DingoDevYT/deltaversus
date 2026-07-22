@@ -1508,7 +1508,7 @@ PATTERNS.pink_idol = {
 // TYPE 200 — Cats (purple mode 1: 3 lanes + free X). Cats stream from the sides in 3 rows (56 apart),
 // speed 8*s*(4/3). Ride the lanes; the doki hearts are collectibles (graze).
 PATTERNS.pinkn_cats = {
-  dur: 360, box: { w: 200, h: 168 }, hz30: 1,
+  dur: 360, box: { w: 150, h: 130 }, hz30: 1,   // fits mode-1 grid: free-X ±63, 3 lanes ±56
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -1525,12 +1525,12 @@ PATTERNS.pinkn_cats = {
 // TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid). Bombs land ON the grid cells the soul hops
 // between, fuse, then detonate into a row+column cross of beams (24px steps). Hop off the bomb's row+col.
 PATTERNS.pinkn_bombs = {
-  dur: 300, box: { w: 200, h: 168 }, hz30: 1,
+  dur: 300, box: { w: 190, h: 190 }, hz30: 1,   // fits mode-2 grid: 4x4 cells at (lane-1.5)*56 -> ±84
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f < 20 || f % 16 !== 0 || f > 260) return;
-    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx - 60 + gx * 40, y = cy - 60 + gy * 40;
+    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx + (gx - 1.5) * 56, y = cy + (gy - 1.5) * 56;
     const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, r: 7, grazeR: 11, scale: PS(2.4), spin: 0.15, _fuse: 60, dmg: 20 };
     bomb.emit = function (b, out) {
       if (b.t >= b._fuse && !b._done) {

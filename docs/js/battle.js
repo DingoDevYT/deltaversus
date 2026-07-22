@@ -878,13 +878,13 @@ Battle.updDodge = function () {
     if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
-    if (pm === 2) {                                   // 4x4 grid (lane_distance 40)
-      const xt = (B.pLaneX - 1.5) * 40, yt = (B.pLaneY - 1.5) * 40;
+    if (pm === 2) {                                   // 4x4 grid (lane_distance 56, GML)
+      const xt = (B.pLaneX - 1.5) * 56, yt = (B.pLaneY - 1.5) * 56;
       if (Math.abs(B.pOnX - xt) < 0.5 && Math.abs(B.pOnY - yt) < 0.5) {
         if (H.left && B.pLaneX > 0) B.pLaneX--; else if (H.right && B.pLaneX < 3) B.pLaneX++;
         else if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 3) B.pLaneY++;
       }
-      B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 40, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 40, 22);
+      B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 56, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 56, 22);
     } else {                                          // mode 1: 3 horizontal lanes (y), free X within +/-63
       const yt = (B.pLaneY - 1) * 56;
       if (Math.abs(B.pOnY - yt) < 0.5) { if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 2) B.pLaneY++; }
@@ -1391,9 +1391,13 @@ Battle.renderBoxAndBullets = function (ctx) {
   }
   ctx.save();
   const wide = B.fx && (B.fx.hideBox || bx.w > 500);   // full-screen arena: no bullet clipping
-  const clipL = wide ? 0 : (B.fx && B.fx.faceBox ? Math.min(bx.x, B.fx.faceBox.x) - 40 : bx.x - 40);
-  const clipR = wide ? 640 : (B.fx && B.fx.faceBox ? Math.max(bx.x + bx.w, B.fx.faceBox.x + B.fx.faceBox.w) + 40 : bx.x + bx.w + 80);
-  ctx.beginPath(); ctx.rect(clipL, wide ? 0 : bx.y - 40, clipR - clipL, wide ? 480 : bx.h + 80); ctx.clip();
+  if (wide) { ctx.beginPath(); ctx.rect(0, 0, 640, 480); ctx.clip(); }
+  else if (B.fx && B.fx.faceBox) {   // Spamton face attack keeps its own tight two-box clip
+    const l = Math.min(bx.x, B.fx.faceBox.x) - 40, r = Math.max(bx.x + bx.w, B.fx.faceBox.x + B.fx.faceBox.w) + 40;
+    ctx.beginPath(); ctx.rect(l, bx.y - 40, r - l, bx.h + 80); ctx.clip();
+  } else {   // otherwise: FULL WIDTH + a generous vertical margin so incoming bullets are visible approaching (no edge mask)
+    ctx.beginPath(); ctx.rect(0, Math.max(52, bx.y - 96), 640, bx.h + 192); ctx.clip();
+  }
   for (const h of B.hearts) {
     ctx.fillStyle = 'rgba(255,105,180,0.8)';
     ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(-0.05);
@@ -1439,9 +1443,9 @@ Battle.renderBoxAndBullets = function (ctx) {
   if (B.soulPurple) {
     const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2;
     ctx.strokeStyle = 'rgba(181,105,214,0.45)'; ctx.lineWidth = 1;
-    if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 40;
-      ctx.beginPath(); ctx.moveTo(gcx - 60, gcy + o); ctx.lineTo(gcx + 60, gcy + o); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 60); ctx.lineTo(gcx + o, gcy + 60); ctx.stroke(); } }
+    if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 56;
+      ctx.beginPath(); ctx.moveTo(gcx - 84, gcy + o); ctx.lineTo(gcx + 84, gcy + o); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 84); ctx.lineTo(gcx + o, gcy + 84); ctx.stroke(); } }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }
