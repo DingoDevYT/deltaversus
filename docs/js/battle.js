@@ -1523,13 +1523,13 @@ function drawDateUIV3(ctx, D) {
   // Layer 3 — portraits. Ghost present -> the two face each other (speaker flips), ghost at 0.7a.
   const hasGhost = !!D.ghost;
   if (hasGhost) {
-    drawPortrait(ctx, D.spk, D.talkF || 0, 196, 40, true, 1);                 // speaker LEFT, facing right
-    drawPortrait(ctx, D.ghost, D.talkF || 0, 452, 40, false, 0.7);            // ghost RIGHT (translucent)
+    drawPortrait(ctx, D.spk, D.talkF || 0, 206, 34, false, 1);                // speaker LEFT (faces right, toward ghost)
+    drawPortrait(ctx, D.ghost, D.talkF || 0, 438, 34, true, 0.7);            // ghost RIGHT (translucent, faces left)
   } else {
-    drawPortrait(ctx, D.spk, D.talkF || 0, 320, 40, false, 1);               // single speaker, centered
+    drawPortrait(ctx, D.spk, D.talkF || 0, 320, 34, false, 1);               // single speaker, centered
   }
   // sweat drop
-  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 196 : 320) - sw.width, 40, sw.width * 2, sw.height * 2); }
+  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 206 : 320) - sw.width, 34, sw.width * 2, sw.height * 2); }
   // Layer 9 — 3-question progress hearts (fill left->right as answered), top-left of the plate
   for (let i = 0; i < 3; i++) { const hi = dsimImg('dsimheart' + (i < (D.hearts || 0) ? 0 : 8)); if (hi) { ctx.save(); if (i >= (D.hearts || 0)) ctx.globalAlpha = 0.85; ctx.drawImage(hi, 42 + i * 26, 40, hi.width, hi.height); ctx.restore(); } }
   // Layer 4 — dialogue box gradient
@@ -1538,35 +1538,41 @@ function drawDateUIV3(ctx, D) {
   // Layer 5 — dialogue text (paraphrased), 8-dir outline; salmon when ghost present
   const lines = D.lines || []; const flash = D.flash > 0 && (D.flash % 4 < 2);
   ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  const fill = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
-  for (let i = 0; i < lines.length; i++) { const str = lines[i]; if (!str) continue; const y = 214 + i * 22;
-    ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, 320 + dx, y + dy);
-    ctx.fillStyle = fill; ctx.fillText(str, 320, y); }
-  // ghost HINT (date2): the nasty side blurts the pun answer
-  if (D.ghostHint) { ctx.font = "13px 'Determination Mono', monospace"; const gy = 150;
-    ctx.fillStyle = '#3a0d2e'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) ctx.fillText('"' + D.ghostHint + '"', 486 + dx, gy + dy);
-    ctx.fillStyle = '#ff9fe0'; ctx.fillText('"' + D.ghostHint + '"', 486, gy); }
-  // Layer 10 — choice carousel on a semicircle arc (radius 240, bulge up), + soul + arrows
+  const outline = (str, x, y, fillc) => { ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, x + dx, y + dy); ctx.fillStyle = fillc; ctx.fillText(str, x, y); };
+  // 2-speaker layout (spec §4): ghost present -> speaker text LEFT (salmon), ghost line RIGHT (lavender); else centered
+  const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
+  const spkX = hasGhost ? 214 : 320, baseY = 244;
+  for (let i = 0; i < lines.length; i++) if (lines[i]) outline(lines[i], spkX, baseY + i * 22, spkCol);
+  if (hasGhost && D.ghostHint) outline(D.ghostHint, 430, baseY, '#c7b9d7');   // ghost's (mean) line = lavender, right
+  // Layer 10 — choice carousel: horizontal CYLINDER projection (flat row, edges compressed) + connector
+  // rail with dots/arrows + the purple soul at the hub (spec §5.2). Boxes at constant y in the black panel.
   if (D.opts) {
-    const n = D.opts.length, off = D.boxOff || 0, R = 240, ccx = 320, ccy = 291 + R, kmax = D.single ? 0 : 2;
-    for (let k = kmax; k >= -kmax; k--) {   // draw edges first, center last
-      const ang = (k * 18 + (off / 200) * 18) * Math.PI / 180;
-      const bx = ccx + Math.sin(ang) * R, by = ccy - Math.cos(ang) * R, sc = Math.cos(ang);
-      const idx = ((D.sel + k) % n + n) % n, bw = 150 * sc, bh = 44 * sc, centred = (k === 0 && Math.abs(off) < 40);
-      if (bx < -120 || bx > 760) continue;
-      ctx.fillStyle = centred && D.correct ? '#7dff7d' : '#fff'; ctx.fillRect(bx - bw / 2, by, bw, bh);
-      ctx.fillStyle = '#120b1f'; ctx.fillRect(bx - bw / 2 + 2, by + 2, bw - 4, bh - 4);
-      ctx.font = "18px 'Determination Mono', monospace"; ctx.textBaseline = 'middle';
-      let tw = ctx.measureText(D.opts[idx]).width, ts = Math.min(sc, tw > bw - 14 ? (bw - 14) / tw : 1);
-      ctx.save(); ctx.translate(bx, by + bh / 2); ctx.scale(ts, sc); ctx.fillStyle = centred ? '#fff' : '#b58bd6'; ctx.fillText(D.opts[idx], 0, 0); ctx.restore();
+    const n = D.opts.length, off = D.boxOff || 0, Rc = 300, y0 = 322, bh = 44, kmax = D.single ? 0 : 2;
+    const railY = y0 + bh + 34, hubX = 320;
+    const projX = L => hubX + Math.sin(Math.max(-Math.PI / 2, Math.min(Math.PI / 2, L / Rc))) * Rc;
+    // connector rail (purple 128,0,128): horizontal spine + vertical drops + junction dots + inward arrows
+    ctx.strokeStyle = 'rgb(128,0,128)'; ctx.fillStyle = 'rgb(128,0,128)'; ctx.lineWidth = 2;
+    if (!D.single) { ctx.beginPath(); ctx.moveTo(projX(-kmax * 200 + off), railY); ctx.lineTo(projX(kmax * 200 + off), railY); ctx.stroke(); }
+    for (let k = -kmax; k <= kmax; k++) { const L = k * 200 + off; if (Math.abs(L / Rc) > Math.PI / 2) continue; const bx = projX(L);
+      ctx.beginPath(); ctx.moveTo(bx, y0 + bh); ctx.lineTo(bx, railY); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx, railY, 4, 0, 6.2832); ctx.fill();
+      if (k !== 0) { const dir = k > 0 ? -1 : 1, ax = (bx + hubX) / 2; ctx.beginPath(); ctx.moveTo(ax - dir * 5, railY - 5); ctx.lineTo(ax, railY); ctx.lineTo(ax - dir * 5, railY + 5); ctx.stroke(); }
+    }
+    for (let k = kmax; k >= -kmax; k--) {   // draw edges first, center last (center on top)
+      const L = k * 200 + off; if (Math.abs(L / Rc) > Math.PI / 2) continue;
+      const bx = projX(L), comp = Math.cos(Math.max(-Math.PI / 2, Math.min(Math.PI / 2, L / Rc)));
+      const idx = ((D.sel + k) % n + n) % n, bw = 150 * comp, centred = (k === 0 && Math.abs(off) < 40);
+      ctx.fillStyle = centred && D.correct ? '#7dff7d' : '#fff'; ctx.fillRect(bx - bw / 2, y0, bw, bh);
+      ctx.fillStyle = '#120b1f'; ctx.fillRect(bx - bw / 2 + 2, y0 + 2, bw - 4, bh - 4);
+      ctx.font = "18px 'Determination Mono', monospace"; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+      let tw = ctx.measureText(D.opts[idx]).width, ts = Math.min(comp, tw > bw - 14 ? (bw - 14) / tw : 1);
+      ctx.save(); ctx.translate(bx, y0 + bh / 2); ctx.scale(ts, 1); ctx.fillStyle = centred ? '#fff' : '#b58bd6'; ctx.fillText(D.opts[idx], 0, 0); ctx.restore();
     }
     const ph = A.soul((Math.floor((D.bg || 0) / 6) % 2) ? 'pheart1' : 'pheart0') || A.ui('soul');
-    if (ph) drawSpr(ctx, ph, 320, (D.heartY != null ? D.heartY : 385), { scale: 1 });
+    if (ph) drawSpr(ctx, ph, hubX, (D.heartY != null ? D.heartY : railY), { scale: 1 });
     const arw = dsimImg('pkarrow0') || dsimImg('pkarrow');
     if (arw && D.ph === 'choose') { const bob = Math.abs(Math.sin((D.bg || 0) * 0.13)) * 4;
-      ctx.save(); ctx.translate(320, 352 - bob); ctx.rotate(-Math.PI / 2); ctx.globalAlpha = 0.9; ctx.drawImage(arw, -13, -13, 26, 26); ctx.restore();
-      if (!D.single) for (const s of [-1, 1]) { ctx.save(); ctx.translate(320 + s * (28 + bob), 385); ctx.rotate(s < 0 ? Math.PI : 0); ctx.globalAlpha = 0.7; ctx.drawImage(arw, -12, -12, 24, 24); ctx.restore(); }
-    }
+      ctx.save(); ctx.translate(hubX, railY - 22 - bob); ctx.rotate(-Math.PI / 2); ctx.globalAlpha = 0.9; ctx.drawImage(arw, -13, -13, 26, 26); ctx.restore(); }
   }
   // Layer 8 — timer bar (date1/2 only), anchored (186,416), 0..300px
   if (D.timer != null) { ctx.fillStyle = '#241a33'; ctx.fillRect(186, 416, 300, 12);
@@ -1750,16 +1756,16 @@ function drawPinkDancer(ctx, f, a, kind) {
     if (xx < -70 || xx > 700) continue;
     const yhop = pinkHop(f + a * (bg ? 4 : 8));
     if (bg) {
-      const y = 62 + yhop;
-      pinkSceneSpr(ctx, 'pnbgd0', xx, y, 13, 31, { scale: 2, alpha: 0.9 });
+      const y = 60 + yhop;
+      pinkSceneSpr(ctx, 'pnbgd0', xx, y, 13, 31, { scale: 1, alpha: 0.9 });
       const ga = 20 + Math.sin((f + a * 4) * 0.15) * 30;       // glowstick sway ±30, base +20
-      pinkSceneSpr(ctx, 'pnbgglow0', xx + 8, y - 30, 5, 15, { scale: 2, alpha: 0.9, angle: ga });
+      pinkSceneSpr(ctx, 'pnbgglow0', xx + 4, y - 15, 5, 15, { scale: 1, alpha: 0.9, angle: ga });
     } else {
-      const y = 320 + yhop;
+      const y = 398 + yhop;                                     // foreground row sits low, near the stage lip
       const fi = Math.min(4, Math.floor((xx / 640) * 5 + 5) % 5);   // frame by screen-fifth
       const gf = Math.floor((f + a * 8) / 8) % 3;
-      pinkSceneSpr(ctx, 'pnfgglow' + gf, xx + 23, y - 36, 15, 45, { scale: 2, alpha: 0.95 });
-      pinkSceneSpr(ctx, 'pnfgd' + fi, xx, y, 43, 17, { scale: 2, alpha: 0.95 });
+      pinkSceneSpr(ctx, 'pnfgglow' + gf, xx + 11, y - 18, 15, 45, { scale: 1, alpha: 0.95 });
+      pinkSceneSpr(ctx, 'pnfgd' + fi, xx, y, 43, 17, { scale: 1, alpha: 0.95 });
     }
   }
 }

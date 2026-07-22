@@ -1738,7 +1738,7 @@ function pinkDateN3Pattern(D) {
       const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
       const HIT = k => IN.hit && IN.hit[k];
       if (f === 0) { S.ph = 'cut'; S.ci = 0; S.qi = 0; S.sel = 0; S.boxCon = 0; S.boxOff = 0; S.bt = 0;
-        S.heartY = 385; S.chars = 0; S.talk = 0; S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240;
+        S.heartY = 400; S.chars = 0; S.talk = 0; S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240;
         S.reactT = 0; S.done = false; S.correct = 0; S.ghostOn = false; S._shown = null; }
       S.bg = (S.bg + 0.7) % 80; S.bgy = (S.bgy + 0.4) % 80; S.talk += 0.167;
       if (S.flash > 0) S.flash--;
@@ -1746,7 +1746,7 @@ function pinkDateN3Pattern(D) {
       const setText = str => { const p = (str || '').split('|'); S._t = p; S.chars = 0; };
       const cur = beat() || {};
       if (S._shown !== S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi)) { setText(cur.text); S._shown = S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi);
-        if (cur.split) S.ghostOn = true; if (cur.sfx && typeof Snd !== 'undefined') Snd.play(cur.sfx, 0.5); if (S.ph === 'ask' || S.ph === 'cut') { S.sel = 0; S.heartY = 385; S.timer = 240; } }
+        if (cur.split) S.ghostOn = true; if (cur.sfx && typeof Snd !== 'undefined') Snd.play(cur.sfx, 0.5); S.askDwell = 0; if (S.ph === 'ask' || S.ph === 'cut') { S.sel = 0; S.heartY = 400; S.timer = 240; } }
       const full = S._t.join('').length;
       S.chars = Math.min(full + 2, S.chars + 2);
       const talkF = (S.chars < full && (Math.floor(S.talk) % 2)) ? 1 : 0;
@@ -1767,7 +1767,7 @@ function pinkDateN3Pattern(D) {
       }
       const Q = D.qs[S.qi], n = Q.opts.length;
       if (S.ph === 'ask') { emit({ opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghostHint: Q.ghostHint, timer: null });
-        if (typed() && S.chars > full + 6) { S.ph = 'choose'; S.bt = 0; } return; }
+        if (typed()) { S.askDwell = (S.askDwell || 0) + 1; if (S.askDwell > 6) { S.ph = 'choose'; S.bt = 0; S.askDwell = 0; } } return; }
       if (S.ph === 'choose') {
         if (Q.timed && S.boxCon === 0) S.timer -= 0.5;
         if (S.boxCon === 0) {
@@ -1776,8 +1776,8 @@ function pinkDateN3Pattern(D) {
           else if (HIT('up')) { S.boxCon = 2; S.bt = 0; }
         } else if (S.boxCon === -1) { S.bt++; S.boxOff = lerp2(0, -200, S.bt / 5); if (S.bt >= 5) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel + 1) % n; } }
         else if (S.boxCon === 1) { S.bt++; S.boxOff = lerp2(0, 200, S.bt / 5); if (S.bt >= 5) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel - 1 + n) % n; } }
-        else if (S.boxCon === 2) { S.bt++; S.heartY = lerp2(390, 319, S.bt / 3);
-          if (S.bt >= 3) { S.boxCon = 0; S.heartY = 385;
+        else if (S.boxCon === 2) { S.bt++; S.heartY = lerp2(400, 344, S.bt / 3);
+          if (S.bt >= 3) { S.boxCon = 0; S.heartY = 400;
             if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S._react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }
             else { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); } } }
         if (Q.timed && S.timer <= 0) { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); }
@@ -2093,10 +2093,14 @@ PATTERNS.pinkn_tunnel = {
             b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;   // GML lengthdir (y = -sin)
             b.scale = PS(Math.max(0.5, R / 48));                              // pseudo-3D zoom with the ring
             b.rot = Math.atan2(-Math.cos(ar), -Math.sin(ar)) + (b._spin < 0 ? Math.PI : 0);   // tangent
-            // COLLISION: a zap only hurts when it's on the HEART's OWN ring layer (obj_pinkzap: active=1 &&
-            // mask_index=-1 only when tunnel_lane_layer==heart layer; else mask_empty). Fixes zaps on the
-            // next ring out hitting you. End-caps (cap) are always harmless.
-            const hLayer = (typeof Battle !== 'undefined' && Battle.pLayer != null) ? Battle.pLayer : 0;
+            // COLLISION: a zap only hurts when it's on the HEART's OWN ring (obj_pinkzap active only when
+            // tunnel_lane_layer==heart layer). Instead of trusting Battle.pLayer (off-by-one at ring
+            // boundaries let the next ring out hit you), compute the ring PHYSICALLY closest to the heart
+            // and collide ONLY that one. End-caps (cap) are always harmless.
+            let hLayer = (typeof Battle !== 'undefined' && Battle.pLayer != null) ? Battle.pLayer : 0;
+            const heart = (typeof Battle !== 'undefined') && Battle.soul;
+            if (heart) { const hd = Math.hypot(heart.x - SS.cx, heart.y - SS.cy); let cb = 1e9;
+              for (let i = 0; i < 8; i++) { const ri = SS.rings[i]; if (ri > 0) { const dd = Math.abs(ri - hd); if (dd < cb) { cb = dd; hLayer = i; } } } }
             b.noHit = b._cap || (b._layer !== hLayer);
             if (b.alpha < 1) b.alpha = Math.min(1, (b.alpha || 0) + 0.2);
           };
@@ -2634,7 +2638,7 @@ function pinkBombPattern(chart) {
   return {
     // the OVERLAP GUARD freezes the schedule while a batch is on the board, so the real playtime is longer
     // than the raw schedule: pad the duration by ~110 frames per volley so the final volley/finale resolves.
-    box: { w: 150, h: 150 }, hz30: 1, dur: t + 240 + volleys * 110,
+    box: { w: 150, h: 150 }, hz30: 1, dur: t + 150 + volleys * 75,   // trimmed dead time at the end
     tick(a) {
       const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -2699,7 +2703,7 @@ function pinkBombPattern(chart) {
         if (q.k !== 1 && q.k !== 3) Snd.play(rng() < 0.5 ? 'pinkthrow' : 'pinkthrow2', 0.4);   // snd_pink_throw(2)
         if (q.k === 0) {
           S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
-          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 66 + left * 2 - S.rep * 2, heart, dmg: 20 });
+          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 54 + left * 2 - S.rep * 2, heart, dmg: 20 });
         } else if (q.k === 1) {   // GIANT ENDER: sits OUTSIDE an edge and blasts one 3-lane band into the box (leaving an outer safe lane)
           const edge = pick(0, 1, 2, 3), lane = 1 + ir(1);
           const gp = edge === 0 ? [-2, lane] : edge === 1 ? [5, lane] : edge === 2 ? [lane, -2] : [lane, 5];
