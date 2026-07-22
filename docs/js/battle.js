@@ -1023,6 +1023,7 @@ Battle.updDodge = function () {
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
+  B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pinkn3_* patterns each tick)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.maze) {   // GHOST/BODY MAZE: full-screen takeover; the pattern drives movement/collision itself
     if (B.fx.maze.done) { B._mazeEnd = (B._mazeEnd || 0) + 1;
@@ -1381,6 +1382,9 @@ Battle.render = function (ctx) {
       }
       ctx.globalAlpha = 1;
     }
+  } else if (B.fx && B.fx.pinkScene) {
+    drawPinkSceneBack(ctx);   // PINK stage: black void + MEWERS LIVE + bg dancers + petals
+    B.renderChars(ctx);
   } else {
     const bg = A.bgFrame(B.anim.f);
     if (bg && bg.width) { ctx.globalAlpha = 0.55; ctx.drawImage(bg, 0, 0, 640, 480); ctx.globalAlpha = 1; }
@@ -1388,6 +1392,7 @@ Battle.render = function (ctx) {
     B.renderChars(ctx);
   }
   B.renderBoxAndBullets(ctx);
+  if (B.fx && B.fx.pinkScene && !blackout) drawPinkSceneFront(ctx);   // fg dancers in front of the box
   B.renderMirror(ctx);
   if (!(B.fx && (B.fx.date || B.fx.maze))) B.renderHud(ctx);   // DATE/MAZE are full-screen takeovers — no party HUD over them
   if (!(B.fx && (B.fx.date || B.fx.maze))) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
@@ -1633,6 +1638,91 @@ function drawMaze(ctx, M) {
   if (ph && ph.width) drawSpr(ctx, ph, M.soul.x, M.soul.y, { scale: 1 });
   ctx.restore();
 }
+
+// ===================== PINK STAGE SCENE (obj_pink_enemy scenery) =====================
+// The Pink fight is a whole stage: black backdrop + "MEWERS LIVE" marquee + 16 bg
+// dancers + 8 fg dancers (glowsticks) + falling petals + per-hero spotlights.
+// Rendered when a pinkn3_* pattern sets B.fx.pinkScene truthy. Derived deterministically
+// from the frame counter (like all transient fx) — no persistent state to desync.
+// Sprite origins are from refdata (originX,originY at native px; ×2 stage scale).
+function pinkSceneImg(key) {
+  const info = (A.manifest.bullets || {})[key]; if (!info) return null;
+  const im = A.img['assets/bullets/' + info.f]; return (im && im.width) ? im : null;
+}
+// draw a scene sprite so its GML origin (ox,oy native px) sits at screen (ax,ay)
+function pinkSceneSpr(ctx, key, ax, ay, ox, oy, { scale = 2, alpha = 1, angle = 0, flip = false } = {}) {
+  const im = pinkSceneImg(key); if (!im) return;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(ax, ay);
+  if (angle) ctx.rotate(-angle * Math.PI / 180);
+  ctx.scale(flip ? -scale : scale, scale);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(im, -ox, -oy);
+  ctx.restore();
+}
+function pinkHash01(n) { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); }
+// wave-pattern hop offset (vspeed -8, gravity 1 => 16-frame parabola peaking -32px)
+function pinkHop(clock) { const t = clock % 60; return (t < 16) ? 0.5 * t * (t - 16) : 0; }
+function drawPinkDancer(ctx, f, a, kind) {
+  const bg = kind === 'bg';
+  const span = bg ? 16 * 51 : 8 * 121;
+  const base = bg ? a * 51 : a * 121;
+  let x = ((base - f * 2) % span + span) % span;   // scroll left, wrap
+  // duplicate one span to the right so the seam is covered
+  for (const xx of [x, x + span]) {
+    if (xx < -70 || xx > 700) continue;
+    const yhop = pinkHop(f + a * (bg ? 4 : 8));
+    if (bg) {
+      const y = 62 + yhop;
+      pinkSceneSpr(ctx, 'pnbgd0', xx, y, 13, 31, { scale: 2, alpha: 0.9 });
+      const ga = 20 + Math.sin((f + a * 4) * 0.15) * 30;       // glowstick sway ±30, base +20
+      pinkSceneSpr(ctx, 'pnbgglow0', xx + 8, y - 30, 5, 15, { scale: 2, alpha: 0.9, angle: ga });
+    } else {
+      const y = 320 + yhop;
+      const fi = Math.min(4, Math.floor((xx / 640) * 5 + 5) % 5);   // frame by screen-fifth
+      const gf = Math.floor((f + a * 8) / 8) % 3;
+      pinkSceneSpr(ctx, 'pnfgglow' + gf, xx + 23, y - 36, 15, 45, { scale: 2, alpha: 0.95 });
+      pinkSceneSpr(ctx, 'pnfgd' + fi, xx, y, 43, 17, { scale: 2, alpha: 0.95 });
+    }
+  }
+}
+function drawPinkMewers(ctx, f) {
+  const y = 6 + Math.sin(f * 0.1) * 3;
+  pinkSceneSpr(ctx, 'pnmewersd0', 320, y, 59, 0, { scale: 2, alpha: 1 });        // dim base
+  const ga = Math.max(0, Math.min(1, 0.6 + Math.sin(f * 0.12) * 0.5));            // pulsing neon
+  pinkSceneSpr(ctx, 'pnmewers0', 320, y, 59, 0, { scale: 2, alpha: ga });
+}
+function drawPinkPetals(ctx, f) {
+  const step = Math.floor(f / 5);
+  for (let k = 0; k < 24; k++) {
+    const sf = (step - k) * 5; if (sf < 0) continue;
+    const age = f - sf; if (age > 120 || age < 0) continue;
+    const x0 = 180 + pinkHash01(sf) * 460, y0 = -30 - pinkHash01(sf * 3.1) * 50;
+    const x = x0 - 2 * age, y = y0 + 5 * age;
+    if (y < -20 || y > 500) continue;
+    const fr = Math.floor(age * (0.1 + pinkHash01(sf * 7) * 0.2) + pinkHash01(sf)) % 5;
+    const al = 0.5 * Math.min(1, age / 8) * Math.min(1, (120 - age) / 20);
+    pinkSceneSpr(ctx, 'pnpetal' + fr, x, y, 4, 4, { scale: 2, alpha: al, angle: age * 3 + sf });
+  }
+}
+// back layer: backdrop + marquee + bg dancers + petals (drawn behind the bullet box)
+function drawPinkSceneBack(ctx) {
+  const f = Battle.anim.f;
+  ctx.save();
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);        // black_square_bg2 (full void)
+  ctx.fillStyle = 'rgba(10,0,14,1)'; ctx.fillRect(0, 40, 640, 320);  // black_square_bg stage band
+  drawPinkMewers(ctx, f);
+  for (let a = 0; a < 16; a++) drawPinkDancer(ctx, f, a, 'bg');
+  drawPinkPetals(ctx, f);
+  ctx.restore();
+}
+// front layer: fg dancers (drawn in front of the box, per GML depth = battlecontroller+1)
+function drawPinkSceneFront(ctx) {
+  const f = Battle.anim.f;
+  ctx.save();
+  for (let a = 0; a < 8; a++) drawPinkDancer(ctx, f, a, 'fg');
+  ctx.restore();
+}
+
 Battle.renderBoxAndBullets = function (ctx) {
   const B = Battle;
   const anim = B.phase === 'boxin' || B.phase === 'boxout';

@@ -2496,6 +2496,10 @@ PATTERNS.pinkn_bombs2 = pinkBombPattern(PINK_BOMB_D1);       // P1 T4 — faster
 PATTERNS.pinkn_bombsg = pinkBombPattern(PINK_BOMB_D3);       // P2 T3 — smalls + giant centre bomb ender
 PATTERNS.pinkn_bombsfin = pinkBombPattern(PINK_BOMB_D2);     // P3 T2 — 4x giant volleys + slide FINALE
 
+// ===== PINK V3 (pinkn3_*) — from-scratch rebuild on the real STAGE SCENE =====
+// pinkn3_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).
+PATTERNS.pinkn3_scene = { box: { w: 180, h: 140 }, hz30: 1, dur: 900, tick(a) { a.fx.pinkScene = true; } };
+
 // obj_pinkcatbullet: the cat FACE bullet (spr_bullet_catface, 4-frame anim at image_speed 0.334, scale 2).
 // It ANIMATES through its frames and does NOT rotate (spin_dir is a movement spiral, not sprite rotation).
 function catP() { return { ...bulletProps('catface'), animKeys: ['catface0', 'catface1', 'catface2', 'catface3'], animRate: 3 }; }
