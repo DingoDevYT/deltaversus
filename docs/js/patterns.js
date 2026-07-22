@@ -1505,24 +1505,52 @@ PATTERNS.pink_idol = {
 };
 
 // ---------- PINK — NEW (GML-faithful, PURPLE GRID SOUL). Tester/showcase only. ----------
-// TYPE 200 — Cats (purple mode 1: 3 lanes + free X). Cats (obj_pinkcatbullet) stream from the sides
-// in 3 rows (56 apart), speed 8*s*(4/3). The DOKI HEARTS (obj_dokiheart) are NOT damage — they are
-// TP/heal COLLECTABLES that stream in on the lanes; grab them with the soul (they gravitate to you).
-PATTERNS.pinkn_cats = {
-  dur: 360, box: { w: 150, h: 130 }, hz30: 1,   // fits mode-1 grid: free-X ±63, 3 lanes ±56
-  tick(a) {
-    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 11 === 0 && f < 320) {   // cats — spawn WAY off (box_center ± 416, per GML) so they enter at the
-      const side = (Math.floor(f / 11) % 2) ? 1 : -1, lane = Math.floor(rng() * 3), s = 0.75 + rng() * 0.6, spd = 8 * s * (4 / 3);   // screen edge and travel the full width -> visible from a mile off
-      add({ ...bulletProps('pcat'), x: cx + side * 416, y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 320 });
-    }
-    if (f % 44 === 22 && f < 300) {   // doki-heart COLLECTABLE (TP + small heal on pickup), rides a lane from far off
-      const side = (Math.floor(f / 44) % 2) ? 1 : -1, lane = Math.floor(rng() * 3);
-      add({ ...bulletProps('pdoki'), x: cx + side * 416, y: cy + (lane - 1) * 56, vx: -side * 5, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 360 });
-    }
-  },
-};
+// TYPE 200 — Cats (purple mode 1: 3 lanes + free X). This is the REAL attack: the exact ds_bullet_list
+// choreography charts, imported verbatim from obj_dbulletcontroller (difficulty 0 = "Cats", 1 = the
+// harder/ULT variant). Each tuple = [lane, side, interval, speed]; played front-to-back with the game's
+// timing rule (15-frame lead, then round(0.5 + 13*interval/1.25) frames to the next). lane<3 = a cat
+// (obj_pinkcatbullet) on row floor(lane-1)*56, plus frac(lane)*10 trailing DOKI-HEART collectables;
+// lane 6-8 = a doki-heart row (collectable, grants TP); lane 3/4/5 = Pink dance triggers (cosmetic).
+const PINK_CATS_D0 = [0, 1, 1.1, 0.75, 2, 1, 1.1, 0.75, 1, 1, 1.1, 0.75, 0, 1, 1.1, 0.75, 2, 1, 3.75, 0.75, 7, -1, 0.825, 0.675, 6, -1, 0.825, 0.675, 7, -1, 0.825, 0.675, 8, -1, 0.825, 0.675, 7, -1, 0.825, 0.675, 8, -1, 0.825, 0.675, 7, -1, 4.5, 0.675, 2.1, 1, 1, 0.9, 1.1, 1, 1, 0.9, 0.1, 1, 1, 0.9, 1.1, 1, 1, 0.9, 2.1, 1, 1, 0.9, 0.1, 1, 1, 0.9, 1.1, 1, 1, 0.9, 2.1, 1, 1, 0.9, 1.1, 1, 4, 0.9, 7, -1, 0, 1.3333, 0, -1, 0, 1.3333, 2, -1, 0.95, 1.3333, 8, -1, 0, 1.3333, 1, -1, 0, 1.3333, 0, -1, 0.95, 1.3333, 7, -1, 0, 1.3333, 2, -1, 0, 1.3333, 0, -1, 0.95, 1.3333, 6, -1, 0, 1.3333, 1, -1, 0, 1.3333, 2, -1, 0.95, 1.3333, 7, -1, 0, 1.3333, 0, -1, 0, 1.3333, 2, -1, 0.95, 1.3333, 6, -1, 0, 1.3333, 2, -1, 0, 1.3333, 1, -1, 0.95, 1.3333, 7, -1, 0, 1.3333, 0, -1, 0, 1.3333, 2, -1, 0.95, 1.3333, 8, -1, 0, 1.3333, 1, -1, 0, 1.3333, 0, -1, 0.95, 1.3333, 7, -1, 0, 1.3333, 2, -1, 0, 1.3333, 0, -1, 0.95, 1.3333, 8, -1, 0, 1.3333, 0, -1, 0, 1.3333, 1, -1, 0.95, 1.3333, 7, -1, 0, 1.3333, 0, -1, 0, 1.3333, 2, -1, 0.95, 1.3333, 6, -1, 0, 1.3333, 2, -1, 0, 1.3333, 1, -1, 0.01, 1.3333];
+const PINK_CATS_D1 = [7, 1, 0, 0.9, 0, 1, 0, 0.9, 2, 1, 0.95, 0.9, 8, -1, 0, 0.9, 0, -1, 0, 0.9, 1, -1, 0.95, 0.9, 7, 1, 0, 0.9, 0, 1, 0, 0.9, 2, 1, 0.95, 0.9, 6, -1, 0, 0.9, 1, -1, 0, 0.9, 2, -1, 0.95, 0.9, 7, 1, 0, 0.9, 0, 1, 0, 0.9, 2, 1, 0.95, 0.9, 8, -1, 0, 0.9, 0, -1, 0, 0.9, 1, -1, 0.95, 0.9, 7, 1, 0, 0.9, 0, 1, 0, 0.9, 2, 1, 0.95, 0.9, 6, -1, 0, 0.9, 1, -1, 0, 0.9, 2, -1, 3, 0.9, 2, 1, 0, 0.9, 0.1, -1, 0.5, 0.9, 2, 1, 0, 0.9, 0, -1, 1, 0.9, 0, 1, 0, 0.9, 1.1, -1, 0.5, 0.9, 0, 1, 0, 0.9, 1, -1, 1, 0.9, 2.1, 1, 0, 0.9, 0, -1, 0.5, 0.9, 2, 1, 0, 0.9, 0, -1, 1, 0.9, 1.1, 1, 0, 0.9, 2, -1, 0.5, 0.9, 1, 1, 0, 0.9, 2, -1, 1, 0.9, 0.1, 1, 0, 0.9, 0, -1, 0.5, 0.9, 0, 1, 0, 0.9, 0, -1, 1, 0.9, 2, 1, 0, 0.9, 1.1, -1, 0.5, 0.9, 2, 1, 0, 0.9, 1, -1, 1, 0.9, 1, 1, 0, 0.9, 2.1, -1, 0.5, 0.9, 1, 1, 0, 0.9, 2, -1, 1, 0.9, 2, 1, 0, 0.9, 0.1, -1, 0.5, 0.9, 2, 1, 0, 0.9, 0, -1, 1, 0.9, 1, 1, 0, 0.9, 1.1, -1, 0.5, 0.9, 1, 1, 0, 0.9, 1, -1, 3, 0.9, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 3, 1, 0, 1, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 0.05, 1.5, 0, 1, 0.05, 1.5, 2, -1, 5, 1.5];
+// Build the frame-accurate firing schedule from a chart (the GML's btimer/interval playback rule).
+function pinkCatsSchedule(chart) {
+  const sched = []; let t = 15;
+  for (let k = 0; k < chart.length; k += 4) {
+    sched.push({ f: Math.round(t), lane: chart[k], side: chart[k + 1], speed: chart[k + 3] });
+    t += Math.max(1, Math.round(0.5 + (13 * chart[k + 2]) / 1.25));   // _bullet_interval_modifier = 1.25
+  }
+  sched.total = Math.round(t);
+  return sched;
+}
+function pinkFireCat(add, cx, cy, e) {
+  const spd = 8 * e.speed * (4 / 3);         // _bullet_speed_modifier = 4/3
+  const vx = -e.side * spd;                   // side 1 spawns right (+416) moving left; -1 spawns left moving right
+  if (e.lane < 3) {
+    const y = cy + Math.floor(e.lane - 1) * 56;
+    add({ ...bulletProps('pcat'), x: cx + e.side * 416, y, vx, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: e.speed >= 1.5 ? 0.14 : 0.03, dmg: 24, life: 420 });
+    const nd = Math.round((e.lane % 1) * 10);   // frac(lane)*10 trailing doki-heart collectables
+    for (let i = 1; i <= nd; i++)
+      add({ ...bulletProps('pdoki'), x: cx + e.side * (416 - i * 72 * e.speed), y, vx, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 460 });
+  } else if (e.lane >= 6 && e.lane <= 8) {
+    add({ ...bulletProps('pdoki'), x: cx + e.side * 416, y: cy + (e.lane - 7) * 56, vx, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 460 });
+  }
+  // lane 3/4/5 = Pink dance-move triggers (obj_pink_battlemovement), cosmetic — no bullet
+}
+function pinkCatsPattern(chart) {
+  return {
+    box: { w: 150, h: 130 }, hz30: 1, dur: pinkCatsSchedule(chart).total + 90,
+    tick(a) {
+      const { f, box, add } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      if (f === 0) { this._sched = pinkCatsSchedule(chart); this._si = 0; }
+      const s = this._sched;
+      while (this._si < s.length && s[this._si].f <= f) pinkFireCat(add, cx, cy, s[this._si++]);
+    },
+  };
+}
+PATTERNS.pinkn_cats = pinkCatsPattern(PINK_CATS_D0);       // the "Cats" attack (difficulty 0)
+PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (difficulty 1) — conga + fast finale
 // TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid, lane_distance 40). Bombs (obj_fusebomb) land ON
 // the grid cells, fuse (pulsing faster near the end), then detonate: obj_pinkbombexplosion marches out
 // 24px at a time in all 4 directions to the screen edge — a full row+column CROSS of explosion sprites.
