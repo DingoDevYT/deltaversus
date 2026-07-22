@@ -976,7 +976,9 @@ Battle.updDodge = function () {
       if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;                                   // the orbit centre can drift
       if (o.center) { o.cx = o.center.cx0 + o.center.ax * Math.sin(b.t * o.center.f); o.cy = o.center.cy0 + o.center.ay * Math.cos(b.t * o.center.f); }   // ...or wander so the centre isn't safe
       if (o.pulse) o.R = o.pulse.base + o.pulse.amp * Math.sin(b.t * o.pulse.freq);     // radius can breathe
-      b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R; }
+      if (o.grow) o.R += o.grow;                                                        // ...or spiral outward (Pink tunnel arrows)
+      b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R;
+      b.rot = o.ang + (o.w >= 0 ? Math.PI / 2 : -Math.PI / 2); }                        // arrow points along its orbit
     if (b.carousel) updCarousel(b);   // fake-3D carousel column (Jevil)
     if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
     if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;

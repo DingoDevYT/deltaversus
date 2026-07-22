@@ -1610,18 +1610,22 @@ PATTERNS.pinkn_rotbox = {
 // pinkzap grow outward from the vanishing point with a telegraphed GAP; rotate to the gap before the
 // ring reaches your orbit. (A faithful ring-orbit take on the pseudo-3D tunnel — the mode-7 mechanic.)
 PATTERNS.pinkn_tunnel = {
-  box: { w: 280, h: 280 }, hz30: 1, dur: 500,
+  box: { w: 280, h: 280 }, hz30: 1, dur: 520,
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 7, ringR: 92 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f > 18 && f % 32 === 0 && f < 460) {           // a new ring erupts from the centre with one gap
-      const gap = rng() * 360, gapW = 66, n = 22;
-      for (let i = 0; i < n; i++) {
-        const ang = i * 360 / n, d = Math.abs(((ang - gap + 540) % 360) - 180);
-        if (d < gapW / 2) continue;                    // leave the gap open
-        const dir = ang * Math.PI / 180, spd = 2.0;
-        add({ ...bulletProps('pzap'), x: cx + Math.cos(dir) * 8, y: cy + Math.sin(dir) * 8, vx: Math.cos(dir) * spd, vy: Math.sin(dir) * spd, ax: Math.cos(dir) * 0.05, ay: Math.sin(dir) * 0.05, r: 7, grazeR: 10, scale: PS(1.3), rot: dir + Math.PI / 2, dmg: 26, life: 80 });
+    // groups of 6 or 8 arrows spiral OUT from the vanishing point while orbiting clockwise/ccw (obj_pinkzap:
+    // wave_dir rotates as they approach). Evenly spaced -> gaps between them; track a gap as they reach you.
+    if (f > 16 && f % 44 === 0 && f < 480) {
+      const cnt = rng() < 0.5 ? 6 : 8, dir = rng() < 0.5 ? 1 : -1, w = dir * (0.05 + rng() * 0.028), base = rng() * Math.PI * 2;
+      for (let i = 0; i < cnt; i++) {
+        const ang = base + i * (Math.PI * 2 / cnt);
+        add({ ...bulletProps('pzap'), x: cx + Math.cos(ang) * 14, y: cy + Math.sin(ang) * 14, vx: 0, vy: 0, r: 7, grazeR: 10, scale: PS(1.5), dmg: 26, life: 130, orbit: { cx, cy, ang, w, R: 14, grow: 1.9 } });
       }
+    }
+    if (f % 74 === 44 && f < 460) {                    // an occasional pink-heart collectable spirals out too
+      const ang = rng() * Math.PI * 2;
+      add({ ...bulletProps('pdoki'), x: cx + Math.cos(ang) * 14, y: cy + Math.sin(ang) * 14, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.4), life: 130, orbit: { cx, cy, ang, w: 0.024, R: 14, grow: 1.7 } });
     }
   },
 };
