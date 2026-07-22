@@ -1587,37 +1587,59 @@ PATTERNS.pinkn_vrain = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
   { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
 ], 4, 230, 1, 22);
-// TYPE 202 — Plus-grid box (purple mode 3: a "+" cross, 5 cells). Circles + half-circles approach INWARD
-// down the 4 arms; ride the cross to a clear arm. Two variants (per Pink's phase):
-//   spin=false (Phase 2): box is STATIC, no rotation.
-//   spin=true  (Phase 3): a giant Pink ghost knocks the box 90 degrees CLOCKWISE in discrete steps after
-//     each group of circles; the SOUL's controls stay screen-relative (the mode-3 movement compensates).
-function pinkPlusGrid(spin) {
+// ============ TYPE 202 — PLUS-GRID / ROTATING BOX: 1:1 port ============
+// purple mode 3 (5-cell "+" cross). obj_dbulletcontroller(202) plays a ds_bullet_list of [shot, dir,
+// interval, speed]. dir = 0/90/180/270 (GML: right/up/left/down) = which of the 4 arms the bullet streams
+// DOWN. Bullets are obj_pinklanebullet, spawned 352px out (opposite dir) at speed*8, in one of 3 lanes per
+// arm (perp offset 52): shot 0=+270 half-circle, 1=centre CIRCLE, 2=+90 half-circle; 3/4/5 = PAIRS (a gap):
+// 3=[+270 half, centre circle], 4=[+270 half, +90 half], 5=[centre circle, +90 half]; 6/7/8 = doki HEARTS
+// (offset 66). Fire gap = floor(0.5 + 32*interval) frames (interval-0 = same frame). Sprites: circle =
+// spr_pinklanebullet_animation (plane), half-circle = spr_pinklanebullet_lane (planeb). D0 = P2 T1 static,
+// D2 = P2 T5 static+fast (both can_spin=false). D1 (P3) adds the giant-ghost 90° box knocks (see rotbox).
+const PINK_PLUS_D0 = [2, 270, 0.4987, 1.32, 1, 270, 0.4987, 1.32, 0, 270, 0.76, 1.32, 1, 180, 0.4275, 1.5812, 7, 180, 0, 1.5812, 4, 180, 0.855, 1.5812, 6, 90, 0, 1.54, 2, 90, 0.4275, 1.54, 1, 90, 0.4275, 1.54, 8, 90, 0, 1.54, 0, 90, 0.76, 1.54, 1, 0, 0.1425, 1.771, 7, 0, 0.2375, 1.771, 4, 0, 0.475, 1.771, 1, 90, 0.855, 1.43, 6, 180, 0, 0.7333, 1, 180, 0.855, 0.7333, 6, 270, 0, 0.7333, 1, 270, 0.855, 0.7333, 6, 0, 0, 0.7333, 1, 0, 1.615, 0.7333, 4, 0, 0.1425, 1.8975, 4, 0, 0.1425, 1.9879, 4, 0, 0.1425, 2.0782, 4, 0, 0.0475, 2.1686, 0, 90, 0, 2.75, 0, 270, 0, 2.75, 4, 0, 0.0475, 2.2589, 0, 90, 0, 2.75, 0, 270, 0, 2.75, 4, 0, 0.0475, 2.3493, 0, 90, 0, 2.75, 0, 270, 0, 2.75, 4, 0, 0.0475, 2.4396, 0, 90, 0, 2.75, 0, 270, 0, 2.75, 4, 0, 0.0475, 2.53, 0, 90, 0, 2.75, 0, 270, 99, 2.75];
+const PINK_PLUS_D2 = [0, 270, 0.475, 1.54, 1, 270, 0.2375, 1.54, 2, 0, 0, 1.848, 8, 270, 0.2375, 1.54, 2, 270, 0.2375, 1.54, 1, 0, 0.2375, 1.848, 7, 0, 0, 1.848, 0, 90, 0.2375, 1.54, 0, 0, 0.2375, 1.848, 1, 90, 0.2375, 1.54, 7, 90, 0, 1.54, 2, 180, 0.2375, 1.848, 2, 90, 0.2375, 1.54, 1, 180, 0.2375, 1.848, 6, 180, 0.2375, 1.848, 0, 180, 0.475, 1.848, 1, 0, 0, 2.178, 1, 180, 0.114, 2.178, 1, 0, 0, 2.178, 1, 180, 0.114, 2.178, 1, 0, 0, 2.178, 1, 180, 0.475, 2.178, 6, 90, 0, 1.815, 1, 90, 0, 1.815, 1, 270, 0.114, 1.815, 1, 90, 0, 1.815, 1, 270, 0.114, 1.815, 1, 90, 0, 1.815, 1, 270, 99, 1.815];
+const gmlVec = deg => { const r = deg * Math.PI / 180; return [Math.cos(r), -Math.sin(r)]; };   // GML angle -> screen unit vec
+function pinkLaneFire(add, cx, cy, e, rotDeg) {
+  const d = e.dir + (rotDeg || 0), spd = e.spd * 8, dist = 352, off = 52;
+  const [tx, ty] = gmlVec(d), [sx, sy] = [cx - tx * dist, cy - ty * dist];   // spawn far out, opposite travel
+  const [p2x, p2y] = gmlVec(d + 270), [p9x, p9y] = gmlVec(d + 90), rot = Math.atan2(ty, tx);
+  const mk = (ox, oy, sp) => add({ ...bulletProps(sp), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, r: 8, grazeR: 12, scale: PS(2), rot, dmg: 24, life: 130 });
+  if (e.shot < 6) {
+    if (e.shot === 0 || e.shot === 3 || e.shot === 4) mk(p2x * off, p2y * off, 'planeb'); else if (e.shot === 2) mk(p9x * off, p9y * off, 'planeb'); else mk(0, 0, 'plane');
+    if (e.shot >= 3) { if (e.shot === 4 || e.shot === 5) mk(p9x * off, p9y * off, 'planeb'); else mk(0, 0, 'plane'); }   // pair's 2nd bullet
+  } else {
+    const o2 = 66; let ox = 0, oy = 0;
+    if (e.shot === 6 || e.shot === 9 || e.shot === 10) { ox = p2x * o2; oy = p2y * o2; } else if (e.shot === 8) { ox = p9x * o2; oy = p9y * o2; }
+    add({ ...bulletProps('pdoki'), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, pickup: true, tp: 8, r: 9, scale: PS(1.5), life: 140 });
+  }
+}
+function pinkPlusSchedule(chart) {
+  const s = []; let t = 8;   // btimer starts 32, fires at >=40 -> 8-frame lead
+  for (let k = 0; k < chart.length; k += 4) { s.push({ f: t, shot: chart[k], dir: chart[k + 1], spd: chart[k + 3] }); t += Math.max(0, Math.floor(0.5 + 32 * chart[k + 2])); }
+  s.total = t; return s;
+}
+function pinkPlusGridPattern(chart, spin) {
   return {
-    box: { w: 160, h: 160 }, hz30: 1, dur: 480,
+    box: { w: 160, h: 160 }, hz30: 1, dur: pinkPlusSchedule(chart).total + 120,
     tick(a) {
-      const { f, box, add, rng } = a;
-      if (f === 0) { this._rot = 0; this._rtar = 0; }
-      if (spin) {
-        if (f > 0 && f % 92 === 0) this._rtar += 90;   // knock +90 CW after each group
-        const d = this._rtar - this._rot; this._rot += Math.abs(d) < 9 ? d : Math.sign(d) * 9;   // fast knock ease
+      const { f, box, add } = a;
+      if (f === 0) { this._S = pinkPlusSchedule(chart); this._si = 0; this._rot = 0; this._rtar = 0; this._grp = 0; }
+      const s = this._S, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      if (spin) {   // P3: giant ghost knocks the box +90 CW between bullet groups (interval>=1 = a gap)
+        const d = this._rtar - this._rot; this._rot += Math.abs(d) < 9 ? d : Math.sign(d) * 9;
       }
       a.fx.purpleSoul = { mode: 3, rot: this._rot };
-      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      if (f > 22 && f % 24 === 0 && f < 460) {         // circle / half-circle inward down an arm
-        const arm = Math.floor(rng() * 4), armDeg = this._rot + arm * 90, dir = armDeg * Math.PI / 180, spd = 3.1;
-        const half = rng() < 0.4;
-        add({ ...bulletProps(half ? 'crescent' : 'pbell'), x: cx + Math.cos(dir) * 150, y: cy + Math.sin(dir) * 150, vx: -Math.cos(dir) * spd, vy: -Math.sin(dir) * spd, r: 9, grazeR: 12, scale: PS(1.6), rot: dir + Math.PI / 2, dmg: 24, life: 120 });
-      }
-      if (f % 96 === 60 && f < 440) {                  // a pink-heart collectable drifts down an arm too
-        const arm = Math.floor(rng() * 4), dir = (this._rot + arm * 90) * Math.PI / 180;
-        add({ ...bulletProps('pdoki'), x: cx + Math.cos(dir) * 150, y: cy + Math.sin(dir) * 150, vx: -Math.cos(dir) * 2.4, vy: -Math.sin(dir) * 2.4, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
+      while (this._si < s.length && s[this._si].f <= f) {
+        const e = s[this._si++];
+        pinkLaneFire(add, cx, cy, e, this._rot);
+        if (spin && this._si < s.length && (s[this._si].f - e.f) >= 14) this._rtar += 90;   // knock after a group-ending gap
       }
     },
   };
 }
-PATTERNS.pinkn_plusgrid = pinkPlusGrid(false);   // Phase 2 — static
-PATTERNS.pinkn_rotbox = pinkPlusGrid(true);       // Phase 3 — 90-degree knocks
+PATTERNS.pinkn_plusgrid = pinkPlusGridPattern(PINK_PLUS_D0, false);   // P2 T1 — static
+PATTERNS.pinkn_plusgrid2 = pinkPlusGridPattern(PINK_PLUS_D2, false);  // P2 T5 — static, faster
+PATTERNS.pinkn_rotbox = pinkPlusGridPattern(PINK_PLUS_D0, true);      // P3 T1 — 90° box knocks (giant ghost)
 // TYPE 208 — 3-D Tunnel (purple mode 7: the heart ORBITS a ring; L/R rotate around it). Rings of
 // pinkzap grow outward from the vanishing point with a telegraphed GAP; rotate to the gap before the
 // ring reaches your orbit. (A faithful ring-orbit take on the pseudo-3D tunnel — the mode-7 mechanic.)
