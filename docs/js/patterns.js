@@ -1963,7 +1963,10 @@ PATTERNS.pinkn_tunnel = {
         else { repeats = 6; multiple = 2; }
         let dir = wrap((dir0 - (dirAdd / 2) * (repeats - 1)) + S.laneDir);
         const mkZap = (angDeg, cap) => {
-          const b = { ...bulletProps(moving !== 0 ? 'pzaparrow' : 'pzap'), x: cx, y: cy, vx: 0, vy: 0,
+          // obj_pinkzap / obj_pinktimeoutzap: spr_pinkzap (6-frame anim); moving walls use spr_pinkzap_arrow
+          const zapKeys = moving !== 0 ? ['pinkzaparrow0', 'pinkzaparrow1', 'pinkzaparrow2', 'pinkzaparrow3', 'pinkzaparrow4', 'pinkzaparrow5']
+                                        : ['pinkzap0', 'pinkzap1', 'pinkzap2', 'pinkzap3', 'pinkzap4', 'pinkzap5'];
+          const b = { ...bulletProps(zapKeys[0]), animKeys: zapKeys, animRate: 4, x: cx, y: cy, vx: 0, vy: 0,
                       r: 7, grazeR: 10, scale: PS(1), dmg: 26, life: 9000, noHit: true, alpha: 0,
                       _zap: 1, _cap: !!cap, _layer: 0, _ss: S.shiftN, _angDeg: angDeg, _spin: moving };
           const SS = S;
