@@ -1640,26 +1640,39 @@ function pinkPlusGridPattern(chart, spin) {
 PATTERNS.pinkn_plusgrid = pinkPlusGridPattern(PINK_PLUS_D0, false);   // P2 T1 — static
 PATTERNS.pinkn_plusgrid2 = pinkPlusGridPattern(PINK_PLUS_D2, false);  // P2 T5 — static, faster
 PATTERNS.pinkn_rotbox = pinkPlusGridPattern(PINK_PLUS_D0, true);      // P3 T1 — 90° box knocks (giant ghost)
-// TYPE 208 — 3-D Tunnel (purple mode 7: the heart ORBITS a ring; L/R rotate around it). Rings of
-// pinkzap grow outward from the vanishing point with a telegraphed GAP; rotate to the gap before the
-// ring reaches your orbit. (A faithful ring-orbit take on the pseudo-3D tunnel — the mode-7 mechanic.)
+// ============ TYPE 208 — 3-D TUNNEL (purple mode 7): 1:1-structured port ============
+// obj_purplecontrols mode 7: 8 concentric tunnel_radius[] rings expand outward from the vanishing point
+// (r *= 1 + r/(grow_factor/speed), +grow_addition*speed; recycle past _circle_grow_limit; new ring at 12
+// every _circle_interval/speed). tunnel_speed ramps min(life/10, 1.5+life/50, 11) then SLOWS as a ring
+// nears your orbit. Press UP to start (auto after 40f here). obj_pinkzap arrows ride a ring, orbiting
+// (wave_dir += sign(pattern_speed)*48, pattern_speed = choose(-1,1)*(2+rand4)) in groups of 6/8; + hearts.
 PATTERNS.pinkn_tunnel = {
-  box: { w: 280, h: 280 }, hz30: 1, dur: 520,
+  box: { w: 280, h: 280 }, hz30: 1, dur: 620,
   tick(a) {
-    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 7, ringR: 92 };
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // groups of 6 or 8 arrows spiral OUT from the vanishing point while orbiting clockwise/ccw (obj_pinkzap:
-    // wave_dir rotates as they approach). Evenly spaced -> gaps between them; track a gap as they reach you.
-    if (f > 16 && f % 44 === 0 && f < 480) {
-      const cnt = rng() < 0.5 ? 6 : 8, dir = rng() < 0.5 ? 1 : -1, w = dir * (0.05 + rng() * 0.028), base = rng() * Math.PI * 2;
-      for (let i = 0; i < cnt; i++) {
-        const ang = base + i * (Math.PI * 2 / cnt);
-        add({ ...bulletProps('pzap'), x: cx + Math.cos(ang) * 14, y: cy + Math.sin(ang) * 14, vx: 0, vy: 0, r: 7, grazeR: 10, scale: PS(1.5), dmg: 26, life: 130, orbit: { cx, cy, ang, w, R: 14, grow: 1.9 } });
+    const { f, box, add, rng } = a;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, LIMIT = box.w / 2 - 6, ringR = 92;
+    if (f === 0) { this._rings = []; this._timer = 0; this._atimer = 0; this._life = 0; this._started = false; }
+    if (!this._started && ((typeof Input !== 'undefined' && Input.down && Input.down.up) || f > 40)) { this._started = true; this._rings = [12, 44, 82, 118]; }   // seed the tunnel so it's visible immediately
+    a.fx.purpleSoul = { mode: 7, ringR, rings: this._rings.slice(), elec: this._started ? Math.floor(f / 6) % 3 : null };
+    if (!this._started) return;
+    this._life++; const L = this._life;
+    let speed = Math.min(L / 10, 1.5 + L / 50, 11) * 0.5;   // tunnel_speed ramp (halved for our 30Hz sim)
+    for (const r of this._rings) if (Math.abs(r - ringR) < 10) speed = Math.min(speed, 0.5);   // slow as a ring nears the orbit
+    for (let i = 0; i < this._rings.length; i++) { let r = this._rings[i]; this._rings[i] = r * (1 + r / (9000 / speed)) + 0.6 * speed; }
+    this._rings = this._rings.filter(r => r <= LIMIT);
+    this._timer += speed;
+    if (this._timer >= 34 && this._rings.length < 8) { this._timer -= 34; this._rings.push(12); }   // new tunnel ring (max 8)
+    // arrow groups are periodic attacks (obj_pinkzap on pattern_list), NOT one per ring
+    this._atimer += speed;
+    if (this._atimer >= 62 && this._life < 560) {
+      this._atimer -= 62;
+      const cnt = rng() < 0.5 ? 6 : 8, dir = rng() < 0.5 ? 1 : -1, w = dir * (0.06 + rng() * 0.03), base = rng() * Math.PI * 2, grow = 1.7 + speed * 0.6;
+      for (let i = 0; i < cnt; i++) { const ang = base + i * (Math.PI * 2 / cnt);
+        add({ ...bulletProps('pzap'), x: cx + Math.cos(ang) * 12, y: cy + Math.sin(ang) * 12, vx: 0, vy: 0, r: 7, grazeR: 10, scale: PS(1.4), dmg: 26, life: 240, orbit: { cx, cy, ang, w, R: 12, grow } });
       }
-    }
-    if (f % 74 === 44 && f < 460) {                    // an occasional pink-heart collectable spirals out too
-      const ang = rng() * Math.PI * 2;
-      add({ ...bulletProps('pdoki'), x: cx + Math.cos(ang) * 14, y: cy + Math.sin(ang) * 14, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.4), life: 130, orbit: { cx, cy, ang, w: 0.024, R: 14, grow: 1.7 } });
+      if (rng() < 0.5) { const ang = rng() * Math.PI * 2;
+        add({ ...bulletProps('pdoki'), x: cx + Math.cos(ang) * 12, y: cy + Math.sin(ang) * 12, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.4), life: 240, orbit: { cx, cy, ang, w: dir * 0.03, R: 12, grow } });
+      }
     }
   },
 };

@@ -1495,8 +1495,23 @@ Battle.renderBoxAndBullets = function (ctx) {
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - bx.h / 2 + 6); ctx.lineTo(gcx + o, gcy + bx.h / 2 - 6); ctx.stroke(); } }
     else if (B._pmode === 3) { const a = ((B.fx && B.fx.purpleSoul && B.fx.purpleSoul.rot) || 0) * Math.PI / 180;   // rotating "+" cross arms
       for (let k = 0; k < 4; k++) { const t = a + k * Math.PI / 2; ctx.beginPath(); ctx.moveTo(gcx, gcy); ctx.lineTo(gcx + Math.cos(t) * 62, gcy + Math.sin(t) * 62); ctx.stroke(); } }
-    else if (B._pmode === 7) { const R = (B.fx && B.fx.purpleSoul && B.fx.purpleSoul.ringR) || 92;   // tunnel orbit ring
-      ctx.beginPath(); ctx.arc(gcx, gcy, R, 0, 6.283); ctx.stroke(); }
+    else if (B._pmode === 7) { const ps = (B.fx && B.fx.purpleSoul) || {}, R = ps.ringR || 92;   // 3-D TUNNEL
+      // concentric expanding rings = the pseudo-3D tunnel depth (obj_purplecontrols tunnel_radius[8])
+      if (ps.rings) for (const rr of ps.rings) { if (rr <= 2) continue;
+        ctx.strokeStyle = 'rgba(181,105,214,' + Math.max(0.12, 0.5 - rr / 340) + ')'; ctx.lineWidth = 1 + rr / 90;
+        ctx.beginPath(); ctx.arc(gcx, gcy, rr, 0, 6.283); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(181,105,214,0.7)'; ctx.lineWidth = 1.5;   // the soul's orbit ring
+      ctx.beginPath(); ctx.arc(gcx, gcy, R, 0, 6.283); ctx.stroke();
+      if (ps.elec != null) {   // flickering electric frame around the box (obj_pink3durgenter)
+        const seg = 9, w = bx.w, h = bx.h, ph = ps.elec;
+        ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2;
+        for (let s = 0; s < seg; s++) { if ((s + ph) % 3 === 0) continue; const t = s / (seg - 1);
+          ctx.beginPath(); ctx.moveTo(bx.x + t * w, bx.y); ctx.lineTo(bx.x + (t + 0.06) * w, bx.y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx.x + t * w, bx.y + h); ctx.lineTo(bx.x + (t + 0.06) * w, bx.y + h); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx.x, bx.y + t * h); ctx.lineTo(bx.x, bx.y + (t + 0.06) * h); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx.x + w, bx.y + t * h); ctx.lineTo(bx.x + w, bx.y + (t + 0.06) * h); ctx.stroke(); }
+      }
+    }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }
