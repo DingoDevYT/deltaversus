@@ -209,19 +209,20 @@ const CHARS = {
     spare: {}, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
     dscale: 1.0, yoff: 4,
     desc: 'PINK - the mew magical-girl idol (Ch5).\nFill her DOKI to trigger the DATES; clear them to SPARE.',
-    fight: { id: 'pinkn_cats', name: 'Cats', dmg: 24, dur: 340, text: 'PINK sends in the CATS!' },
+    // PINK V3: from-scratch rebuild on the real STAGE SCENE (pinkn3_*). Old pinkn_* kept in patterns.js.
+    fight: { id: 'pinkn3_cats', name: 'Cats', dmg: 24, dur: 340, text: 'PINK sends in the CATS!' },
     spells: [
-      { id: 'pinkn_bombs', name: 'Pinata Bombs', tp: 42, dmg: 20, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
-      { id: 'pinkn_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 24, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
-      { id: 'pinkn_tunnel', name: '3-D Tunnel', tp: 46, dmg: 26, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
+      { id: 'pinkn3_bombs', name: 'Pinata Bombs', tp: 42, dmg: 20, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
+      { id: 'pinkn3_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 24, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
+      { id: 'pinkn3_tunnel', name: '3-D Tunnel', tp: 46, dmg: 26, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
     ],
-    ult: { id: 'pinkn_concert', name: 'IDOL CONCERT', tp: 100, dmg: 26, dur: 520, kind: 'attack',
+    ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 26, dur: 520, kind: 'attack',
            text: 'PINK starts the CONCERT!! DOKI DOKI!' },
     // DATE minigames — played instead of an attack when the DOKI meter fills (obj_pink_enemy datecount++)
     dokiDates: [
-      { id: 'pinkn_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
-      { id: 'pinkn_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
-      { id: 'pinkn_finalmaze', name: 'DATE', dmg: 24, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
+      { id: 'pinkn3_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pinkn3_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pinkn3_finalmaze', name: 'DATE', dmg: 24, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
     ],
   },
 };
