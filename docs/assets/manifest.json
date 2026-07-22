@@ -5294,6 +5294,105 @@
       "oh": 220,
       "ox": 0,
       "oy": 0
+    },
+    "dummyaud0": {
+      "f": "dummyaud0.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "dummyaud1": {
+      "f": "dummyaud1.png",
+      "w": 24,
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround0": {
+      "f": "explround0.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround1": {
+      "f": "explround1.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround2": {
+      "f": "explround2.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround3": {
+      "f": "explround3.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround4": {
+      "f": "explround4.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround5": {
+      "f": "explround5.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround6": {
+      "f": "explround6.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround7": {
+      "f": "explround7.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
+    },
+    "explround8": {
+      "f": "explround8.png",
+      "w": 50,
+      "h": 50,
+      "ow": 50,
+      "oh": 50,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

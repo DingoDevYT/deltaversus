@@ -2167,8 +2167,8 @@ function pinkConcertShowup(pat, rng) {   // obj_pink_curtains l_patterns cases -
       while (used.has(d)) { d++; if (d >= 21) d++; if (d >= 28) d -= 26; } used.add(d); s.push(d); } }
   return s;
 }
-PATTERNS.pinkn_concert = {
-  box: { w: 320, h: 172 }, hz30: 1, dur: 480,
+function pinkConcertPattern(diff) { return {
+  box: { w: 320, h: 172 }, hz30: 1, dur: diff > 0 ? 560 : 480,
   tick(a) {
     const { f, box, add, rng } = a; const S = this;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -2176,10 +2176,11 @@ PATTERNS.pinkn_concert = {
     a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing) + speakers
     if (f === 0) {
       S.dummies = [];
-      const order = rng() < 0.5 ? [4, 1, 5, 2, 0] : [4, 2, 5, 1, 0];   // difficulty-0 pattern set
-      const timings = [90, 80, 40, 40, 60];                 // l_timings: delay BEFORE each wave
+      // hard (difficulty>0) uses the case-3 pattern set + slower [90,60,60,90] timings (concert.md 2c)
+      const order = diff > 0 ? (rng() < 0.5 ? [3, 1, 5, 2, 0] : [3, 2, 1, 5, 0]) : (rng() < 0.5 ? [4, 1, 5, 2, 0] : [4, 2, 5, 1, 0]);
+      const timings = diff > 0 ? [90, 90, 60, 60, 90] : [90, 80, 40, 40, 60];   // l_timings: delay BEFORE each wave
       S.waves = []; let t = 8;
-      for (let w = 0; w < 5; w++) { S.waves.push({ at: t, pat: order[w] }); t += timings[w]; }
+      for (let w = 0; w < 5; w++) { S.waves.push({ at: t, pat: order[w], wi: w }); t += timings[w]; }
     }
     // ---- launch a wave when its time comes: pick the dummy set + per-dummy shoottime sweep (_shootorder_variant) ----
     for (const wv of S.waves) {
@@ -2190,6 +2191,9 @@ PATTERNS.pinkn_concert = {
       show.sort((p, q) => p - q);
       const right = show.filter(i => i >= 21), rest = show.filter(i => i < 21); show = rest.concat(right);   // right column fires last
       const size = show.length;
+      // HARD: some members are HATERS (repeats 0-3 -> 1, else 4) that convert to lobbed mic-stand bombs
+      const nHaters = diff > 0 ? (wv.wi < 4 ? 1 : 4) : 0;
+      const haterSet = new Set(); while (haterSet.size < Math.min(nHaters, size)) haterSet.add(Math.floor(rng() * size));
       show.forEach((i, k) => {
         let st;                                              // shoottime = staggered sweep
         if (variant === 0) st = Math.floor(k * 1.5);
@@ -2197,7 +2201,7 @@ PATTERNS.pinkn_concert = {
         else if (variant === 2) st = i < 14 ? Math.floor((14 - i) * 3) : i < 21 ? Math.floor((i - 14) * 3) : Math.floor((i - 17) * 3);
         else st = Math.floor(rng() * size);                 // variant 3: shuffled
         const sl = pinkConcertSlot(i, gx, gy);
-        S.dummies.push({ i, x: sl.x, y: sl.y, side: sl.side, st, hater: false, t: 0, pop: 0 });
+        S.dummies.push({ i, x: sl.x, y: sl.y, side: sl.side, st, hater: haterSet.has(k), t: 0, pop: 0 });
       });
     }
     // ---- advance every live dummy: pop out, wait 20f, count its shoottime, FIRE inward, retract at 60, gone at 90 ----
@@ -2205,7 +2209,8 @@ PATTERNS.pinkn_concert = {
     for (const d of S.dummies) {
       d.t++;
       d.pop += ((d.t >= 8 && d.t < 60 ? 1 : 0) - d.pop) * 0.35;   // pop out, then retract
-      if (d.t >= 20 && d.st >= 0) { if (d.st > 0) d.st--; else { mkAudienceHeart(add, d.x, d.y, aimOf(d.side), cx, cy, box, d.hater); d.st = -1; } }
+      if (d.hater) { if (d.t === 55 && !d._done) { d._done = 1; mkAudienceHater(add, d.x, d.y, box); } }   // convert to lobbed bomb
+      else if (d.t >= 20 && d.st >= 0) { if (d.st > 0) d.st--; else { mkAudienceHeart(add, d.x, d.y, aimOf(d.side), cx, cy, box, false); d.st = -1; } }
     }
     S.dummies = S.dummies.filter(d => d.t < 90);
     // draw the U-ring IN FRONT of the box + bullets, each popped inward from its edge
@@ -2216,7 +2221,39 @@ PATTERNS.pinkn_concert = {
       return { x: px, y: py, side: d.side, pop: d.pop, hater: d.hater };
     });
   },
-};
+}; }
+PATTERNS.pinkn_concert = pinkConcertPattern(0);
+PATTERNS.pinkn_concert2 = pinkConcertPattern(1);   // hard (phase-2) concert: hearts + lobbed hater bombs
+// obj_audiencehater: a hard-mode member converts to a mic-stand bomb that LOBS at the soul (overshoot arc,
+// speed ~9 + gravity 0.5) then EXPLODES (spr_explosion_round) on contact / landing (concert.md §5).
+function mkAudienceHater(add, x, y, box) {
+  if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.3);
+  const b = { ...bulletProps('dummyaud1'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(1), dmg: 26, life: 320,
+              rot: 0, tint: '#1d1111', tintMul: true, _wind: 32 };
+  b.emit = function (b, out, sl) {
+    if (b._wind > 0) { b._wind--;
+      b.tint = (b._wind < 9 && (b._wind % 2)) ? '#ffff88' : '#1d1111';    // yellow pre-throw flash
+      b.x = x + (b._wind < 12 ? ((b._wind % 2) * 2 - 1) * 2 : 0);          // jitter windup
+      if (b._wind === 0 && sl) {                                          // LAUNCH: lob at the soul with overshoot
+        const dist = Math.hypot(sl.x - b.x, sl.y - b.y), over = dist * dist / 900;
+        const dir = Math.atan2((sl.y - over) - b.y, sl.x - b.x);
+        b._vx = Math.cos(dir) * 9; b._vy = Math.sin(dir) * 9; b._fly = 1; b.noHit = false; b.tint = '#ffffff'; b.tintMul = false;
+        if (typeof Snd !== 'undefined') Snd.play('explosionmmx', 0.35);
+      }
+      return;
+    }
+    if (b._fly && !b._boom) { b._vy += 0.5; b.x += b._vx; b.y += b._vy; b.rot = Math.atan2(b._vy, b._vx) + Math.PI / 2;
+      if ((sl && Math.hypot(sl.x - b.x, sl.y - b.y) < 22) || b.y > box.y + box.h + 48 || b.t > 130) {   // contact / land / timeout
+        b._boom = 1; b.noHit = true; b.dead = true;
+        out.push({ ...bulletProps('explround0'), animKeys: ['explround0', 'explround1', 'explround2', 'explround3', 'explround4', 'explround5', 'explround6', 'explround7', 'explround8'],
+                   animRate: 2, x: b.x, y: b.y, vx: 0, vy: 0, r: 30, scale: PS(1), dmg: 26, life: 18, _pinkBoom: 1 });
+        if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 10); }
+        if (typeof Snd !== 'undefined') Snd.play('explosion', 0.4);
+      }
+    }
+  };
+  add(b);
+}
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
   // obj_audienceheart: the REAL projectile is spr_heartbullet (18px red heart). Grows from tiny, aims, launches.
   const b = { ...bulletProps('heartbullet'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
@@ -2638,7 +2675,8 @@ function pinkBombPattern(chart) {
   return {
     // the OVERLAP GUARD freezes the schedule while a batch is on the board, so the real playtime is longer
     // than the raw schedule: pad the duration by ~110 frames per volley so the final volley/finale resolves.
-    box: { w: 150, h: 150 }, hz30: 1, dur: t + 150 + volleys * 75,   // trimmed dead time at the end
+    // end shortly after the last bomb resolves (finale slide-bomb needs a longer tail than the others)
+    box: { w: 150, h: 150 }, hz30: 1, dur: t + 55 + volleys * 42 + (sched.some(s => s.cmd === 4) ? 150 : 0),
     tick(a) {
       const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -2738,6 +2776,7 @@ PATTERNS.pinkn3_plusgrid2 = withPinkScene(PATTERNS.pinkn_plusgrid2);
 PATTERNS.pinkn3_rotbox    = withPinkScene(PATTERNS.pinkn_rotbox);
 PATTERNS.pinkn3_tunnel    = withPinkScene(PATTERNS.pinkn_tunnel);
 PATTERNS.pinkn3_concert   = withPinkScene(PATTERNS.pinkn_concert);
+PATTERNS.pinkn3_concert2  = withPinkScene(PATTERNS.pinkn_concert2);   // hard concert (haters), phase-2 variant
 
 // ===== PINK V3 (pinkn3_*) — from-scratch rebuild on the real STAGE SCENE =====
 // pinkn3_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).

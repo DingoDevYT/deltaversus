@@ -1502,48 +1502,48 @@ function drawDokiBar(ctx) {
 }
 // ---- PINK V3 dating-sim renderer: per-beat portrait swaps, ghost split (0.7a, facing), real UI ----
 function dsimImg(id) { const bp = (typeof bulletProps === 'function') ? bulletProps : null; const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; }
-function drawPortrait(ctx, key, frame, cx, y, flip, alpha) {
+function drawPortrait(ctx, key, frame, cx, bottomY, flip, alpha) {   // anchored by BOTTOM-CENTER (feet)
   const im = dsimImg(key + frame) || dsimImg(key + '0'); if (!im) return;
   ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.imageSmoothingEnabled = false;
   const w = im.width * 2, h = im.height * 2;
-  ctx.translate(cx, y); if (flip) ctx.scale(-1, 1);
-  ctx.drawImage(im, -w / 2, 0, w, h); ctx.restore();
+  ctx.translate(cx, bottomY); if (flip) ctx.scale(-1, 1);
+  ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore();               // bottom edge sits at bottomY
 }
+// centered dating-sim window opening (the plate's sky hole). All window content is CLIPPED here so it
+// can't overreach the frame; the frame plate is then drawn ON TOP to mask/border it.
+const DSIM_WIN = { x: 116, y: 34, w: 456, h: 262 };
 function drawDateUIV3(ctx, D) {
   ctx.save(); ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
-  // Layer 1 — scrolling diamond bg
+  // Layer 1 — scrolling diamond bg (full-screen, sits behind the frame margins)
   const dia = dsimImg('dsimdiamond') || dsimImg('dsimdia1');
   if (dia) { ctx.globalAlpha = 0.5; for (let ty = -80 + ((D.bgy || 0) - 80); ty < 560; ty += 80) for (let tx = -(D.bg || 0) - 80; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80); ctx.globalAlpha = 1; }
-  // Layer 6 base — UI frame plate (spr_datingsim_ui_nodiamonds frame 0) 2x
-  const plate0 = dsimImg('dsimplate0'); if (plate0) ctx.drawImage(plate0, 0, 0, 640, 440);
-  // Layer 2 — sky/window bg (spr_datingsim_ui_bg) at (106,24) 2x
-  const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);
   if (D.done) { ctx.restore(); return; }
-  // Layer 3 — portraits. Ghost present -> the two face each other (speaker flips), ghost at 0.7a.
   const hasGhost = !!D.ghost;
-  if (hasGhost) {
-    drawPortrait(ctx, D.spk, D.talkF || 0, 206, 34, false, 1);                // speaker LEFT (faces right, toward ghost)
-    drawPortrait(ctx, D.ghost, D.talkF || 0, 438, 34, true, 0.7);            // ghost RIGHT (translucent, faces left)
-  } else {
-    drawPortrait(ctx, D.spk, D.talkF || 0, 320, 34, false, 1);               // single speaker, centered
-  }
-  // sweat drop
-  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 206 : 320) - sw.width, 34, sw.width * 2, sw.height * 2); }
-  // Layer 9 — 3-question progress hearts (fill left->right as answered), top-left of the plate
-  for (let i = 0; i < 3; i++) { const hi = dsimImg('dsimheart' + (i < (D.hearts || 0) ? 0 : 8)); if (hi) { ctx.save(); if (i >= (D.hearts || 0)) ctx.globalAlpha = 0.85; ctx.drawImage(hi, 42 + i * 26, 40, hi.width, hi.height); ctx.restore(); } }
-  // Layer 4 — dialogue box gradient
-  ctx.save(); const gA = 0.7; const grad = ctx.createLinearGradient(0, 210, 0, 273); grad.addColorStop(0, 'rgba(102,86,177,' + (gA * 0.25) + ')'); grad.addColorStop(1, 'rgba(102,86,177,' + (gA * 0.85) + ')');
-  ctx.fillStyle = grad; ctx.fillRect(106, 210, 420, 63); ctx.restore();
-  // Layer 5 — dialogue text (paraphrased), 8-dir outline; salmon when ghost present
-  const lines = D.lines || []; const flash = D.flash > 0 && (D.flash % 4 < 2);
-  ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const W = DSIM_WIN, feet = W.y + W.h - 2;   // portraits stand on the window floor (shared baseline)
+  ctx.save(); ctx.beginPath(); ctx.rect(W.x, W.y, W.w, W.h); ctx.clip();   // MASK window content
+  const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);   // sky
+  if (hasGhost) { drawPortrait(ctx, D.spk, D.talkF || 0, W.x + 96, feet, false, 1); drawPortrait(ctx, D.ghost, D.talkF || 0, W.x + W.w - 96, feet, true, 0.7); }
+  else drawPortrait(ctx, D.spk, D.talkF || 0, W.x + W.w / 2, feet, false, 1);
+  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? W.x + 96 : W.x + W.w / 2) - sw.width, feet - 232, sw.width * 2, sw.height * 2); }
+  // dialogue box gradient (purple fade) in the lower window + text flush inside it
+  const boxT = W.y + W.h - 76, boxB = W.y + W.h - 8, boxCY = (boxT + boxB) / 2;
+  const grad = ctx.createLinearGradient(0, boxT, 0, boxB); grad.addColorStop(0, 'rgba(102,86,177,0.12)'); grad.addColorStop(1, 'rgba(102,86,177,0.72)');
+  ctx.fillStyle = grad; ctx.fillRect(W.x + 10, boxT, W.w - 20, boxB - boxT);
+  const lines = D.lines || [], flash = D.flash > 0 && (D.flash % 4 < 2);
+  ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const outline = (str, x, y, fillc) => { ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, x + dx, y + dy); ctx.fillStyle = fillc; ctx.fillText(str, x, y); };
-  // 2-speaker layout (spec §4): ghost present -> speaker text LEFT (salmon), ghost line RIGHT (lavender); else centered
   const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
-  const spkX = hasGhost ? 214 : 320, baseY = 244;
-  for (let i = 0; i < lines.length; i++) if (lines[i]) outline(lines[i], spkX, baseY + i * 22, spkCol);
-  if (hasGhost && D.ghostHint) outline(D.ghostHint, 430, baseY, '#c7b9d7');   // ghost's (mean) line = lavender, right
+  const nz = lines.filter(Boolean);
+  if (hasGhost) { const sx = W.x + W.w * 0.28, gx = W.x + W.w * 0.72;
+    nz.forEach((ln, i) => outline(ln, sx, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
+    if (D.ghostHint) outline(D.ghostHint, gx, boxCY, '#c7b9d7'); }
+  else nz.forEach((ln, i) => outline(ln, W.x + W.w / 2, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
+  ctx.restore();   // end window clip
+  // Layer 6 — UI frame plate ON TOP: masks the window to a centered opening + gives the black lower box
+  const plate0 = dsimImg('dsimplate0'); if (plate0) ctx.drawImage(plate0, 0, 0, 640, 440);
+  // Layer 9 — 3-question progress hearts (over the plate, top-left slot)
+  for (let i = 0; i < 3; i++) { const hi = dsimImg('dsimheart' + (i < (D.hearts || 0) ? 0 : 8)); if (hi) { ctx.save(); if (i >= (D.hearts || 0)) ctx.globalAlpha = 0.85; ctx.drawImage(hi, 42 + i * 26, 40, hi.width, hi.height); ctx.restore(); } }
   // Layer 10 — choice carousel: horizontal CYLINDER projection (flat row, edges compressed) + connector
   // rail with dots/arrows + the purple soul at the hub (spec §5.2). Boxes at constant y in the black panel.
   if (D.opts) {
