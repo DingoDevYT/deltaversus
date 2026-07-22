@@ -917,9 +917,9 @@ Battle.updDodge = function () {
       const tgt = nodes[B._pNode] || { x: 0, y: 0 };
       B.pOnX = ap(B.pOnX, tgt.x, 20); B.pOnY = ap(B.pOnY, tgt.y, 20);   // snappy node-to-node travel
       B.pNodeReached = (Math.abs(B.pOnX - tgt.x) < 1.5 && Math.abs(B.pOnY - tgt.y) < 1.5) ? B._pNode : -1;
-      B.soul.x = ccx + B.pOnX; B.soul.y = ccy + B.pOnY; return;
+      // pOnX/pOnY set; fall through to the shared `B.soul.x = ccx + B.pOnX` (do NOT return — the pattern still runs)
     }
-    if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
+    else if (pm === 2) {                              // 4x4 grid (lane_distance 40, GML obj_fusebomb)
       const xt = (B.pLaneX - 1.5) * 40, yt = (B.pLaneY - 1.5) * 40;
       if (Math.abs(B.pOnX - xt) < 0.5 && Math.abs(B.pOnY - yt) < 0.5) {
         if (H.left && B.pLaneX > 0) B.pLaneX--; else if (H.right && B.pLaneX < 3) B.pLaneX++;
