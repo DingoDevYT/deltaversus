@@ -1830,7 +1830,7 @@ function pinkRotboxD1Pattern() {
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
       const restX = cx - box.w / 2 - 84;   // the giant ghost appears on the LEFT (wiki) and rams rightward
       if (f === 0) { S._q = []; S._t = 8; S._rot = 0; S._rtar = 0; S._pendKnock = 0;
-        S._ghost = { x: restX, ram: 0, bob: 0, enter: 0 }; }
+        S._ghost = { x: restX, ram: 0, bob: 0, enter: 0, bumps: 0, hsp: 0, flip: false, frame: 0 }; }
       // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6)
       const d = S._rtar - S._rot; S._rot += Math.abs(d) < 6 ? d : Math.sign(d) * 6;
       a.fx.purpleSoul = { mode: 3, rot: S._rot };
@@ -1839,12 +1839,26 @@ function pinkRotboxD1Pattern() {
       const gh = S._ghost;
       gh.enter = Math.min(1, gh.enter + 0.035);            // dramatic rise-in (scale + lift from below)
       gh.bob += 0.22;
-      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) gh.ram = 1;   // ready & a knock queued -> ram
-      if (gh.ram === 1) { gh.x += 9; if (gh.x >= cx - box.w / 2 - 18) { gh.ram = 2; S._rtar += 90; S._pendKnock--; Snd.play('pinktrip', 0.5); if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 8); } }
-      else if (gh.ram === 2) { gh.x -= 6; if (gh.x <= restX) { gh.x = restX; gh.ram = 0; } }   // bounce back left
+      // bumps -> approach speed multiplier (obj_huge_anime_face Step: 0->32, 1->1.5, 2->4, 3->9, >=4->11).
+      const sm = gh.bumps <= 0 ? 32 : gh.bumps < 2 ? 1.5 : gh.bumps < 3 ? 4 : gh.bumps < 4 ? 9 : 11;
+      const hitX = cx - box.w / 2 - 18;
+      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; }   // knock queued -> lunge
+      if (gh.ram === 1) {                                  // accelerate toward the box (GML accel tiers by hspeed)
+        gh.hsp += gh.hsp < 2.5 ? 0.6 : gh.hsp < 4 ? 0.35 : 0.12;
+        gh.hsp = Math.min(gh.hsp, 2 + sm * 0.55);
+        gh.x += gh.hsp;
+        if (gh.x >= hitX) {                                // BUMP: rotate box 90°, flip sprite, halve speed
+          gh.x = hitX; gh.ram = 2; gh.bumps++; S._rtar += 90; S._pendKnock--;
+          gh.flip = !gh.flip; gh.frame ^= 1;               // image_xscale flip + image_index toggle each bump
+          Snd.play('pinktrip', 0.5); Snd.play('pinktrip', 0.28);
+          if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 9);
+          gh.hsp = Math.max(1, gh.hsp * 0.5);
+        }
+      } else if (gh.ram === 2) { gh.x -= 6; if (gh.x <= restX) { gh.x = restX; gh.ram = 0; } }   // recoil back left
       else gh.x = restX;
       const riseY = (1 - gh.enter) * 150;                  // starts 150px below, rises to rest
-      a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10 + riseY, frame: Math.floor(f / 8) % 2, ramming: gh.ram === 1, scale: 1.6 + gh.enter * 0.4, flip: false };
+      const kind = gh.bumps >= 7 ? 'shock' : gh.bumps >= 6 ? 'yell' : 'angry';   // angry -> yell_full -> shock_full
+      a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10 + riseY, frame: gh.frame, kind, ramming: gh.ram === 1, scale: 1.6 + gh.enter * 0.4, flip: gh.flip };
       if (f < 8) return;
       if (S._q.length === 0 && f < S.dur - 120) {   // refill: generate the next group; queue a knock (the ghost delivers it)
         const g = pinkPlusD1Group(rng); let t = S._t;

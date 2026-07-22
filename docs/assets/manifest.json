@@ -3463,6 +3463,21 @@
       "f": "heartbullet.png",
       "w": 18,
       "h": 18
+    },
+    "pinkyell0": {
+      "f": "pinkyell0.png",
+      "w": 117,
+      "h": 130
+    },
+    "pinkyell1": {
+      "f": "pinkyell1.png",
+      "w": 116,
+      "h": 129
+    },
+    "pinkshock": {
+      "f": "pinkshock.png",
+      "w": 121,
+      "h": 117
     }
   },
   "bullet_cost": {

@@ -1580,9 +1580,16 @@ Battle.renderBoxAndBullets = function (ctx) {
   }
   // PINK GHOST (obj_huge_anime_face): the big ghost that rams the box — the P3 rotation telegraph
   if (B.fx && B.fx.pinkGhost) {
-    const g = B.fx.pinkGhost, gi = (A.manifest.bullets || {})['pinkghost' + (g.frame || 0)];
+    const g = B.fx.pinkGhost;
+    // obj_huge_anime_face sprite escalation: angry -> yell_full (natively faces the WRONG way, so its
+    // flip is inverted) -> shock_full at bumps==7. angry has 2 frames it toggles per bump.
+    let key, flip = g.flip != null ? g.flip : true;
+    if (g.kind === 'shock') { key = 'pinkshock'; }
+    else if (g.kind === 'yell') { key = 'pinkyell' + (g.frame || 0); flip = !flip; }   // X-flip: sprite points the wrong way
+    else { key = 'pinkghost' + (g.frame || 0); }
+    const gi = (A.manifest.bullets || {})[key] || (A.manifest.bullets || {}).pinkghost0;
     const gim = gi && A.img['assets/bullets/' + gi.f];
-    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip: g.flip != null ? g.flip : true, alpha: g.ramming ? 1 : 0.92 });
+    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip, alpha: g.ramming ? 1 : 0.92 });
   }
   // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS (background pass; the CAT
   // CROWD is drawn later, in FRONT of the box + bullets — see the foreground pass after the soul).
