@@ -1518,7 +1518,8 @@ function pinkCatsSchedule(chart) {
   const sched = []; let t = 15;
   for (let k = 0; k < chart.length; k += 4) {
     sched.push({ f: Math.round(t), lane: chart[k], side: chart[k + 1], speed: chart[k + 3] });
-    t += Math.max(1, Math.round(0.5 + (13 * chart[k + 2]) / 1.25));   // _bullet_interval_modifier = 1.25
+    // GML round(0.5) = 0 (banker's): interval-0 tuples fire the SAME frame (tight formations)
+    t += chart[k + 2] === 0 ? 0 : Math.max(1, Math.round(0.5 + (13 * chart[k + 2]) / 1.25));   // _bullet_interval_modifier = 1.25
   }
   sched.total = Math.round(t);
   return sched;
@@ -1674,44 +1675,211 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
   { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
 ], 5, 230, 1, 22, true);
-// TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid, lane_distance 40). Bombs (obj_fusebomb) land ON
-// the grid cells, fuse (pulsing faster near the end), then detonate: obj_pinkbombexplosion marches out
-// 24px at a time in all 4 directions to the screen edge — a full row+column CROSS of explosion sprites.
-// ~1/3 of bombs "have_heart" and drop a doki-heart TP collectable where they blew up. Hop off the cross.
-PATTERNS.pinkn_bombs = {
-  dur: 300, box: { w: 150, h: 150 }, hz30: 1,   // fits mode-2 grid: 4x4 cells at (lane-1.5)*40 -> ±60
-  tick(a) {
-    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f < 18 || f % 26 !== 0 || f > 250) return;
-    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4);
-    const x = cx + (gx - 1.5) * 40, y = cy + (gy - 1.5) * 40;
-    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(2), _fuse: 50, _heart: rng() < 0.34, dmg: 20 };
-    bomb.emit = function (b, out) {
-      const F = b._fuse;
-      if (b.t < F) {   // fuse pulse — subtle, then rapid in the final ~14 frames (telegraph)
-        const near = b.t > F - 14;
-        b.scale = PS(2) * (1 + (near ? 0.4 : 0.14) * Math.abs(Math.sin(b.t * (near ? 0.95 : 0.4))));
-        return;
-      }
-      if (b._done) return;
-      b._done = 1; b.dead = true;
-      Snd.play('boardbomb', 0.5);
-      if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
-      out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: 11, scale: PS(2.2), life: 18, dmg: b.dmg });
-      for (const [dx, dy] of [[24, 0], [0, -24], [-24, 0], [0, 24]]) {   // march out to the screen edge
-        let px = b.x, py = b.y;
-        for (let s = 0; s < 28; s++) {
-          px += dx; py += dy;
-          if (px < -24 || px > 664 || py < 36 || py > 500) break;
-          out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: 9, scale: PS(2), life: 16, dmg: b.dmg, rot: Math.atan2(dy, dx) + Math.PI / 2 });
+// ============ TYPE 203 — PINATA BOMBS: full 1:1 port ============
+// obj_dbulletcontroller(203) chart = [cmd, interval] pairs, wait after each = round(0.5 + 45*interval).
+//   cmd 0 = queue a small fusebomb   cmd 1 = Pink laughs (cosmetic)   cmd 2 = giant centre bomb
+//   cmd 3 = 4-giant volley (edge/outside XYs via pattern 0/1/2 + reflect/rotate; one of the four has_heart)
+//   cmd 4 = FINALE: Pink slides up/down at the box right holding a giant bomb (fuse 120, wave_speed
+//           choose(3.85,4.725,5.15,5.95), slows to a stop as fuse<=25) — blasts the rows where she stops.
+// obj_pink_battlemovement mode 5 (the thrower): volleys of 4+ smalls land in a PLUS around a centre cell
+// [(gx,0),(gx,3),(0,gy),(3,gy)] shuffled; volleys of <=3 walk (±1,±2)/(±2,±1) hops wrapping mod 4.
+// Small fuse = 55 + remaining*2 - repeat*2 (volleys detonate ~together, repeats speed up). has_heart every
+// ammo_doki cycle (3 -> reset 2) — those bombs are PINK-tinted and leave a heart. obj_fusebomb: 22-tick
+// air arc + flashing landing-ring telegraph, land bounce, fuse-frame sprite burn-down, squash-swell in the
+// last 8 ticks, orange flash windows, SOUL CONTACT = instant detonation, explosion crosses CHAIN-detonate
+// other landed bombs and destroy settled hearts. Giant = 3-lane-thick cross (x8 scale, 48px steps).
+const PINK_BOMB_D0 = [0, 1.05, 0, 1.05, 0, 0.98, 0, 0, 0, 1.1, 0, 0, 0, 0, 0, 0.98, 0, 0, 0, 0, 0, 0.97, 0, 0, 0, 0, 0, 0, 0, 1.25, 1, 0];
+const PINK_BOMB_D1 = [0, 0.85, 0, 0.7, 0, 0.6, 0, 0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.65, 0, 0, 0, 0, 0, 1.25, 1, 0];
+const PINK_BOMB_D2 = [3, 1.25, 3, 1.25, 3, 1.25, 3, 1.5, 4, 3];
+const PINK_BOMB_D3 = [0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0.975, 0, 0, 0, 0, 0, 0, 0, 0.875, 2, 1.5, 1, 0];
+const PINK_BOMB_D4 = [0, 0.85, 0, 0.7, 0, 0.6, 0, 0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.65, 0, 0, 0, 0, 0, 0.9, 2, 1.5, 1, 0];
+
+function pinkBombExplode(b, out, box, giant) {
+  Snd.play('boardbomb', giant ? 0.7 : 0.5);
+  if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, giant ? 16 : 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
+  const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 26 : 13;   // radii overlap the step -> contiguous beam
+  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 30 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg });
+  for (const [dx, dy] of [[step, 0], [0, -step], [-step, 0], [0, step]]) {
+    let px = b.x, py = b.y;
+    for (let s = 0; s < 30; s++) {
+      px += dx; py += dy;
+      if (px < -48 || px > 688 || py < 20 || py > 520) break;
+      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg, rot: Math.atan2(dy, dx) + Math.PI / 2 });
+    }
+  }
+  // the cross CHAIN-detonates other landed bombs (fuse=min(fuse,3)) + destroys settled hearts in its path
+  if (typeof Battle !== 'undefined' && Battle.bullets) {
+    const th = giant ? 64 : 20;
+    for (const o of Battle.bullets) {
+      const onCross = Math.abs(o.x - b.x) < th || Math.abs(o.y - b.y) < th;
+      if (o._pinkBomb && o !== b && o._land >= 0 && (o.t - o._land) >= 10 && onCross) o._fuse = Math.min(o._fuse, 3);
+      if (o.pickup && o.t >= 30 && Math.abs(o.vx) + Math.abs(o.vy) < 0.3 && onCross && Math.hypot(o.x - b.x, o.y - b.y) > 10) o.dead = true;
+    }
+  }
+  if (b._heart) {
+    if (!giant) out.push({ ...bulletProps('pdoki'), x: b._dx, y: b._dy, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
+    else {   // giant has_heart sprays hearts along the row+column every 2 lanes, drifting (obj_fusebomb_big)
+      let alt = 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let s = 0; s <= 3; s += 2) {
+        const hx = b._dx + dx * 40 * s, hy = b._dy + dy * 40 * s;
+        if (hx > box.x && hx < box.x + box.w && hy > box.y && hy < box.y + box.h) {
+          const drift = [0, 2.9, -2.9][alt++ % 3];
+          out.push({ ...bulletProps('pdoki'), x: hx, y: hy, vx: dy !== 0 ? drift : 0, vy: dx !== 0 ? drift : 0, fric: 0.1, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
         }
       }
-      if (b._heart) out.push({ ...bulletProps('pdoki'), x: b.x, y: b.y, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 170 });
-    };
-    add(bomb);
-  },
-};
+    }
+  }
+}
+
+function mkPinkBomb(add, box, dest, x0, y0, o) {
+  const giant = !!o.giant;
+  const b = { ...bulletProps(giant ? 'pbombbig' : 'pbomb4'), x: x0, y: y0, vx: 0, vy: 0, noHit: true,
+              scale: PS(2), _pinkBomb: 1, _air: 1, _fuse: o.fuse, _heart: !!o.heart, _dx: dest.x, _dy: dest.y,
+              _x0: x0, _y0: y0, _land: -1, _pt: 0, _sc: 2, dmg: o.dmg, life: 900 };
+  if (b._heart) { b.tint = '#ff6699'; b.tintMul = true; }   // has_heart bombs are PINK (GML image_blend)
+  b.emit = function (b, out, soul) {
+    // ---- AIRBORNE: 22-tick arc to the cell + the flashing landing-ring telegraph (obj_fusebomb Draw) ----
+    if (b._air > 0) {
+      b._air = Math.max(0, b._air - ((giant ? 4.48 : 5.12) / 110));
+      const a = b._air, p = 1 - a;
+      b.x = b._dx * p + b._x0 * a; b.y = b._dy * p + b._y0 * a - Math.sin(p * Math.PI) * 110;
+      if (!b._ring) { b._ring = { shape: 'ring', noHit: true, x: b._dx, y: b._dy, vx: 0, vy: 0, ringR: 0, fillR: 0, life: 900 }; out.push(b._ring); }
+      b._ring.ringR = (1 - a * a * a * a) * 14; b._ring.fillR = (p / 2 + (p * p) / 2) * 16;
+      b._ring.color = (b.t % 5) < 2 ? '#ffbb00' : '#880000';
+      if (b._air <= 0) { b._land = b.t; b.x = b._dx; b.y = b._dy; b._ring.dead = true; b._ring = null; Snd.play('boardbomb', 0.1); }
+      return;
+    }
+    const sl = b.t - b._land;
+    b.drawDY = sl >= 1 && sl <= 4 ? [-4, -5, -5, -4][sl - 1] : 0;   // landing bounce (GML frames_since_airtime)
+    b._fuse--;
+    const fu = b._fuse;
+    if (!giant) {
+      b.img = bulletProps('pbomb' + Math.max(0, Math.min(4, Math.floor(fu / 10)))).img;   // fuse burn-down frames
+      if (fu > 8) {   // periodic pulse decaying toward x2 (pulse every 15, every 6 once fuse<=36)
+        b._pt++;
+        if (b._pt >= 15 || (b._pt >= 6 && fu <= 36)) { b._pt = 0; b._sc = 2.75; }
+        b._sc = Math.max(2, 2 + (b._sc - 2) * 0.8 - 0.01);
+        b.scale = PS(b._sc); b.sx = 1;
+      } else {        // the final 8-tick swell with squash/stretch (exact GML table)
+        const T = [[4, 1.1], [4, 1.1], [4, 1.1], [3.9, 1.05], [3.75, 1], [3.5, 1], [3.25, 0.9], [3, 0.8], [2.25, 0.9]];
+        const e = T[Math.max(0, Math.min(8, fu))]; b.scale = PS(e[0]); b.sx = e[1];
+      }
+      const flash = (fu === 22 || fu === 23) || (fu < 16 && (fu % 4) < 2);
+      if (b._heart) { b.tint = flash ? '#880000' : '#ff6699'; b.tintMul = !flash; }
+      else if (flash) { b.tint = fu < 8 ? '#ff6600' : '#ffbb00'; b.tintMul = false; }
+      else b.tint = null;
+    } else {
+      b.scale = PS(2 + 0.5 / Math.max(1, fu / 3));   // giant swells as the fuse dies
+      const flash = (fu >= 24 && fu < 27) || (fu >= 14 && fu < 17) || (fu >= 8 && fu < 10) || ((fu % 2) === 0 && fu < 8);
+      if (b._heart) { b.tint = flash ? '#880000' : '#ff6699'; b.tintMul = !flash; }
+      else if (flash) { b.tint = fu < 8 ? '#ff6600' : '#ffbb00'; b.tintMul = false; }
+      else b.tint = null;
+    }
+    // ---- SOUL CONTACT = instant detonation (GML: fuse_time = min(fuse_time, 1)) ----
+    if (sl >= 5 && soul && Math.hypot(soul.x - b.x, soul.y - b.y) < (giant ? 34 : 19)) b._fuse = Math.min(b._fuse, 1);
+    if (b._fuse <= 0 && !b._done) { b._done = 1; b.dead = true; pinkBombExplode(b, out, box, giant); }
+  };
+  add(b);
+}
+
+function mkPinkSlideBomb(add, box, o) {   // the FINALE bomb Pink holds while sliding up/down at the box right
+  const cy = box.y + box.h / 2;
+  const b = { ...bulletProps('pbombbig'), x: box.x + box.w + 44, y: box.y - 30, vx: 0, vy: 0, noHit: true,
+              scale: PS(2), _pinkBomb: 1, _fuse: o.fuse, _land: 0, _wave: 90, _pt: 0, dmg: o.dmg, life: 900,
+              _dx: box.x + box.w + 44, _dy: cy };
+  b.emit = function (b, out) {
+    b._pt++; b._fuse--;
+    const fu = b._fuse;
+    if (b._pt >= 20) {   // slide: wave_angle ramps up then slows to a stop as fuse<=25 (endspeed clamp)
+      const end = fu <= 25 ? Math.max(0, Math.min(1, (fu / 25) * 2 - 1)) : 1;
+      b._wave += 1 + (Math.min(b._pt - 20, 20) / 10) * o.wspd * end;
+      b.y = cy - 96 * Math.sin(b._wave * Math.PI / 180);
+      b._dy = b.y;
+    }
+    b.scale = PS(2 + 0.5 / Math.max(1, fu / 3));
+    const flash = (fu >= 24 && fu < 27) || (fu >= 14 && fu < 17) || (fu >= 8 && fu < 10) || ((fu % 2) === 0 && fu < 8);
+    b.tint = flash ? (fu < 8 ? '#ff6600' : '#ffbb00') : null;
+    if (fu <= 0 && !b._done) { b._done = 1; b.dead = true; pinkBombExplode(b, out, box, true); }
+  };
+  add(b);
+}
+
+function pinkBombPattern(chart) {
+  const sched = []; let t = 8;
+  // GML round(0.5) = 0 (banker's): interval-0 commands queue the SAME frame — that's what forms volleys
+  for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 45 * chart[k + 1])); }
+  return {
+    box: { w: 160, h: 160 }, hz30: 1, dur: t + 190,
+    tick(a) {
+      const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
+      const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      const cell = (gx, gy) => ({ x: cx + (gx - 1.5) * 40, y: cy + (gy - 1.5) * 40 });
+      const ir = n => Math.floor(rng() * (n + 1));
+      const pick = (...xs) => xs[Math.floor(rng() * xs.length)];
+      if (f === 0) this._S = { si: 0, queue: [], doki: 3, gx: ir(3), gy: ir(3), pv: ir(3), rep: 0, wind: -1 };
+      const S = this._S;
+      // ---- controller: play the chart, queueing bombs for Pink ----
+      while (S.si < sched.length && sched[S.si].f <= f) {
+        const cmd = sched[S.si++].cmd;
+        if (cmd === 0) { if (!S.queue.length) S.doki = 0; S.queue.push({ k: 0 }); S.doki++; }
+        else if (cmd === 2) S.queue.push({ k: 1 });
+        else if (cmd === 4) S.queue.push({ k: 3 });
+        else if (cmd === 3) {   // 4-giant volley: exact XY pattern + reflect/rotate (obj_dbulletcontroller)
+          let xy; const pat = pick(0, 0, 1, 1, 2);
+          if (pat === 0) { const r1 = 3 + ir(1), r0 = Math.max(-1, r1 - 4 - ir(1)); xy = [[-2, r0], [-2, r1], [1 + ir(2), -2], [5, r1]]; }
+          else if (pat === 1) { const r2 = 1 + ir(1), r1 = 3 + ir(1), r0 = Math.max(-1, r1 - 4 - ir(1)); xy = [[-2, r0], [5, r1], [r2, -2], [r2, 4]]; }
+          else xy = [[-2, -1], [4, -2], [5, 4 - pick(0, 1, 1)], [-1 + pick(0, 1, 1), 5]];
+          const ord = [0, 1, 2, 3].sort(() => rng() - 0.5);
+          const xs = ir(1) ? -1 : 1, xo = xs < 0 ? 3 : 0, ys = ir(1) ? -1 : 1, yo = ys < 0 ? 3 : 0, xr = ir(1);
+          const kinds = [[4, 2, 2, 2], [2, 4, 2, 2], [2, 2, 4, 2], [2, 2, 2, 4]][ir(3)];
+          for (let i = 0; i < 4; i++) {
+            const p = xy[ord[i]];
+            S.queue.push({ k: 2, heart: kinds[i] === 4, gx: xo + xs * p[xr ? 1 : 0], gy: yo + ys * p[xr ? 0 : 1] });
+          }
+        }
+      }
+      // ---- Pink's thrower (mode 5): volley pickup -> positions -> paced throws ----
+      if (S.wind < 0 && S.queue.length) {
+        const smalls = S.queue.filter(q => q.k === 0).length;
+        if (S.queue[0].k === 0) {
+          if (smalls === 1) S.doki = 2;
+          if (smalls >= 4) {   // PLUS around a centre cell, shuffled
+            S.gx = S.gx === 1 ? 2 : S.gx === 2 ? 1 : 1 + ir(1);
+            S.gy = S.gy === 1 ? 2 : S.gy === 2 ? 1 : 1 + ir(1);
+            const pos = [[S.gx, 0], [S.gx, 3], [0, S.gy], [3, S.gy]].sort(() => rng() - 0.5);
+            let pi = 0; for (const q of S.queue) if (q.k === 0 && pi < 4) { q.gx = pos[pi][0]; q.gy = pos[pi][1]; pi++; }
+          } else {             // walk pattern: (±1,±2)/(±2,±1) hops wrapping mod 4
+            if (smalls <= 3) S.pv = ir(3);
+            for (const q of S.queue) if (q.k === 0 && q.gx == null) {
+              q.gx = S.gx; q.gy = S.gy;
+              if (ir(1) === 1) { S.gx += S.pv < 2 ? 2 : -2; S.gy += S.pv % 2 === 0 ? 1 : -1; }
+              else { S.gx += S.pv < 2 ? 1 : -1; S.gy += S.pv % 2 === 0 ? 2 : -2; }
+              S.gx = ((S.gx % 4) + 4) % 4; S.gy = ((S.gy % 4) + 4) % 4;
+            }
+          }
+        }
+        S.wind = S.rep <= 0 ? 14 : S.rep <= 3 ? 12 : 10;   // windup speeds up per repeat (GML anim rates)
+      }
+      if (S.wind > 0) S.wind--;
+      else if (S.wind === 0 && S.queue.length) {
+        const q = S.queue.shift(), left = S.queue.length;
+        const tx = box.x + box.w + 58, ty = box.y - 46;   // thrown from Pink (right of the box)
+        if (q.k === 0) {
+          S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
+          mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 55 + left * 2 - S.rep * 2, heart, dmg: 20 });
+        } else if (q.k === 1) mkPinkBomb(add, box, cell(pick(1, 2), 1), tx, ty, { fuse: 60, giant: true, dmg: 24 });
+        else if (q.k === 2) mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 52 + left * 3, giant: true, heart: q.heart, dmg: 24 });
+        else if (q.k === 3) mkPinkSlideBomb(add, box, { fuse: 120, dmg: 26, wspd: pick(3.85, 4.725, 5.15, 5.95) });
+        S.wind = S.queue.length ? 6 : -1;
+        if (!S.queue.length) S.rep++;
+      } else if (!S.queue.length) S.wind = -1;
+    },
+  };
+}
+PATTERNS.pinkn_bombs = pinkBombPattern(PINK_BOMB_D0);        // P1 T2 — volleys 1,1,1,2,3,3,4 + laugh
+PATTERNS.pinkn_bombs2 = pinkBombPattern(PINK_BOMB_D1);       // P1 T4 — faster, final volley of 4
+PATTERNS.pinkn_bombsg = pinkBombPattern(PINK_BOMB_D3);       // P2 T3 — smalls + giant centre bomb ender
+PATTERNS.pinkn_bombsfin = pinkBombPattern(PINK_BOMB_D2);     // P3 T2 — 4x giant volleys + slide FINALE
 
 function bulletProps(bid, r) {
   if (bid === 'crescent' || bid === 'star' || bid === 'note') {

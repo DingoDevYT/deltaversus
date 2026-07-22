@@ -3323,6 +3323,36 @@
 "f": "pzap.png",
 "w": 16,
 "h": 18
+},
+"pbomb0": {
+"f": "pbomb0.png",
+"w": 10,
+"h": 11
+},
+"pbomb1": {
+"f": "pbomb1.png",
+"w": 11,
+"h": 11
+},
+"pbomb2": {
+"f": "pbomb2.png",
+"w": 13,
+"h": 13
+},
+"pbomb3": {
+"f": "pbomb3.png",
+"w": 15,
+"h": 15
+},
+"pbomb4": {
+"f": "pbomb4.png",
+"w": 17,
+"h": 17
+},
+"pbombbig": {
+"f": "pbombbig.png",
+"w": 61,
+"h": 56
 }
 },
 "bullet_cost": {
@@ -3460,7 +3490,13 @@
 "pbell": 1,
 "pboom": 1,
 "pexploc": 1,
-"pzap": 1
+"pzap": 1,
+"pbomb0": 1,
+"pbomb1": 1,
+"pbomb2": 1,
+"pbomb3": 1,
+"pbomb4": 1,
+"pbombbig": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

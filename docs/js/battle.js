@@ -1576,12 +1576,17 @@ function tickPendingLasers(bullets, box) {
 
 // generic sprite tint cache (red spawn-tint for the Knight's directional knives, etc.)
 const imgTints = {};
-function tintImg(img, color) {
-  const key = (img.src || img._tid || (img._tid = Math.random())) + '|' + color;
+function tintImg(img, color, mul) {
+  const key = (img.src || img._tid || (img._tid = Math.random())) + '|' + color + (mul ? '|m' : '');
   if (imgTints[key]) return imgTints[key];
   const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0);
-  x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  if (mul) {   // GML image_blend: multiply the colour but KEEP the sprite art + alpha
+    x.globalCompositeOperation = 'multiply'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+    x.globalCompositeOperation = 'destination-in'; x.drawImage(img, 0, 0);
+  } else {
+    x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  }
   imgTints[key] = c; return c;
 }
 
@@ -1590,7 +1595,7 @@ function drawBullet(ctx, b, px, py, s) {
   if (b.drawDX) px += b.drawDX * s;   // visual offset from the hitbox (overlaid face layers)
   if (b.drawDY) py += b.drawDY * s;
   if (b.img && b.img.width) {
-    const im = b.tint ? tintImg(b.img, b.tint) : b.img;
+    const im = b.tint ? tintImg(b.img, b.tint, b.tintMul) : b.img;
     drawSpr(ctx, im, px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0, flip: b.flip,
                                sx: b.sx, sy: b.sy, alpha: b.alpha });
     return;
@@ -1624,6 +1629,11 @@ function drawBullet(ctx, b, px, py, s) {
     ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
     ctx.globalAlpha = b.armed ? 1 : (b.tellFade != null ? b.tellFade : 0.5);
     ctx.fillStyle = b.color || '#f33'; ctx.fillRect(-L / 2, -th / 2, L, th);
+    ctx.restore(); ctx.globalAlpha = 1;
+  } else if (b.shape === 'ring') {   // landing-target telegraph (Pink fusebombs): flashing outline + growing filled core
+    ctx.save(); ctx.strokeStyle = b.color || '#ffbb00'; ctx.lineWidth = 2.5 * s;
+    ctx.beginPath(); ctx.arc(px, py, Math.max(1, (b.ringR || 10) * s), 0, 7); ctx.stroke();
+    if (b.fillR > 0.5) { ctx.fillStyle = b.color || '#ffbb00'; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(px, py, b.fillR * s, 0, 7); ctx.fill(); }
     ctx.restore(); ctx.globalAlpha = 1;
   } else { ctx.beginPath(); ctx.arc(px, py, (b.r || 5) * s, 0, 7); ctx.fill(); }
 }
