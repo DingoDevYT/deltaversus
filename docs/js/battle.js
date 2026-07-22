@@ -78,12 +78,28 @@ function canSpare(m) {
   if (isOut(m)) return false;
   const sp = m.def.spare || {};
   if (sp.never) return false;
+  // PINK's DOKI spare: she is NOT sparable via MERCY %. You spare her by surviving her phases while filling
+  // the DOKI meter (collecting doki-hearts) — each fill triggers a DATE minigame — and clearing the FINAL
+  // date. She becomes sparable only once all her dates are done (obj_pink_enemy datecount reaches the end).
+  if (m.def.dokiSpare) return (Battle.dokiPhase || 0) >= (m.def.dokiPhases || 3);
   if (m.mercy < 100) return false;
   const team = teamOf(m);
   if (sp.alone && living(team).length > 1) return false;                                   // SUSIE: only when she's the last one standing
   if (sp.fullHp && m.hp < m.max) return false;
   if (sp.noKris && team.some(o => !isOut(o) && o.def.base === 'kris')) return false;         // NOELLE: not while a living KRIS is on her team
   return true;
+}
+// PINK DOKI meter (obj_pink_enemy doki/datecount + scr_dokiadd). Collecting doki-hearts fills it; a full
+// meter marks a DATE minigame as due (dokiReady); completing a date advances the phase (dokiAdvancePhase).
+function dokiFoe() { return (Battle.oppTeam || []).find(o => o.def && o.def.dokiSpare && !isOut(o)); }
+function dokiMaxFor() { const f = dokiFoe(); return f ? ((Battle.dokiPhase || 0) >= 1 ? (f.def.dokiMaxLater || 20) : (f.def.dokiMax || 100)) : 100; }
+function dokiCollect(amt) {
+  if (!dokiFoe()) return;
+  Battle.doki = Math.min(dokiMaxFor(), (Battle.doki || 0) + (amt || 8));
+  if (Battle.doki >= dokiMaxFor()) Battle.dokiReady = true;   // the DOKI meter is FULL -> Pink's next turn is a DATE minigame
+}
+function dokiAdvancePhase() {   // a DATE minigame was cleared -> advance the phase; after the final date she's sparable
+  Battle.dokiPhase = (Battle.dokiPhase || 0) + 1; Battle.doki = 0; Battle.dokiReady = false;
 }
 // one-line description of what it takes to SPARE this foe (shown in the target menu)
 function spareHint(def) {
@@ -104,7 +120,8 @@ function findAct(id) {
 function moveDefOf(def, a) {
   if (!a) return null;
   if (a.cmd === 'fight') return def.fight;
-  if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult : (def.spells || []).find(s => s.id === a.move);
+  if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult
+    : (def.spells || []).find(s => s.id === a.move) || (def.dokiDates || []).find(s => s.id === a.move);   // PINK DATE moves
   if (a.cmd === 'act') return findAct(a.move);
   return null;
 }
@@ -158,6 +175,7 @@ Battle.init = function (opts) {
   const B = Battle;
   B.matchN = opts.matchN || 1;
   B.size = opts.size || 1;
+  B.doki = 0; B.dokiPhase = 0; B.dokiReady = false;   // PINK DOKI meter / phase (reset each battle)
   B.myTeamSel = opts.myTeam.slice();
   B.oppTeamSel = opts.oppTeam.slice();
   B.myTeam = opts.myTeam.map(mkMember);
@@ -979,9 +997,12 @@ Battle.updDodge = function () {
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = [];   // bomb row/col telegraphs (bullets push each frame)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
-    if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1; if (B._dateEnd > 24) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
+    if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
+      if (B._dateEnd > 24) { if (!B._dokiDatedThisRun) { B._dokiDatedThisRun = 1; dokiAdvancePhase(); }   // finishing a DATE advances Pink's phase
+        B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
     return;
   }
+  B._dokiDatedThisRun = 0;
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
@@ -1080,6 +1101,7 @@ Battle.updDodge = function () {
         B.flash = 4; Snd.play('healspark', 0.5);
         B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '+' + tp, t: 0, color: '#ff8fe0' });
         for (const m of B.myTeam) if (m && m.hp > 0) m.hp = Math.min(m.max, m.hp + 1);
+        dokiCollect(b.doki != null ? b.doki : tp);   // Pink's DOKI meter: collecting doki-hearts fills it (scr_dokiadd)
       }
       continue;
     }
@@ -1334,6 +1356,7 @@ Battle.render = function (ctx) {
   B.renderBoxAndBullets(ctx);
   B.renderMirror(ctx);
   if (!(B.fx && B.fx.date)) B.renderHud(ctx);   // DATE minigame is a full-screen takeover — no party HUD over it
+  if (!(B.fx && B.fx.date)) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
   B.renderMsg(ctx);
   if (B.phase === 'timing') B.renderTiming(ctx);
   if (B.phase === 'gameover') B.renderGameover(ctx);
@@ -1416,6 +1439,28 @@ function drawBoxRect(ctx, cx, cy, w, h, rot, alpha) {
 // near-black fill (mainbig, sep 28, wrap 320), the purple gradient band, and the CYLINDRICAL option
 // carousel at y=291: boxes 200 apart on a strip projected via angle=lerp(0,180,(x+165)/970),
 // screenX = 240*cos(angle)+312 (perspective squeeze at the edges), scrolled LEFT/RIGHT.
+// PINK's DOKI meter (obj_pink_enemy show_doki_bar): a pink heart-meter at the top. Fills as you collect
+// doki-hearts; a full bar means a DATE is due; the pips show phases cleared. When all phases are done,
+// Pink can be SPARED. Only drawn while a dokiSpare foe (Pink) is in the fight.
+function drawDokiBar(ctx) {
+  const B = Battle; if (typeof dokiFoe !== 'function') return;
+  const foe = dokiFoe(); if (!foe) return;
+  const max = (B.dokiPhase || 0) >= 1 ? (foe.def.dokiMaxLater || 20) : (foe.def.dokiMax || 100);
+  const pct = Math.max(0, Math.min(1, (B.doki || 0) / max)), phases = foe.def.dokiPhases || 3;
+  const w = 160, x = 320 - w / 2, y = 20, h = 10;
+  ctx.save();
+  ctx.font = "12px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#ff8fe0'; ctx.fillText('DOKI', 320, y - 3);
+  ctx.fillStyle = '#301028'; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = B.dokiReady ? '#ffe14d' : '#ff5ca8'; ctx.fillRect(x + 1, y + 1, (w - 2) * pct, h - 2);
+  ctx.strokeStyle = '#ff9fd0'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  for (let i = 0; i < phases; i++) {   // phase pips (dates cleared)
+    ctx.fillStyle = i < (B.dokiPhase || 0) ? '#ffe14d' : '#5a2a4a';
+    ctx.fillRect(x + w + 8 + i * 12, y, 8, h);
+  }
+  if ((B.dokiPhase || 0) >= phases) { ctx.fillStyle = '#ffe14d'; ctx.fillText('SPARE READY', 320, y + h + 12); }
+  ctx.restore();
+}
 function drawDateUI(ctx, D) {
   const bp = (typeof bulletProps === 'function') ? bulletProps : null;
   const img = id => { const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; };

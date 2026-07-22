@@ -202,21 +202,27 @@ const CHARS = {
            text: 'GERSON unleashes the FINALE!!' },
   },
   pink: {
-    name: 'PINK', color: '#ff5ca8', hp: 1300, cost: 3, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
+    name: 'PINK', color: '#ff5ca8', hp: 1300, cost: 3, secretBoss: true, level: 3,
+    // PINK is spared through her DOKI: you can't build MERCY the normal way — you fill the DOKI meter by
+    // collecting doki-hearts during her attacks, which triggers her DATE minigames, and clear the FINAL
+    // date. dokiSpare gates canSpare on dokiPhase (obj_pink_enemy datecount). (spare:{} keeps her non-'never'.)
+    spare: {}, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
     dscale: 1.0, yoff: 4,
-    desc: 'PINK - the mew magical-girl idol (Ch5).\nCats, pinata bombs, and an IDOL concert.',
-    fight: { id: 'pink_cats', name: 'Cats', dmg: 24, dur: 340,
-             text: 'PINK sends in the CATS!' },
+    desc: 'PINK - the mew magical-girl idol (Ch5).\nFill her DOKI to trigger the DATES; clear them to SPARE.',
+    fight: { id: 'pinkn_cats', name: 'Cats', dmg: 24, dur: 340, text: 'PINK sends in the CATS!' },
     spells: [
-      { id: 'pink_bombs', name: 'Pinata Bombs', tp: 42, dmg: 20, dur: 300, kind: 'attack',
-        text: 'PINK drops PINATA BOMBS!' },
-      { id: 'pink_lanes', name: 'Cat Lanes', tp: 42, dmg: 22, dur: 340, kind: 'attack',
-        text: 'PINK lines up the CATS!' },
-      { id: 'pink_rotbox', name: 'Rotating Box', tp: 46, dmg: 24, dur: 300, kind: 'attack',
-        text: 'PINK spins the BOX!' },
+      { id: 'pinkn_bombs', name: 'Pinata Bombs', tp: 42, dmg: 20, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
+      { id: 'pinkn_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 24, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
+      { id: 'pinkn_tunnel', name: '3-D Tunnel', tp: 46, dmg: 26, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
     ],
-    ult: { id: 'pink_idol', name: 'IDOL CONCERT', tp: 100, dmg: 60, dur: 460, kind: 'attack',
+    ult: { id: 'pinkn_concert', name: 'IDOL CONCERT', tp: 100, dmg: 26, dur: 520, kind: 'attack',
            text: 'PINK starts the CONCERT!! DOKI DOKI!' },
+    // DATE minigames — played instead of an attack when the DOKI meter fills (obj_pink_enemy datecount++)
+    dokiDates: [
+      { id: 'pinkn_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pinkn_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pinkn_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+    ],
   },
 };
 // party-cost + darkner + level/spare defaults

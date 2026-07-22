@@ -163,6 +163,11 @@ const PracticeAI = {
         const dk = !!m.def.darkner;
         if (m.dark == null) m.dark = 0;
         const disc = s => Math.ceil(s.tp * (dk ? 0.6 : 1));
+        // PINK: a full DOKI meter forces a DATE minigame this turn (obj_pink_enemy datecount++)
+        if (m.def.dokiSpare && typeof Battle !== 'undefined' && Battle.dokiReady && (m.def.dokiDates || []).length) {
+          const dd = m.def.dokiDates[Math.min(Battle.dokiPhase || 0, m.def.dokiDates.length - 1)];
+          acts.push({ mi: i, cmd: 'magic', move: dd.id, seed: randSeed() }); return;
+        }
         if (m.hp < m.max * 0.35 && T.items.length && r < 0.5 && !m.def.secretBoss) {
           cmd = 'item'; move = 0;
           const it = ITEMS[T.items.shift()]; if (it) m.hp = Math.min(m.max, m.hp + (it.heal || 0));
