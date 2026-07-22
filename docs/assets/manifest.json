@@ -5447,6 +5447,15 @@
       "oh": 220,
       "ox": 0,
       "oy": 0
+    },
+    "pcurtain0": {
+      "f": "pcurtain0.png",
+      "w": 32,
+      "h": 32,
+      "ow": 32,
+      "oh": 32,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

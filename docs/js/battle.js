@@ -1851,6 +1851,21 @@ Battle.renderBoxAndBullets = function (ctx) {
   // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS (background pass; the CAT
   // CROWD is drawn later, in FRONT of the box + bullets — see the foreground pass after the soul).
   if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing;
+    // STAGE CURTAINS (obj_pink_curtains): a spr_pink_curtain panel on EACH side of the box (mirrored), tiled
+    // 3 cols x N rows, hanging from the box top with a per-row sway; they slide OPEN (retract outward) as `closed` 2->0.
+    if (p.closed != null) { const cur = A.img['assets/bullets/pcurtain0.png'];
+      if (cur && cur.width) { const ts = 2, tw = 32 * ts, th = 32 * ts, cols = 3;
+        const open = (2 - p.closed) / 2;                                   // 0 closed -> 1 fully open
+        const rows = Math.ceil((p.boxH + 60) / th) + 1, topY = p.boxTop - 24;
+        for (const side of [-1, 1]) { const edge = p.x + side * (p.boxW / 2 - 10 + open * 120);   // inner edge, retracts outward as it opens
+          for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) {
+            const sway = Math.sin(p.f * 0.09 + r * 0.6) * 5 * (0.4 + r / rows);   // fabric sway, more at the bottom
+            const tcx = edge + side * (c * tw + tw / 2) + sway, tcy = topY + r * th + th / 2;
+            drawSpr(ctx, cur, tcx, tcy, { scale: ts, flip: side > 0 });
+          }
+        }
+      }
+    }
     // two SPEAKERS (spr_dw_castle_tv_speaker frame 1) at screen x 172/468 = ±148 from the box centre, y = box top - 31,
     // scale 2 x speaker_scale (pulses to 1.15 on the beat every 8 phases; obj_pink_curtains Draw).
     const sp = A.img['assets/bullets/dwspeaker1.png'] || A.img['assets/bullets/dwspeaker0.png'];

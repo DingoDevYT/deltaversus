@@ -2190,7 +2190,8 @@ function pinkConcertPattern(diff) { return {
     const { f, box, add, rng } = a; const S = this;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     const gx = cx, gy = box.y;                               // obj_pink_curtains anchor = box centre-top
-    a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing) + speakers
+    S.closed = (S.closed == null) ? 2 : Math.max(0, S.closed - 0.05);   // stage curtains open 2->0 over ~40 steps
+    a.fx.pinkSing = { x: cx, y: box.y - 34, f, closed: S.closed, boxTop: box.y, boxH: box.h, boxW: box.w };   // + curtains
     if (f === 0) {
       S.dummies = [];
       // hard (difficulty>0) uses the case-3 pattern set + slower [90,60,60,90] timings (concert.md 2c)
