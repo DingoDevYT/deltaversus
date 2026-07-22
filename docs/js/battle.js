@@ -1502,14 +1502,20 @@ function drawDateUI(ctx, D) {
   const frame = img('dsimbg');      // spr_datingsim_ui_bg at (106,24) scale 2 (drawn from its corner)
   if (frame) ctx.drawImage(frame, 106, 24, 480, 280);
   if (D.done) { ctx.restore(); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; return; }
-  const tail = img('dsimtail'), po = img('dsimpink' + (D.talk || 0));   // talking portrait + tail (scale 2)
-  if (tail) ctx.drawImage(tail, 320 - 112, 21, 224, 232);
-  if (po) ctx.drawImage(po, 320 - 112, 26, 224, 232);
-  // DATE 2: the GHOST side of Pink (pinkportrait2) floats beside her and blurts a HINT that points to the pun
-  // answer (obj_date_controller second_text). Drawn semi-transparent with its own speech line.
+  // the SPEAKER portrait (obj_date_controller `pinkportrait`): the full talking face spr_pinkspeaker_date4_idle
+  // (2-frame lipsync) drawn from (320-114, 21) at scale 2, with the spr_pinkspeaker_tail accent behind it.
+  const full0 = (D.line1 || '').length + (D.line2 || '').length;
+  const talking = D.chars != null && D.chars < full0 + 2;
+  const tailA = img('spktail' + (Math.floor((D.bg || 0) / 3) % 11));
+  if (tailA) { ctx.save(); ctx.globalAlpha = 0.9; ctx.drawImage(tailA, 320 - 112, 21, tailA.width * 2, tailA.height * 2); ctx.restore(); }
+  const face = img('spkface' + (talking ? (Math.floor((D.bg || 0) / 6) % 2) : 0)) || img('spkface0');
+  if (face) ctx.drawImage(face, 320 - 114, 21, 228, 232);
+  // DATE 2: the GHOST side of Pink (spr_pinkghost_tail) floats beside her and blurts a HINT that points to the
+  // pun answer (obj_date_controller second_text). Drawn semi-transparent with its own speech line.
   if (D.ghost) {
-    const gim = img('pinkghost' + (D.talk || 0)) || img('pinkghost0');
-    if (gim) { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(gim, 430, 40, gim.width * 1.5, gim.height * 1.5); ctx.restore(); }
+    const gf = Math.floor((D.bg || 0) / 2) % 11;
+    const gim = img('ghosttail' + gf) || img('ghosttail0');
+    if (gim) { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(gim, 424, 34, 112 * 1.5, 116 * 1.5); ctx.restore(); }
     ctx.font = "14px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { ctx.fillStyle = '#3a0d2e'; ctx.fillText('"' + D.ghost + '"', 496 + dx, 150 + dy); }
     ctx.fillStyle = '#ff9fe0'; ctx.fillText('"' + D.ghost + '"', 496, 150);

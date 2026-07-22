@@ -3665,6 +3665,438 @@
       "oh": 42,
       "ox": 2,
       "oy": 0
+    },
+    "dsimbg0": {
+      "f": "dsimbg0.png",
+      "w": 214,
+      "h": 140,
+      "ow": 240,
+      "oh": 140,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart0": {
+      "f": "dsimheart0.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart1": {
+      "f": "dsimheart1.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart2": {
+      "f": "dsimheart2.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart3": {
+      "f": "dsimheart3.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart4": {
+      "f": "dsimheart4.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart5": {
+      "f": "dsimheart5.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart6": {
+      "f": "dsimheart6.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart7": {
+      "f": "dsimheart7.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimheart8": {
+      "f": "dsimheart8.png",
+      "w": 28,
+      "h": 28,
+      "ow": 28,
+      "oh": 28,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimdia0": {
+      "f": "dsimdia0.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimdia1": {
+      "f": "dsimdia1.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimdia2": {
+      "f": "dsimdia2.png",
+      "w": 40,
+      "h": 40,
+      "ow": 40,
+      "oh": 40,
+      "ox": 0,
+      "oy": 0
+    },
+    "pkarrow0": {
+      "f": "pkarrow0.png",
+      "w": 14,
+      "h": 14,
+      "ow": 16,
+      "oh": 16,
+      "ox": 1,
+      "oy": 1
+    },
+    "dsimtime0": {
+      "f": "dsimtime0.png",
+      "w": 1,
+      "h": 6,
+      "ow": 1,
+      "oh": 6,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkidle0": {
+      "f": "spkidle0.png",
+      "w": 99,
+      "h": 116,
+      "ow": 114,
+      "oh": 116,
+      "ox": 5,
+      "oy": 0
+    },
+    "spkidle1": {
+      "f": "spkidle1.png",
+      "w": 99,
+      "h": 116,
+      "ow": 114,
+      "oh": 116,
+      "ox": 5,
+      "oy": 0
+    },
+    "spktail0": {
+      "f": "spktail0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail1": {
+      "f": "spktail1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail2": {
+      "f": "spktail2.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail3": {
+      "f": "spktail3.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail4": {
+      "f": "spktail4.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail5": {
+      "f": "spktail5.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail6": {
+      "f": "spktail6.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail7": {
+      "f": "spktail7.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail8": {
+      "f": "spktail8.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail9": {
+      "f": "spktail9.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spktail10": {
+      "f": "spktail10.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail0": {
+      "f": "ghosttail0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail1": {
+      "f": "ghosttail1.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail2": {
+      "f": "ghosttail2.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail3": {
+      "f": "ghosttail3.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail4": {
+      "f": "ghosttail4.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail5": {
+      "f": "ghosttail5.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail6": {
+      "f": "ghosttail6.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail7": {
+      "f": "ghosttail7.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail8": {
+      "f": "ghosttail8.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail9": {
+      "f": "ghosttail9.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghosttail10": {
+      "f": "ghosttail10.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghostd4a0": {
+      "f": "ghostd4a0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghostd4b0": {
+      "f": "ghostd4b0.png",
+      "w": 109,
+      "h": 116,
+      "ow": 109,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghostd4c0": {
+      "f": "ghostd4c0.png",
+      "w": 109,
+      "h": 116,
+      "ow": 109,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "possmew0": {
+      "f": "possmew0.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "possmew1": {
+      "f": "possmew1.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "possmew2": {
+      "f": "possmew2.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkface0": {
+      "f": "spkface0.png",
+      "w": 114,
+      "h": 116,
+      "ow": 114,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "spkface1": {
+      "f": "spkface1.png",
+      "w": 114,
+      "h": 116,
+      "ow": 114,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
+    },
+    "ghostface0": {
+      "f": "ghostface0.png",
+      "w": 112,
+      "h": 116,
+      "ow": 112,
+      "oh": 116,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {
