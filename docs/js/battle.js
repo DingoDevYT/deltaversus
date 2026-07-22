@@ -875,7 +875,7 @@ Battle.updDodge = function () {
   if (B.soulPurple) {
     const pm = CF.purpleSoul.mode || 1, ccx = bx.x + bx.w / 2, ccy = bx.y + bx.h / 2;
     const ap = (v, t, s) => Math.abs(t - v) <= s ? t : v + Math.sign(t - v) * s;
-    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : (pm === 3 ? 0 : 1); B.pLaneY = pm === 3 ? 0 : 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; B.pGX = 0; B.pGY = 0; }
+    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : (pm === 3 ? 0 : 1); B.pLaneY = pm === 3 ? 0 : 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; B.pGX = 0; B.pGY = 0; B.pAng = 90; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
     if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
@@ -895,6 +895,11 @@ Battle.updDodge = function () {
       } else {                                        // mode 5 conveyor: lane 0 pushes DOWN, lane 1 pushes UP (1.25/frame)
         if (B.pLaneX === 0) B.pOnY = Math.min(B.pOnY + 1.25, ymax); else B.pOnY = Math.max(B.pOnY - 1.25, -ymax);
       }
+    } else if (pm === 7) {                            // 3-D TUNNEL: the heart ORBITS a ring around centre; L/R rotate around it
+      if (B.pAng == null) B.pAng = 90;
+      const rr = 4.2; if (D.left) B.pAng -= rr; if (D.right) B.pAng += rr;
+      const R = (CF.purpleSoul.ringR || 92);
+      B.pOnX = Math.cos(B.pAng * Math.PI / 180) * R; B.pOnY = Math.sin(B.pAng * Math.PI / 180) * R;
     } else if (pm === 3) {                            // ROTATING "+" cross: 5 cells (center + 4 arms at 56), whole box spins
       const ang = ((CF.purpleSoul.rot || 0)) * Math.PI / 180, cs = Math.cos(ang), sn = Math.sin(ang);
       const gx = B.pLaneX * 56, gy = B.pLaneY * 56;   // on-grid (pre-rotation) target
@@ -1488,6 +1493,8 @@ Battle.renderBoxAndBullets = function (ctx) {
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - bx.h / 2 + 6); ctx.lineTo(gcx + o, gcy + bx.h / 2 - 6); ctx.stroke(); } }
     else if (B._pmode === 3) { const a = ((B.fx && B.fx.purpleSoul && B.fx.purpleSoul.rot) || 0) * Math.PI / 180;   // rotating "+" cross arms
       for (let k = 0; k < 4; k++) { const t = a + k * Math.PI / 2; ctx.beginPath(); ctx.moveTo(gcx, gcy); ctx.lineTo(gcx + Math.cos(t) * 62, gcy + Math.sin(t) * 62); ctx.stroke(); } }
+    else if (B._pmode === 7) { const R = (B.fx && B.fx.purpleSoul && B.fx.purpleSoul.ringR) || 92;   // tunnel orbit ring
+      ctx.beginPath(); ctx.arc(gcx, gcy, R, 0, 6.283); ctx.stroke(); }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }

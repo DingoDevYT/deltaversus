@@ -1606,6 +1606,25 @@ PATTERNS.pinkn_rotbox = {
     }
   },
 };
+// TYPE 208 — 3-D Tunnel (purple mode 7: the heart ORBITS a ring; L/R rotate around it). Rings of
+// pinkzap grow outward from the vanishing point with a telegraphed GAP; rotate to the gap before the
+// ring reaches your orbit. (A faithful ring-orbit take on the pseudo-3D tunnel — the mode-7 mechanic.)
+PATTERNS.pinkn_tunnel = {
+  box: { w: 280, h: 280 }, hz30: 1, dur: 500,
+  tick(a) {
+    const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 7, ringR: 92 };
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f > 18 && f % 32 === 0 && f < 460) {           // a new ring erupts from the centre with one gap
+      const gap = rng() * 360, gapW = 66, n = 22;
+      for (let i = 0; i < n; i++) {
+        const ang = i * 360 / n, d = Math.abs(((ang - gap + 540) % 360) - 180);
+        if (d < gapW / 2) continue;                    // leave the gap open
+        const dir = ang * Math.PI / 180, spd = 2.0;
+        add({ ...bulletProps('pzap'), x: cx + Math.cos(dir) * 8, y: cy + Math.sin(dir) * 8, vx: Math.cos(dir) * spd, vy: Math.sin(dir) * spd, ax: Math.cos(dir) * 0.05, ay: Math.sin(dir) * 0.05, r: 7, grazeR: 10, scale: PS(1.3), rot: dir + Math.PI / 2, dmg: 26, life: 80 });
+      }
+    }
+  },
+};
 // TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
 // lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
 PATTERNS.pinkn_conveyor = pinkVLaneBurst([

@@ -3318,6 +3318,11 @@
 "f": "pexploc.png",
 "w": 24,
 "h": 24
+},
+"pzap": {
+"f": "pzap.png",
+"w": 16,
+"h": 18
 }
 },
 "bullet_cost": {
@@ -3454,7 +3459,8 @@
 "planeb": 1,
 "pbell": 1,
 "pboom": 1,
-"pexploc": 1
+"pexploc": 1,
+"pzap": 1
 },
 "souls": {
 "yheart0": "yheart0.png",
