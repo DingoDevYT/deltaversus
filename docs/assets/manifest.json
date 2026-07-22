@@ -3398,6 +3398,16 @@
       "f": "dsimtail.png",
       "w": 112,
       "h": 116
+    },
+    "pinkghost0": {
+      "f": "pinkghost0.png",
+      "w": 111,
+      "h": 109
+    },
+    "pinkghost1": {
+      "f": "pinkghost1.png",
+      "w": 111,
+      "h": 110
     }
   },
   "bullet_cost": {

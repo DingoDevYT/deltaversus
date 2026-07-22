@@ -1825,18 +1825,29 @@ function pinkRotboxD1Pattern() {
   return {
     box: { w: 150, h: 150 }, hz30: 1, dur: 640,
     tick(a) {
-      const { f, box, add, rng } = a;
-      if (f === 0) { this._q = []; this._t = 8; this._rot = 0; this._rtar = 0; this._groups = 0; }
+      const { f, box, add, rng } = a; const S = this;
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const d = this._rtar - this._rot; this._rot += Math.abs(d) < 9 ? d : Math.sign(d) * 9;   // eased 90° knock
-      a.fx.purpleSoul = { mode: 3, rot: this._rot };
+      if (f === 0) { S._q = []; S._t = 8; S._rot = 0; S._rtar = 0; S._pendKnock = 0;
+        S._ghost = { x: cx + box.w / 2 + 120, ram: 0, bob: 0 }; }   // the pinkghost rises at the box's right and RAMS it
+      // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6), slower than before
+      const d = S._rtar - S._rot; S._rot += Math.abs(d) < 6 ? d : Math.sign(d) * 6;
+      a.fx.purpleSoul = { mode: 3, rot: S._rot };
+      // ---- the GHOST telegraph (obj_huge_anime_face): bobs at the right edge, lunges to bump the box; each
+      // bump is what knocks it 90°. It's the visual tell for the rotation. Drawn as a big pinkghost sprite. ----
+      const gh = S._ghost, restX = cx + box.w / 2 + 84;
+      gh.bob += 0.22;
+      if (S._pendKnock > 0 && gh.ram === 0) gh.ram = 1;          // a knock is queued -> start a ram
+      if (gh.ram === 1) { gh.x -= 9; if (gh.x <= cx + box.w / 2 + 18) { gh.ram = 2; S._rtar += 90; S._pendKnock--; Snd.play('pinktrip', 0.5); if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 8); } }
+      else if (gh.ram === 2) { gh.x += 6; if (gh.x >= restX) { gh.x = restX; gh.ram = 0; } }   // bounce back
+      else gh.x = restX;
+      a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10, frame: Math.floor(f / 8) % 2, ramming: gh.ram === 1 };
       if (f < 8) return;
-      if (this._q.length === 0 && f < this.dur - 120) {   // refill: generate the next group + a 90° box knock
-        const g = pinkPlusD1Group(rng); let t = this._t;
-        for (const e of g) { this._q.push({ f: Math.round(t), shot: e[0], dir: e[1], spd: e[3] }); t += Math.max(0, Math.floor(0.5 + 32 * e[2])); }
-        this._t = t; this._rtar += 90;                    // huge_anime_face knocks the box after each circle group
+      if (S._q.length === 0 && f < S.dur - 120) {   // refill: generate the next group; queue a knock (the ghost delivers it)
+        const g = pinkPlusD1Group(rng); let t = S._t;
+        for (const e of g) { S._q.push({ f: Math.round(t), shot: e[0], dir: e[1], spd: e[3] }); t += Math.max(0, Math.floor(0.5 + 32 * e[2])); }
+        S._t = t; S._pendKnock++;
       }
-      while (this._q.length && this._q[0].f <= f) pinkLaneFire(add, cx, cy, this._q.shift(), this._rot);
+      while (S._q.length && S._q[0].f <= f) pinkLaneFire(add, cx, cy, S._q.shift(), S._rot);
     },
   };
 }
