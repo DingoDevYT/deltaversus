@@ -3408,6 +3408,16 @@
       "f": "pinkghost1.png",
       "w": 111,
       "h": 110
+    },
+    "paudience0": {
+      "f": "paudience0.png",
+      "w": 20,
+      "h": 20
+    },
+    "paudience1": {
+      "f": "paudience1.png",
+      "w": 21,
+      "h": 24
     }
   },
   "bullet_cost": {

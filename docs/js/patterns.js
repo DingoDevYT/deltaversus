@@ -1998,64 +1998,88 @@ PATTERNS.pinkn_tunnel = {
 // obj_audienceheart WINDS UP ~32f (grows, aims/eases toward the soul), then LAUNCHES at speed 5 in the
 // aimed direction (obj_audienceheart phase 0->1). A heart that flies past the top (reaching Pink) becomes
 // a bigger COLLECTABLE pink heart. Audience sit around the lower stage.
+// ============ TYPE 209 — IDOL CONCERT (Pink's ULT): full rebuild from obj_pink_curtains ============
+// Stage box; PINK sings at the top; the AUDIENCE (spr_dummyaudience) is seated in a row below the stage and
+// pops up in choreographed CLUSTERS (l_patterns [4,1,5,2,0]... + l_timings). Each risen member fires an
+// obj_audienceheart: it GROWS from tiny over 32 frames while AIMING at the soul (turn ±2/frame, 0.8/0.2
+// blend), then LAUNCHES in the aimed direction with ACCELERATING speed (speed += 0.25 + t/32). Later reps
+// spawn HATERS (spr_dummyaudience frame 1) that fire red homing hearts. A heart that flies past the top of
+// the stage (reaching Pink) becomes a bigger COLLECTABLE. FAST free-move (red) soul.
 PATTERNS.pinkn_concert = {
-  box: { w: 360, h: 187 }, hz30: 1, dur: 560,   // concert: 150 x2.4 = 360 wide, x1.249 = 187 tall
+  box: { w: 360, h: 187 }, hz30: 1, dur: 620,
   tick(a) {
-    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;
+    const { f, box, add, rng, soul } = a; const S = this; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // The AUDIENCE (obj_pink_curtains: 28 dummies seated below the stage). Each l_patterns value selects a
-    // CLUSTER of seats: 0 = the central rows, 1 = the left side, 2 = the right side, 4/5 = the front-centre
-    // pair, 3 = a scattered handful. We seat them across a wide 2-row arc under the stage and pop out ~3 per
-    // cluster so it reads as a crowd rather than a lone shooter.
-    const rowY = k => box.y + box.h + [14, 30, 46][k % 3];
+    const seatY = box.y + box.h + 24;                        // the audience row sits just under the stage
+    // a cluster (l_patterns value) selects seat X-positions across the audience row
     const cluster = v => {
-      const W = box.w, L = box.x, seats = [];
-      const put = (fx, k) => seats.push({ x: L + W * fx, y: rowY(k) });
-      if (v === 0) { put(0.34, 0); put(0.5, 1); put(0.66, 0); }          // centre rows
-      else if (v === 1) { put(0.08, 1); put(0.2, 0); put(0.14, 2); }     // left
-      else if (v === 2) { put(0.92, 1); put(0.8, 0); put(0.86, 2); }     // right
-      else if (v === 3) { put(rng(), 1); put(rng(), 0); put(rng(), 2); } // scattered
-      else if (v === 4) { put(0.4, 2); put(0.5, 2); }                    // front-centre pair
-      else { put(0.5, 2); put(0.6, 2); }                                 // v===5 front-centre pair
-      return seats;
+      const L = box.x, W = box.w, xs = [];
+      if (v === 0) { xs.push(0.34, 0.5, 0.66); }             // centre
+      else if (v === 1) { xs.push(0.08, 0.16, 0.24); }       // left
+      else if (v === 2) { xs.push(0.76, 0.84, 0.92); }       // right
+      else if (v === 3) { xs.push(rng(), rng(), rng()); }    // scattered
+      else if (v === 4) { xs.push(0.42, 0.5); }              // front-centre pair
+      else { xs.push(0.5, 0.58); }
+      return xs.map(fx => L + W * fx);
     };
-    if (f === 0) { this._q = []; this._wait = 20; this._rep = 0; }
-    if (this._wait > 0) this._wait--;
-    else if (this._q.length === 0 && f < 500) {   // refill the shoot order (l_patterns + l_timings, obj_pink_curtains)
-      const pats = this._rep === 0 ? [[4, 1, 5, 2, 0], [4, 2, 5, 1, 0]] : [[3, 1, 5, 2, 0], [3, 2, 5, 1, 0], [3, 1, 2, 5, 0], [3, 2, 1, 5, 0]];
-      const seq = pats[Math.floor(rng() * pats.length)], timings = this._rep === 0 ? [80, 40, 40, 60] : [90, 60, 60, 90];
-      const haters = this._rep >= 1;   // difficulty>0: some audience members are HATERS (red, homing)
-      for (let i = 0; i < seq.length; i++) this._q.push({ cluster: seq[i], wait: (timings[i] != null ? timings[i] : 50), haters });
-      this._rep++;
-    } else if (this._q.length) {
-      const job = this._q.shift(); this._wait = job.wait;
-      const seats = cluster(job.cluster);
-      seats.forEach((d, si) => {
-        const hater = job.haters && (si === 0);   // one hater per cluster (obj_audiencehater: red, tracks the soul)
-        const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: 0, vy: 0, noHit: true, scale: PS(1.4), dmg: 22, life: 320, _w: 0, _aim: null, _hater: hater };
-        if (hater) { h.tint = '#ff3b3b'; h.tintMul = true; }
-        h.emit = function (b, out, sl) {   // phase 0 windup+aim, then phase 1 launch (haters keep homing), then collectable
-          if (b._phase !== 1) {
-            b._w++;
-            b.scale = PS(1.4 * (b._w < 22 ? 1 + 0.2 * Math.abs(Math.sin(b._w * 0.5)) : 1.2 + Math.min(4, b._w - 22) * 0.05));
-            if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);
-              if (b._aim == null) b._aim = dest; else { let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.14, Math.min(0.14, dd)); } }
-            if (b._w >= 32) { b._phase = 1; b.noHit = false; const A = b._aim != null ? b._aim : Math.atan2(cy - b.y, cx - b.x); b.vx = Math.cos(A) * 5; b.vy = Math.sin(A) * 5; }
-          } else {
-            if (b._hater && sl) {   // hater homes toward the soul (capped turn), obj_audiencehater
-              const want = Math.atan2(sl.y - b.y, sl.x - b.x), cur = Math.atan2(b.vy, b.vx);
-              let dd = ((want - cur + Math.PI * 3) % (Math.PI * 2)) - Math.PI; const na = cur + Math.max(-0.05, Math.min(0.05, dd));
-              b.vx = Math.cos(na) * 5; b.vy = Math.sin(na) * 5;
-            }
-            if (b.y < box.y - 4 && !b._hater && !b._done) { b._done = 1; b.dead = true;
-              out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 }); }
-          }
-        };
-        add(h);
-      });
+    if (f === 0) { S._q = []; S._wait = 24; S._rep = 0; S._members = []; }
+    a.fx.pinkSing = { x: cx, y: box.y - 30, f };             // Pink singing on stage (drawn by the engine)
+    // ---- choreography: refill the shoot order (l_patterns + l_timings) ----
+    if (S._wait > 0) S._wait--;
+    else if (S._q.length === 0 && f < S.dur - 140) {
+      const pats = S._rep === 0 ? [[4, 1, 5, 2, 0], [4, 2, 5, 1, 0]] : [[3, 1, 5, 2, 0], [3, 2, 5, 1, 0], [3, 1, 2, 5, 0], [3, 2, 1, 5, 0]];
+      const seq = pats[Math.floor(rng() * pats.length)], timings = S._rep === 0 ? [80, 40, 40, 60] : [90, 60, 60, 90];
+      const haters = S._rep >= 1;
+      for (let i = 0; i < seq.length; i++) S._q.push({ cluster: seq[i], wait: (timings[i] != null ? timings[i] : 55), haters });
+      S._rep++;
+    } else if (S._q.length) {   // a cluster of audience members RISES (they'll shoot once up)
+      const job = S._q.shift(); S._wait = job.wait;
+      for (const sx of cluster(job.cluster))
+        S._members.push({ x: sx, y: seatY, pop: 0, t: 0, fired: false, hater: !!job.haters && rng() < 0.34 });
     }
+    // ---- audience members: pop up, shoot after 20 up-frames, then lower ----
+    for (const m of S._members) {
+      m.t++;
+      m.pop = m.t < 30 ? Math.min(1, m.t / 8) : Math.max(0, 1 - (m.t - 30) / 10);   // rise, hold, then lower
+      const my = m.y - m.pop * 26;                          // audience_popout (rises ~26px above the seat)
+      if (m.t === 20 && !m.fired) {
+        m.fired = true;
+        if (m.hater) mkAudienceHeart(add, m.x, my, cx, cy, box, true);   // hater: red homing
+        else mkAudienceHeart(add, m.x, my, cx, cy, box, false);          // aims + launches at the soul
+      }
+    }
+    S._members = S._members.filter(m => m.t < 42);
+    a.fx.audience = S._members.map(m => ({ x: m.x, y: m.y - m.pop * 26, hater: m.hater }));   // draw the dummies
   },
 };
+function mkAudienceHeart(add, x, y, cx, cy, box, hater) {
+  const b = { ...bulletProps('pdoki'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(0.1), dmg: 22, life: 340,
+              _w: 0, _aim: -Math.PI / 2, _hater: hater };   // starts aiming UP (image_angle), then tracks the soul
+  if (hater) { b.tint = '#ff3b3b'; b.tintMul = true; }
+  if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
+  b.emit = function (b, out, sl) {
+    if (b._phase !== 1) {   // PHASE 0: grow (0.1 -> 1.5) + aim at the soul over 32 frames (obj_audienceheart)
+      b._w++;
+      const grow = b._w < 25 ? Math.min(1.5, 0.1 + (b._w / 24) * 1.4) : 1.5 * (b._w >= 26 ? 1.2 + Math.min(4, b._w - 25) * 0.06 : 1.2);
+      b.scale = PS(grow);
+      if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);   // turn toward the soul, capped ±2/frame + 0.8/0.2 blend
+        let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.035, Math.min(0.035, dd));
+        b._aim = b._aim * 0.8 + dest * 0.2; }
+      if (b._w >= 32) { b._phase = 1; b.noHit = false; b._spd = 1; b._dir = b._aim; }
+    } else {   // PHASE 1: launch in the aimed direction, accelerating
+      b._spd += 0.25 + b._w / 320; b._w++;
+      if (b._hater && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);   // haters keep homing a little
+        let dd = ((dest - b._dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._dir += Math.max(-0.045, Math.min(0.045, dd)); }
+      b.vx = Math.cos(b._dir) * b._spd; b.vy = Math.sin(b._dir) * b._spd;
+      b.scale = PS(1.5);
+      if (!b._hater && b.y < box.y - 4 && !b._done) {   // reached Pink at the top -> becomes a collectable
+        b._done = 1; b.dead = true;
+        out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 });
+      }
+    }
+  };
+  add(b);
+}
 // TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
 // lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
 PATTERNS.pinkn_conveyor = pinkVLaneBurst([

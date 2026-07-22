@@ -1021,6 +1021,7 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
+  B.fx.audience = null; B.fx.pinkSing = null;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
@@ -1581,6 +1582,13 @@ Battle.renderBoxAndBullets = function (ctx) {
     const g = B.fx.pinkGhost, gi = (A.manifest.bullets || {})['pinkghost' + (g.frame || 0)];
     const gim = gi && A.img['assets/bullets/' + gi.f];
     if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: 1.9, flip: true, alpha: g.ramming ? 1 : 0.92 });
+  }
+  // IDOL CONCERT: Pink singing on stage + the audience dummies (obj_pink_curtains / spr_dummyaudience)
+  if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing, si = (A.manifest.bullets || {})['pinkghost' + (Math.floor(p.f / 14) % 2)];
+    const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 1.4 }); }
+  if (B.fx && B.fx.audience) for (const m of B.fx.audience) {
+    const ai = (A.manifest.bullets || {})['paudience' + (m.hater ? 1 : 0)], aim = ai && A.img['assets/bullets/' + ai.f];
+    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 2 });
   }
   // CAROUSEL far side: draw the behind-the-box horses BEFORE the box, so the box's black fill masks
   // the part that's inside it (they render perfectly where they poke out past the box edges).
