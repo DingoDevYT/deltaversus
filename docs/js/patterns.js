@@ -1676,28 +1676,46 @@ PATTERNS.pinkn_tunnel = {
     }
   },
 };
-// TYPE 209 — IDOL CONCERT (Pink's ULT). A WIDE, short stage box with a FAST free-move (red) soul.
-// Pink performs: music notes rain from above the stage with a gentle homing drift, and the "haters" in
-// the crowd hurl bigger projectiles across. (Representative of the concert — the full audience-management
-// minigame in obj_pink_curtains/obj_audience_hitbox is beyond a single pattern.)
+// ============ TYPE 209 — IDOL CONCERT (Pink's ULT): 1:1-structured port ============
+// Stage box, Pink sings at top, FAST free-move (red) soul. obj_pink_curtains fires audience members in a
+// CHOREOGRAPHED order (l_patterns e.g. [4,1,5,2,0]) with l_timings [80,40,40,60] between them. Each
+// obj_audienceheart WINDS UP ~32f (grows, aims/eases toward the soul), then LAUNCHES at speed 5 in the
+// aimed direction (obj_audienceheart phase 0->1). A heart that flies past the top (reaching Pink) becomes
+// a bigger COLLECTABLE pink heart. Audience sit around the lower stage.
 PATTERNS.pinkn_concert = {
-  box: { w: 320, h: 176 }, hz30: 1, dur: 520,
+  box: { w: 320, h: 180 }, hz30: 1, dur: 560,
   tick(a) {
-    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;   // stage soul is fast (free move)
+    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // DUMMIES at the bottom + both sides fire damaging HEART projectiles AT the soul. A heart that flies
-    // past the top (reaching "Pink") turns into a bigger COLLECTABLE pink heart (per the wiki).
-    const dummies = [
-      { x: box.x + box.w * 0.28, y: box.y + box.h + 16 }, { x: box.x + box.w * 0.5, y: box.y + box.h + 16 }, { x: box.x + box.w * 0.72, y: box.y + box.h + 16 },
-      { x: box.x - 16, y: cy + 20 }, { x: box.x + box.w + 16, y: cy + 20 },
-    ];
-    if (f > 18 && f % 17 === 0 && f < 495) {
-      const d = dummies[Math.floor(rng() * dummies.length)];
-      const tx = soul ? soul.x : cx, ty = soul ? soul.y : cy, ang = Math.atan2(ty - d.y, tx - d.x), spd = 2.9;
-      const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, grazeR: 11, scale: PS(1.25), dmg: 22, life: 220 };
-      h.emit = function (b, out) {   // reaches Pink (top) -> becomes a collectable
-        if (b.y < box.y - 4 && !b._done) { b._done = 1; b.dead = true; Snd.play('snd_pink_note', 0.3);
-          out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1.1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 150 }); }
+    // 6 audience seats around the lower stage (l_patterns indices map here)
+    const seat = i => [
+      { x: box.x + box.w * 0.5, y: box.y + box.h + 20 },     // 0 bottom centre
+      { x: box.x + box.w * 0.22, y: box.y + box.h + 14 },    // 1 bottom-left
+      { x: box.x + box.w * 0.78, y: box.y + box.h + 14 },    // 2 bottom-right
+      { x: box.x - 18, y: box.y + box.h * 0.72 },            // 3 left
+      { x: box.x + box.w * 0.36, y: box.y + box.h + 20 },    // 4 bottom-left-mid
+      { x: box.x + box.w + 18, y: box.y + box.h * 0.72 },    // 5 right
+    ][i % 6];
+    if (f === 0) { this._q = []; this._wait = 20; this._rep = 0; }
+    if (this._wait > 0) this._wait--;
+    else if (this._q.length === 0 && f < 500) {   // refill the shoot order (l_patterns + l_timings)
+      const pats = this._rep === 0 ? [[4, 1, 5, 2, 0], [4, 2, 5, 1, 0]] : [[3, 1, 5, 2, 0], [3, 2, 5, 1, 0], [3, 1, 2, 5, 0], [3, 2, 1, 5, 0]];
+      const seq = pats[Math.floor(rng() * pats.length)], timings = this._rep === 0 ? [80, 40, 40, 60] : [90, 60, 60, 90];
+      for (let i = 0; i < seq.length; i++) this._q.push({ seat: seq[i], wait: (timings[i] != null ? timings[i] : 50) });
+      this._rep++;
+    } else if (this._q.length) {
+      const job = this._q.shift(); this._wait = job.wait;
+      const d = seat(job.seat);
+      const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: 0, vy: 0, noHit: true, scale: PS(1.4), dmg: 22, life: 260, _w: 0, _aim: null };
+      h.emit = function (b, out, sl) {   // phase 0 windup+aim, then phase 1 launch, then collectable at the top
+        if (b._phase !== 1) {
+          b._w++;
+          b.scale = PS(1.4 * (b._w < 22 ? 1 + 0.2 * Math.abs(Math.sin(b._w * 0.5)) : 1.2 + Math.min(4, b._w - 22) * 0.05));
+          if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);
+            if (b._aim == null) b._aim = dest; else { let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.14, Math.min(0.14, dd)); } }
+          if (b._w >= 32) { b._phase = 1; b.noHit = false; const A = b._aim != null ? b._aim : Math.atan2(cy - b.y, cx - b.x); b.vx = Math.cos(A) * 5; b.vy = Math.sin(A) * 5; }
+        } else if (b.y < box.y - 4 && !b._done) { b._done = 1; b.dead = true;
+          out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 }); }
       };
       add(h);
     }
