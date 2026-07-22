@@ -2022,29 +2022,77 @@ PATTERNS.pinkn_tunnel = {
 // blend), then LAUNCHES in the aimed direction with ACCELERATING speed (speed += 0.25 + t/32). Later reps
 // spawn HATERS (spr_dummyaudience frame 1) that fire red homing hearts. A heart that flies past the top of
 // the stage (reaching Pink) becomes a bigger COLLECTABLE. FAST free-move (red) soul.
+// IDOL CONCERT (obj_pink_curtains) — FULL 1:1 port. 28 dummies line the LEFT column (0-6), BOTTOM row (7-20)
+// and RIGHT column (21-27) of the arena. Each wave a subset "shows up", pops out and (20f later) fires ONE
+// obj_audienceheart INWARD which grows, aims at the soul (±2°/f, 0.8/0.2 blend) then LAUNCHES accelerating.
+// Difficulty-0 (first meeting): ammo=5, patterns [4,1,5,2,0] or [4,2,5,1,0], l_timings [90,80,40,40,60], no haters.
+function pinkConcertSlot(i, gx, gy) {   // dummy i -> {x, y, side} exactly per obj_pink_curtains placement
+  if (i < 3) return { x: gx - 160 + 10, y: gy + 12 + i * 24, side: 'left' };
+  if (i < 7) return { x: gx - 160, y: gy + 12 + i * 24, side: 'left' };
+  if (i < 21) return { x: gx + (i - 13.5) * 24, y: gy + 170, side: 'bottom' };
+  if (i < 24) return { x: gx + 164 - 10, y: gy + 12 + (i - 21) * 24, side: 'right' };
+  return { x: gx + 164, y: gy + 12 + (i - 21) * 24, side: 'right' };
+}
+function pinkConcertShowup(pat, rng) {   // obj_pink_curtains l_patterns cases -> the dummy indices that appear
+  const s = [];
+  if (pat === 0) { for (let i = 4; i < 7; i++) s.push(i); for (let i = 7; i < 21; i++) s.push(i); for (let i = 25; i < 28; i++) s.push(i); }
+  else if (pat === 1) { for (let i = 2; i < 7; i++) s.push(i); for (let i = 8; i <= 14; i += 2) s.push(i); }
+  else if (pat === 2) { for (let i = 23; i < 28; i++) s.push(i); for (let i = 19; i >= 13; i -= 2) s.push(i); }
+  else if (pat === 4) { for (let i = 9; i < 13; i++) s.push(i); for (let i = 15; i < 19; i++) s.push(i); }
+  else if (pat === 5) { for (let i = 10; i < 18; i++) s.push(i); }
+  else if (pat === 3) { const used = new Set(); let d = 1 + Math.floor(rng() * 25);   // random 13 (fnc dice walk)
+    for (let k = 0; k < 13; k++) { d += 1 + Math.floor(rng() * 24); if (d >= 21) d++; if (d >= 28) d -= 26;
+      while (used.has(d)) { d++; if (d >= 21) d++; if (d >= 28) d -= 26; } used.add(d); s.push(d); } }
+  return s;
+}
 PATTERNS.pinkn_concert = {
-  box: { w: 360, h: 187 }, hz30: 1, dur: 620,
+  box: { w: 320, h: 172 }, hz30: 1, dur: 480,
   tick(a) {
-    const { f, box, add, rng } = a; const S = this; a.fx.soulSpeed = 1.4;
+    const { f, box, add, rng } = a; const S = this;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // The AUDIENCE is a DENSE, PERSISTENT crowd of cats along the bottom of the stage (obj_pink_curtains bottom
-    // row). They're drawn IN FRONT of the box; on each wave EVERY cat pops and throws a small red heart upward.
-    const N = 15;                                            // a crowd of ~15 cats across the bottom
-    if (f === 0) { S._wave = 24; S._rep = 0; S.crowd = []; for (let i = 0; i < N; i++) S.crowd.push({ x: box.x + 12 + i * ((box.w - 24) / (N - 1)), pop: 0, face: (i % 2) ? 'right' : 'left' }); }
+    const gx = cx, gy = box.y;                               // obj_pink_curtains anchor = box centre-top
     a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing) + speakers
-    // ---- wave cadence: every so often the WHOLE crowd throws (l_timings pace); later waves add HATERS ----
-    S._wave--;
-    if (S._wave <= 0 && f < S.dur - 120) {
-      const haters = S._rep >= 1;
-      for (let i = 0; i < S.crowd.length; i++) { const m = S.crowd[i]; m.pop = 1;   // pop up
-        const hater = haters && (i % 4 === 0);
-        // fire from the cat's head, slightly staggered across the row (a rolling wave)
-        mkAudienceHeart(add, m.x, box.y + box.h - 14, -Math.PI / 2, cx, cy, box, hater); }
-      S._wave = S._rep === 0 ? 70 : 55; S._rep++;
+    if (f === 0) {
+      S.dummies = [];
+      const order = rng() < 0.5 ? [4, 1, 5, 2, 0] : [4, 2, 5, 1, 0];   // difficulty-0 pattern set
+      const timings = [90, 80, 40, 40, 60];                 // l_timings: delay BEFORE each wave
+      S.waves = []; let t = 8;
+      for (let w = 0; w < 5; w++) { S.waves.push({ at: t, pat: order[w] }); t += timings[w]; }
     }
-    for (const m of S.crowd) m.pop = Math.max(0, m.pop - 0.08);   // ease the pop-up bob back down
-    // the crowd is drawn IN FRONT (foreground pass) — flag it via fx.audienceFront
-    a.fx.audienceFront = S.crowd.map(m => ({ x: m.x, y: box.y + box.h - 8 - m.pop * 10, face: m.face }));
+    // ---- launch a wave when its time comes: pick the dummy set + per-dummy shoottime sweep (_shootorder_variant) ----
+    for (const wv of S.waves) {
+      if (wv.done || f < wv.at) continue; wv.done = 1;
+      const pat = wv.pat;
+      const variant = pat === 2 ? 0 : pat === 1 ? 1 : pat === 0 ? 2 : 3;   // difficulty-0 forced variants
+      let show = pinkConcertShowup(pat, rng);
+      show.sort((p, q) => p - q);
+      const right = show.filter(i => i >= 21), rest = show.filter(i => i < 21); show = rest.concat(right);   // right column fires last
+      const size = show.length;
+      show.forEach((i, k) => {
+        let st;                                              // shoottime = staggered sweep
+        if (variant === 0) st = Math.floor(k * 1.5);
+        else if (variant === 1) st = Math.floor((size - k) * 1.5);
+        else if (variant === 2) st = i < 14 ? Math.floor((14 - i) * 3) : i < 21 ? Math.floor((i - 14) * 3) : Math.floor((i - 17) * 3);
+        else st = Math.floor(rng() * size);                 // variant 3: shuffled
+        const sl = pinkConcertSlot(i, gx, gy);
+        S.dummies.push({ i, x: sl.x, y: sl.y, side: sl.side, st, hater: false, t: 0, pop: 0 });
+      });
+    }
+    // ---- advance every live dummy: pop out, wait 20f, count its shoottime, FIRE inward, retract at 60, gone at 90 ----
+    const aimOf = s => s === 'left' ? 0 : s === 'right' ? Math.PI : -Math.PI / 2;
+    for (const d of S.dummies) {
+      d.t++;
+      d.pop += ((d.t >= 8 && d.t < 60 ? 1 : 0) - d.pop) * 0.35;   // pop out, then retract
+      if (d.t >= 20 && d.st >= 0) { if (d.st > 0) d.st--; else { mkAudienceHeart(add, d.x, d.y, aimOf(d.side), cx, cy, box, d.hater); d.st = -1; } }
+    }
+    S.dummies = S.dummies.filter(d => d.t < 90);
+    // draw the U-ring IN FRONT of the box + bullets, each popped inward from its edge
+    a.fx.audienceFront = S.dummies.map(d => {
+      const off = d.pop * 12;
+      const px = d.side === 'left' ? d.x + off : d.side === 'right' ? d.x - off : d.x;
+      const py = d.side === 'bottom' ? d.y - off : d.y;
+      return { x: px, y: py, side: d.side, pop: d.pop, hater: d.hater };
+    });
   },
 };
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {

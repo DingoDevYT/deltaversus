@@ -1775,11 +1775,13 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (g) drawSpr(ctx, g, B.grazeFx.x, B.grazeFx.y, { scale: 1, alpha: 0.9 });
   }
   ctx.restore();
-  // IDOL CONCERT crowd: the cats are drawn HERE, IN FRONT of the box + bullets (obj_pink_curtains audience is
-  // foreground). spr_dummyaudience, frame 1 when a hater is nearby; they bob when they throw a heart-wave.
+  // IDOL CONCERT crowd (obj_pink_curtains): 28 dummies line the LEFT column, BOTTOM row and RIGHT column of the
+  // arena (a U-ring), drawn IN FRONT of the box + bullets. spr_dummyaudience (frame 1 = a "hater"). Each pops
+  // OUT of its edge (audience_popout) when its wave is up, then fires a heart inward.
   if (B.fx && B.fx.audienceFront) for (const m of B.fx.audienceFront) {
-    const aim = A.img['assets/bullets/paudience0.png'];
-    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.6, flip: m.face === 'right' });
+    const key = m.hater ? 'paudience1.png' : 'paudience0.png';
+    const aim = A.img['assets/bullets/' + key] || A.img['assets/bullets/paudience0.png'];
+    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.5, flip: m.side === 'right', alpha: m.pop > 0.02 ? 1 : 0.55 });
   }
   if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.soulGreen) drawText(ctx, 'main', "GREEN SOUL - can't move! Aim [ARROWS] to BLOCK with Susie's AXE", bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#4de04d', align: 'center' });
