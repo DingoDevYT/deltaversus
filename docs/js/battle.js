@@ -1022,8 +1022,14 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
-  B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null;
+  B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
+  if (B.fx.maze) {   // GHOST/BODY MAZE: full-screen takeover; the pattern drives movement/collision itself
+    if (B.fx.maze.done) { B._mazeEnd = (B._mazeEnd || 0) + 1;
+      if (B._mazeEnd > 20) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
+    else B._mazeEnd = 0;
+    return;
+  }
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
       if (B._dateEnd > 24) { if (!B._dokiDatedThisRun) { B._dokiDatedThisRun = 1; dokiAdvancePhase(); }   // finishing a DATE advances Pink's phase
@@ -1383,8 +1389,8 @@ Battle.render = function (ctx) {
   }
   B.renderBoxAndBullets(ctx);
   B.renderMirror(ctx);
-  if (!(B.fx && B.fx.date)) B.renderHud(ctx);   // DATE minigame is a full-screen takeover — no party HUD over it
-  if (!(B.fx && B.fx.date)) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
+  if (!(B.fx && (B.fx.date || B.fx.maze))) B.renderHud(ctx);   // DATE/MAZE are full-screen takeovers — no party HUD over them
+  if (!(B.fx && (B.fx.date || B.fx.maze))) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
   B.renderMsg(ctx);
   if (B.phase === 'timing') B.renderTiming(ctx);
   if (B.phase === 'gameover') B.renderGameover(ctx);
@@ -1573,10 +1579,65 @@ function drawDateUI(ctx, D) {
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }
 // The battle box only exists during the dodge (and its spin-in / spin-out).
+// GHOST/BODY MAZE full-screen render (obj_purplecontrols mode 8 Draw). The box is gone; everything is drawn to
+// an offscreen "glow surface" then blitted with an 8-direction bleed (bloom) — magenta nodes, dark-purple 3px
+// connections, 96x48 pulsing DIE!/goal boxes — over the wave-distorted Pink body + ghost split.
+function drawWaveSprite(ctx, key, cx, cy, wave, alpha) {
+  const info = (A.manifest.bullets || {})[key]; const im = info && A.img['assets/bullets/' + info.f];
+  if (!im || !im.width) return;
+  const w = im.width, h = im.height, step = 2;
+  ctx.save(); ctx.globalAlpha = alpha;
+  for (let i = 0; i < h; i += step) {   // sine-slice the sprite horizontally (spr_pink_*_2xscale wave distort)
+    const off = Math.sin((wave + i * 8) / 30) * 3, sh = Math.min(step + 1, h - i);
+    ctx.drawImage(im, 0, i, w, sh, Math.round(cx - w / 2 + off), Math.round(cy - h / 2 + i), w, sh);
+  }
+  ctx.restore();
+}
+function drawMazeBox(g, x, y, txt, goal, lt) {
+  const p = lt % 40, k = Math.min(1, (p / 40) * 2); let border, th = 1;
+  if (goal) { border = mixHex('#ffffff', '#6656b1', 0.25 + 0.75 * k); if (p < 1) th = 2; else if (p < 2) th = 3; else if (p < 5) th = 2; }
+  else { border = mixHex('#ffff00', '#ff0000', k); if (p < 2) th = 3; else if (p < 4) th = 2; }
+  g.fillStyle = border; g.fillRect(Math.round(x - 48 - th), Math.round(y - 24 - th), 96 + th * 2, 48 + th * 2);
+  g.fillStyle = '#000'; g.fillRect(Math.round(x - 48), Math.round(y - 24), 96, 48);
+  const tw = textWidth('big', txt) || 1, sc = Math.min(1.05, 88 / tw);
+  drawText(g, 'big', txt, Math.round(x), Math.round(y - 16), { color: goal ? '#fff' : '#ff2b2b', align: 'center', scale: sc });
+}
+function renderMazeGraph(g, M) {
+  const nodes = M.nodes || [], lt = M.life || 0;
+  g.strokeStyle = 'rgb(85,0,85)'; g.lineWidth = 3; g.lineCap = 'round';   // connections (_prpl_dark, 3px)
+  for (let i = 0; i < nodes.length; i++) { const n = nodes[i]; for (const c of n.child) { if (c < 0 || c <= i) continue; const m = nodes[c]; if (!m) continue; g.beginPath(); g.moveTo(n.x, n.y); g.lineTo(m.x, m.y); g.stroke(); } }
+  const glow = Math.cos((lt % 60) / 60 * 6.2832) * 0.5 + 0.5;
+  for (let i = 0; i < nodes.length; i++) { const n = nodes[i];   // node circles (_prpl_light / glow)
+    if (n.checkpoint === 2) { g.fillStyle = 'rgba(208,45,170,0.7)'; g.beginPath(); g.arc(n.x, n.y, 7.2 + glow * 0.5, 0, 6.2832); g.fill(); g.fillStyle = 'rgb(208,45,170)'; g.beginPath(); g.arc(n.x, n.y, 5.2 - glow * 0.5, 0, 6.2832); g.fill(); }
+    else if (n.checkpoint === 1) { g.fillStyle = 'rgba(247,91,200,0.7)'; g.beginPath(); g.arc(n.x, n.y, 9.3 - glow, 0, 6.2832); g.fill(); g.fillStyle = 'rgb(247,91,200)'; g.beginPath(); g.arc(n.x, n.y, 7.3 - glow, 0, 6.2832); g.fill(); }
+    else { g.fillStyle = 'rgb(170,0,170)'; g.beginPath(); g.arc(n.x, n.y, 4, 0, 6.2832); g.fill(); }
+  }
+  for (const d of (M.dokis || [])) { const info = (A.manifest.bullets || {}).pdoki, im = info && A.img['assets/bullets/' + info.f];   // spr_dokiheart
+    if (im && im.width) { const bob = Math.sin((lt + d.x) / 6) * 2; g.drawImage(im, Math.round(d.x - im.width / 2), Math.round(d.y - im.height / 2 + bob), im.width, im.height); } }
+  for (const ac of (M.acts || [])) drawMazeBox(g, ac.x, ac.y, ac.mode === 1 ? (M.goalText || 'Stop!') : 'DIE!', ac.mode === 1, lt);
+}
+function drawMaze(ctx, M) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(8,0,12,0.62)'; ctx.fillRect(0, 0, 640, 480);   // the purple void (box destroyed)
+  const gf = Math.floor((M.life || 0) / 6) % 5;   // Pink SPLIT: wave-distorted ghost + body behind the maze
+  drawWaveSprite(ctx, 'pinkghost2x' + gf, M.ghost.x, M.ghost.y, M.wave, 0.85);
+  drawWaveSprite(ctx, 'pinkhurt' + gf, M.body.x, M.body.y, M.wave, 1);
+  const s = drawMaze._s || (drawMaze._s = document.createElement('canvas'));   // glow surface
+  s.width = 640; s.height = 480; const g = s.getContext('2d'); g.clearRect(0, 0, 640, 480);
+  renderMazeGraph(g, M);
+  ctx.globalAlpha = 0.30; for (const [dx, dy] of [[3, 0], [-3, 0], [0, 3], [0, -3]]) ctx.drawImage(s, dx, dy);   // 8-dir bleed glow
+  ctx.globalAlpha = 0.45; for (const [dx, dy] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) ctx.drawImage(s, dx, dy);
+  ctx.globalAlpha = 1; ctx.drawImage(s, 0, 0);
+  // the purple SOUL (drawn crisp, outside the bloom)
+  const ph = A.soul(((Math.floor((M.life || 0) / 8) % 2) ? 'pheart1' : 'pheart0')) || A.ui('soul');
+  if (ph && ph.width) drawSpr(ctx, ph, M.soul.x, M.soul.y, { scale: 1 });
+  ctx.restore();
+}
 Battle.renderBoxAndBullets = function (ctx) {
   const B = Battle;
   const anim = B.phase === 'boxin' || B.phase === 'boxout';
   const inDodge = B.phase === 'dodge';
+  if (B.fx && B.fx.maze && inDodge) { drawMaze(ctx, B.fx.maze); return; }   // GHOST/BODY MAZE: full-screen takeover (no box)
   if (!anim && !inDodge) return;
   const bx = B.dodgeBox; if (!bx) return;
   const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;

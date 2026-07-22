@@ -2136,129 +2136,124 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
   { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
 ], 5, 225, 1, 22, true);
-// ============ TYPE 210 — PINK'S FINAL ATTACK: the GHOST/BODY split + NODE MAZE ============
-// obj_dbulletcontroller type 210 -> obj_purplecontrols mode 8 + obj_pinknode. Pink SPLITS into GHOST and BODY
-// (two big sprites on the sides); the purple heart navigates a MAZE of connected nodes (root + R/U/L/D arms,
-// horizontal arms x2.125, dist 54) hopping node-to-node; DOKI obstacles patrol the edges between nodes and
-// hurt on contact. Reaching an ACT/checkpoint node is the goal. Difficulty-0 graph (the date-4 finale).
-// The date-3 ending is a MAZE of "DIE!" boxes (obj_pinknodeact mode 0: pulsing yellow-red boxes that travel the
-// node connections) and HEARTS (obj_dokiheart). The heart hops node-to-node; a DIE! box on contact deals damage
-// and RESETS you to the start node. Collecting ALL the hearts spawns the GOAL — a "Stop!" box (mode 1) on the
-// start node; reaching it clears the maze (win). Difficulty-0 9-node graph.
-// Build one ROUND of the maze. Rounds progress on each win (obj_pinknodeact mode1 -> difficulty++, made=0):
-// r0 = the small star graph (goal "Stop!"), r1 = a 3x3 grid ("Calm down!"), r2 = a big winding SNAKE path
-// ("It's OK!" — the long final maze). Goal text per obj_pinknodeact Draw difficulty table.
-// Build one ROUND (difficulty) of the maze EXACTLY from obj_purplecontrols mode-8 fnc_make_node graphs.
-// fnc_make_node(dir, dist): child at (x + lengthdir_x(dist, dir*90), y + lengthdir_y(dist, dir*90)); dir
-// 0=R,1=U,2=L,3=D. _node_dist=54, horizontal arms x_h_multi=2.125. DIE!/goal boxes = obj_pinknodeact (mode
-// 0 = DIE!, mode 1 = goal). Patterns: 0 static, 1 vertical bob (±62, +4°/f), 2 horizontal sweep (+1.5°/f),
-// 3 chase along connections toward the soul's node (~13/f). DOKI heart on a node -> collecting it sets its
-// act_to_change.mode=1 (diff 0) or docks the root node's hp; root hp 0 -> a goal box spawns on the root.
-// Difficulties: 0 = 9-node cross (goal "Stop!"), 1 = cross+cross-links + 2 orbit acts ("Calm down!"),
-// 2 = bigger tree + orbit/sweep acts ("Don't cry!"), 3 = the long ~40-node SNAKE, goal at the end ("It's OK!").
-function mazeBuildRound(r, box, rng) {
+// ============ TYPE 210 — GHOST/BODY MAZE (obj_purplecontrols mode 8): FULL-SCREEN 1:1 port ============
+// The battle box is DESTROYED — the maze plays on the whole 640x480 purple void. obj_pinknode form a graph;
+// the purple heart HOPS node-to-node (arrows). obj_pinknodeact boxes patrol (pattern 0 static, 1 vertical bob
+// +-62 @ +4deg/f, 2 horizontal sweep 288 @ +1.5deg/f, 3 hunter along connections). mode 0 = "DIE!" (contact ->
+// damage + reset to the checkpoint=2 node), mode 1 = the goal. A DOKI heart converts a DIE box to the goal
+// (diff 0) or docks root hp (root hp 0 -> goal spawns on root). Beating a difficulty rebuilds the next graph
+// (0->1->2->3); after difficulty 3 the maze ENDS (no case 4) and hands back. Pink is SPLIT into her wave-
+// distorted body (spr_pink_very_hurt_2xscale) + detached ghost (spr_pink_ghost_2xscale), sine-sliced.
+// fnc_make_node(dir,dist): child[dir] at (x+lengthdir_x(dist,dir*90), y+lengthdir_y(dist,dir*90)); dir 0=R,1=U,
+// 2=L,3=D. _node_dist=54, horizontal arms x2.125=114.75. Goal text per difficulty: Stop!/Calm down!/Don't cry!/It's OK!
+function mazeBuild(r, rng) {
   const D = 54, HM = 2.125, rnd = rng || Math.random;
-  const nodes = [{ x: 0, y: 0 }], edges = [[]];
-  const mk = (parent, dir, dist) => { const p = nodes[parent], rad = dir * Math.PI / 2;   // dir*90° (GML lengthdir)
-    const i = nodes.length; nodes.push({ x: p.x + Math.cos(rad) * dist, y: p.y - Math.sin(rad) * dist });
-    edges.push([]); edges[parent].push(i); edges[i].push(parent); return i; };
-  const link = (x, y) => { if (!edges[x].includes(y)) edges[x].push(y); if (!edges[y].includes(x)) edges[y].push(x); };
+  const N = [];
+  const node = (x, y) => { N.push({ x, y, child: [-1, -1, -1, -1], checkpoint: 0, darkify: 0 }); return N.length - 1; };
+  const mk = (parent, dir, dist) => { const p = N[parent], rad = dir * Math.PI / 2;
+    const i = node(p.x + Math.cos(rad) * dist, p.y - Math.sin(rad) * dist); N[parent].child[dir] = i; return i; };
   const goalText = ['Stop!', 'Calm down!', "Don't cry!", "It's OK!"][Math.min(3, r)];
   let start = 0, acts = [], dokis = [], rootHp = 0;
-  if (r <= 0) {                                             // difficulty 0 — 9-node cross, 3 static DIE! + 1 doki->goal
+  const root = node(0, 0); N[root].checkpoint = 2;
+  if (r <= 0) {
     const n1 = mk(0, 0, D * HM), n2 = mk(0, 1, D), n3 = mk(0, 2, D * HM), n4 = mk(0, 3, D);
     const n5 = mk(1, 1, D), n6 = mk(1, 3, D), n7 = mk(3, 1, D), n8 = mk(3, 3, D);
     acts = [{ node: n4, mode: 0, pattern: 0 }, { node: n5, mode: 0, pattern: 0 }, { node: n7, mode: 0, pattern: 0 }];
     dokis = [{ node: [n2, n6, n8][Math.floor(rnd() * 3)], changeActIdx: Math.floor(rnd() * 3), delay: 45 }];
-  } else if (r === 1) {                                     // difficulty 1 — cross + cross-links + 2 orbit acts, hp 2
+  } else if (r === 1) {
     const n1 = mk(0, 0, D * HM), n2 = mk(0, 1, D), n3 = mk(0, 2, D * HM), n4 = mk(0, 3, D);
     const n5 = mk(1, 1, D), n6 = mk(1, 3, D), n7 = mk(3, 1, D), n8 = mk(3, 3, D);
-    link(n2, n7); link(n4, n6);
-    acts = [{ node: n1, mode: 0, pattern: 1, dir: 0 }, { node: n3, mode: 0, pattern: 1, dir: 180 }];
+    N[n2].child[2] = n7; N[n4].child[0] = n6;
+    acts = [{ node: n1, mode: 0, pattern: 1, pdir: 0 }, { node: n3, mode: 0, pattern: 1, pdir: 180 }];
     dokis = [{ node: n5, rootHp: 1, delay: 30 }, { node: n8, rootHp: 1, delay: 30 }]; rootHp = 2;
-  } else if (r === 2) {                                     // difficulty 2 — bigger tree + orbit/sweep acts, hp 4
+  } else if (r === 2) {
     const n1 = mk(0, 0, D * HM), n2 = mk(0, 1, D), n3 = mk(0, 2, D * HM), n4 = mk(0, 3, D);
-    const n5 = mk(1, 0, D * HM), n6 = mk(1, 1, D), n7 = mk(1, 3, D);
-    const n8 = mk(n5, 1, D);
-    const n9 = mk(3, 1, D), n10 = mk(3, 2, D * HM), n11 = mk(3, 3, D);
-    const n12 = mk(n10, 3, D);
-    acts = [{ node: n1, mode: 0, pattern: 1, dir: 0 }, { node: n3, mode: 0, pattern: 1, dir: 180 }, { node: n5, mode: 0, pattern: 2, dir: 210 }];
+    const n5 = mk(1, 0, D * HM), n6 = mk(1, 1, D), n7 = mk(1, 3, D); const n8 = mk(n5, 1, D);
+    const n9 = mk(3, 1, D), n10 = mk(3, 2, D * HM), n11 = mk(3, 3, D); const n12 = mk(n10, 3, D);
+    acts = [{ node: n1, mode: 0, pattern: 1, pdir: 0 }, { node: n3, mode: 0, pattern: 1, pdir: 180 }, { node: n5, mode: 0, pattern: 2, pdir: 210 }];
     dokis = [{ node: n7, rootHp: 1, delay: 60 }, { node: n8, rootHp: 1, delay: 30 }, { node: n9, rootHp: 1, delay: 60 }, { node: n12, rootHp: 1, delay: 30 }]; rootHp = 4;
-  } else {                                                  // difficulty 3 — the long SNAKE, goal pre-placed at the end
+  } else {
     const chain = [[0, 1], [1, 1], [0, 1], [3, 1], [0, 1], [3, 1], [0, 1], [1, 1], [0, 1], [1, 1], [2, 1], [1, 1.5], [0, 1], [1, 1], [2, 1], [1, 2.5], [2, 1.75], [3, 1], [2, 1.25], [1, 1], [2, 2], [3, 1], [2, 1.25], [1, 1], [2, 2.75], [3, 1], [0, 1], [3, 1], [2, 1], [3, 1], [0, 2], [3, 2], [2, 1.25], [1, 1], [2, 1], [3, 3], [0, 1], [1, 1], [0, 2.375]];
-    let cur = 0; for (const [dir, mul] of chain) cur = mk(cur, dir, D * mul);
-    start = 1;                                              // node_start = _li[1] (checkpoint)
-    acts = [{ node: cur, mode: 1, pattern: 0 },             // goal at the snake's end
-            { node: Math.round(nodes.length * 0.45), mode: 0, pattern: 3 },   // roaming chase boxes
-            { node: Math.round(nodes.length * 0.72), mode: 0, pattern: 3 }];
+    let cur = 0; const seq = []; for (const [dir, mul] of chain) { cur = mk(cur, dir, D * mul); seq.push(cur); }
+    start = seq[0]; N[start].checkpoint = 2; N[root].checkpoint = 0;
+    acts = [{ node: cur, mode: 1, pattern: 0 }, { node: seq[18], mode: 0, pattern: 3 }];   // goal at snake end + a hunter
+    for (const [si, dir, mul] of [[4, 1, 1.25], [11, 2, 1.25], [22, 3, 1]]) {   // checkpoint/dark branches
+      const b = mk(seq[si], dir, D * mul); N[b].checkpoint = 1; N[b].darkify = 1; N[b].child[(dir + 2) % 4] = seq[si]; }
   }
-  // fit the exact graph into the box (topology unchanged, scaled + centred)
+  // reciprocal back-links (obj_pinknode Other_10) -> bidirectional movement
+  for (let i = 0; i < N.length; i++) for (let d = 0; d < 4; d++) { const c = N[i].child[d]; if (c >= 0 && N[c].child[(d + 2) % 4] < 0) N[c].child[(d + 2) % 4] = i; }
+  // center the graph on the full screen at 1:1 (only shrink if it exceeds the play area)
   let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9;
-  for (const n of nodes) { mnx = Math.min(mnx, n.x); mxx = Math.max(mxx, n.x); mny = Math.min(mny, n.y); mxy = Math.max(mxy, n.y); }
-  const sc = Math.min((box.w - 76) / ((mxx - mnx) || 1), (box.h - 76) / ((mxy - mny) || 1), 1);
+  for (const n of N) { mnx = Math.min(mnx, n.x); mxx = Math.max(mxx, n.x); mny = Math.min(mny, n.y); mxy = Math.max(mxy, n.y); }
+  const sc = Math.min(1, 596 / ((mxx - mnx) || 1), 336 / ((mxy - mny) || 1));
   const ox = (mnx + mxx) / 2, oy = (mny + mxy) / 2;
-  for (const n of nodes) { n.x = (n.x - ox) * sc; n.y = (n.y - oy) * sc; }
-  return { nodes, edges, start, acts, dokis, rootHp, goalText, sc };
+  for (const n of N) { n.x = 320 + (n.x - ox) * sc; n.y = 268 + (n.y - oy) * sc; n.dx = n.x; n.dy = n.y; }
+  return { nodes: N, start, acts, dokis, rootHp, goalText };
 }
 PATTERNS.pinkn_finalmaze = {
-  box: { w: 400, h: 260 }, hz30: 1, dur: 6000, ROUNDS: 4,
+  box: { w: 565, h: 372 }, hz30: 1, dur: 12000, fullscreen: true, ROUNDS: 4,
   tick(a) {
-    const { f, box, add, rng } = a; const S = this;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const { f, rng } = a; const S = this;
     const B = (typeof Battle !== 'undefined') ? Battle : null;
-    if (f === 0) { S.round = 0; S._built = -1; S._won = 0; S._gen = 0; }
-    // (RE)BUILD the round: exact node graph + acts (obj_pinknodeact) + doki hearts; reset the soul to start
+    const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
+    const HIT = k => IN.hit && IN.hit[k];
+    if (f === 0) { S.round = 0; S._built = -1; S._done = false; S.hits = 0; }
     if (S._built !== S.round) {
-      const R = mazeBuildRound(S.round, box, rng);
-      S.nodes = R.nodes; S.edges = R.edges; S.start = R.start; S.acts = R.acts; S.dokis = R.dokis;
-      S.rootHp = R.rootHp; S.goalText = R.goalText; S.sc = R.sc || 1; S._built = S.round; S._won = 0; S._gen++;
-      for (const ac of S.acts) { const n = S.nodes[ac.node]; ac.x = n.x; ac.y = n.y; ac.pdir = ac.dir || 0; ac.life = 0; ac.cnode = ac.node; ac.tnode = (S.edges[ac.node] || [ac.node])[0]; }
-      for (const dk of S.dokis) { dk._t = dk.delay || 30; dk.bullet = null; dk.applied = false; }
-      if (B) { B._pNode = S.start; B.pOnX = S.nodes[S.start].x; B.pOnY = S.nodes[S.start].y; B._mgen = S._gen; }
+      const R = mazeBuild(S.round, rng);
+      S.nodes = R.nodes; S.start = R.start; S.acts = R.acts; S.dokis = R.dokis; S.rootHp = R.rootHp; S.goalText = R.goalText;
+      S._built = S.round; S._won = 0; S._winT = 0; S.iframes = 0;
+      S.soulNode = S.start; const s0 = S.nodes[S.start]; S.soul = { x: s0.x, y: s0.y }; S.heartTravel = 0; S.target = S.start; S.moveDir = 0;
+      for (const ac of S.acts) { const n = S.nodes[ac.node]; ac.x = n.x; ac.y = n.y; ac.pdir = ac.pdir || 0; ac.life = 0; ac._tnode = ac.node; }
+      for (const dk of S.dokis) { dk._t = dk.delay; dk.spawned = false; dk.collected = false; }
     }
-    const sc = S.sc || 1;
-    // ---- DOKI hearts (obj_dokiheart): spawn after doki_delay; collecting one converts a DIE! act to the goal
-    //      (diff 0) or docks the root node's hp — at hp 0 a goal box spawns on the root (obj_pinknode event_user 1).
-    for (const dk of S.dokis) {
-      if (dk.bullet === null && dk._t != null) { dk._t--; if (dk._t <= 0) { const n = S.nodes[dk.node];
-        dk.bullet = { ...bulletProps('pdoki'), x: cx + n.x, y: cy + n.y, vx: 0, vy: 0, pickup: true, tp: 2, doki: 2, r: 11, scale: PS(1.5), life: 99999, _mazeDoki: 1 }; add(dk.bullet); } }
-      if (dk.bullet && dk.bullet.dead && !dk.applied) { dk.applied = true;
-        if (dk.changeActIdx != null && S.acts[dk.changeActIdx]) { S.acts[dk.changeActIdx].mode = 1; Snd.play('pinkcoin', 0.5); if (B) B.flash = 8; }
-        else if (dk.rootHp) { S.rootHp--; Snd.play('mercyadd', 0.5);
-          if (S.rootHp <= 0 && !S.acts.some(x => x.mode === 1)) { const n = S.nodes[S.start];   // hp 0 -> goal on root
-            S.acts.push({ node: S.start, mode: 1, pattern: 0, x: n.x, y: n.y, pdir: 0, life: 0, cnode: S.start, tnode: (S.edges[S.start] || [S.start])[0] });
-            Snd.play('pinkcoin', 0.6); if (B) B.flash = 12; } } }
+    if (S.iframes > 0) S.iframes--;
+    // ---- SOUL node-hop movement (obj_purplecontrols mode 8): _laneswap_speed 22 ----
+    if (S.heartTravel <= 0 && !S._won) {
+      let dir = -1; if (HIT('right')) dir = 0; else if (HIT('up')) dir = 1; else if (HIT('left')) dir = 2; else if (HIT('down')) dir = 3;
+      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
+        if (c >= 0) { S.target = c; const t = S.nodes[c]; S.heartTravel = Math.hypot(t.x - S.soul.x, t.y - S.soul.y); S.moveDir = Math.atan2(t.y - S.soul.y, t.x - S.soul.x); if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
     }
-    // ---- advance each act by its pattern (obj_pinknodeact): 0 static, 1 bob ±62, 2 sweep, 3 chase the soul ----
-    for (const ac of S.acts) { ac.life++; const n = S.nodes[ac.node] || { x: 0, y: 0 };
-      if (ac.pattern === 1) { ac.pdir = (ac.pdir + 4) % 360; ac.x = n.x; ac.y = n.y - Math.sin(ac.pdir * Math.PI / 180) * (62 * sc); }
-      else if (ac.pattern === 2) { ac.pdir = (ac.pdir + 1.5) % 360; ac.x = Math.cos(ac.pdir * Math.PI / 180) * (box.w / 2 + 30); ac.y = n.y; }
-      else if (ac.pattern === 3) { const tg = S.nodes[ac.tnode] || n, dx = tg.x - ac.x, dy = tg.y - ac.y, dd = Math.hypot(dx, dy) || 1;
-        const spd = Math.min(4 + ac.life / 2, 13) * sc, mv = Math.min(spd, dd); ac.x += dx / dd * mv; ac.y += dy / dd * mv;
-        if (dd <= spd) { ac.cnode = ac.tnode;   // arrived -> hop to the neighbour nearest the soul's node
-          const soulN = (B && B._pNode != null) ? B._pNode : S.start, sN = S.nodes[soulN] || n;
-          let best = ac.cnode, bd = 1e9; for (const j of (S.edges[ac.cnode] || [ac.cnode])) { const jn = S.nodes[j]; const d2 = Math.hypot(jn.x - sN.x, jn.y - sN.y); if (d2 < bd) { bd = d2; best = j; } }
-          ac.tnode = best; } }
+    if (S.heartTravel > 0) { const t = S.nodes[S.target], mv = Math.min(22, S.heartTravel);
+      S.soul.x += Math.cos(S.moveDir) * mv; S.soul.y += Math.sin(S.moveDir) * mv; S.heartTravel -= mv;
+      if (S.heartTravel <= 0) { S.soulNode = S.target; S.soul.x = t.x; S.soul.y = t.y;
+        if (t.checkpoint === 1) { for (const n of S.nodes) if (n.checkpoint > 1) n.checkpoint = 1; t.checkpoint = 2; } }
+    }
+    // ---- ACTS: obj_pinknodeact movement patterns ----
+    for (const ac of S.acts) { ac.life++; const n = S.nodes[ac.node] || { x: 320, y: 268 };
+      if (ac.pattern === 1) { ac.pdir = (ac.pdir + 4) % 360; ac.x = n.x; ac.y = n.y - Math.sin(ac.pdir * Math.PI / 180) * 62; }
+      else if (ac.pattern === 2) { ac.pdir = (ac.pdir + 1.5) % 360; const base = (ac.pdir > 90 && ac.pdir < 270) ? 704 : -64; ac.x = base + Math.cos(ac.pdir * Math.PI / 180) * 288; ac.y = n.y; }
+      else if (ac.pattern === 3) { const tg = S.nodes[ac._tnode] || n, dx = tg.x - ac.x, dy = tg.y - ac.y, dd = Math.hypot(dx, dy) || 1;
+        const spd = Math.min(4 + ac.life / 2, Math.max(12, Math.min(15, 15 - (S.hits - 1) * 0.75))), mv = Math.min(spd, dd);
+        ac.x += dx / dd * mv; ac.y += dy / dd * mv;
+        if (dd <= spd) { const sN = S.nodes[S.soulNode]; let best = -1, bd = 1e9;   // hop to the child nearest the soul
+          for (const c of S.nodes[ac._tnode].child) { if (c < 0) continue; const cn = S.nodes[c], dist = Math.hypot(cn.x - sN.x, cn.y - sN.y); if (dist < bd) { bd = dist; best = c; } }
+          ac._tnode = best >= 0 ? best : ac._tnode; } }
       else { ac.x = n.x; ac.y = n.y; }
     }
-    // ---- render channel + Pink SPLIT (body sings on stage, GHOST floats overhead) ----
-    const goalAct = S.acts.find(x => x.mode === 1);
-    a.fx.purpleSoul = { mode: 8, gen: S._gen, nodes: S.nodes, edges: S.edges, start: S.start, sc: sc,
-      dieBoxes: S.acts.filter(x => x.mode === 0).map(x => ({ x: x.x, y: x.y, life: x.life })),
-      goalBox: goalAct ? { x: goalAct.x, y: goalAct.y, life: goalAct.life } : null, goalText: S.goalText };
-    const gt = f / 12;   // Pink SPLITS: body (spr_pink_idle) stands on stage, her GHOST (spr_pink_ghost) drifts overhead
-    a.fx.pinkSplit = { bx: cx, by: box.y - 40, gx: cx + Math.sin(gt) * 34, gy: box.y - 96 + Math.cos(gt) * 12, f };
-    // ---- contact: DIE! box (mode 0) = damage + RESET to start; GOAL box (mode 1) = win the round ----
-    if (B && !S._won) for (const ac of S.acts) {
-      if (!(Math.abs(B.soul.x - (cx + ac.x)) < 24 * sc && Math.abs(B.soul.y - (cy + ac.y)) < 16 * sc)) continue;   // 48x32 hitbox (obj_pinknodeact collision_rectangle)
-      if (ac.mode === 0 && B.iframes <= 0) { const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg;
-        for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
-        B.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; Snd.play('hurt', 0.5);
-        B._pNode = S.start; B.pOnX = S.nodes[S.start].x; B.pOnY = S.nodes[S.start].y; }
-      else if (ac.mode === 1) { S._won = 1; Snd.play('pinkcoin', 0.7); B.flash = 14;
-        if (B.bullets) for (const bb of B.bullets) if (bb._mazeDoki) bb.dead = true;
-        if (S.round + 1 < S.ROUNDS) S.round++; else { B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
+    // ---- DOKI hearts: spawn after delay, collect by proximity -> convert an act to goal / dock root hp ----
+    for (const dk of S.dokis) {
+      if (!dk.spawned) { dk._t--; if (dk._t <= 0) { dk.spawned = true; const n = S.nodes[dk.node]; dk.x = n.x; dk.y = n.y; } }
+      else if (!dk.collected && Math.hypot(S.soul.x - dk.x, S.soul.y - dk.y) < 26) { dk.collected = true; if (typeof Snd !== 'undefined') Snd.play('mercyadd', 0.5); if (B) B.flash = 8;
+        if (dk.changeActIdx != null && S.acts[dk.changeActIdx]) S.acts[dk.changeActIdx].mode = 1;
+        else if (dk.rootHp) { S.rootHp--; if (S.rootHp <= 0 && !S.acts.some(x => x.mode === 1)) { const n = S.nodes[S.start]; S.acts.push({ node: S.start, mode: 1, pattern: 0, x: n.x, y: n.y, life: 0, pdir: 0, _tnode: S.start }); } } }
     }
+    // ---- CONTACT: DIE (mode 0) = damage + reset to checkpoint; GOAL (mode 1) = win the difficulty ----
+    if (!S._won) for (const ac of S.acts) {
+      if (!(Math.abs(S.soul.x - ac.x) < 24 && Math.abs(S.soul.y - ac.y) < 16)) continue;   // 48x32 hitbox
+      if (ac.mode === 0 && S.iframes <= 0 && B) { const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg;
+        for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
+        S.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; if (typeof Snd !== 'undefined') Snd.play('hurt', 0.5); S.hits++;
+        let cp = S.nodes.findIndex(n => n.checkpoint === 2); if (cp < 0) cp = S.start;   // reset to checkpoint node
+        S.soulNode = cp; const c = S.nodes[cp]; S.soul.x = c.x; S.soul.y = c.y; S.heartTravel = 0; }
+      else if (ac.mode === 1) { S._won = 1; S._winT = 0; if (typeof Snd !== 'undefined') Snd.play('pinkcoin', 0.7); if (B) B.flash = 14; }
+    }
+    if (S._won) { S._winT++; if (S._winT >= 25) { if (S.round + 1 < S.ROUNDS) S.round++; else S._done = true; } }
+    // ---- Pink SPLIT: wave-distorted body + detached ghost (sine-sliced sprites) ----
+    const gt = f / 12;
+    a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText,
+      dokis: S.dokis.filter(d => d.spawned && !d.collected).map(d => ({ x: d.x, y: d.y })),
+      soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2,
+      body: { x: 148, y: 88 }, ghost: { x: 470 + Math.sin(gt) * 22, y: 84 + Math.cos(gt) * 12 } };
   },
 };
 // ============ TYPE 203 — PINATA BOMBS: full 1:1 port ============
