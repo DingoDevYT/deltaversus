@@ -3412,22 +3412,38 @@
     "paudience0": {
       "f": "paudience0.png",
       "w": 20,
-      "h": 20
+      "h": 20,
+      "ow": 24,
+      "oh": 24,
+      "ox": 2,
+      "oy": 4
     },
     "paudience1": {
       "f": "paudience1.png",
       "w": 21,
-      "h": 24
+      "h": 24,
+      "ow": 24,
+      "oh": 24,
+      "ox": 2,
+      "oy": 0
     },
     "pinksing0": {
       "f": "pinksing0.png",
       "w": 33,
-      "h": 46
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 3,
+      "oy": 0
     },
     "pinksing1": {
       "f": "pinksing1.png",
       "w": 34,
-      "h": 46
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 1,
+      "oy": 0
     },
     "gigaheart": {
       "f": "gigaheart.png",
@@ -3478,6 +3494,177 @@
       "f": "pinkshock.png",
       "w": 121,
       "h": 117
+    },
+    "dwspeaker0": {
+      "f": "dwspeaker0.png",
+      "w": 26,
+      "h": 41,
+      "ow": 26,
+      "oh": 41,
+      "ox": 0,
+      "oy": 0
+    },
+    "dwspeaker1": {
+      "f": "dwspeaker1.png",
+      "w": 26,
+      "h": 41,
+      "ow": 26,
+      "oh": 41,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinksing2": {
+      "f": "pinksing2.png",
+      "w": 34,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinksing3": {
+      "f": "pinksing3.png",
+      "w": 33,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinksing4": {
+      "f": "pinksing4.png",
+      "w": 33,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 0,
+      "oy": 0
+    },
+    "pinksing5": {
+      "f": "pinksing5.png",
+      "w": 33,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 1,
+      "oy": 0
+    },
+    "pinksing6": {
+      "f": "pinksing6.png",
+      "w": 32,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 3,
+      "oy": 0
+    },
+    "pinksing7": {
+      "f": "pinksing7.png",
+      "w": 31,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 5,
+      "oy": 0
+    },
+    "pinksing8": {
+      "f": "pinksing8.png",
+      "w": 32,
+      "h": 46,
+      "ow": 36,
+      "oh": 46,
+      "ox": 4,
+      "oy": 0
+    },
+    "pinkbodyghost0": {
+      "f": "pinkbodyghost0.png",
+      "w": 39,
+      "h": 41,
+      "ow": 41,
+      "oh": 42,
+      "ox": 1,
+      "oy": 0
+    },
+    "pinkbodyghost1": {
+      "f": "pinkbodyghost1.png",
+      "w": 39,
+      "h": 40,
+      "ow": 41,
+      "oh": 42,
+      "ox": 0,
+      "oy": 1
+    },
+    "pinkbodyghost2": {
+      "f": "pinkbodyghost2.png",
+      "w": 39,
+      "h": 39,
+      "ow": 41,
+      "oh": 42,
+      "ox": 0,
+      "oy": 2
+    },
+    "pinkbodyghost3": {
+      "f": "pinkbodyghost3.png",
+      "w": 39,
+      "h": 40,
+      "ow": 41,
+      "oh": 42,
+      "ox": 1,
+      "oy": 1
+    },
+    "pinkbodyghost4": {
+      "f": "pinkbodyghost4.png",
+      "w": 39,
+      "h": 41,
+      "ow": 41,
+      "oh": 42,
+      "ox": 2,
+      "oy": 0
+    },
+    "pinkidle0": {
+      "f": "pinkidle0.png",
+      "w": 39,
+      "h": 42,
+      "ow": 41,
+      "oh": 42,
+      "ox": 1,
+      "oy": 0
+    },
+    "pinkidle1": {
+      "f": "pinkidle1.png",
+      "w": 39,
+      "h": 41,
+      "ow": 41,
+      "oh": 42,
+      "ox": 0,
+      "oy": 1
+    },
+    "pinkidle2": {
+      "f": "pinkidle2.png",
+      "w": 39,
+      "h": 40,
+      "ow": 41,
+      "oh": 42,
+      "ox": 0,
+      "oy": 2
+    },
+    "pinkidle3": {
+      "f": "pinkidle3.png",
+      "w": 39,
+      "h": 41,
+      "ow": 41,
+      "oh": 42,
+      "ox": 1,
+      "oy": 1
+    },
+    "pinkidle4": {
+      "f": "pinkidle4.png",
+      "w": 39,
+      "h": 42,
+      "ow": 41,
+      "oh": 42,
+      "ox": 2,
+      "oy": 0
     }
   },
   "bullet_cost": {

@@ -1022,7 +1022,7 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
-  B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null;
+  B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
@@ -1594,11 +1594,20 @@ Battle.renderBoxAndBullets = function (ctx) {
   // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS (background pass; the CAT
   // CROWD is drawn later, in FRONT of the box + bullets — see the foreground pass after the soul).
   if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing;
-    for (const sx of [-1, 1]) { const spx = p.x + sx * 96, spy = p.y + 4;   // two speakers (spr_dw_castle_tv_speaker not in the rip — drawn procedurally)
-      ctx.fillStyle = '#3a2b6e'; ctx.fillRect(spx - 16, spy - 22, 32, 46); ctx.strokeStyle = '#8f7fe0'; ctx.lineWidth = 2; ctx.strokeRect(spx - 16, spy - 22, 32, 46);
-      ctx.fillStyle = '#171033'; ctx.beginPath(); ctx.arc(spx, spy - 6, 9, 0, 6.2832); ctx.fill(); ctx.beginPath(); ctx.arc(spx, spy + 12, 5, 0, 6.2832); ctx.fill(); }
-    const si = (A.manifest.bullets || {})['pinksing' + (Math.floor(p.f / 8) % 2)];
-    const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 2 }); }
+    // two SPEAKERS (spr_dw_castle_tv_speaker frame 1) at screen x 172/468 = ±148 from the box centre, y = box top - 31,
+    // scale 2 x speaker_scale (pulses to 1.15 on the beat every 8 phases; obj_pink_curtains Draw).
+    const sp = A.img['assets/bullets/dwspeaker1.png'] || A.img['assets/bullets/dwspeaker0.png'];
+    const beat = 1 + Math.abs(Math.sin(p.f * 0.196)) * 0.15;
+    for (const sx of [-1, 1]) if (sp && sp.width) drawSpr(ctx, sp, p.x + sx * 148, p.y + 10, { scale: 2 * beat });
+    // PINK sings on stage (spr_pink_sing, 9 frames)
+    const si = (A.manifest.bullets || {})['pinksing' + (Math.floor(p.f / 6) % 9)];
+    const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y - 4, { scale: 2 }); }
+  // FINAL maze — Pink SPLIT: body (spr_pink_idle) on stage + her detached GHOST (spr_pink_ghost) drifting overhead
+  if (B.fx && B.fx.pinkSplit) { const s = B.fx.pinkSplit;
+    const gi = (A.manifest.bullets || {})['pinkbodyghost' + (Math.floor(s.f / 8) % 5)];
+    const gim = gi && A.img['assets/bullets/' + gi.f]; if (gim && gim.width) drawSpr(ctx, gim, s.gx, s.gy, { scale: 2, alpha: 0.82 });
+    const bi = (A.manifest.bullets || {})['pinkidle' + (Math.floor(s.f / 10) % 5)];
+    const bim = bi && A.img['assets/bullets/' + bi.f]; if (bim && bim.width) drawSpr(ctx, bim, s.bx, s.by, { scale: 2 }); }
   // BOMB FINALE: Pink runs in / charges (spr_pink_run / spr_pink_front_throw_bomb)
   if (B.fx && B.fx.pinkFinale) { const pf = B.fx.pinkFinale;
     const key = pf.pose === 'run' ? 'pinkrun' + (Math.floor(pf.f / 5) % 3) : 'pinkchargebomb';
