@@ -3313,6 +3313,11 @@
 "f": "pboom.png",
 "w": 16,
 "h": 24
+},
+"pexploc": {
+"f": "pexploc.png",
+"w": 24,
+"h": 24
 }
 },
 "bullet_cost": {
@@ -3448,7 +3453,8 @@
 "plane": 1,
 "planeb": 1,
 "pbell": 1,
-"pboom": 1
+"pboom": 1,
+"pexploc": 1
 },
 "souls": {
 "yheart0": "yheart0.png",

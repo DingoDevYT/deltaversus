@@ -878,13 +878,13 @@ Battle.updDodge = function () {
     if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
-    if (pm === 2) {                                   // 4x4 grid (lane_distance 56, GML)
-      const xt = (B.pLaneX - 1.5) * 56, yt = (B.pLaneY - 1.5) * 56;
+    if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
+      const xt = (B.pLaneX - 1.5) * 40, yt = (B.pLaneY - 1.5) * 40;
       if (Math.abs(B.pOnX - xt) < 0.5 && Math.abs(B.pOnY - yt) < 0.5) {
         if (H.left && B.pLaneX > 0) B.pLaneX--; else if (H.right && B.pLaneX < 3) B.pLaneX++;
         else if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 3) B.pLaneY++;
       }
-      B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 56, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 56, 22);
+      B.pOnX = ap(B.pOnX, (B.pLaneX - 1.5) * 40, 22); B.pOnY = ap(B.pOnY, (B.pLaneY - 1.5) * 40, 22);
     } else {                                          // mode 1: 3 horizontal lanes (y), free X within +/-63
       const yt = (B.pLaneY - 1) * 56;
       if (Math.abs(B.pOnY - yt) < 0.5) { if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 2) B.pLaneY++; }
@@ -1013,6 +1013,20 @@ Battle.updDodge = function () {
       continue;
     }
     if (b.noHit) continue;   // cosmetic bullets (cord dots, parked face parts) never collide/graze
+    // DOKI HEART (Pink): a COLLECTABLE, not a damaging bullet. It gravitates to the soul when near
+    // (obj_dokiheart _pickdist 42), and on pickup grants TP + a small heal. It never hurts you.
+    if (b.pickup) {
+      const dd = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
+      if (dd < 42) { const dir = Math.atan2(B.soul.y - b.y, B.soul.x - b.x), pull = 1 + ((42 - dd) / 42) * 11; b.x += Math.cos(dir) * pull; b.y += Math.sin(dir) * pull; }
+      if (dd < 14 + SOUL_R) {
+        b.dead = true;
+        const tp = b.tp || 8; B.myTP = Math.min(100, B.myTP + tp); B.tpGained += tp;
+        B.flash = 4; Snd.play('healspark', 0.5);
+        B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '+' + tp, t: 0, color: '#ff8fe0' });
+        for (const m of B.myTeam) if (m && m.hp > 0) m.hp = Math.min(m.max, m.hp + 1);
+      }
+      continue;
+    }
     // DEFLECT (Gerson's Rude Buster orb): press OK while the orb is close to knock it back for TP, no damage.
     if (b.deflectable) {
       const dd = Math.hypot(b.x - B.soul.x, b.y - B.soul.y);
@@ -1443,9 +1457,9 @@ Battle.renderBoxAndBullets = function (ctx) {
   if (B.soulPurple) {
     const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2;
     ctx.strokeStyle = 'rgba(181,105,214,0.45)'; ctx.lineWidth = 1;
-    if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 56;
-      ctx.beginPath(); ctx.moveTo(gcx - 84, gcy + o); ctx.lineTo(gcx + 84, gcy + o); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 84); ctx.lineTo(gcx + o, gcy + 84); ctx.stroke(); } }
+    if (B._pmode === 2) { for (let i = 0; i < 4; i++) { const o = (i - 1.5) * 40;
+      ctx.beginPath(); ctx.moveTo(gcx - 60, gcy + o); ctx.lineTo(gcx + 60, gcy + o); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 60); ctx.lineTo(gcx + o, gcy + 60); ctx.stroke(); } }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }

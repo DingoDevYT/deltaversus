@@ -1505,39 +1505,58 @@ PATTERNS.pink_idol = {
 };
 
 // ---------- PINK — NEW (GML-faithful, PURPLE GRID SOUL). Tester/showcase only. ----------
-// TYPE 200 — Cats (purple mode 1: 3 lanes + free X). Cats stream from the sides in 3 rows (56 apart),
-// speed 8*s*(4/3). Ride the lanes; the doki hearts are collectibles (graze).
+// TYPE 200 — Cats (purple mode 1: 3 lanes + free X). Cats (obj_pinkcatbullet) stream from the sides
+// in 3 rows (56 apart), speed 8*s*(4/3). The DOKI HEARTS (obj_dokiheart) are NOT damage — they are
+// TP/heal COLLECTABLES that stream in on the lanes; grab them with the soul (they gravitate to you).
 PATTERNS.pinkn_cats = {
   dur: 360, box: { w: 150, h: 130 }, hz30: 1,   // fits mode-1 grid: free-X ±63, 3 lanes ±56
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 11 === 0 && f < 320) {
+    if (f % 11 === 0 && f < 320) {   // cats — the damaging projectiles you dodge between lanes
       const side = (Math.floor(f / 11) % 2) ? 1 : -1, lane = Math.floor(rng() * 3), s = 0.75 + rng() * 0.6, spd = 8 * s * (4 / 3);
-      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 50), y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 220 });
+      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 44), y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 220 });
     }
-    if (f % 40 === 20 && f < 300) {   // a doki heart drifts across a lane (collectible-ish; graze)
-      const side = (Math.floor(f / 40) % 2) ? 1 : -1, lane = Math.floor(rng() * 3);
-      add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 50), y: cy + (lane - 1) * 56, vx: -side * 6, vy: 0, r: 5, grazeR: 16, scale: PS(1.6), dmg: 14, life: 220 });
+    if (f % 44 === 22 && f < 300) {   // doki-heart COLLECTABLE (TP + small heal on pickup), rides a lane
+      const side = (Math.floor(f / 44) % 2) ? 1 : -1, lane = Math.floor(rng() * 3);
+      add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 44), y: cy + (lane - 1) * 56, vx: -side * 5, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 240 });
     }
   },
 };
-// TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid). Bombs land ON the grid cells the soul hops
-// between, fuse, then detonate into a row+column cross of beams (24px steps). Hop off the bomb's row+col.
+// TYPE 203/206 — Pinata bombs (purple mode 2: 4x4 grid, lane_distance 40). Bombs (obj_fusebomb) land ON
+// the grid cells, fuse (pulsing faster near the end), then detonate: obj_pinkbombexplosion marches out
+// 24px at a time in all 4 directions to the screen edge — a full row+column CROSS of explosion sprites.
+// ~1/3 of bombs "have_heart" and drop a doki-heart TP collectable where they blew up. Hop off the cross.
 PATTERNS.pinkn_bombs = {
-  dur: 300, box: { w: 190, h: 190 }, hz30: 1,   // fits mode-2 grid: 4x4 cells at (lane-1.5)*56 -> ±84
+  dur: 300, box: { w: 150, h: 150 }, hz30: 1,   // fits mode-2 grid: 4x4 cells at (lane-1.5)*40 -> ±60
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f < 20 || f % 16 !== 0 || f > 260) return;
-    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4), x = cx + (gx - 1.5) * 56, y = cy + (gy - 1.5) * 56;
-    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, r: 7, grazeR: 11, scale: PS(2.4), spin: 0.15, _fuse: 60, dmg: 20 };
+    if (f < 18 || f % 26 !== 0 || f > 250) return;
+    const gx = Math.floor(rng() * 4), gy = Math.floor(rng() * 4);
+    const x = cx + (gx - 1.5) * 40, y = cy + (gy - 1.5) * 40;
+    const bomb = { ...bulletProps('pbomb'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(2), _fuse: 50, _heart: rng() < 0.34, dmg: 20 };
     bomb.emit = function (b, out) {
-      if (b.t >= b._fuse && !b._done) {
-        b._done = 1; b.dead = true; Snd.play('boardbomb', 0.35);
-        out.push({ ...bulletProps('pboom'), shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: 0, len: box.w * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
-        out.push({ shape: 'line', color: '#ff7fd0', x: b.x, y: b.y, rot: Math.PI / 2, len: box.h * 1.4, thick: 14, armed: true, life: 16, dmg: b.dmg, vx: 0, vy: 0 });
+      const F = b._fuse;
+      if (b.t < F) {   // fuse pulse — subtle, then rapid in the final ~14 frames (telegraph)
+        const near = b.t > F - 14;
+        b.scale = PS(2) * (1 + (near ? 0.4 : 0.14) * Math.abs(Math.sin(b.t * (near ? 0.95 : 0.4))));
+        return;
       }
+      if (b._done) return;
+      b._done = 1; b.dead = true;
+      Snd.play('boardbomb', 0.5);
+      if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
+      out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: 11, scale: PS(2.2), life: 18, dmg: b.dmg });
+      for (const [dx, dy] of [[24, 0], [0, -24], [-24, 0], [0, 24]]) {   // march out to the screen edge
+        let px = b.x, py = b.y;
+        for (let s = 0; s < 28; s++) {
+          px += dx; py += dy;
+          if (px < -24 || px > 664 || py < 36 || py > 500) break;
+          out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: 9, scale: PS(2), life: 16, dmg: b.dmg, rot: Math.atan2(dy, dx) + Math.PI / 2 });
+        }
+      }
+      if (b._heart) out.push({ ...bulletProps('pdoki'), x: b.x, y: b.y, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 170 });
     };
     add(bomb);
   },

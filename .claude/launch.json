@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dv-docs",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8402", "--directory", "docs"],
+      "port": 8402
+    }
+  ]
+}
