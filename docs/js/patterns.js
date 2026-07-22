@@ -1586,6 +1586,26 @@ PATTERNS.pinkn_vrain = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
   { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
 ], 4, 230, 1, 22);
+// TYPE 202 — Rotating Box (purple mode 3: a spinning "+" cross, 5 cells). Pink's box rotates and
+// pinklanebullets stream INWARD down the arms; ride the cross to an arm that's currently clear. The box
+// spin + rotation-compensated controls are the defining mechanic (mode 3). Bullets telegraph then fire.
+PATTERNS.pinkn_rotbox = {
+  box: { w: 150, h: 150 }, hz30: 1, dur: 480,
+  tick(a) {
+    const { f, box, add, rng } = a;
+    const rot = 30 + f * 1.5;                         // box spin (deg); rotation-compensated soul controls
+    a.fx.purpleSoul = { mode: 3, rot };
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f > 24 && f % 20 === 0) {                     // fire a lane bullet down one (or two) arm(s)
+      const arms = rng() < 0.35 ? 2 : 1;
+      const base = Math.floor(rng() * 4);
+      for (let k = 0; k < arms; k++) {
+        const armDeg = rot + (base + k * 2) * 90, dir = armDeg * Math.PI / 180, spd = 6.4;
+        add({ ...bulletProps('planeb'), x: cx + Math.cos(dir) * 210, y: cy + Math.sin(dir) * 210, vx: -Math.cos(dir) * spd, vy: -Math.sin(dir) * spd, r: 8, grazeR: 12, scale: PS(2), rot: dir + Math.PI, dmg: 24, life: 130 });
+      }
+    }
+  },
+};
 // TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
 // lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
 PATTERNS.pinkn_conveyor = pinkVLaneBurst([

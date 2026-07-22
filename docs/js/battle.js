@@ -875,7 +875,7 @@ Battle.updDodge = function () {
   if (B.soulPurple) {
     const pm = CF.purpleSoul.mode || 1, ccx = bx.x + bx.w / 2, ccy = bx.y + bx.h / 2;
     const ap = (v, t, s) => Math.abs(t - v) <= s ? t : v + Math.sign(t - v) * s;
-    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : 1; B.pLaneY = 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; }
+    if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : (pm === 3 ? 0 : 1); B.pLaneY = pm === 3 ? 0 : 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; B.pGX = 0; B.pGY = 0; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
     if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
@@ -895,6 +895,20 @@ Battle.updDodge = function () {
       } else {                                        // mode 5 conveyor: lane 0 pushes DOWN, lane 1 pushes UP (1.25/frame)
         if (B.pLaneX === 0) B.pOnY = Math.min(B.pOnY + 1.25, ymax); else B.pOnY = Math.max(B.pOnY - 1.25, -ymax);
       }
+    } else if (pm === 3) {                            // ROTATING "+" cross: 5 cells (center + 4 arms at 56), whole box spins
+      const ang = ((CF.purpleSoul.rot || 0)) * Math.PI / 180, cs = Math.cos(ang), sn = Math.sin(ang);
+      const gx = B.pLaneX * 56, gy = B.pLaneY * 56;   // on-grid (pre-rotation) target
+      B.pGX = ap(B.pGX == null ? gx : B.pGX, gx, 20); B.pGY = ap(B.pGY == null ? gy : B.pGY, gy, 20);
+      if (Math.abs(B.pGX - gx) < 0.5 && Math.abs(B.pGY - gy) < 0.5) {   // on a cell: accept a (rotation-compensated) hop
+        let sd = -1;                                   // screen dir pressed (deg, 0=right,90=down)
+        if (H.up) sd = 270; else if (H.down) sd = 90; else if (H.left) sd = 180; else if (H.right) sd = 0;
+        if (sd >= 0) {
+          let gd = sd - (CF.purpleSoul.rot || 0); gd = ((gd % 360) + 360) % 360; gd = Math.round(gd / 90) * 90 % 360;   // grid-space dir
+          if ((gd === 270 || gd === 90) && B.pLaneX === 0) B.pLaneY = Math.max(-1, Math.min(1, B.pLaneY + (gd === 270 ? -1 : 1)));
+          else if ((gd === 0 || gd === 180) && B.pLaneY === 0) B.pLaneX = Math.max(-1, Math.min(1, B.pLaneX + (gd === 0 ? 1 : -1)));
+        }
+      }
+      B.pOnX = B.pGX * cs - B.pGY * sn; B.pOnY = B.pGX * sn + B.pGY * cs;   // rotate on-grid into screen space
     } else {                                          // mode 1: 3 horizontal lanes (y), free X within +/-63
       const yt = (B.pLaneY - 1) * 56;
       if (Math.abs(B.pOnY - yt) < 0.5) { if (H.up && B.pLaneY > 0) B.pLaneY--; else if (H.down && B.pLaneY < 2) B.pLaneY++; }
@@ -1406,7 +1420,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.beginPath(); ctx.moveTo(bx.x, bx.y); ctx.lineTo(bx.x + bx.w, bx.y + p);
     ctx.lineTo(bx.x + bx.w, bx.y + bx.h - p); ctx.lineTo(bx.x, bx.y + bx.h); ctx.closePath();
     ctx.fill(); ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3; ctx.stroke();
-  } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, 0, 1);
+  } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, (B.fx && B.fx.purpleSoul && B.fx.purpleSoul.mode === 3 ? (B.fx.purpleSoul.rot || 0) * Math.PI / 180 : (B.fx && B.fx.boxRot) || 0), 1);
   // pattern-driven overlays: a second non-enterable box (face attack) + green connector arms (phones/heart)
   if (B.fx) {
     if (B.fx.arms) { ctx.strokeStyle = '#49d049'; ctx.lineWidth = 3; ctx.lineCap = 'round';
@@ -1472,6 +1486,8 @@ Battle.renderBoxAndBullets = function (ctx) {
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - 60); ctx.lineTo(gcx + o, gcy + 60); ctx.stroke(); } }
     else if (B._pmode === 4 || B._pmode === 5) { for (let i = 0; i < 2; i++) { const o = (i - 0.5) * 126;   // 2 vertical lanes
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - bx.h / 2 + 6); ctx.lineTo(gcx + o, gcy + bx.h / 2 - 6); ctx.stroke(); } }
+    else if (B._pmode === 3) { const a = ((B.fx && B.fx.purpleSoul && B.fx.purpleSoul.rot) || 0) * Math.PI / 180;   // rotating "+" cross arms
+      for (let k = 0; k < 4; k++) { const t = a + k * Math.PI / 2; ctx.beginPath(); ctx.moveTo(gcx, gcy); ctx.lineTo(gcx + Math.cos(t) * 62, gcy + Math.sin(t) * 62); ctx.stroke(); } }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
   }
