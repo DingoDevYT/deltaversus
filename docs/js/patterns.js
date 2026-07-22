@@ -2063,6 +2063,53 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
   { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
   { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
 ], 5, 225, 1, 22, true);
+// ============ TYPE 210 — PINK'S FINAL ATTACK: the GHOST/BODY split + NODE MAZE ============
+// obj_dbulletcontroller type 210 -> obj_purplecontrols mode 8 + obj_pinknode. Pink SPLITS into GHOST and BODY
+// (two big sprites on the sides); the purple heart navigates a MAZE of connected nodes (root + R/U/L/D arms,
+// horizontal arms x2.125, dist 54) hopping node-to-node; DOKI obstacles patrol the edges between nodes and
+// hurt on contact. Reaching an ACT/checkpoint node is the goal. Difficulty-0 graph (the date-4 finale).
+PATTERNS.pinkn_finalmaze = {
+  box: { w: 320, h: 200 }, hz30: 1, dur: 900,
+  tick(a) {
+    const { f, box, add, rng } = a; const S = this;
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const HD = 54 * 2.125;   // horizontal arm length (_node_dist * _h_multi); vertical = 54
+    if (f === 0) {
+      // the 9-node difficulty-0 graph (offsets from centre). dirs: 0=R,1=U,2=L,3=D (GML lengthdir).
+      S.nodes = [ { x: 0, y: 0 }, { x: HD, y: 0 }, { x: 0, y: -54 }, { x: -HD, y: 0 }, { x: 0, y: 54 },
+                  { x: HD, y: -54 }, { x: HD, y: 54 }, { x: -HD, y: -54 }, { x: -HD, y: 54 } ];
+      S.edges = [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]];   // bidirectional adjacency
+      S.acts = [4, 5, 7];   // checkpoint / goal nodes (obj_pinknodeact)
+      S._live = 0;          // count of live patrolling DOKI obstacles
+      S._spawnT = 0;
+    }
+    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: S.acts, start: 0 };
+    // Pink SPLIT IN TWO: the BODY on the left, the GHOST on the right, both looming over the maze
+    a.fx.boss = { key: 'pinkghost' + (Math.floor(f / 10) % 2), x: cx - box.w / 2 - 70, y: cy - 20, scale: 2.0, flip: false };
+    a.fx.pinkGhost = { x: cx + box.w / 2 + 70, y: cy - 20, frame: Math.floor(f / 10) % 2, ramming: false };
+    // spawn patrolling obstacles that travel the edges between nodes (obj_pinknode doki obstacles). Each is a
+    // persistent bullet whose emit walks it node->node along the graph; it hurts on contact with the heart.
+    S._spawnT--;
+    if (S._spawnT <= 0 && S._live < 5) {
+      const from = Math.floor(rng() * S.nodes.length), nbrs = S.edges[from];
+      if (nbrs && nbrs.length) {
+        const st = { from, to: nbrs[Math.floor(rng() * nbrs.length)], t: 0, dur: 42 + Math.floor(rng() * 26) };
+        const NODES = S.nodes, EDGES = S.edges, RNG = rng, CXY = { cx, cy };
+        const b = { ...bulletProps('pdoki'), x: cx, y: cy, vx: 0, vy: 0, tint: '#ff3b3b', tintMul: true, r: 9, scale: PS(1.4), dmg: 24, life: 9000 };
+        S._live++; const dec = () => S._live--;
+        b.emit = function (b) {
+          st.t++;
+          if (st.t >= st.dur) { const nb = EDGES[st.to] || [st.from]; st.from = st.to; st.to = nb[Math.floor(RNG() * nb.length)]; st.t = 0; st.dur = 42 + Math.floor(RNG() * 26); }
+          const A = NODES[st.from], B = NODES[st.to], p = st.t / st.dur;
+          b.x = CXY.cx + A.x + (B.x - A.x) * p; b.y = CXY.cy + A.y + (B.y - A.y) * p;
+          if (b.dead) dec();
+        };
+        add(b);
+      }
+      S._spawnT = 55;
+    }
+  },
+};
 // ============ TYPE 203 — PINATA BOMBS: full 1:1 port ============
 // obj_dbulletcontroller(203) chart = [cmd, interval] pairs, wait after each = round(0.5 + 45*interval).
 //   cmd 0 = queue a small fusebomb   cmd 1 = Pink laughs (cosmetic)   cmd 2 = giant centre bomb

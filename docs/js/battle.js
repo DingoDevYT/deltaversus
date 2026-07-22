@@ -897,6 +897,27 @@ Battle.updDodge = function () {
     if (B._pmode !== pm) { B._pmode = pm; B.pLaneX = (pm === 4 || pm === 5) ? 0 : (pm === 3 ? 0 : 1); B.pLaneY = pm === 3 ? 0 : 1; B.pOnX = (pm === 4 || pm === 5) ? -63 : 0; B.pOnY = 0; B.pGX = 0; B.pGY = 0; B.pAng = 90; }
     const pb = B._pbuf || {}, H = { up: Input.hit.up || pb.up, down: Input.hit.down || pb.down, left: Input.hit.left || pb.left, right: Input.hit.right || pb.right }, D = Input.down, wsp = 3;
     B._pbuf = {};
+    if (pm === 8) {                                   // NODE MAZE (obj_purplecontrols mode 8, obj_pinknode): the
+      // heart hops between connected maze nodes; a direction press moves to the neighbour in that direction.
+      const T = CF.purpleSoul, nodes = T.nodes || [], edges = T.edges || [];
+      if (B._pNode == null || B._mgen !== T.gen) { B._mgen = T.gen; B._pNode = T.start || 0;
+        const s0 = nodes[B._pNode] || { x: 0, y: 0 }; B.pOnX = s0.x; B.pOnY = s0.y; }
+      const cur = nodes[B._pNode] || { x: 0, y: 0 };
+      if (Math.abs(B.pOnX - cur.x) < 1.5 && Math.abs(B.pOnY - cur.y) < 1.5) {   // settled on a node -> accept a hop
+        let want = -1;
+        if (H.right) want = 0; else if (H.up) want = 1; else if (H.left) want = 2; else if (H.down) want = 3;
+        if (want >= 0) {
+          const wv = [[1, 0], [0, -1], [-1, 0], [0, 1]][want]; let best = -1, bestDot = 0.35;
+          for (const nb of (edges[B._pNode] || [])) { const n = nodes[nb]; if (!n) continue;
+            const dx = n.x - cur.x, dy = n.y - cur.y, len = Math.hypot(dx, dy) || 1, dot = (dx / len) * wv[0] + (dy / len) * wv[1];
+            if (dot > bestDot) { bestDot = dot; best = nb; } }
+          if (best >= 0) { B._pNode = best; Snd.play('graze', 0.2); }
+        }
+      }
+      const tgt = nodes[B._pNode] || { x: 0, y: 0 };
+      B.pOnX = ap(B.pOnX, tgt.x, 12); B.pOnY = ap(B.pOnY, tgt.y, 12);
+      B.soul.x = ccx + B.pOnX; B.soul.y = ccy + B.pOnY; return;
+    }
     if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
       const xt = (B.pLaneX - 1.5) * 40, yt = (B.pLaneY - 1.5) * 40;
       if (Math.abs(B.pOnX - xt) < 0.5 && Math.abs(B.pOnY - yt) < 0.5) {
@@ -1683,6 +1704,15 @@ Battle.renderBoxAndBullets = function (ctx) {
           ctx.beginPath(); ctx.moveTo(bx.x, bx.y + t * h); ctx.lineTo(bx.x, bx.y + (t + 0.06) * h); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(bx.x + w, bx.y + t * h); ctx.lineTo(bx.x + w, bx.y + (t + 0.06) * h); ctx.stroke(); }
       }
+    }
+    else if (B._pmode === 8) { const ps = (B.fx && B.fx.purpleSoul) || {};   // NODE MAZE: connections + nodes
+      const nodes = ps.nodes || [], edges = ps.edges || [], acts = ps.acts || [];
+      ctx.strokeStyle = 'rgba(181,105,214,0.55)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      for (let i = 0; i < edges.length; i++) for (const j of (edges[i] || [])) { if (j <= i) continue; const a = nodes[i], b = nodes[j]; if (!a || !b) continue;
+        ctx.beginPath(); ctx.moveTo(gcx + a.x, gcy + a.y); ctx.lineTo(gcx + b.x, gcy + b.y); ctx.stroke(); }
+      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isAct = acts.indexOf(i) >= 0;
+        ctx.fillStyle = isAct ? '#ffe14d' : '#3a1440'; ctx.strokeStyle = isAct ? '#fff6a0' : '#c8a0ff'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, isAct ? 9 : 6, 0, 6.2832); ctx.fill(); ctx.stroke(); }
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }

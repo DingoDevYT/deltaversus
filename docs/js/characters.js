@@ -221,7 +221,7 @@ const CHARS = {
     dokiDates: [
       { id: 'pinkn_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
       { id: 'pinkn_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
-      { id: 'pinkn_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pinkn_finalmaze', name: 'DATE', dmg: 24, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
     ],
   },
 };
