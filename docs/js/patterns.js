@@ -1240,7 +1240,7 @@ function gSpear(a, gd, spd, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
   const va = -gd * Math.PI / 180, D = opt.dist || 210;
   add({ ...bulletProps('gchevron'), x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 8, scale: GSC(22, 20), rot: va, blockArc: 50, dmg: opt.dmg || 18, life: opt.life || 200 });
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 8, scale: GSC(22, 20), rot: va, tint: '#00e600', blockArc: 50, dmg: opt.dmg || 18, life: opt.life || 200 });
   Snd.play('smallswing', 0.35);
 }
 // GREEN multi-block turtle shell from side `gd` (needs `hp` blocks; spinning -> returns 90 CCW).
@@ -1361,21 +1361,31 @@ PATTERNS.gerson_swingdown = {
     }
   },
 };
-// --- RED (ult): FINALE (AP 19) — a dense gigashell + spear barrage with swing-down cuts. (provisional;
-// refined from the AP-19 sequence.) ---
+// --- GREEN (ult): TRIAL OF THE HOLY HAMMER — Gerson's climax, true to his "BLOCK, don't dodge" identity.
+// Escalating 8-way spear volleys, multi-block turtle shells, then a giant "holy hammer" overhead you must
+// block UP. Everything is blockable in the octagon green mode (no unfair unblockable cuts). ---
+const G_D8 = [0, 45, 90, 135, 180, 225, 270, 315];
 PATTERNS.gerson_finale = {
-  dur: 460, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 470, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add, rng } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    a.fx.greenSoul = true;
-    // dense multi-block shells from rotating sides
-    if (f % 34 === 20 && f < 300) gShell(a, [0, 90, 180, 270][Math.floor(f / 34) % 4], 2 + Math.floor(rng() * 3));
-    // spear rain between shells
-    if (f % 12 === 6 && f < 360) gSpear(a, [0, 45, 90, 135, 180, 225, 270, 315][Math.floor(f / 12) % 8], 10 + rng() * 4);
-    // swing-down cuts as punctuation
-    if ([90, 180, 270, 360].includes(f))
-      add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.6, thick: 60, x: cx, y: cy, rot: (f / 90) * Math.PI / 4, vx: 0, vy: 0, tellT: 12, armWindow: 4, dmg: 30, shakeOnCut: true, noHit: false });
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    a.fx.greenSoul = { oct: true };
+    // PHASE 1 (20-170): rotating spear volley, cadence tightens 12 -> 8.
+    if (f >= 20 && f < 170) { const cad = f < 96 ? 12 : 8; if (f % cad === 0) gSpear(a, G_D8[Math.floor(f / cad) % 8], 9 + rng() * 3); }
+    // PHASE 2 (120-345): multi-block shells from rotating sides + spear fill between them.
+    if (f >= 120 && f < 345 && f % 40 === 10) gShell(a, [0, 90, 180, 270][Math.floor(f / 40) % 4], 2 + Math.floor(rng() * 3));
+    if (f >= 170 && f < 345 && f % 7 === 0) gSpear(a, G_D8[Math.floor(f / 7) % 8], 11 + rng() * 3);
+    // PHASE 3 CLIMAX (350+): spear STORM + two giant HOLY HAMMER shells (block UP, then DOWN).
+    if (f >= 350) {
+      if (f === 350) { Battle.shake = 18; Battle.flash = 8; Snd.play('bosshit', 0.6); }
+      if (f < 440 && f % 5 === 0) gSpear(a, G_D8[Math.floor(f / 5) % 8], 13 + rng() * 3);
+      if (f === 362 || f === 402) {                                              // the "holy hammer": a huge 4-block shell
+        const gd = f === 362 ? 270 : 90, va = -gd * Math.PI / 180, D = 230, spd = 3.4;
+        add({ shape: 'shell', shell: true, blocksLeft: 4, shellSpin: true, shellSpeed: 3.4, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
+              vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 20, blockArc: 55, dmg: 44 });
+        Snd.play('heavyswing', 0.5);
+      }
+    }
   },
 };
 // #A BOX THROW (AP70, RED free-move) — despite the name it LOBS arcing hammers into the box: 16 fan-throws,
