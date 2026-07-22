@@ -1625,6 +1625,26 @@ PATTERNS.pinkn_tunnel = {
     }
   },
 };
+// TYPE 209 — IDOL CONCERT (Pink's ULT). A WIDE, short stage box with a FAST free-move (red) soul.
+// Pink performs: music notes rain from above the stage with a gentle homing drift, and the "haters" in
+// the crowd hurl bigger projectiles across. (Representative of the concert — the full audience-management
+// minigame in obj_pink_curtains/obj_audience_hitbox is beyond a single pattern.)
+PATTERNS.pinkn_concert = {
+  box: { w: 420, h: 150 }, hz30: 1, dur: 520,
+  tick(a) {
+    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.5;   // wspeed *1.5 (concert soul is fast)
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f % 9 === 0 && f < 490) {                      // music notes rain from the curtain, drifting toward you
+      const sx = box.x + 18 + rng() * (box.w - 36), tx = soul ? soul.x : cx;
+      const vx = Math.max(-1.5, Math.min(1.5, (tx - sx) * 0.012));
+      add({ ...bulletProps('note'), x: sx, y: box.y - 16, vx, vy: 2.3 + rng() * 1.3, r: 6, grazeR: 10, dmg: 20, life: 170 });
+    }
+    if (f % 68 === 30 && f < 480) {                    // a "hater" hurls a bigger one across the stage
+      const side = rng() < 0.5 ? -1 : 1;
+      add({ ...bulletProps('pcat'), x: cx - side * (box.w / 2 + 40), y: cy + (rng() - 0.5) * box.h * 0.7, vx: side * 4.6, vy: 0, r: 9, grazeR: 12, scale: PS(1.7), spin: 0.05, dmg: 26, life: 240 });
+    }
+  },
+};
 // TYPE 205 — Conveyor cat rush (purple mode 5: the 2 lanes auto-scroll you vertically — lane 0 down,
 // lane 1 up). Faster cats (5.4/4.4/3.4) + 4 stationary corner "wall" cats. Fight the conveyor, weave.
 PATTERNS.pinkn_conveyor = pinkVLaneBurst([
