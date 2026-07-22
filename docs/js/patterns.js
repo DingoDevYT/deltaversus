@@ -1634,18 +1634,25 @@ PATTERNS.pinkn_tunnel = {
 // the crowd hurl bigger projectiles across. (Representative of the concert — the full audience-management
 // minigame in obj_pink_curtains/obj_audience_hitbox is beyond a single pattern.)
 PATTERNS.pinkn_concert = {
-  box: { w: 420, h: 150 }, hz30: 1, dur: 520,
+  box: { w: 320, h: 176 }, hz30: 1, dur: 520,
   tick(a) {
-    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.5;   // wspeed *1.5 (concert soul is fast)
+    const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;   // stage soul is fast (free move)
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 9 === 0 && f < 490) {                      // music notes rain from the curtain, drifting toward you
-      const sx = box.x + 18 + rng() * (box.w - 36), tx = soul ? soul.x : cx;
-      const vx = Math.max(-1.5, Math.min(1.5, (tx - sx) * 0.012));
-      add({ ...bulletProps('note'), x: sx, y: box.y - 16, vx, vy: 2.3 + rng() * 1.3, r: 6, grazeR: 10, dmg: 20, life: 170 });
-    }
-    if (f % 68 === 30 && f < 480) {                    // a "hater" hurls a bigger one across the stage
-      const side = rng() < 0.5 ? -1 : 1;
-      add({ ...bulletProps('pcat'), x: cx - side * (box.w / 2 + 40), y: cy + (rng() - 0.5) * box.h * 0.7, vx: side * 4.6, vy: 0, r: 9, grazeR: 12, scale: PS(1.7), spin: 0.05, dmg: 26, life: 240 });
+    // DUMMIES at the bottom + both sides fire damaging HEART projectiles AT the soul. A heart that flies
+    // past the top (reaching "Pink") turns into a bigger COLLECTABLE pink heart (per the wiki).
+    const dummies = [
+      { x: box.x + box.w * 0.28, y: box.y + box.h + 16 }, { x: box.x + box.w * 0.5, y: box.y + box.h + 16 }, { x: box.x + box.w * 0.72, y: box.y + box.h + 16 },
+      { x: box.x - 16, y: cy + 20 }, { x: box.x + box.w + 16, y: cy + 20 },
+    ];
+    if (f > 18 && f % 17 === 0 && f < 495) {
+      const d = dummies[Math.floor(rng() * dummies.length)];
+      const tx = soul ? soul.x : cx, ty = soul ? soul.y : cy, ang = Math.atan2(ty - d.y, tx - d.x), spd = 2.9;
+      const h = { ...bulletProps('pdoki'), x: d.x, y: d.y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, r: 7, grazeR: 11, scale: PS(1.25), dmg: 22, life: 220 };
+      h.emit = function (b, out) {   // reaches Pink (top) -> becomes a collectable
+        if (b.y < box.y - 4 && !b._done) { b._done = 1; b.dead = true; Snd.play('snd_pink_note', 0.3);
+          out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1.1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 150 }); }
+      };
+      add(h);
     }
   },
 };
