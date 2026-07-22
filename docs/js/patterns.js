@@ -2269,7 +2269,7 @@ PATTERNS.pinkn_finalmaze = {
 // air arc + flashing landing-ring telegraph, land bounce, fuse-frame sprite burn-down, squash-swell in the
 // last 8 ticks, orange flash windows, SOUL CONTACT = instant detonation, explosion crosses CHAIN-detonate
 // other landed bombs and destroy settled hearts. Giant = 3-lane-thick cross (x8 scale, 48px steps).
-const PINK_BOMB_D0 = [0, 1.05, 0, 1.05, 0, 0.98, 0, 0, 0, 1.1, 0, 0, 0, 0, 0, 0.98, 0, 0, 0, 0, 0, 0.97, 0, 0, 0, 0, 0, 0, 0, 1.25, 1, 0];
+const PINK_BOMB_D0 = [0, 1.05, 0, 0, 0, 1.05, 0, 0, 0, 0.98, 0, 0, 0, 0, 0, 1.1, 0, 0, 0, 0, 0, 0.98, 0, 0, 0, 0, 0, 0.97, 0, 0, 0, 0, 0, 0, 0, 1.25, 1, 0];   // obj_dbulletcontroller type 203 case 0 (exact)
 const PINK_BOMB_D1 = [0, 0.85, 0, 0.7, 0, 0.6, 0, 0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.65, 0, 0, 0, 0, 0, 1.25, 1, 0];
 const PINK_BOMB_D2 = [3, 1.25, 3, 1.25, 3, 1.25, 3, 1.5, 4, 3];
 const PINK_BOMB_D3 = [0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1.05, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0.975, 0, 0, 0, 0, 0, 0, 0, 0.875, 2, 1.5, 1, 0];
