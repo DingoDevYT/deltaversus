@@ -1333,7 +1333,7 @@ Battle.render = function (ctx) {
   }
   B.renderBoxAndBullets(ctx);
   B.renderMirror(ctx);
-  B.renderHud(ctx);
+  if (!(B.fx && B.fx.date)) B.renderHud(ctx);   // DATE minigame is a full-screen takeover — no party HUD over it
   B.renderMsg(ctx);
   if (B.phase === 'timing') B.renderTiming(ctx);
   if (B.phase === 'gameover') B.renderGameover(ctx);
@@ -1428,58 +1428,51 @@ function drawDateUI(ctx, D) {
     ctx.globalAlpha = 1; }
   const frame = img('dsimbg');      // spr_datingsim_ui_bg at (106,24) scale 2 (drawn from its corner)
   if (frame) ctx.drawImage(frame, 106, 24, 480, 280);
-  if (D.done) {
-    ctx.fillStyle = '#fff'; ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center';
-    ctx.fillText('* You answered from the heart.', 320, 200);
-    ctx.restore(); return;
-  }
+  if (D.done) { ctx.restore(); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; return; }
   const tail = img('dsimtail'), po = img('dsimpink' + (D.talk || 0));   // talking portrait + tail (scale 2)
   if (tail) ctx.drawImage(tail, 320 - 112, 21, 224, 232);
   if (po) ctx.drawImage(po, 320 - 112, 26, 224, 232);
-  // purple gradient band above the options (dialoguebox trianglestrip 106..526, y 210..273)
-  const g = ctx.createLinearGradient(0, 210, 0, 273);
-  g.addColorStop(0, 'rgba(160,60,190,0.2)'); g.addColorStop(1, 'rgba(160,60,190,0.8)');
-  ctx.fillStyle = g; ctx.fillRect(106, 210, 420, 63);
-  // question: typewriter, centred at (320,208), wrap 320, sep 28; WHITE 8-dir outline + near-black fill
-  const text = (D.q || '').slice(0, D.chars != null ? D.chars : 1e9);
+  // Pink's spoken lines / the current question: typewriter, centred, WHITE 8-dir outline + near-black fill.
+  const full = (D.line1 || '') + (D.line2 || ''); let shown = D.chars != null ? D.chars : full.length;
+  const l1 = (D.line1 || '').slice(0, shown); const l2 = (D.line2 || '').slice(0, Math.max(0, shown - (D.line1 || '').length));
   ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  const words = text.split(' '), lines = []; let line = '';
-  for (const w of words) { const t = line ? line + ' ' + w : w;
-    if (ctx.measureText(t).width > 320 && line) { lines.push(line); line = w; } else line = t; }
-  if (line) lines.push(line);
   const flash = D.flash > 0 && (D.flash % 4 < 2);
-  for (let li = 0; li < lines.length; li++) { const y = 208 + li * 28;
+  const drawLine = (str, y) => { if (!str) return;
     ctx.fillStyle = flash ? '#ff4040' : '#fff';
-    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(lines[li], 320 + dx, y + dy);
-    ctx.fillStyle = '#0d0d0d'; ctx.fillText(lines[li], 320, y); }
-  // ---- the option CAROUSEL (exact cylindrical projection) ----
-  const n = D.opts.length, order = [-3, 3, -2, 2, -1, 1, 0];
-  const proj = sx => 240 * Math.cos((Math.max(0, Math.min(1, (sx + 165) / 970)) * 180) * Math.PI / 180) + 312;
-  for (const k of order) {
-    const idx = ((D.sel + k) % n + n) % n, stripX = 233 + (D.off || 0) + k * 200;
-    if (stripX <= -366 || stripX >= 832) continue;
-    let xL = proj(stripX), xR = proj(stripX + 160);
-    const w = Math.abs(xL - xR); if (w < 3) continue;
-    const x0 = Math.min(xL, xR), y0 = 291;
-    ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, w, 60);                       // white border
-    ctx.fillStyle = '#000'; ctx.fillRect(x0 + 2, y0 + 2, w - 4, 56);           // black fill
-    const ts = Math.min(3, 3 * (w / 170));                                     // text squeezes with the box
-    if (ts > 0.35) {
-      ctx.font = Math.max(6, Math.round(9 * ts)) + "px 'Determination Mono', monospace";
-      ctx.fillStyle = k === 0 && D.correct ? '#7dff7d' : '#fff';
-      ctx.textBaseline = 'middle'; ctx.fillText(D.opts[idx], x0 + w / 2, y0 + 30);
+    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, 320 + dx, y + dy);
+    ctx.fillStyle = '#0d0d0d'; ctx.fillText(str, 320, y); };
+  drawLine(l1, 206); drawLine(l2, 234);
+  // ---- the option LINE (only while asking/choosing): a horizontal strip that LOOPS; centred box is the
+  //      one the purple soul will pick when you press UP. LEFT/RIGHT scroll it (draw_box_x_offset). ----
+  if (D.opts) {
+    const n = D.opts.length, off = D.boxOff || 0;
+    const kmax = D.single ? 0 : 2, byTop = 276, bh = 44;
+    for (let k = -kmax; k <= kmax; k++) {
+      const idx = ((D.sel + k) % n + n) % n, cx = 320 + off + k * 200, bw = 150;
+      if (cx < -120 || cx > 760) continue;
+      const x0 = cx - bw / 2, centred = (k === 0);
+      ctx.fillStyle = centred && D.correct ? '#7dff7d' : '#fff';               // white border (green on a correct pick)
+      ctx.fillRect(x0, byTop, bw, bh);
+      ctx.fillStyle = '#120b1f'; ctx.fillRect(x0 + 2, byTop + 2, bw - 4, bh - 4);   // dark-purple fill
+      ctx.font = "18px 'Determination Mono', monospace"; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+      let tw = ctx.measureText(D.opts[idx]).width, sc = tw > bw - 16 ? (bw - 16) / tw : 1;
+      ctx.save(); ctx.translate(cx, byTop + bh / 2); ctx.scale(sc, 1);
+      ctx.fillStyle = centred ? '#fff' : '#b58bd6'; ctx.fillText(D.opts[idx], 0, 0); ctx.restore();
+    }
+    // the PURPLE SOUL on the line at the bottom, rising into the option on select (heartY 385 -> 319)
+    const ph = A.soul((Math.floor((D.bg || 0) / 6) % 2) ? 'pheart1' : 'pheart0') || A.ui('soul');
+    if (ph) drawSpr(ctx, ph, 320, (D.heartY != null ? D.heartY : 385), { scale: 1 });
+    // hint arrows: UP above the soul (press UP to pick); LEFT/RIGHT flanking it (scroll) when multi-option
+    const arw = img('pkarrow');
+    if (arw && D.ph === 'choose') { const bob = Math.abs(Math.sin((D.bg || 0) * 0.13)) * 4;
+      ctx.save(); ctx.translate(320, 352 - bob); ctx.rotate(-Math.PI / 2); ctx.globalAlpha = 0.9; ctx.drawImage(arw, -13, -13, 26, 26); ctx.restore();
+      if (!D.single) { for (const s of [-1, 1]) { ctx.save(); ctx.translate(320 + s * (28 + bob), 385); ctx.rotate(s < 0 ? Math.PI : 0);
+        ctx.globalAlpha = 0.7; ctx.drawImage(arw, -12, -12, 24, 24); ctx.restore(); } }
     }
   }
-  // the date heart marks the centred (selected) option
-  const heart = A.soul('red0') || A.ui('soul');
-  if (heart) drawSpr(ctx, heart, 319, 283 + Math.sin((D.bg || 0) * 0.2) * 2, { scale: 1 });
-  // purple arrow hints (obj_marker spr_pink_purple_arrow, tinted purple)
-  const arw = img('pkarrow');
-  if (arw) for (const m of (D.marks || [])) { ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, m.alpha));
-    ctx.translate(m.x, m.y); ctx.rotate(m.rot); ctx.drawImage(arw, -14, -14, 28, 28); ctx.restore(); }
   // question timer (timed questions only)
-  if (D.timer != null) { ctx.fillStyle = '#2a2a2a'; ctx.fillRect(160, 460, 320, 5);
-    ctx.fillStyle = D.timer < 0.3 ? '#ff5050' : '#c060e0'; ctx.fillRect(160, 460, 320 * D.timer, 5); }
+  if (D.timer != null) { ctx.fillStyle = '#2a2a2a'; ctx.fillRect(160, 456, 320, 6);
+    ctx.fillStyle = D.timer < 0.3 ? '#ff5050' : '#c060e0'; ctx.fillRect(160, 456, 320 * D.timer, 6); }
   ctx.restore();
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }

@@ -1553,79 +1553,131 @@ function pinkCatsPattern(chart) {
 PATTERNS.pinkn_cats = pinkCatsPattern(PINK_CATS_D0);       // the "Cats" attack (difficulty 0)
 PATTERNS.pinkn_cats2 = pinkCatsPattern(PINK_CATS_D1);      // harder variant (difficulty 1) — conga + fast finale
 
-// ============ DATE minigame (obj_date_controller): interactive dating-sim quiz ============
-// Fills in place of a regular attack once the DOKI meter is full. A scrolling list of answer options;
-// UP/DOWN move, Z/OK confirm. A WRONG answer (or the timer running out) damages all party members and
-// repeats the question. Clears after all questions are answered right. Date 1's first question has no
-// timer; later ones do (obj_date_controller questiondowntime). Content = the real Date-1 script (wiki).
-const PINK_DATE1 = [
-  { q: "SCHOOL!? And you wanna WALK ME HOME!?", opts: ["Yes", "No"], correct: 0, timed: false },
-  { q: "It's because you think this body's CUTE, right!?", opts: ["Yes", "No"], correct: 0, timed: true },
-  { q: "You... wish you never met me, right...?", opts: ["Yes", "No"], correct: 1, timed: true },
-];
-const PINK_DATE2 = [   // Date 2: pick the pun answer (a few of the real pairs)
-  { q: "My bike part? | Act Bored!", opts: ["Frank", "I tire", "Husky"], correct: 1, timed: true },
-  { q: "Susie's jeans? | Female dog!!!", opts: ["Husky", "Tender", "Stinky fish"], correct: 0, timed: true },
-  { q: "Be honest? | Be a weenie!", opts: ["Frank", "Match her style", "Tear up"], correct: 0, timed: true },
-];
-function pinkDatePattern(questions) {
+// ============ DATE minigame (obj_date_controller): 1:1 movement/selection model ============
+// The PURPLE SOUL sits at the bottom of the screen ON A LINE; the answer options are a horizontal strip
+// that LOOPS. LEFT scrolls the strip left (draw_box_selected++), RIGHT scrolls it right (draw_box_selected--)
+// — that exact direction, per obj_date_controller Step con==2. You SELECT by pressing UP: the heart rises
+// (draw_box_con=2, y 390->319) into the centred option (choiceselected = draw_box_selected). NO Z. Single-
+// option questions disable L/R (press UP only). A correct choice (choiceiscorrect==1) advances; a wrong one
+// or the timer running out (datetimeleft, only while idle) plays the awkward reaction and REPEATS the same
+// question — no HP damage in date 1 (the real dodging is date 3/4's type-210 attack). All correct -> won.
+// Content is the real script (obj_date_controller Create/Other_11). "|" = an explicit line break.
+const PINK_DATE1 = {
+  intro: ["Wh-what's going on!?|School!?", "I don't... I don't even|go to school anymore..."],
+  qs: [
+    { q: "And you wanna WALK|ME HOME!?", opts: ["Yes"], correct: [0], single: true, timed: false },
+    { q: "It's because you think|this body's CUTE, right!?", opts: ["No", "Yes", "Yes"], correct: [1, 2], timed: true },
+    { q: "You... wish you never|met me, right...?", opts: ["Right", "Exactly", "Of course", "No", "Of course", "Exactly"], correct: [3], timed: true },
+  ],
+  outro: "ARRRGH, enough already!|This is OVER!",
+};
+const PINK_DATE2 = {   // Date 2 (datecount 2): pun answers — the correct one is index 0 (obj_date_controller Other_11)
+  intro: ["Let's date, mew!"],
+  qs: [
+    { q: "Date location?", opts: ["Go to mountain", "Get lost!", "Planetarium"], correct: [0], timed: true },
+    { q: "Were you... moved?", opts: ["Tear up", "Rip up", "Cry"], correct: [0], timed: true },
+    { q: "A gift for me?", opts: ["Stinky fish", "Rotten", "Diamond"], correct: [0], timed: true },
+  ],
+  outro: "...H-heh. Not bad, mew.",
+};
+function pinkDatePattern(D) {
   return {
-    box: { w: 300, h: 190 }, hz30: false, dur: 100000,   // 60Hz (menu input); ends itself when all questions cleared
+    box: { w: 300, h: 190 }, hz30: false, dur: 100000,   // 60Hz menu input; ends itself when the date is won
     tick(a) {
-      const { f } = a;
+      const { f } = a; const S = this;
       const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
-      if (f === 0) { this._qi = 0; this._sel = 0; this._timer = 0; this._flash = 0; this._con = 0; this._done = false;
-                     this._chars = 0; this._off = 0; this._marks = []; this._bg = 0; this._bgy = 0; this._talk = 0; }
-      this._bg = (this._bg + 0.7) % 80; this._bgy = (this._bgy + 0.4) % 80;   // scrolling diamond bg
-      // purple arrow hints (obj_marker spr_pink_purple_arrow: down @319,375 every 15f, left @309,385)
-      if (!this._done && this._con === 0 && (f % 30) === 0) {
-        this._marks.push({ x: 319, y: 375, rot: Math.PI / 2, spd: 0.65, fade: 0.02, alpha: 1 });
-        if (!(this._qi === 0 && questions === PINK_DATE1)) this._marks.push({ x: 309, y: 385, rot: Math.PI, spd: 1, fade: 0.005, alpha: 1 });
+      const HIT = k => IN.hit && IN.hit[k];
+      if (f === 0) {
+        S.ph = D.intro.length ? 'cut' : 'ask'; S.line = 0; S.qi = 0; S.sel = 0;
+        S.boxCon = 0; S.boxOff = 0; S.bt = 0; S.heartY = 385; S.chars = 0; S.talk = 0;
+        S.bg = 0; S.bgy = 0; S.flash = 0; S.timer = 240; S.react = 0; S.reactT = 0; S.done = false;
       }
-      for (const m of this._marks) { m.x += Math.cos(m.rot) * m.spd; m.y += Math.sin(m.rot) * m.spd; m.alpha -= m.fade; }
-      this._marks = this._marks.filter(m => m.alpha > 0);
-      if (this._done) { a.fx.date = { done: true, bg: this._bg, bgy: this._bgy }; return; }
-      const Q = questions[this._qi], n = Q.opts.length;
-      this._timer++;
-      this._chars += 1;                                     // typewriter (+2/frame at 30fps = +1 at 60Hz)
-      this._talk += 0.167;
-      if (this._off !== 0) this._off += (0 - this._off) * 0.25;   // carousel scroll ease back to centre
-      if (Math.abs(this._off) < 1) this._off = 0;
-      const LIMIT = Q.timed ? 600 : 1e9;                    // timed questions run out (600 @60Hz = 10s)
-      if (this._flash > 0) this._flash--;
-      if (this._con === 0) {
-        if (IN.hit && IN.hit.left) { this._sel = (this._sel - 1 + n) % n; this._off = -200; Snd.play('menumove', 0.4); }
-        else if (IN.hit && IN.hit.right) { this._sel = (this._sel + 1) % n; this._off = 200; Snd.play('menumove', 0.4); }
-        const confirm = IN.hit && IN.hit.ok && this._timer > 8;
-        if (confirm) {
-          if (this._sel === Q.correct) { this._con = 1; this._conT = 0; Snd.play('healspark', 0.5); }
-          else this._wrong();
+      S.bg = (S.bg + 0.7) % 80; S.bgy = (S.bgy + 0.4) % 80; S.talk += 0.167;
+      if (S.flash > 0) S.flash--;
+      const emit = extra => { a.fx.date = Object.assign({
+        bg: S.bg, bgy: S.bgy, talk: Math.floor(S.talk) % 2, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
+        heartY: S.heartY, line1: S._l1 || '', line2: S._l2 || '', chars: Math.floor(S.chars),
+      }, extra || {}); };
+      const setText = str => { const p = (str || '').split('|'); S._l1 = p[0] || ''; S._l2 = p[1] || ''; S.chars = 0; };
+
+      if (S.done) { emit({ done: true }); return; }
+
+      // ---- CUTSCENE: Pink talks; type each line, advance on OK (or auto after it finishes + a beat) ----
+      if (S.ph === 'cut') {
+        if (S._l1 == null || S._shownLine !== S.line) { setText(D.intro[S.line]); S._shownLine = S.line; }
+        S.chars += 1; const full = (S._l1.length + S._l2.length);
+        if ((HIT('ok') || HIT('up')) && S.chars > 4) {
+          if (S.chars < full) S.chars = full + 1;           // first press finishes the line
+          else { S.line++; if (S.line >= D.intro.length) { S.ph = 'ask'; S._shownLine = -1; } }
         }
-        if (this._timer >= LIMIT) this._wrong();
-      } else {
-        this._conT = (this._conT || 0) + 1;
-        if (this._conT >= 48) {
-          this._qi++; this._sel = 0; this._timer = 0; this._chars = 0; this._con = 0;
-          if (this._qi >= questions.length) this._done = true;
-        }
+        emit({}); return;
       }
-      a.fx.date = {
-        q: Q.q, chars: Math.floor(this._chars), opts: Q.opts, sel: this._sel, off: this._off,
-        qi: this._qi, total: questions.length, timer: Q.timed ? Math.max(0, 1 - this._timer / LIMIT) : null,
-        flash: this._flash, correct: this._con === 1, marks: this._marks, bg: this._bg, bgy: this._bgy,
-        talk: Math.floor(this._talk) % 2,
-      };
-    },
-    _wrong() {
-      this._flash = 20; this._timer = 0; this._chars = 0;
-      if (typeof Battle !== 'undefined') {
-        Battle.shake = Math.max(Battle.shake || 0, 12); Battle.flash = 8;
-        Snd.play('hurt', 0.5);
-        for (const m of (Battle.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(1, m.hp - 40);   // wrong/timeout damages the party
+
+      const Q = D.qs[S.qi], n = Q.opts.length;
+
+      // ---- ASK: show the question text; once it's typed the options become interactive ----
+      if (S.ph === 'ask') {
+        if (S._shownLine !== ('q' + S.qi)) { setText(Q.q); S._shownLine = 'q' + S.qi; S.sel = 0; S.heartY = 385; S.timer = 240; }
+        S.chars += 1;
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, timer: null });
+        if (S.chars > (S._l1.length + S._l2.length) + 6) { S.ph = 'choose'; S.bt = 0; }
+        return;
+      }
+
+      // ---- CHOOSE (con==2): the soul is on the line; L/R loops the options, UP selects ----
+      if (S.ph === 'choose') {
+        // timer only ticks while idle (draw_box_con==0), per obj_date_controller Step
+        if (Q.timed && S.boxCon === 0) S.timer -= 0.5;      // 240 @30fps == 480 ticks @60Hz -> 0.5/frame
+        if (S.boxCon === 0) {
+          if (!Q.single && HIT('left'))  { S.boxCon = -1; S.bt = 0; Snd.play('menumove', 0.5); }
+          else if (!Q.single && HIT('right')) { S.boxCon = 1; S.bt = 0; Snd.play('menumove', 0.5); }
+          else if (HIT('up')) { S.boxCon = 2; S.bt = 0; }
+        } else if (S.boxCon === -1) {                        // slide left -> selected++
+          S.bt++; S.boxOff = lerp2(0, -200, S.bt / 10);
+          if (S.bt >= 10) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel + 1) % n; }
+        } else if (S.boxCon === 1) {                         // slide right -> selected--
+          S.bt++; S.boxOff = lerp2(0, 200, S.bt / 10);
+          if (S.bt >= 10) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel - 1 + n) % n; }
+        } else if (S.boxCon === 2) {                         // UP: heart rises into the option, then commit
+          S.bt++; S.heartY = lerp2(390, 319, S.bt / 6);
+          if (S.bt >= 6) {
+            S.boxCon = 0; S.heartY = 385;
+            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S.react = 1; S.reactT = 0; Snd.play('healspark', 0.6); }
+            else { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }
+          }
+        }
+        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }   // timeout = wrong
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single,
+               timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        return;
+      }
+
+      // ---- REACT (con 3 correct / con 4 wrong): brief reaction, then advance or repeat ----
+      if (S.ph === 'react') {
+        S.reactT++;
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, correct: S.react > 0,
+               timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        if (S.reactT >= 34) {
+          if (S.react > 0) {                                 // correct -> next question (or win)
+            if (S.qi + 1 >= D.qs.length) { S.ph = 'outro'; S.reactT = 0; setText(D.outro); Snd.play('boost', 0.5); }   // keep qi valid during outro
+            else { S.qi++; S.ph = 'ask'; S._shownLine = -1; }
+          } else { S.ph = 'ask'; S._shownLine = -1; }        // wrong -> repeat SAME question
+        }
+        return;
+      }
+
+      // ---- OUTRO: Pink's closing line, then the date ends (engine boxout via fx.date.done) ----
+      if (S.ph === 'outro') {
+        S.chars += 1; S.reactT++;
+        emit({});
+        if (S.reactT > (S._l1.length + S._l2.length) + 40) S.done = true;
+        return;
       }
     },
   };
 }
+function lerp2(a, b, t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return a + (b - a) * t; }
+function wrongReactSfx() { if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, 8); } if (typeof Snd !== 'undefined') Snd.play('hurt', 0.4); }
 PATTERNS.pinkn_date1 = pinkDatePattern(PINK_DATE1);
 PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
 
