@@ -2011,51 +2011,26 @@ PATTERNS.pinkn_tunnel = {
 PATTERNS.pinkn_concert = {
   box: { w: 360, h: 187 }, hz30: 1, dur: 620,
   tick(a) {
-    const { f, box, add, rng, soul } = a; const S = this; a.fx.soulSpeed = 1.4;
+    const { f, box, add, rng } = a; const S = this; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // The AUDIENCE surrounds the stage on THREE sides (obj_pink_curtains: LEFT WALL i<7, BOTTOM ROW 7..20,
-    // RIGHT WALL i>=21). A seat = {x,y,face,dir} where dir is the outward-facing shoot angle (radians).
-    const bottomN = 8;
-    const seatOf = i => {
-      if (i < 3) return { x: box.x - 22, y: box.y + 24 + i * 40, face: 'left', dir: 0 };          // left wall (shoots right)
-      if (i < bottomN + 3) { const k = i - 3; return { x: box.x + 22 + k * ((box.w - 44) / (bottomN - 1)), y: box.y + box.h + 22, face: 'front', dir: -Math.PI / 2 }; }   // bottom (shoots up)
-      const k = i - (bottomN + 3); return { x: box.x + box.w + 22, y: box.y + 24 + k * 40, face: 'right', dir: Math.PI };   // right wall (shoots left)
-    };
-    const total = bottomN + 6;
-    // a cluster (l_patterns value) selects a set of seat indices
-    const cluster = v => {
-      if (v === 0) { const a = []; for (let i = 3; i < bottomN + 3; i++) a.push(i); return a; }   // the whole bottom row
-      if (v === 1) return [0, 1, 2];                                                               // left wall
-      if (v === 2) return [bottomN + 3, bottomN + 4, bottomN + 5];                                 // right wall
-      if (v === 3) { const a = []; while (a.length < 5) { const r = Math.floor(rng() * total); if (a.indexOf(r) < 0) a.push(r); } return a; }
-      if (v === 4) return [3 + Math.floor(bottomN / 2) - 1, 3 + Math.floor(bottomN / 2)];          // front-centre pair
-      return [3 + Math.floor(bottomN / 2), 3 + Math.floor(bottomN / 2) + 1];
-    };
-    if (f === 0) { S._q = []; S._wait = 24; S._rep = 0; S._members = []; }
-    a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing)
-    // ---- choreography: refill the shoot order (l_patterns + l_timings) ----
-    if (S._wait > 0) S._wait--;
-    else if (S._q.length === 0 && f < S.dur - 140) {
-      const pats = S._rep === 0 ? [[4, 1, 5, 2, 0], [4, 2, 5, 1, 0]] : [[3, 1, 5, 2, 0], [3, 2, 5, 1, 0], [3, 1, 2, 5, 0], [3, 2, 1, 5, 0]];
-      const seq = pats[Math.floor(rng() * pats.length)], timings = S._rep === 0 ? [80, 40, 40, 60] : [90, 60, 60, 90];
+    // The AUDIENCE is a DENSE, PERSISTENT crowd of cats along the bottom of the stage (obj_pink_curtains bottom
+    // row). They're drawn IN FRONT of the box; on each wave EVERY cat pops and throws a small red heart upward.
+    const N = 15;                                            // a crowd of ~15 cats across the bottom
+    if (f === 0) { S._wave = 24; S._rep = 0; S.crowd = []; for (let i = 0; i < N; i++) S.crowd.push({ x: box.x + 12 + i * ((box.w - 24) / (N - 1)), pop: 0, face: (i % 2) ? 'right' : 'left' }); }
+    a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing) + speakers
+    // ---- wave cadence: every so often the WHOLE crowd throws (l_timings pace); later waves add HATERS ----
+    S._wave--;
+    if (S._wave <= 0 && f < S.dur - 120) {
       const haters = S._rep >= 1;
-      for (let i = 0; i < seq.length; i++) S._q.push({ cluster: seq[i], wait: (timings[i] != null ? timings[i] : 55), haters });
-      S._rep++;
-    } else if (S._q.length) {   // a cluster of audience members RISES (they'll shoot once up)
-      const job = S._q.shift(); S._wait = job.wait;
-      for (const idx of cluster(job.cluster)) { const st = seatOf(idx);
-        S._members.push({ x: st.x, y: st.y, face: st.face, dir: st.dir, pop: 0, t: 0, fired: false, hater: !!job.haters && rng() < 0.34 }); }
+      for (let i = 0; i < S.crowd.length; i++) { const m = S.crowd[i]; m.pop = 1;   // pop up
+        const hater = haters && (i % 4 === 0);
+        // fire from the cat's head, slightly staggered across the row (a rolling wave)
+        mkAudienceHeart(add, m.x, box.y + box.h - 14, -Math.PI / 2, cx, cy, box, hater); }
+      S._wave = S._rep === 0 ? 70 : 55; S._rep++;
     }
-    // ---- audience members: pop up (audience_popout), shoot after 20 up-frames, then lower ----
-    const popVec = m => { const d = m.dir; return { dx: Math.cos(d) * m.pop * 22, dy: Math.sin(d) * m.pop * 22 }; };
-    for (const m of S._members) {
-      m.t++;
-      m.pop = m.t < 30 ? Math.min(1, m.t / 8) : Math.max(0, 1 - (m.t - 30) / 10);   // rise, hold, lower
-      const pv = popVec(m), mx = m.x + pv.dx, my = m.y + pv.dy;   // pop OUT from their wall/floor
-      if (m.t === 20 && !m.fired) { m.fired = true; mkAudienceHeart(add, mx, my, m.dir, cx, cy, box, m.hater); }
-    }
-    S._members = S._members.filter(m => m.t < 42);
-    a.fx.audience = S._members.map(m => { const pv = popVec(m); return { x: m.x + pv.dx, y: m.y + pv.dy, hater: m.hater, face: m.face }; });
+    for (const m of S.crowd) m.pop = Math.max(0, m.pop - 0.08);   // ease the pop-up bob back down
+    // the crowd is drawn IN FRONT (foreground pass) — flag it via fx.audienceFront
+    a.fx.audienceFront = S.crowd.map(m => ({ x: m.x, y: box.y + box.h - 8 - m.pop * 10, face: m.face }));
   },
 };
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {

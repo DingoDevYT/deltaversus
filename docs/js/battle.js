@@ -1022,7 +1022,7 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
-  B.fx.audience = null; B.fx.pinkSing = null; B.fx.pinkFinale = null;
+  B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
@@ -1584,21 +1584,14 @@ Battle.renderBoxAndBullets = function (ctx) {
     const gim = gi && A.img['assets/bullets/' + gi.f];
     if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip: g.flip != null ? g.flip : true, alpha: g.ramming ? 1 : 0.92 });
   }
-  // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS, over a dense CROWD of cats.
-  if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing, cim = A.img['assets/bullets/paudience0.png'];
-    // two speakers either side of Pink (drawn as simple purple TV-speaker boxes with a cone)
-    for (const sx of [-1, 1]) { const spx = p.x + sx * 96, spy = p.y + 4;
+  // IDOL CONCERT (obj_pink_curtains): PINK sings on stage flanked by two SPEAKERS (background pass; the CAT
+  // CROWD is drawn later, in FRONT of the box + bullets — see the foreground pass after the soul).
+  if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing;
+    for (const sx of [-1, 1]) { const spx = p.x + sx * 96, spy = p.y + 4;   // two speakers (spr_dw_castle_tv_speaker not in the rip — drawn procedurally)
       ctx.fillStyle = '#3a2b6e'; ctx.fillRect(spx - 16, spy - 22, 32, 46); ctx.strokeStyle = '#8f7fe0'; ctx.lineWidth = 2; ctx.strokeRect(spx - 16, spy - 22, 32, 46);
       ctx.fillStyle = '#171033'; ctx.beginPath(); ctx.arc(spx, spy - 6, 9, 0, 6.2832); ctx.fill(); ctx.beginPath(); ctx.arc(spx, spy + 12, 5, 0, 6.2832); ctx.fill(); }
-    // the STANDING CROWD of cats along the bottom of the stage (spr_dummyaudience), always present
-    const bxb = B.dodgeBox; if (bxb && cim && cim.width) { const ny = bxb.y + bxb.h - 8;
-      for (let i = 0; i < 16; i++) { const wob = Math.sin((p.f * 0.06 + i) ) * 2; drawSpr(ctx, cim, bxb.x + 14 + i * ((bxb.w - 28) / 15), ny + wob, { scale: 1.4, flip: (i % 2) === 0 }); } }
     const si = (A.manifest.bullets || {})['pinksing' + (Math.floor(p.f / 8) % 2)];
     const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 2 }); }
-  if (B.fx && B.fx.audience) for (const m of B.fx.audience) {   // the popped-up shooters (frame 1 = hater)
-    const ai = (A.manifest.bullets || {})['paudience' + (m.hater ? 1 : 0)], aim = ai && A.img['assets/bullets/' + ai.f];
-    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.5, flip: m.face === 'right' });
-  }
   // BOMB FINALE: Pink runs in / charges (spr_pink_run / spr_pink_front_throw_bomb)
   if (B.fx && B.fx.pinkFinale) { const pf = B.fx.pinkFinale;
     const key = pf.pose === 'run' ? 'pinkrun' + (Math.floor(pf.f / 5) % 3) : 'pinkchargebomb';
@@ -1775,6 +1768,12 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (g) drawSpr(ctx, g, B.grazeFx.x, B.grazeFx.y, { scale: 1, alpha: 0.9 });
   }
   ctx.restore();
+  // IDOL CONCERT crowd: the cats are drawn HERE, IN FRONT of the box + bullets (obj_pink_curtains audience is
+  // foreground). spr_dummyaudience, frame 1 when a hater is nearby; they bob when they throw a heart-wave.
+  if (B.fx && B.fx.audienceFront) for (const m of B.fx.audienceFront) {
+    const aim = A.img['assets/bullets/paudience0.png'];
+    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.6, flip: m.face === 'right' });
+  }
   if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.soulGreen) drawText(ctx, 'main', "GREEN SOUL - can't move! Aim [ARROWS] to BLOCK with Susie's AXE", bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#4de04d', align: 'center' });
   if (B.fxOnMe) {
