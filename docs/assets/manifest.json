@@ -3418,6 +3418,41 @@
       "f": "paudience1.png",
       "w": 21,
       "h": 24
+    },
+    "pinksing0": {
+      "f": "pinksing0.png",
+      "w": 33,
+      "h": 46
+    },
+    "pinksing1": {
+      "f": "pinksing1.png",
+      "w": 34,
+      "h": 46
+    },
+    "gigaheart": {
+      "f": "gigaheart.png",
+      "w": 125,
+      "h": 120
+    },
+    "pinkrun0": {
+      "f": "pinkrun0.png",
+      "w": 38,
+      "h": 36
+    },
+    "pinkrun1": {
+      "f": "pinkrun1.png",
+      "w": 38,
+      "h": 37
+    },
+    "pinkrun2": {
+      "f": "pinkrun2.png",
+      "w": 38,
+      "h": 37
+    },
+    "pinkchargebomb": {
+      "f": "pinkchargebomb.png",
+      "w": 33,
+      "h": 43
     }
   },
   "bullet_cost": {

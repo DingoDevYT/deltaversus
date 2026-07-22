@@ -915,7 +915,8 @@ Battle.updDodge = function () {
         }
       }
       const tgt = nodes[B._pNode] || { x: 0, y: 0 };
-      B.pOnX = ap(B.pOnX, tgt.x, 12); B.pOnY = ap(B.pOnY, tgt.y, 12);
+      B.pOnX = ap(B.pOnX, tgt.x, 20); B.pOnY = ap(B.pOnY, tgt.y, 20);   // snappy node-to-node travel
+      B.pNodeReached = (Math.abs(B.pOnX - tgt.x) < 1.5 && Math.abs(B.pOnY - tgt.y) < 1.5) ? B._pNode : -1;
       B.soul.x = ccx + B.pOnX; B.soul.y = ccy + B.pOnY; return;
     }
     if (pm === 2) {                                   // 4x4 grid (lane_distance 40, GML obj_fusebomb)
@@ -1021,7 +1022,7 @@ Battle.updDodge = function () {
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
-  B.fx.audience = null; B.fx.pinkSing = null;
+  B.fx.audience = null; B.fx.pinkSing = null; B.fx.pinkFinale = null;
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1;
@@ -1583,13 +1584,19 @@ Battle.renderBoxAndBullets = function (ctx) {
     const gim = gi && A.img['assets/bullets/' + gi.f];
     if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: 1.9, flip: true, alpha: g.ramming ? 1 : 0.92 });
   }
-  // IDOL CONCERT: Pink singing on stage + the audience dummies (obj_pink_curtains / spr_dummyaudience)
-  if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing, si = (A.manifest.bullets || {})['pinkghost' + (Math.floor(p.f / 14) % 2)];
-    const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 1.4 }); }
+  // IDOL CONCERT: PINK sings on stage (spr_pink_sing, drawn by obj_pink_battlemovement mode 7) + the audience
+  // dummies (spr_dummyaudience, drawn at scale 1 per obj_audience_hitbox Draw; frame 1 = hater).
+  if (B.fx && B.fx.pinkSing) { const p = B.fx.pinkSing, si = (A.manifest.bullets || {})['pinksing' + (Math.floor(p.f / 8) % 2)];
+    const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 2 }); }
   if (B.fx && B.fx.audience) for (const m of B.fx.audience) {
     const ai = (A.manifest.bullets || {})['paudience' + (m.hater ? 1 : 0)], aim = ai && A.img['assets/bullets/' + ai.f];
-    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 2 });
+    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 2, flip: m.face === 'right' });
   }
+  // BOMB FINALE: Pink runs in / charges (spr_pink_run / spr_pink_front_throw_bomb)
+  if (B.fx && B.fx.pinkFinale) { const pf = B.fx.pinkFinale;
+    const key = pf.pose === 'run' ? 'pinkrun' + (Math.floor(pf.f / 5) % 3) : 'pinkchargebomb';
+    const pi = (A.manifest.bullets || {})[key], pim = pi && A.img['assets/bullets/' + pi.f];
+    if (pim && pim.width) drawSpr(ctx, pim, pf.x, pf.y, { scale: 2, flip: pf.flip }); }
   // CAROUSEL far side: draw the behind-the-box horses BEFORE the box, so the box's black fill masks
   // the part that's inside it (they render perfectly where they poke out past the box edges).
   for (const b of B.bullets) if (b.carousel && b._back) drawBullet(ctx, b, b.x, b.y, 1);
@@ -1713,14 +1720,26 @@ Battle.renderBoxAndBullets = function (ctx) {
           ctx.beginPath(); ctx.moveTo(bx.x + w, bx.y + t * h); ctx.lineTo(bx.x + w, bx.y + (t + 0.06) * h); ctx.stroke(); }
       }
     }
-    else if (B._pmode === 8) { const ps = (B.fx && B.fx.purpleSoul) || {};   // NODE MAZE: connections + nodes
-      const nodes = ps.nodes || [], edges = ps.edges || [], acts = ps.acts || [];
-      ctx.strokeStyle = 'rgba(181,105,214,0.55)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    else if (B._pmode === 8) { const ps = (B.fx && B.fx.purpleSoul) || {};   // NODE MAZE (obj_pinknode render)
+      const nodes = ps.nodes || [], edges = ps.edges || [], acts = ps.acts || [], start = ps.start || 0;
+      const pulse = ps.pulse || null, lt = B.anim.f;
+      // connections: thin purple lines (obj_purplecontrols Draw d_line)
+      ctx.strokeStyle = 'rgba(181,139,214,0.85)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
       for (let i = 0; i < edges.length; i++) for (const j of (edges[i] || [])) { if (j <= i) continue; const a = nodes[i], b = nodes[j]; if (!a || !b) continue;
         ctx.beginPath(); ctx.moveTo(gcx + a.x, gcy + a.y); ctx.lineTo(gcx + b.x, gcy + b.y); ctx.stroke(); }
-      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isAct = acts.indexOf(i) >= 0;
-        ctx.fillStyle = isAct ? '#ffe14d' : '#3a1440'; ctx.strokeStyle = isAct ? '#fff6a0' : '#c8a0ff'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, isAct ? 9 : 6, 0, 6.2832); ctx.fill(); ctx.stroke(); }
+      // the RED PULSE travels the path from the start node (the indicator) — a bright segment sweeping each edge
+      if (pulse && pulse.edges) { ctx.strokeStyle = '#ff3b5c'; ctx.lineWidth = 4;
+        for (const pe of pulse.edges) { const a = nodes[pe.i], b = nodes[pe.j]; if (!a || !b) continue;
+          const d = Math.hypot(b.x - a.x, b.y - a.y) || 1, ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
+          const s0 = Math.max(0, pe.p - 24), s1 = Math.min(d, pe.p);
+          if (s1 > s0) { ctx.beginPath(); ctx.moveTo(gcx + a.x + ux * s0, gcy + a.y + uy * s0); ctx.lineTo(gcx + a.x + ux * s1, gcy + a.y + uy * s1); ctx.stroke(); } } }
+      // nodes: small purple circles; the GOAL/act glows pink+white, the START (checkpoint) pulses
+      const glow = (lt % 60) <= 30 ? (lt % 60) / 30 : 1 - ((lt - 30) % 60) / 30;
+      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isAct = acts.indexOf(i) >= 0, isStart = i === start;
+        if (isAct) { ctx.fillStyle = '#ff5bc8'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 7.3 + glow * 2, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = '#fff6fb'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 3.5, 0, 6.2832); ctx.fill(); }
+        else if (isStart) { ctx.fillStyle = 'rgba(247,91,200,' + (0.5 + glow * 0.4) + ')'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow, 0, 6.2832); ctx.fill(); }
+        else { ctx.fillStyle = '#b58bd6'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 4, 0, 6.2832); ctx.fill(); } }
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }

@@ -2010,20 +2010,26 @@ PATTERNS.pinkn_concert = {
   tick(a) {
     const { f, box, add, rng, soul } = a; const S = this; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    const seatY = box.y + box.h + 24;                        // the audience row sits just under the stage
-    // a cluster (l_patterns value) selects seat X-positions across the audience row
+    // The AUDIENCE surrounds the stage on THREE sides (obj_pink_curtains: LEFT WALL i<7, BOTTOM ROW 7..20,
+    // RIGHT WALL i>=21). A seat = {x,y,face,dir} where dir is the outward-facing shoot angle (radians).
+    const bottomN = 8;
+    const seatOf = i => {
+      if (i < 3) return { x: box.x - 22, y: box.y + 24 + i * 40, face: 'left', dir: 0 };          // left wall (shoots right)
+      if (i < bottomN + 3) { const k = i - 3; return { x: box.x + 22 + k * ((box.w - 44) / (bottomN - 1)), y: box.y + box.h + 22, face: 'front', dir: -Math.PI / 2 }; }   // bottom (shoots up)
+      const k = i - (bottomN + 3); return { x: box.x + box.w + 22, y: box.y + 24 + k * 40, face: 'right', dir: Math.PI };   // right wall (shoots left)
+    };
+    const total = bottomN + 6;
+    // a cluster (l_patterns value) selects a set of seat indices
     const cluster = v => {
-      const L = box.x, W = box.w, xs = [];
-      if (v === 0) { xs.push(0.34, 0.5, 0.66); }             // centre
-      else if (v === 1) { xs.push(0.08, 0.16, 0.24); }       // left
-      else if (v === 2) { xs.push(0.76, 0.84, 0.92); }       // right
-      else if (v === 3) { xs.push(rng(), rng(), rng()); }    // scattered
-      else if (v === 4) { xs.push(0.42, 0.5); }              // front-centre pair
-      else { xs.push(0.5, 0.58); }
-      return xs.map(fx => L + W * fx);
+      if (v === 0) { const a = []; for (let i = 3; i < bottomN + 3; i++) a.push(i); return a; }   // the whole bottom row
+      if (v === 1) return [0, 1, 2];                                                               // left wall
+      if (v === 2) return [bottomN + 3, bottomN + 4, bottomN + 5];                                 // right wall
+      if (v === 3) { const a = []; while (a.length < 5) { const r = Math.floor(rng() * total); if (a.indexOf(r) < 0) a.push(r); } return a; }
+      if (v === 4) return [3 + Math.floor(bottomN / 2) - 1, 3 + Math.floor(bottomN / 2)];          // front-centre pair
+      return [3 + Math.floor(bottomN / 2), 3 + Math.floor(bottomN / 2) + 1];
     };
     if (f === 0) { S._q = []; S._wait = 24; S._rep = 0; S._members = []; }
-    a.fx.pinkSing = { x: cx, y: box.y - 30, f };             // Pink singing on stage (drawn by the engine)
+    a.fx.pinkSing = { x: cx, y: box.y - 34, f };             // Pink singing on stage (spr_pink_sing)
     // ---- choreography: refill the shoot order (l_patterns + l_timings) ----
     if (S._wait > 0) S._wait--;
     else if (S._q.length === 0 && f < S.dur - 140) {
@@ -2034,34 +2040,32 @@ PATTERNS.pinkn_concert = {
       S._rep++;
     } else if (S._q.length) {   // a cluster of audience members RISES (they'll shoot once up)
       const job = S._q.shift(); S._wait = job.wait;
-      for (const sx of cluster(job.cluster))
-        S._members.push({ x: sx, y: seatY, pop: 0, t: 0, fired: false, hater: !!job.haters && rng() < 0.34 });
+      for (const idx of cluster(job.cluster)) { const st = seatOf(idx);
+        S._members.push({ x: st.x, y: st.y, face: st.face, dir: st.dir, pop: 0, t: 0, fired: false, hater: !!job.haters && rng() < 0.34 }); }
     }
-    // ---- audience members: pop up, shoot after 20 up-frames, then lower ----
+    // ---- audience members: pop up (audience_popout), shoot after 20 up-frames, then lower ----
+    const popVec = m => { const d = m.dir; return { dx: Math.cos(d) * m.pop * 22, dy: Math.sin(d) * m.pop * 22 }; };
     for (const m of S._members) {
       m.t++;
-      m.pop = m.t < 30 ? Math.min(1, m.t / 8) : Math.max(0, 1 - (m.t - 30) / 10);   // rise, hold, then lower
-      const my = m.y - m.pop * 26;                          // audience_popout (rises ~26px above the seat)
-      if (m.t === 20 && !m.fired) {
-        m.fired = true;
-        if (m.hater) mkAudienceHeart(add, m.x, my, cx, cy, box, true);   // hater: red homing
-        else mkAudienceHeart(add, m.x, my, cx, cy, box, false);          // aims + launches at the soul
-      }
+      m.pop = m.t < 30 ? Math.min(1, m.t / 8) : Math.max(0, 1 - (m.t - 30) / 10);   // rise, hold, lower
+      const pv = popVec(m), mx = m.x + pv.dx, my = m.y + pv.dy;   // pop OUT from their wall/floor
+      if (m.t === 20 && !m.fired) { m.fired = true; mkAudienceHeart(add, mx, my, m.dir, cx, cy, box, m.hater); }
     }
     S._members = S._members.filter(m => m.t < 42);
-    a.fx.audience = S._members.map(m => ({ x: m.x, y: m.y - m.pop * 26, hater: m.hater }));   // draw the dummies
+    a.fx.audience = S._members.map(m => { const pv = popVec(m); return { x: m.x + pv.dx, y: m.y + pv.dy, hater: m.hater, face: m.face }; });
   },
 };
-function mkAudienceHeart(add, x, y, cx, cy, box, hater) {
-  const b = { ...bulletProps('pdoki'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(0.1), dmg: 22, life: 340,
-              _w: 0, _aim: -Math.PI / 2, _hater: hater };   // starts aiming UP (image_angle), then tracks the soul
+function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
+  const b = { ...bulletProps('gigaheart'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
+              r: 10, grazeR: 14, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };   // spr_gigaheart, tiny -> grows; aims at the soul
   if (hater) { b.tint = '#ff3b3b'; b.tintMul = true; }
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
+  const FINAL = 0.42;   // final display scale of the (125px) gigaheart -> ~52px
   b.emit = function (b, out, sl) {
-    if (b._phase !== 1) {   // PHASE 0: grow (0.1 -> 1.5) + aim at the soul over 32 frames (obj_audienceheart)
+    if (b._phase !== 1) {   // PHASE 0: grow (tiny -> FINAL) + aim at the soul over 32 frames (obj_audienceheart)
       b._w++;
-      const grow = b._w < 25 ? Math.min(1.5, 0.1 + (b._w / 24) * 1.4) : 1.5 * (b._w >= 26 ? 1.2 + Math.min(4, b._w - 25) * 0.06 : 1.2);
-      b.scale = PS(grow);
+      const grow = b._w < 25 ? Math.min(FINAL, 0.02 + (b._w / 24) * FINAL) : FINAL * (b._w >= 26 ? 1.0 + Math.min(4, b._w - 25) * 0.05 : 1.0);
+      b.scale = grow;
       if (b._w >= 11 && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);   // turn toward the soul, capped ±2/frame + 0.8/0.2 blend
         let dd = ((dest - b._aim + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._aim += Math.max(-0.035, Math.min(0.035, dd));
         b._aim = b._aim * 0.8 + dest * 0.2; }
@@ -2071,7 +2075,7 @@ function mkAudienceHeart(add, x, y, cx, cy, box, hater) {
       if (b._hater && sl) { const dest = Math.atan2(sl.y - b.y, sl.x - b.x);   // haters keep homing a little
         let dd = ((dest - b._dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._dir += Math.max(-0.045, Math.min(0.045, dd)); }
       b.vx = Math.cos(b._dir) * b._spd; b.vy = Math.sin(b._dir) * b._spd;
-      b.scale = PS(1.5);
+      b.scale = FINAL;
       if (!b._hater && b.y < box.y - 4 && !b._done) {   // reached Pink at the top -> becomes a collectable
         b._done = 1; b.dead = true;
         out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 });
@@ -2104,33 +2108,45 @@ PATTERNS.pinkn_finalmaze = {
                   { x: HD, y: -54 }, { x: HD, y: 54 }, { x: -HD, y: -54 }, { x: -HD, y: 54 } ];
       S.edges = [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]];   // bidirectional adjacency
       S.acts = [4, 5, 7];   // checkpoint / goal nodes (obj_pinknodeact)
-      S._live = 0;          // count of live patrolling DOKI obstacles
-      S._spawnT = 0;
+      S.start = 0; S.goal = 5;   // reach the GOAL (act node, far RU corner) to WIN
+      S._live = 0; S._spawnT = 0; S.path = null; S.pulseT = 0; S._won = 0;
     }
-    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: S.acts, start: 0 };
-    // Pink SPLIT IN TWO: the BODY on the left, the GHOST on the right, both looming over the maze
+    if (S.path == null) { const prev = {}, q = [S.start], seen = { [S.start]: 1 };   // BFS path start->goal for the pulse
+      while (q.length) { const n = q.shift(); if (n === S.goal) break; for (const nb of (S.edges[n] || [])) if (!seen[nb]) { seen[nb] = 1; prev[nb] = n; q.push(nb); } }
+      const path = []; let n = S.goal; while (n !== S.start && prev[n] != null) { path.unshift([prev[n], n]); n = prev[n]; }
+      S.path = path; }
+    const edgeLen = e => Math.hypot(S.nodes[e[1]].x - S.nodes[e[0]].x, S.nodes[e[1]].y - S.nodes[e[0]].y);
+    S.pulseT += 6.5; let acc = S.pulseT; const pulseEdges = [];   // red pulse sweeps the path to the goal, repeats (the INDICATOR)
+    for (const e of S.path) { const L = edgeLen(e); if (acc <= 0) break; pulseEdges.push({ i: e[0], j: e[1], p: Math.min(L, acc) }); acc -= L + 40; }
+    const totalLen = S.path.reduce((s, e) => s + edgeLen(e) + 40, 0); if (S.pulseT > totalLen + 60) S.pulseT = 0;
+    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: S.acts, start: S.start, goal: S.goal, pulse: { edges: pulseEdges } };
+    // Pink SPLIT IN TWO: BODY on the left, GHOST on the right
     a.fx.boss = { key: 'pinkghost' + (Math.floor(f / 10) % 2), x: cx - box.w / 2 - 70, y: cy - 20, scale: 2.0, flip: false };
     a.fx.pinkGhost = { x: cx + box.w / 2 + 70, y: cy - 20, frame: Math.floor(f / 10) % 2, ramming: false };
-    // spawn patrolling obstacles that travel the edges between nodes (obj_pinknode doki obstacles). Each is a
-    // persistent bullet whose emit walks it node->node along the graph; it hurts on contact with the heart.
+    // WIN: reaching the GOAL node ends the attack (obj_pinknodeact mode 1 -> maze cleared)
+    if (typeof Battle !== 'undefined' && Battle.pNodeReached === S.goal && !S._won) {
+      S._won = 1; Snd.play('pinkcoin', 0.6); Battle.flash = 10;
+      if (Battle.bullets) for (const bb of Battle.bullets) if (bb._mazeObs) bb.dead = true;
+      Battle.boxT = 0; Battle.boxGhosts = []; Battle.phase = 'boxout';
+    }
+    // patrolling obstacles travel the edges FAST (obj_pinknodeact pattern 3, ~13/frame), node -> node
     S._spawnT--;
-    if (S._spawnT <= 0 && S._live < 5) {
+    if (S._spawnT <= 0 && S._live < 4) {
       const from = Math.floor(rng() * S.nodes.length), nbrs = S.edges[from];
       if (nbrs && nbrs.length) {
-        const st = { from, to: nbrs[Math.floor(rng() * nbrs.length)], t: 0, dur: 42 + Math.floor(rng() * 26) };
+        const st = { from, to: nbrs[Math.floor(rng() * nbrs.length)] };
         const NODES = S.nodes, EDGES = S.edges, RNG = rng, CXY = { cx, cy };
-        const b = { ...bulletProps('pdoki'), x: cx, y: cy, vx: 0, vy: 0, tint: '#ff3b3b', tintMul: true, r: 9, scale: PS(1.4), dmg: 24, life: 9000 };
-        S._live++; const dec = () => S._live--;
+        const b = { ...bulletProps('pdoki'), x: cx + NODES[from].x, y: cy + NODES[from].y, vx: 0, vy: 0, tint: '#ff3b3b', tintMul: true, r: 9, scale: PS(1.3), dmg: 24, life: 9000, _mazeObs: 1 };
+        S._live++;
         b.emit = function (b) {
-          st.t++;
-          if (st.t >= st.dur) { const nb = EDGES[st.to] || [st.from]; st.from = st.to; st.to = nb[Math.floor(RNG() * nb.length)]; st.t = 0; st.dur = 42 + Math.floor(RNG() * 26); }
-          const A = NODES[st.from], B = NODES[st.to], p = st.t / st.dur;
-          b.x = CXY.cx + A.x + (B.x - A.x) * p; b.y = CXY.cy + A.y + (B.y - A.y) * p;
-          if (b.dead) dec();
+          if (b.dead) { S._live--; return; }
+          const B = NODES[st.to], tx = CXY.cx + B.x, ty = CXY.cy + B.y, dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy);
+          if (d <= 13) { b.x = tx; b.y = ty; const nb = EDGES[st.to] || [st.from]; st.from = st.to; st.to = nb[Math.floor(RNG() * nb.length)]; }
+          else { b.x += (dx / d) * 13; b.y += (dy / d) * 13; }
         };
         add(b);
       }
-      S._spawnT = 55;
+      S._spawnT = 48;
     }
   },
 };
@@ -2157,7 +2173,7 @@ function pinkBombExplode(b, out, box, giant) {
   Snd.play(giant ? 'explosionmmx' : 'boardbomb', giant ? 0.8 : 0.5);   // obj_fusebomb_big: snd_explosion_mmx
   if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, giant ? 16 : 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
   const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 46 : 13;   // giant arm is 3 lanes thick (~±46); overlaps 48px step -> contiguous
-  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg });
+  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg, _pinkBoom: 1 });
   for (const [dx, dy] of [[step, 0], [0, -step], [-step, 0], [0, step]]) {
     let px = b.x, py = b.y;
     for (let s = 0; s < 30; s++) {
@@ -2165,7 +2181,7 @@ function pinkBombExplode(b, out, box, giant) {
       if (px < -48 || px > 688 || py < 20 || py > 520) break;
       // rectangular hitbox on each arm (hitW/hitH) so the whole 3-lane row/column is a reliable kill band
       const horiz = dx !== 0;
-      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg,
+      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg, _pinkBoom: 1,
                  hitW: giant ? (horiz ? 50 : 96) : undefined, hitH: giant ? (horiz ? 96 : 50) : undefined,
                  rot: Math.atan2(dy, dx) + Math.PI / 2 });
     }
@@ -2256,44 +2272,59 @@ function mkPinkBomb(add, box, dest, x0, y0, o) {
   add(b);
 }
 
-function mkPinkSlideBomb(add, box, o) {   // the FINALE bomb Pink holds while sliding up/down at the box right
-  const cy = box.y + box.h / 2;
-  const b = { ...bulletProps('pbombbig'), x: box.x + box.w + 44, y: box.y - 30, vx: 0, vy: 0, noHit: true,
-              scale: PS(2), _pinkBomb: 1, _fuse: o.fuse, _land: 0, _wave: 90, _pt: 0, dmg: o.dmg, life: 900,
-              _dx: box.x + box.w + 44, _dy: cy };
-  b.emit = function (b, out) {
-    b._pt++; b._fuse--;
-    const fu = b._fuse;
-    if (b._pt >= 20) {   // slide: wave_angle ramps up then slows to a stop as fuse<=25 (endspeed clamp)
-      const end = fu <= 25 ? Math.max(0, Math.min(1, (fu / 25) * 2 - 1)) : 1;
-      b._wave += 1 + (Math.min(b._pt - 20, 20) / 10) * o.wspd * end;
-      b.y = cy - 96 * Math.sin(b._wave * Math.PI / 180);
-      b._dy = b.y;
+function mkPinkSlideBomb(add, box, o) {   // FINALE (obj_pink_battlemovement): Pink RUNS in from the LEFT, CHARGES
+  // (holds the throw-bomb pose with escalating snd_pink_trip), THROWS a giant bomb at the box centre, RUNS off.
+  const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+  const ctrl = { noHit: true, x: box.x - 130, y: cy, vx: 0, vy: 0, r: 0, life: 500, _ph: 0, _t: 0, _thrown: false };
+  ctrl.emit = function (b, out, sl, box2, fx) {
+    b._t++;
+    if (b._ph === 0) {                                   // RUN IN from the left (spr_pink_run)
+      b.x += 6; fx.pinkFinale = { x: b.x, y: b.y, pose: 'run', flip: false, f: b._t };
+      if (b.x >= box.x - 46) { b._ph = 1; b._t = 0; }
+    } else if (b._ph === 1) {                            // CHARGE: hold + escalating trip sounds (Step L1131-1153)
+      const beats = [20, 46, 68, 86, 100, 112]; if (beats.indexOf(b._t) >= 0) Snd.play('pinktrip', 0.5);
+      const shk = b._t > 20 ? (((b._t * 73) % 7) - 3) * Math.min(1, (b._t - 20) / 40) : 0;
+      fx.pinkFinale = { x: b.x + shk, y: b.y, pose: 'charge', flip: false, f: b._t };
+      if (b._t === 58 && !b._thrown) {                   // THROW the giant bomb (fuse 120) at the box centre
+        b._thrown = true; Snd.play('pinkthrow2', 0.5);
+        mkPinkBomb(bb => out.push(bb), box, { x: cx, y: cy }, b.x + 20, b.y - 18, { fuse: 120, giant: true, dmg: o.dmg });
+      }
+      if (b._t > 128) { b._ph = 2; b._t = 0; }
+    } else {                                             // RUN OFF to the right
+      b.x += 8; fx.pinkFinale = { x: b.x, y: b.y, pose: 'run', flip: false, f: b._t };
+      if (b.x > box.x + box.w + 140) b.dead = true;
     }
-    b.scale = PS(2 + 0.5 / Math.max(1, fu / 3));
-    const flash = (fu >= 24 && fu < 27) || (fu >= 14 && fu < 17) || (fu >= 8 && fu < 10) || ((fu % 2) === 0 && fu < 8);
-    b.tint = flash ? (fu < 8 ? '#ff6600' : '#ffbb00') : null;
-    if (fu <= 0 && !b._done) { b._done = 1; b.dead = true; pinkBombExplode(b, out, box, true); }
   };
-  add(b);
+  add(ctrl);
 }
 
 function pinkBombPattern(chart) {
-  const sched = []; let t = 8;
+  const sched = []; let t = 8, volleys = 0;
   // GML round(0.5) = 0 (banker's): interval-0 commands queue the SAME frame — that's what forms volleys
-  for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 58 * chart[k + 1])); }
+  for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); if (chart[k + 1] > 0) volleys++; t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 58 * chart[k + 1])); }
   return {
-    box: { w: 150, h: 150 }, hz30: 1, dur: t + 190,   // base 150x150 box (bombs overhang edge cells slightly, as in GML)
+    // the OVERLAP GUARD freezes the schedule while a batch is on the board, so the real playtime is longer
+    // than the raw schedule: pad the duration by ~110 frames per volley so the final volley/finale resolves.
+    box: { w: 150, h: 150 }, hz30: 1, dur: t + 240 + volleys * 110,
     tick(a) {
       const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
       const cell = (gx, gy) => ({ x: cx + (gx - 1.5) * 40, y: cy + (gy - 1.5) * 40 });
       const ir = n => Math.floor(rng() * (n + 1));
       const pick = (...xs) => xs[Math.floor(rng() * xs.length)];
-      if (f === 0) this._S = { si: 0, queue: [], doki: 3, gx: ir(3), gy: ir(3), pv: ir(3), rep: 0, wind: -1 };
+      if (f === 0) this._S = { si: 0, queue: [], doki: 3, gx: ir(3), gy: ir(3), pv: ir(3), rep: 0, wind: -1, hold: 0, cool: 0 };
       const S = this._S;
+      // ---- OVERLAP GUARD: never START the next volley while the previous batch is still on the board (landed,
+      // fusing, or exploding). We FREEZE the schedule (accumulate S.hold) until the board is clear + a short
+      // cooldown, so a new batch is never thrown during another's fuse/explosion. ----
+      const bl = (typeof Battle !== 'undefined' && Battle.bullets) ? Battle.bullets : [];
+      const liveBatch = bl.some(b => (b._pinkBomb && !b.dead && b._land >= 0) || (b._pinkBoom && !b.dead));
+      if (S.cool > 0) S.cool--;
+      const frozen = (S.queue.length === 0) && (liveBatch || S.cool > 0);
+      if (S.queue.length === 0 && liveBatch) S.cool = 14;   // small settle after the last bomb clears
+      if (frozen) { S.hold++; }
       // ---- controller: play the chart, queueing bombs for Pink ----
-      while (S.si < sched.length && sched[S.si].f <= f) {
+      while (!frozen && S.si < sched.length && (sched[S.si].f + S.hold) <= f) {
         const cmd = sched[S.si++].cmd;
         if (cmd === 0) { if (!S.queue.length) S.doki = 0; S.queue.push({ k: 0 }); S.doki++; }
         else if (cmd === 2) S.queue.push({ k: 1 });
