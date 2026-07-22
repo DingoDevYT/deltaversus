@@ -1513,13 +1513,13 @@ PATTERNS.pinkn_cats = {
   tick(a) {
     const { f, box, add, rng } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 11 === 0 && f < 320) {   // cats — the damaging projectiles you dodge between lanes
-      const side = (Math.floor(f / 11) % 2) ? 1 : -1, lane = Math.floor(rng() * 3), s = 0.75 + rng() * 0.6, spd = 8 * s * (4 / 3);
-      add({ ...bulletProps('pcat'), x: cx + side * (box.w / 2 + 44), y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 220 });
+    if (f % 11 === 0 && f < 320) {   // cats — spawn WAY off (box_center ± 416, per GML) so they enter at the
+      const side = (Math.floor(f / 11) % 2) ? 1 : -1, lane = Math.floor(rng() * 3), s = 0.75 + rng() * 0.6, spd = 8 * s * (4 / 3);   // screen edge and travel the full width -> visible from a mile off
+      add({ ...bulletProps('pcat'), x: cx + side * 416, y: cy + (lane - 1) * 56, vx: -side * spd, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: 0.03, dmg: 24, life: 320 });
     }
-    if (f % 44 === 22 && f < 300) {   // doki-heart COLLECTABLE (TP + small heal on pickup), rides a lane
+    if (f % 44 === 22 && f < 300) {   // doki-heart COLLECTABLE (TP + small heal on pickup), rides a lane from far off
       const side = (Math.floor(f / 44) % 2) ? 1 : -1, lane = Math.floor(rng() * 3);
-      add({ ...bulletProps('pdoki'), x: cx + side * (box.w / 2 + 44), y: cy + (lane - 1) * 56, vx: -side * 5, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 240 });
+      add({ ...bulletProps('pdoki'), x: cx + side * 416, y: cy + (lane - 1) * 56, vx: -side * 5, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 360 });
     }
   },
 };

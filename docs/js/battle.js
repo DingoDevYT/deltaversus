@@ -1068,7 +1068,7 @@ Battle.updDodge = function () {
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
   if (B.blockFx && B.blockFx.length) { for (const fx of B.blockFx) fx.t++; B.blockFx = B.blockFx.filter(fx => fx.t < 8); }
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
-  B.bullets = B.bullets.filter(b => !b.dead && b.x > -60 && b.x < 700 && b.y > -60 && b.y < 540 && (!b.life || b.t < b.life));
+  B.bullets = B.bullets.filter(b => !b.dead && b.x > -130 && b.x < 790 && b.y > -130 && b.y < 610 && (!b.life || b.t < b.life));   // wide bounds so far-spawned bullets (Pink cats at box_center±416) survive until they enter view
 
   if (B.anim.f % 4 === 0)
     Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, f: B.sim ? B.sim.f : 0, done: false });
