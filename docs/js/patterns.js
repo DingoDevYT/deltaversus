@@ -2718,6 +2718,23 @@ PATTERNS.pinkn_bombs2 = pinkBombPattern(PINK_BOMB_D1);       // P1 T4 — faster
 PATTERNS.pinkn_bombsg = pinkBombPattern(PINK_BOMB_D3);       // P2 T3 — smalls + giant centre bomb ender
 PATTERNS.pinkn_bombsfin = pinkBombPattern(PINK_BOMB_D2);     // P3 T2 — 4x giant volleys + slide FINALE
 
+// ===== PINK V3 — promote the verified V2 box attacks onto the real STAGE SCENE =====
+// Charts/mechanics were confirmed exact in V2 (cats/bombs/plusgrid/tunnel/concert); the V3 uplift
+// is that they now render on the actual Pink stage (MEWERS LIVE + dancers + petals) via fx.pinkScene
+// instead of the default battle bg. Wrap each so it flags the scene, keeping the V2 logic intact.
+function withPinkScene(p) { return Object.assign({}, p, { tick(a) { a.fx.pinkScene = true; return p.tick.call(this, a); } }); }
+PATTERNS.pinkn3_cats      = withPinkScene(PATTERNS.pinkn_cats);
+PATTERNS.pinkn3_cats2     = withPinkScene(PATTERNS.pinkn_cats2);
+PATTERNS.pinkn3_bombs     = withPinkScene(PATTERNS.pinkn_bombs);
+PATTERNS.pinkn3_bombs2    = withPinkScene(PATTERNS.pinkn_bombs2);
+PATTERNS.pinkn3_bombsg    = withPinkScene(PATTERNS.pinkn_bombsg);
+PATTERNS.pinkn3_bombsfin  = withPinkScene(PATTERNS.pinkn_bombsfin);
+PATTERNS.pinkn3_plusgrid  = withPinkScene(PATTERNS.pinkn_plusgrid);
+PATTERNS.pinkn3_plusgrid2 = withPinkScene(PATTERNS.pinkn_plusgrid2);
+PATTERNS.pinkn3_rotbox    = withPinkScene(PATTERNS.pinkn_rotbox);
+PATTERNS.pinkn3_tunnel    = withPinkScene(PATTERNS.pinkn_tunnel);
+PATTERNS.pinkn3_concert   = withPinkScene(PATTERNS.pinkn_concert);
+
 // ===== PINK V3 (pinkn3_*) — from-scratch rebuild on the real STAGE SCENE =====
 // pinkn3_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).
 PATTERNS.pinkn3_scene = { box: { w: 180, h: 140 }, hz30: 1, dur: 900, tick(a) { a.fx.pinkScene = true; } };
