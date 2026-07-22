@@ -1756,8 +1756,7 @@ Battle.renderBoxAndBullets = function (ctx) {
       };
       const flash = (lt % 40) < 20;
       for (const d of (ps.dieBoxes || [])) drawNodeBox(d.x, d.y, 'DIE!', flash ? '#ffdd33' : '#ff2b2b', '#000', '#ff3b3b');
-      if (ps.goal != null && ps.goal >= 0 && nodes[ps.goal]) { const gn = nodes[ps.goal];   // GOAL box ("Stop!"/"It's OK!")
-        drawNodeBox(gn.x, gn.y, ps.goalText || 'Stop!', flash ? '#fff' : '#ff9fd0', '#1a0d20', '#fff'); }
+      if (ps.goalBox) drawNodeBox(ps.goalBox.x, ps.goalBox.y, ps.goalText || 'Stop!', flash ? '#fff' : '#ff9fd0', '#1a0d20', '#fff');   // GOAL box (obj_pinknodeact mode 1)
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }
