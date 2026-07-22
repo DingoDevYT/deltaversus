@@ -3453,6 +3453,11 @@
       "f": "pinkchargebomb.png",
       "w": 33,
       "h": 43
+    },
+    "paudheart": {
+      "f": "paudheart.png",
+      "w": 38,
+      "h": 34
     }
   },
   "bullet_cost": {

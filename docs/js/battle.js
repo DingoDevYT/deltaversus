@@ -1582,7 +1582,7 @@ Battle.renderBoxAndBullets = function (ctx) {
   if (B.fx && B.fx.pinkGhost) {
     const g = B.fx.pinkGhost, gi = (A.manifest.bullets || {})['pinkghost' + (g.frame || 0)];
     const gim = gi && A.img['assets/bullets/' + gi.f];
-    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: 1.9, flip: true, alpha: g.ramming ? 1 : 0.92 });
+    if (gim && gim.width) drawSpr(ctx, gim, g.x, g.y, { scale: g.scale != null ? g.scale : 1.9, flip: g.flip != null ? g.flip : true, alpha: g.ramming ? 1 : 0.92 });
   }
   // IDOL CONCERT: PINK sings on stage (spr_pink_sing, drawn by obj_pink_battlemovement mode 7) + the audience
   // dummies (spr_dummyaudience, drawn at scale 1 per obj_audience_hitbox Draw; frame 1 = hater).
@@ -1590,7 +1590,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     const sim = si && A.img['assets/bullets/' + si.f]; if (sim && sim.width) drawSpr(ctx, sim, p.x, p.y, { scale: 2 }); }
   if (B.fx && B.fx.audience) for (const m of B.fx.audience) {
     const ai = (A.manifest.bullets || {})['paudience' + (m.hater ? 1 : 0)], aim = ai && A.img['assets/bullets/' + ai.f];
-    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 2, flip: m.face === 'right' });
+    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.5, flip: m.face === 'right' });
   }
   // BOMB FINALE: Pink runs in / charges (spr_pink_run / spr_pink_front_throw_bomb)
   if (B.fx && B.fx.pinkFinale) { const pf = B.fx.pinkFinale;
@@ -1733,13 +1733,24 @@ Battle.renderBoxAndBullets = function (ctx) {
           const d = Math.hypot(b.x - a.x, b.y - a.y) || 1, ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
           const s0 = Math.max(0, pe.p - 24), s1 = Math.min(d, pe.p);
           if (s1 > s0) { ctx.beginPath(); ctx.moveTo(gcx + a.x + ux * s0, gcy + a.y + uy * s0); ctx.lineTo(gcx + a.x + ux * s1, gcy + a.y + uy * s1); ctx.stroke(); } } }
-      // nodes: small purple circles; the GOAL/act glows pink+white, the START (checkpoint) pulses
+      // nodes: small purple circles; the START pulses pink
       const glow = (lt % 60) <= 30 ? (lt % 60) / 30 : 1 - ((lt - 30) % 60) / 30;
-      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isAct = acts.indexOf(i) >= 0, isStart = i === start;
-        if (isAct) { ctx.fillStyle = '#ff5bc8'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 7.3 + glow * 2, 0, 6.2832); ctx.fill();
-          ctx.fillStyle = '#fff6fb'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 3.5, 0, 6.2832); ctx.fill(); }
-        else if (isStart) { ctx.fillStyle = 'rgba(247,91,200,' + (0.5 + glow * 0.4) + ')'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow, 0, 6.2832); ctx.fill(); }
+      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isStart = i === start;
+        if (isStart) { ctx.fillStyle = 'rgba(247,91,200,' + (0.5 + glow * 0.4) + ')'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow, 0, 6.2832); ctx.fill(); }
         else { ctx.fillStyle = '#b58bd6'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 4, 0, 6.2832); ctx.fill(); } }
+      // DIE! boxes (obj_pinknodeact mode 0): pulsing yellow->red bordered boxes with red "DIE!" text; travel edges
+      ctx.font = "bold 15px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const bw = 38, bh = 22;   // half-extents (matches the pattern's collision box)
+      for (const d of (ps.dieBoxes || [])) { const p = (lt % 40) / 40, bc = p < 0.5 ? '#ffdd33' : '#ff2b2b';
+        ctx.fillStyle = bc; ctx.fillRect(gcx + d.x - bw - 2, gcy + d.y - bh - 2, bw * 2 + 4, bh * 2 + 4);
+        ctx.fillStyle = '#000'; ctx.fillRect(gcx + d.x - bw, gcy + d.y - bh, bw * 2, bh * 2);
+        ctx.fillStyle = '#ff3b3b'; ctx.fillText('DIE!', gcx + d.x, gcy + d.y); }
+      // the GOAL box ("Stop!"): appears (after all hearts collected) on the goal node — white box, white text
+      if (ps.goal != null && ps.goal >= 0 && nodes[ps.goal]) { const gn = nodes[ps.goal];
+        ctx.fillStyle = '#fff'; ctx.fillRect(gcx + gn.x - bw - 2, gcy + gn.y - bh - 2, bw * 2 + 4, bh * 2 + 4);
+        ctx.fillStyle = '#1a0d20'; ctx.fillRect(gcx + gn.x - bw, gcy + gn.y - bh, bw * 2, bh * 2);
+        ctx.fillStyle = '#fff'; ctx.fillText(ps.goalText || 'Stop!', gcx + gn.x, gcy + gn.y); }
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }

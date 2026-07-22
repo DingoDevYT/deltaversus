@@ -1828,20 +1828,23 @@ function pinkRotboxD1Pattern() {
     tick(a) {
       const { f, box, add, rng } = a; const S = this;
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+      const restX = cx - box.w / 2 - 84;   // the giant ghost appears on the LEFT (wiki) and rams rightward
       if (f === 0) { S._q = []; S._t = 8; S._rot = 0; S._rtar = 0; S._pendKnock = 0;
-        S._ghost = { x: cx + box.w / 2 + 120, ram: 0, bob: 0 }; }   // the pinkghost rises at the box's right and RAMS it
-      // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6), slower than before
+        S._ghost = { x: restX, ram: 0, bob: 0, enter: 0 }; }
+      // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6)
       const d = S._rtar - S._rot; S._rot += Math.abs(d) < 6 ? d : Math.sign(d) * 6;
       a.fx.purpleSoul = { mode: 3, rot: S._rot };
-      // ---- the GHOST telegraph (obj_huge_anime_face): bobs at the right edge, lunges to bump the box; each
-      // bump is what knocks it 90°. It's the visual tell for the rotation. Drawn as a big pinkghost sprite. ----
-      const gh = S._ghost, restX = cx + box.w / 2 + 84;
+      // ---- the GHOST (obj_huge_anime_face): RISES in from below-left (hspeed slide + rise), then bobs and LUNGES
+      // right to bump the box — each bump is the 90° knock (the rotation telegraph). A big spr_pinkghost_angry. ----
+      const gh = S._ghost;
+      gh.enter = Math.min(1, gh.enter + 0.035);            // dramatic rise-in (scale + lift from below)
       gh.bob += 0.22;
-      if (S._pendKnock > 0 && gh.ram === 0) gh.ram = 1;          // a knock is queued -> start a ram
-      if (gh.ram === 1) { gh.x -= 9; if (gh.x <= cx + box.w / 2 + 18) { gh.ram = 2; S._rtar += 90; S._pendKnock--; Snd.play('pinktrip', 0.5); if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 8); } }
-      else if (gh.ram === 2) { gh.x += 6; if (gh.x >= restX) { gh.x = restX; gh.ram = 0; } }   // bounce back
+      if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) gh.ram = 1;   // ready & a knock queued -> ram
+      if (gh.ram === 1) { gh.x += 9; if (gh.x >= cx - box.w / 2 - 18) { gh.ram = 2; S._rtar += 90; S._pendKnock--; Snd.play('pinktrip', 0.5); if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 8); } }
+      else if (gh.ram === 2) { gh.x -= 6; if (gh.x <= restX) { gh.x = restX; gh.ram = 0; } }   // bounce back left
       else gh.x = restX;
-      a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10, frame: Math.floor(f / 8) % 2, ramming: gh.ram === 1 };
+      const riseY = (1 - gh.enter) * 150;                  // starts 150px below, rises to rest
+      a.fx.pinkGhost = { x: gh.x, y: cy - 8 - Math.abs(Math.sin(gh.bob)) * 10 + riseY, frame: Math.floor(f / 8) % 2, ramming: gh.ram === 1, scale: 1.6 + gh.enter * 0.4, flip: false };
       if (f < 8) return;
       if (S._q.length === 0 && f < S.dur - 120) {   // refill: generate the next group; queue a knock (the ghost delivers it)
         const g = pinkPlusD1Group(rng); let t = S._t;
@@ -2056,11 +2059,11 @@ PATTERNS.pinkn_concert = {
   },
 };
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
-  const b = { ...bulletProps('gigaheart'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
-              r: 10, grazeR: 14, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };   // spr_gigaheart, tiny -> grows; aims at the soul
+  const b = { ...bulletProps('paudheart'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
+              r: 8, grazeR: 12, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };   // spr_heart_pop: a SMALL faceless heart, tiny -> grows
   if (hater) { b.tint = '#ff3b3b'; b.tintMul = true; }
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
-  const FINAL = 0.42;   // final display scale of the (125px) gigaheart -> ~52px
+  const FINAL = 0.85;   // final display scale of the (38px) heart -> ~32px (small, not the giant cat-face heart)
   b.emit = function (b, out, sl) {
     if (b._phase !== 1) {   // PHASE 0: grow (tiny -> FINAL) + aim at the soul over 32 frames (obj_audienceheart)
       b._w++;
@@ -2096,57 +2099,55 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
 // (two big sprites on the sides); the purple heart navigates a MAZE of connected nodes (root + R/U/L/D arms,
 // horizontal arms x2.125, dist 54) hopping node-to-node; DOKI obstacles patrol the edges between nodes and
 // hurt on contact. Reaching an ACT/checkpoint node is the goal. Difficulty-0 graph (the date-4 finale).
+// The date-3 ending is a MAZE of "DIE!" boxes (obj_pinknodeact mode 0: pulsing yellow-red boxes that travel the
+// node connections) and HEARTS (obj_dokiheart). The heart hops node-to-node; a DIE! box on contact deals damage
+// and RESETS you to the start node. Collecting ALL the hearts spawns the GOAL — a "Stop!" box (mode 1) on the
+// start node; reaching it clears the maze (win). Difficulty-0 9-node graph.
 PATTERNS.pinkn_finalmaze = {
-  box: { w: 320, h: 200 }, hz30: 1, dur: 900,
+  box: { w: 380, h: 250 }, hz30: 1, dur: 2000,
   tick(a) {
     const { f, box, add, rng } = a; const S = this;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    const HD = 54 * 2.125;   // horizontal arm length (_node_dist * _h_multi); vertical = 54
+    const HD = 64 * 2.125, VD = 66;   // arm lengths scaled to the bigger stage box
     if (f === 0) {
-      // the 9-node difficulty-0 graph (offsets from centre). dirs: 0=R,1=U,2=L,3=D (GML lengthdir).
-      S.nodes = [ { x: 0, y: 0 }, { x: HD, y: 0 }, { x: 0, y: -54 }, { x: -HD, y: 0 }, { x: 0, y: 54 },
-                  { x: HD, y: -54 }, { x: HD, y: 54 }, { x: -HD, y: -54 }, { x: -HD, y: 54 } ];
-      S.edges = [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]];   // bidirectional adjacency
-      S.acts = [4, 5, 7];   // checkpoint / goal nodes (obj_pinknodeact)
-      S.start = 0; S.goal = 5;   // reach the GOAL (act node, far RU corner) to WIN
-      S._live = 0; S._spawnT = 0; S.path = null; S.pulseT = 0; S._won = 0;
+      S.nodes = [ { x: 0, y: 0 }, { x: HD, y: 0 }, { x: 0, y: -VD }, { x: -HD, y: 0 }, { x: 0, y: VD },
+                  { x: HD, y: -VD }, { x: HD, y: VD }, { x: -HD, y: -VD }, { x: -HD, y: VD } ];
+      S.edges = [[1, 2, 3, 4], [0, 5, 6], [0], [0, 7, 8], [0], [1], [1], [3], [3]];
+      S.start = 0; S.goal = -1; S._won = 0; S._spawnT = 30; S.die = [];
+      S.heartNodes = [5, 8, 2];   // collect all of these -> the GOAL ("Stop!") appears at the start
+      for (const hn of S.heartNodes) { const n = S.nodes[hn];   // place the collectable hearts on their nodes
+        add({ ...bulletProps('pdoki'), x: cx + n.x, y: cy + n.y, vx: 0, vy: 0, pickup: true, tp: 6, r: 11, scale: PS(1.5), life: 99999, _mazeHeart: 1 }); }
     }
-    if (S.path == null) { const prev = {}, q = [S.start], seen = { [S.start]: 1 };   // BFS path start->goal for the pulse
-      while (q.length) { const n = q.shift(); if (n === S.goal) break; for (const nb of (S.edges[n] || [])) if (!seen[nb]) { seen[nb] = 1; prev[nb] = n; q.push(nb); } }
-      const path = []; let n = S.goal; while (n !== S.start && prev[n] != null) { path.unshift([prev[n], n]); n = prev[n]; }
-      S.path = path; }
-    const edgeLen = e => Math.hypot(S.nodes[e[1]].x - S.nodes[e[0]].x, S.nodes[e[1]].y - S.nodes[e[0]].y);
-    S.pulseT += 6.5; let acc = S.pulseT; const pulseEdges = [];   // red pulse sweeps the path to the goal, repeats (the INDICATOR)
-    for (const e of S.path) { const L = edgeLen(e); if (acc <= 0) break; pulseEdges.push({ i: e[0], j: e[1], p: Math.min(L, acc) }); acc -= L + 40; }
-    const totalLen = S.path.reduce((s, e) => s + edgeLen(e) + 40, 0); if (S.pulseT > totalLen + 60) S.pulseT = 0;
-    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: S.acts, start: S.start, goal: S.goal, pulse: { edges: pulseEdges } };
+    const B = (typeof Battle !== 'undefined') ? Battle : null;
+    // all hearts collected -> reveal the GOAL box on the start node
+    if (B && B.bullets && S.goal < 0 && B.bullets.filter(b => b._mazeHeart && !b.dead).length === 0) { S.goal = S.start; Snd.play('pinkcoin', 0.5); if (B) B.flash = 8; }
+    a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: [], start: S.start, goal: S.goal,
+      goalText: 'Stop!', dieBoxes: S.die.map(d => ({ x: cx + d.x, y: cy + d.y })) };
     // Pink SPLIT IN TWO: BODY on the left, GHOST on the right
-    a.fx.boss = { key: 'pinkghost' + (Math.floor(f / 10) % 2), x: cx - box.w / 2 - 70, y: cy - 20, scale: 2.0, flip: false };
-    a.fx.pinkGhost = { x: cx + box.w / 2 + 70, y: cy - 20, frame: Math.floor(f / 10) % 2, ramming: false };
-    // WIN: reaching the GOAL node ends the attack (obj_pinknodeact mode 1 -> maze cleared)
-    if (typeof Battle !== 'undefined' && Battle.pNodeReached === S.goal && !S._won) {
-      S._won = 1; Snd.play('pinkcoin', 0.6); Battle.flash = 10;
-      if (Battle.bullets) for (const bb of Battle.bullets) if (bb._mazeObs) bb.dead = true;
-      Battle.boxT = 0; Battle.boxGhosts = []; Battle.phase = 'boxout';
+    a.fx.boss = { key: 'pinkghost' + (Math.floor(f / 10) % 2), x: cx - box.w / 2 - 78, y: cy - 20, scale: 2.0, flip: false };
+    a.fx.pinkGhost = { x: cx + box.w / 2 + 78, y: cy - 20, frame: Math.floor(f / 10) % 2, ramming: false };
+    // WIN: reach the GOAL box (obj_pinknodeact mode 1 -> maze cleared)
+    if (B && S.goal >= 0 && B.pNodeReached === S.goal && !S._won) {
+      S._won = 1; Snd.play('pinkcoin', 0.7); B.flash = 12;
+      if (B.bullets) for (const bb of B.bullets) if (bb._mazeHeart) bb.dead = true;
+      B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout';
     }
-    // patrolling obstacles travel the edges FAST (obj_pinknodeact pattern 3, ~13/frame), node -> node
+    // ---- DIE! boxes travel the connections (obj_pinknodeact pattern 3, ~11/frame). Contact = damage + RESET ----
     S._spawnT--;
-    if (S._spawnT <= 0 && S._live < 4) {
+    if (S._spawnT <= 0 && S.die.length < 3 && !S._won) {
       const from = Math.floor(rng() * S.nodes.length), nbrs = S.edges[from];
-      if (nbrs && nbrs.length) {
-        const st = { from, to: nbrs[Math.floor(rng() * nbrs.length)] };
-        const NODES = S.nodes, EDGES = S.edges, RNG = rng, CXY = { cx, cy };
-        const b = { ...bulletProps('pdoki'), x: cx + NODES[from].x, y: cy + NODES[from].y, vx: 0, vy: 0, tint: '#ff3b3b', tintMul: true, r: 9, scale: PS(1.3), dmg: 24, life: 9000, _mazeObs: 1 };
-        S._live++;
-        b.emit = function (b) {
-          if (b.dead) { S._live--; return; }
-          const B = NODES[st.to], tx = CXY.cx + B.x, ty = CXY.cy + B.y, dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy);
-          if (d <= 13) { b.x = tx; b.y = ty; const nb = EDGES[st.to] || [st.from]; st.from = st.to; st.to = nb[Math.floor(RNG() * nb.length)]; }
-          else { b.x += (dx / d) * 13; b.y += (dy / d) * 13; }
-        };
-        add(b);
+      if (nbrs && nbrs.length) { const n = S.nodes[from]; S.die.push({ x: n.x, y: n.y, from, to: nbrs[Math.floor(rng() * nbrs.length)] }); }
+      S._spawnT = 60;
+    }
+    for (const d of S.die) {
+      const B2 = S.nodes[d.to], dx = B2.x - d.x, dy = B2.y - d.y, dd = Math.hypot(dx, dy);
+      if (dd <= 11) { d.x = B2.x; d.y = B2.y; const nb = S.edges[d.to] || [d.from]; d.from = d.to; d.to = nb[Math.floor(rng() * nb.length)]; }
+      else { d.x += (dx / dd) * 11; d.y += (dy / dd) * 11; }
+      if (B && B.iframes <= 0 && Math.abs(B.soul.x - (cx + d.x)) < 38 && Math.abs(B.soul.y - (cy + d.y)) < 22) {
+        const dmg = 18; B.dmgTaken = (B.dmgTaken || 0) + dmg; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
+        B.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; Snd.play('hurt', 0.5);
+        B._pNode = S.start; B.pOnX = S.nodes[S.start].x; B.pOnY = S.nodes[S.start].y;   // RESET to the start node
       }
-      S._spawnT = 48;
     }
   },
 };
@@ -2314,14 +2315,12 @@ function pinkBombPattern(chart) {
       const pick = (...xs) => xs[Math.floor(rng() * xs.length)];
       if (f === 0) this._S = { si: 0, queue: [], doki: 3, gx: ir(3), gy: ir(3), pv: ir(3), rep: 0, wind: -1, hold: 0, cool: 0 };
       const S = this._S;
-      // ---- OVERLAP GUARD: never START the next volley while the previous batch is still on the board (landed,
-      // fusing, or exploding). We FREEZE the schedule (accumulate S.hold) until the board is clear + a short
-      // cooldown, so a new batch is never thrown during another's fuse/explosion. ----
+      // ---- OVERLAP GUARD: never START the next volley while the previous batch's bombs are still LANDED &
+      // FUSING. The moment they DETONATE we release, so the next volley winds up immediately (its bomb arcs in
+      // while the explosion finishes) — no dead time, but never a throw mid-fuse. ----
       const bl = (typeof Battle !== 'undefined' && Battle.bullets) ? Battle.bullets : [];
-      const liveBatch = bl.some(b => (b._pinkBomb && !b.dead && b._land >= 0) || (b._pinkBoom && !b.dead));
-      if (S.cool > 0) S.cool--;
-      const frozen = (S.queue.length === 0) && (liveBatch || S.cool > 0);
-      if (S.queue.length === 0 && liveBatch) S.cool = 14;   // small settle after the last bomb clears
+      const liveBatch = bl.some(b => b._pinkBomb && !b.dead && b._land >= 0);   // only UN-detonated landed bombs
+      const frozen = (S.queue.length === 0) && liveBatch;
       if (frozen) { S.hold++; }
       // ---- controller: play the chart, queueing bombs for Pink ----
       while (!frozen && S.si < sched.length && (sched[S.si].f + S.hold) <= f) {
