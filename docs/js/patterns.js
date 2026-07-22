@@ -1973,14 +1973,18 @@ const PINK_BOMB_D4 = [0, 0.85, 0, 0.7, 0, 0.6, 0, 0.6, 0, 0, 0, 0.8, 0, 0, 0, 0.
 function pinkBombExplode(b, out, box, giant) {
   Snd.play('boardbomb', giant ? 0.7 : 0.5);
   if (typeof Battle !== 'undefined') { Battle.shake = Math.max(Battle.shake || 0, giant ? 16 : 12); Battle.flash = Math.max(Battle.flash || 0, 6); }
-  const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 26 : 13;   // radii overlap the step -> contiguous beam
-  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 30 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg });
+  const step = giant ? 48 : 24, sc = giant ? PS(8) : PS(2), rr = giant ? 46 : 13;   // giant arm is 3 lanes thick (~±46); overlaps 48px step -> contiguous
+  out.push({ ...bulletProps('pexploc'), x: b.x, y: b.y, vx: 0, vy: 0, r: giant ? 46 : 11, scale: giant ? PS(8) : PS(2.2), life: 18, dmg: b.dmg });
   for (const [dx, dy] of [[step, 0], [0, -step], [-step, 0], [0, step]]) {
     let px = b.x, py = b.y;
     for (let s = 0; s < 30; s++) {
       px += dx; py += dy;
       if (px < -48 || px > 688 || py < 20 || py > 520) break;
-      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg, rot: Math.atan2(dy, dx) + Math.PI / 2 });
+      // rectangular hitbox on each arm (hitW/hitH) so the whole 3-lane row/column is a reliable kill band
+      const horiz = dx !== 0;
+      out.push({ ...bulletProps('pboom'), x: px, y: py, vx: 0, vy: 0, r: rr, scale: sc, life: 16, dmg: b.dmg,
+                 hitW: giant ? (horiz ? 50 : 96) : undefined, hitH: giant ? (horiz ? 96 : 50) : undefined,
+                 rot: Math.atan2(dy, dx) + Math.PI / 2 });
     }
   }
   // the cross CHAIN-detonates other landed bombs (fuse=min(fuse,3)) + destroys settled hearts in its path
@@ -2010,10 +2014,10 @@ function pinkBombExplode(b, out, box, giant) {
 function mkPinkBomb(add, box, dest, x0, y0, o) {
   const giant = !!o.giant;
   const b = { ...bulletProps(giant ? 'pbombbig' : 'pbomb4'), x: x0, y: y0, vx: 0, vy: 0, noHit: true,
-              scale: PS(2), _pinkBomb: 1, _air: 1, _fuse: o.fuse, _heart: !!o.heart, _dx: dest.x, _dy: dest.y,
+              scale: PS(2), _pinkBomb: 1, _giant: giant, _air: 1, _fuse: o.fuse, _heart: !!o.heart, _dx: dest.x, _dy: dest.y,
               _x0: x0, _y0: y0, _land: -1, _pt: 0, _sc: 2, dmg: o.dmg, life: 900 };
   if (b._heart) { b.tint = '#ff6699'; b.tintMul = true; }   // has_heart bombs are PINK (GML image_blend)
-  b.emit = function (b, out, soul) {
+  b.emit = function (b, out, soul, box2, fx) {
     // ---- AIRBORNE: 22-tick arc to the cell + the flashing landing-ring telegraph (obj_fusebomb Draw) ----
     if (b._air > 0) {
       b._air = Math.max(0, b._air - ((giant ? 4.48 : 5.12) / 110));
@@ -2029,6 +2033,17 @@ function mkPinkBomb(add, box, dest, x0, y0, o) {
     b.drawDY = sl >= 1 && sl <= 4 ? [-4, -5, -5, -4][sl - 1] : 0;   // landing bounce (GML frames_since_airtime)
     b._fuse--;
     const fu = b._fuse;
+    // ---- ROW/COLUMN TELEGRAPH (obj_fusebomb_big Draw: red danger bands fading in over the last warn_time=30) ----
+    if (fx && fx.bombWarn && fu > 0) {
+      if (giant && fu < 30) {
+        const yellow = fu >= 23 && fu < 25;                        // brief yellow flash (warn_time-7..-5)
+        const alpha = 0.2 + (1 - fu / 30) * 0.28, col = yellow ? '#ffcc00' : '#c00000';
+        if (fu >= 25) fx.bombWarn.push({ x: b.x, y: b.y, ellipse: (30 - fu) * 42, thick: 54, alpha, color: col });   // expanding-ellipse cross
+        else fx.bombWarn.push({ x: b.x, y: b.y, thick: 54 - (fu % 2) * 4, alpha, color: col });                      // full row + column bands
+      } else if (!giant && fu < 18) {                              // small bombs: a thin fairness telegraph (added, not in GML)
+        fx.bombWarn.push({ x: b.x, y: b.y, thick: 7, alpha: (1 - fu / 18) * 0.32, color: '#c00000' });
+      }
+    }
     if (!giant) {
       b.img = bulletProps('pbomb' + Math.max(0, Math.min(4, Math.floor(fu / 10)))).img;   // fuse burn-down frames
       if (fu > 8) {   // periodic pulse decaying toward x2 (pulse every 15, every 6 once fuse<=36)
@@ -2143,7 +2158,11 @@ function pinkBombPattern(chart) {
         if (q.k === 0) {
           S.doki--; const heart = S.doki <= 0; if (heart) S.doki = 2;
           mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 55 + left * 2 - S.rep * 2, heart, dmg: 20 });
-        } else if (q.k === 1) mkPinkBomb(add, box, cell(pick(1, 2), 1), tx, ty, { fuse: 60, giant: true, dmg: 24 });
+        } else if (q.k === 1) {   // GIANT ENDER: sits OUTSIDE an edge and blasts one 3-lane band into the box (leaving an outer safe lane)
+          const edge = pick(0, 1, 2, 3), lane = 1 + ir(1);
+          const gp = edge === 0 ? [-2, lane] : edge === 1 ? [5, lane] : edge === 2 ? [lane, -2] : [lane, 5];
+          mkPinkBomb(add, box, cell(gp[0], gp[1]), tx, ty, { fuse: 60, giant: true, dmg: 24 });
+        }
         else if (q.k === 2) mkPinkBomb(add, box, cell(q.gx, q.gy), tx, ty, { fuse: 52 + left * 3, giant: true, heart: q.heart, dmg: 24 });
         else if (q.k === 3) mkPinkSlideBomb(add, box, { fuse: 120, dmg: 26, wspd: pick(3.85, 4.725, 5.15, 5.95) });
         S.wind = S.queue.length ? 6 : -1;

@@ -976,7 +976,7 @@ Battle.updDodge = function () {
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
-  B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0;
+  B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = [];   // bomb row/col telegraphs (bullets push each frame)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.date) {   // DATE minigame: the quiz drives itself; no bullets/soul collision
     if (B.fx.date.done) { B._dateEnd = (B._dateEnd || 0) + 1; if (B._dateEnd > 24) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
@@ -1534,6 +1534,21 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.beginPath(); ctx.rect(l, bx.y - 40, r - l, bx.h + 80); ctx.clip();
   } else {   // otherwise: FULL WIDTH + a generous vertical margin so incoming bullets are visible approaching (no edge mask)
     ctx.beginPath(); ctx.rect(0, Math.max(52, bx.y - 96), 640, bx.h + 192); ctx.clip();
+  }
+  // BOMB TELEGRAPH (obj_fusebomb_big / obj_fusebomb Draw): the red row/column danger bands that fade in over
+  // the last warn frames. Giant = full-width + full-height 3-lane-thick bands (with an early expanding-ellipse
+  // cross + a yellow flash); small = a thin row/column line. Gaps between bands are the safe lanes.
+  if (B.fx && B.fx.bombWarn) for (const w of B.fx.bombWarn) {
+    ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(0.85, w.alpha)); ctx.fillStyle = w.color || '#d00000';
+    if (w.ellipse != null) {   // early giant warning: two expanding ellipses forming a cross
+      const rw = w.ellipse, th = w.thick;
+      ctx.beginPath(); ctx.ellipse(w.x, w.y, rw, th, 0, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(w.x, w.y, th, rw, 0, 0, 6.2832); ctx.fill();
+    } else {                   // full row + column bands, thickness = w.thick (3 lanes for giant, ~1 for small)
+      ctx.fillRect(0, w.y - w.thick, 640, w.thick * 2);
+      ctx.fillRect(w.x - w.thick, 0, w.thick * 2, 480);
+    }
+    ctx.restore();
   }
   for (const h of B.hearts) {
     ctx.fillStyle = 'rgba(255,105,180,0.8)';
