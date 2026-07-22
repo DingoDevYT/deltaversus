@@ -1725,16 +1725,18 @@ function renderMazeGraph(g, M) {
   for (const d of (M.dokis || [])) { const info = (A.manifest.bullets || {}).pdoki, im = info && A.img['assets/bullets/' + info.f];   // spr_dokiheart
     if (im && im.width) { const bob = Math.sin((lt + d.x) / 6) * 2; g.drawImage(im, Math.round(d.x - im.width / 2), Math.round(d.y - im.height / 2 + bob), im.width, im.height); } }
   for (const ac of (M.acts || [])) drawMazeBox(g, ac.x, ac.y, ac.mode === 1 ? (M.goalText || 'Stop!') : 'DIE!', ac.mode === 1, lt);
+  for (const b of (M.train || [])) drawMazeBox(g, b.x, b.y, 'DIE!', false, lt);   // the patrolling DIE-train (diff3)
 }
 // POSSESSED Mew Mew backdrop (obj_date_controller date3): 3-layer glow form + green eye-lasers, behind the maze
 function drawPossessedPink(ctx, M) {
   const t = (M.life || 0) / 10, sw = Math.sin(t), fr = Math.floor((M.life || 0) / 8) % 3;
   const ex = 320, ey = 158 + sw * 2;   // possessed form, centred upper (bobs)
   const spr = k => { const info = (A.manifest.bullets || {})[k + fr]; return info && A.img['assets/bullets/' + info.f]; };
-  // 10 green eye-laser beams radiating down-and-out from the eyes (d_line_color 0,255,0)
+  // 10 green eye-laser beams radiating down-and-out FROM THE EYES (d_line_color 0,255,0). Two eyes, offset up.
   ctx.save(); ctx.strokeStyle = 'rgba(0,255,0,0.5)'; ctx.lineWidth = 2;
-  for (let i = 0; i < 10; i++) { const ang = Math.PI * 0.5 + (i - 4.5) * 0.17;
-    ctx.beginPath(); ctx.moveTo(ex, ey + 26); ctx.lineTo(ex + Math.cos(ang) * 420, ey + 26 + Math.sin(ang) * 420); ctx.stroke(); }
+  const eyeY = ey - 40;   // the eyes sit high on the face
+  for (const eyeX of [ex - 26, ex + 26]) for (let i = 0; i < 5; i++) { const ang = Math.PI * 0.5 + (i - 2) * 0.22;
+    ctx.beginPath(); ctx.moveTo(eyeX, eyeY); ctx.lineTo(eyeX + Math.cos(ang) * 460, eyeY + Math.sin(ang) * 460); ctx.stroke(); }
   ctx.restore();
   // 3-layer body: greyscale (0.95) + purple (0.7+sin*0.3) + pink (0.7-sin*0.3) cross-fade pulse
   const draw = (im, a) => { if (im && im.width) { ctx.globalAlpha = Math.max(0, Math.min(1, a)); drawSpr(ctx, im, ex, ey, { scale: 2 }); } };
@@ -1758,7 +1760,9 @@ function drawMaze(ctx, M) {
   ctx.globalAlpha = 0.25; for (const [dx, dy] of [[0, -4], [0, 4], [-4, 0], [4, 0]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 0.45; for (const [dx, dy] of [[2, 2], [-2, 2], [2, -2], [-2, -2]]) ctx.drawImage(s, dx, dy);
   ctx.globalAlpha = 1; ctx.drawImage(s, 0, 0);
-  // the purple SOUL (drawn crisp, outside the bloom)
+  // dating-sim UI frame (INVERTED variants) around the maze — same as the DATE screens, dark palette
+  for (const fr of [0, 1]) { const p = dsimImg('dsimplateinv' + fr); if (p) ctx.drawImage(p, 0, 0, 640, 440); }
+  // the purple SOUL (drawn crisp, on top)
   const ph = A.soul(((Math.floor((M.life || 0) / 8) % 2) ? 'pheart1' : 'pheart0')) || A.ui('soul');
   if (ph && ph.width) drawSpr(ctx, ph, M.soul.x, M.soul.y, { scale: 1 });
   ctx.restore();

@@ -1788,8 +1788,8 @@ function pinkDateN3Pattern(D) {
         else if (S.boxCon === 2) { S.bt++; S.heartY = lerp2(400, 344, S.bt / 3);
           if (S.bt >= 3) { S.boxCon = 0; S.heartY = 400;
             if (Q.correct.indexOf(realIdx()) >= 0) { S.ph = 'react'; S._react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }
-            else { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); } } }
-        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); }
+            else { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(D.wrongDmg); } } }
+        if (Q.timed && S.timer <= 0) { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(D.wrongDmg); }
         emit({ opts: dispOpts(), sel: S.sel, boxOff: S.boxOff, single: !!Q.single, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         return;
       }
@@ -1806,13 +1806,35 @@ function pinkDateN3Pattern(D) {
     },
   };
 }
-function pinkDateWrong() {   // wrong/timeout: Pink lashes out — party takes damage
+function pinkDateWrong(dmg) {   // wrong/timeout: Pink lashes out — party takes damage (1 in the gentle confession)
   if (typeof Snd !== 'undefined') Snd.play('pinkgasp', 0.5);
-  if (typeof Battle !== 'undefined') { const B = Battle; B.shake = Math.max(B.shake || 0, 12); B.flash = Math.max(B.flash || 0, 8);
-    const dmg = 30; B.dmgTaken = (B.dmgTaken || 0) + dmg; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg); Snd.play('hurt', 0.4); }
+  if (typeof Battle !== 'undefined') { const B = Battle; const d = dmg != null ? dmg : 30; B.shake = Math.max(B.shake || 0, 12); B.flash = Math.max(B.flash || 0, 8);
+    B.dmgTaken = (B.dmgTaken || 0) + d; for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - d); Snd.play('hurt', 0.4); }
 }
+// DATE 4 — the CONFESSION finale (obj_date_controller datecount 4). Paraphrased (the real script is
+// copyrighted): Pink's ghost admits the fight was about fear + self-loathing, and the party answers with
+// compassion. 3 questions, a WRONG answer costs only 1 HP (per the wiki). Ends the fight.
+const PINK_N3_DATE4 = {
+  date: 4, wrongDmg: 1,
+  cut: [
+    { spk: 'spkconc', ghost: 'ghconc', who: 'ghost', text: "…Fine. I'll admit it.|My heart really WAS racing." },
+    { spk: 'spkconc', ghost: 'ghangry', who: 'ghost', text: "But only because…|when they flirted with you,|it scared me." },
+    { spk: 'spksad', ghost: 'ghconc', who: 'ghost', text: "After finally finding myself…|I felt like I was|losing myself again." },
+    { spk: 'spkangb', ghost: 'ghangry', who: 'ghost', text: "I didn't want you being|anyone else's.|I wanted you to be ME." },
+    { spk: 'spksad', ghost: 'ghshock', who: 'ghost', text: "Because… I can't|stand who I am." },
+    { spk: 'spkconc', ghost: 'ghconc', who: 'ghost', text: "But puppeting you around…|that only hurts you,|doesn't it?" },
+    { spk: 'spkhappy', ghost: 'ghconc', who: 'ghost', text: "If we're to be together…|then I have to…" },
+  ],
+  qs: [
+    { spk: 'spkconc', ghost: 'ghconc', who: 'ghost', text: "…So why WAS|my heart racing?", opts: ["You liked it", "You loved it", "You got scared"], correct: [2] },
+    { spk: 'spksad', ghost: 'ghconc', who: 'ghost', text: "I don't want to|lose you to…?", opts: ["Anyone else", "Only me", "Someone new"], correct: [0] },
+    { spk: 'spkhappy', ghost: 'ghconc', who: 'ghost', text: "So… what do|we do now?", opts: ["Love us both", "Ignore your needs", "Push us away"], correct: [0] },
+  ],
+  outro: { spk: 'spkhappy', ghost: 'ghconc', text: "…Heh.|Together, then —|for real this time, mew." },
+};
 PATTERNS.pinkn3_date1 = pinkDateN3Pattern(PINK_N3_DATE1);
 PATTERNS.pinkn3_date2 = pinkDateN3Pattern(PINK_N3_DATE2);
+PATTERNS.pinkn3_date4 = pinkDateN3Pattern(PINK_N3_DATE4);   // the confession that ends the fight
 
 // TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
 // columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
@@ -2327,7 +2349,7 @@ function mazeBuild(r, rng) {
   const mk = (parent, dir, dist) => { const p = N[parent], rad = dir * Math.PI / 2;
     const i = node(p.x + Math.cos(rad) * dist, p.y - Math.sin(rad) * dist); N[parent].child[dir] = i; return i; };
   const goalText = ['Stop!', 'Calm down!', "Don't cry!", "It's OK!"][Math.min(3, r)];
-  let start = 0, acts = [], dokis = [], rootHp = 0;
+  let start = 0, acts = [], dokis = [], rootHp = 0, path = null;
   const root = node(0, 0); N[root].checkpoint = 2;
   if (r <= 0) {
     const n1 = mk(0, 0, D * HM), n2 = mk(0, 1, D), n3 = mk(0, 2, D * HM), n4 = mk(0, 3, D);
@@ -2350,9 +2372,10 @@ function mazeBuild(r, rng) {
     const chain = [[0, 1], [1, 1], [0, 1], [3, 1], [0, 1], [3, 1], [0, 1], [1, 1], [0, 1], [1, 1], [2, 1], [1, 1.5], [0, 1], [1, 1], [2, 1], [1, 2.5], [2, 1.75], [3, 1], [2, 1.25], [1, 1], [2, 2], [3, 1], [2, 1.25], [1, 1], [2, 2.75], [3, 1], [0, 1], [3, 1], [2, 1], [3, 1], [0, 2], [3, 2], [2, 1.25], [1, 1], [2, 1], [3, 3], [0, 1], [1, 1], [0, 2.375]];
     let cur = 0; const seq = []; for (const [dir, mul] of chain) { cur = mk(cur, dir, D * mul); seq.push(cur); }
     start = seq[0]; N[start].checkpoint = 2; N[root].checkpoint = 0;
-    acts = [{ node: cur, mode: 1, pattern: 0 }, { node: seq[18], mode: 0, pattern: 3 }];   // goal at snake end + a hunter
-    for (const [si, dir, mul] of [[4, 1, 1.25], [11, 2, 1.25], [22, 3, 1]]) {   // checkpoint/dark branches
+    acts = [{ node: cur, mode: 1, pattern: 0 }];   // goal at the snake end; DIE! hazards are the patrolling TRAIN
+    for (const [si, dir, mul] of [[4, 1, 1.25], [11, 2, 1.25], [22, 3, 1]]) {   // checkpoint/dark SAFETY branches
       const b = mk(seq[si], dir, D * mul); N[b].checkpoint = 1; N[b].darkify = 1; N[b].child[(dir + 2) % 4] = seq[si]; }
+    path = seq;   // the ordered main chain the DIE-train loops along (start=seq[0], end=seq[last])
   }
   // every edge built so far is a REAL (draw_connection) edge; the reciprocal back-links added next are not
   for (const nd of N) for (let d = 0; d < 4; d++) if (nd.child[d] >= 0) nd.drawConn[d] = true;
@@ -2361,14 +2384,14 @@ function mazeBuild(r, rng) {
   // RAW room coords (obj_pinknode uses absolute lengthdir positions; NO re-center/scale). Root at (320,360)
   // = screen centre-x, lower-third-y, so small graphs cluster low-centre and diff-3 fills the screen.
   for (const n of N) { n.x += 320; n.y += 360; n.dx = n.x; n.dy = n.y; }
-  return { nodes: N, start, acts, dokis, rootHp, goalText };
+  return { nodes: N, start, acts, dokis, rootHp, goalText, path };
 }
 PATTERNS.pinkn_finalmaze = {
   box: { w: 565, h: 372 }, hz30: 1, dur: 12000, fullscreen: true, ROUNDS: 4,
   tick(a) {
     const { f, rng } = a; const S = this;
     const B = (typeof Battle !== 'undefined') ? Battle : null;
-    const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
+    const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
     const HIT = k => IN.hit && IN.hit[k];
     if (f === 0) { S.round = 0; S._built = -1; S._done = false; S.hits = 0; }
     if (S._built !== S.round) {
@@ -2440,7 +2463,7 @@ PATTERNS.pinkn3_finalmaze = {
   tick(a) {
     const { f, rng } = a; const S = this;
     const B = (typeof Battle !== 'undefined') ? Battle : null;
-    const IN = (typeof Input !== 'undefined') ? Input : { hit: {} };
+    const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
     const HIT = k => IN.hit && IN.hit[k];
     const D2R = Math.PI / 180, STEER = 10 * D2R;
     if (f === 0) { S.round = 0; S._built = -1; S._done = false; S.hits = 0; }
@@ -2458,8 +2481,8 @@ PATTERNS.pinkn3_finalmaze = {
       for (const dk of S.dokis) { dk._t = dk.delay; dk.spawned = false; dk.collected = false;
         let best = -1, bd = -1; for (const o of S.dokis) { if (o === dk) continue; const dd = Math.hypot(S.nodes[o.node].x - S.nodes[dk.node].x, S.nodes[o.node].y - S.nodes[dk.node].y); if (dd > bd) { bd = dd; best = o.node; } }
         dk.backup = best; }
-      // hunter controller (diff3): phase 0 waits for soul in right half, phase 1 spawns on a timer
-      S.hphase = 0; S.htime = 0;
+      // DIE-TRAIN (diff3): the ordered main path (excl. start & end) that the looping DIE! buttons patrol
+      S.path = R.path; S.trainPath = R.path ? R.path.slice(1, -1) : null; S.train = null; S.trainStarted = false;
     }
     if (S.iframes > 0) S.iframes--;
     // ---- NODE DRIFT (diff3): steer `dir` toward home by <=10deg/frame, wander when home ----
@@ -2471,18 +2494,21 @@ PATTERNS.pinkn3_finalmaze = {
       else n.dir += (rng() < 0.5 ? -1 : 1) * STEER;
       n.x += Math.cos(n.dir) * n.spd; n.y += Math.sin(n.dir) * n.spd;
     }
-    // ---- INPUT (BUFFERED): a direction pressed DURING a slide is queued (~12f) and fired the instant the
-    // soul lands, so mashing a direction always registers -> snappy (fixes the multi-press lag) ----
+    // ---- INPUT: move on HELD direction (continuous, like every other purple-soul mode) + buffer a tap made
+    // mid-slide so it fires the instant the soul lands. This is what makes it feel instant. ----
+    const DOWN = k => IN.down && IN.down[k];
     let pressDir = -1; if (HIT('right')) pressDir = 0; else if (HIT('up')) pressDir = 1; else if (HIT('left')) pressDir = 2; else if (HIT('down')) pressDir = 3;
     if (pressDir >= 0) { S.bufDir = pressDir; S.bufAge = 0; }
-    else if (S.bufDir != null) { S.bufAge = (S.bufAge || 0) + 1; if (S.bufAge > 12) S.bufDir = null; }
+    else if (S.bufDir != null) { S.bufAge = (S.bufAge || 0) + 1; if (S.bufAge > 10) S.bufDir = null; }
+    let heldDir = -1; if (DOWN('right')) heldDir = 0; else if (DOWN('up')) heldDir = 1; else if (DOWN('left')) heldDir = 2; else if (DOWN('down')) heldDir = 3;
     // ---- SOUL node-hop movement: heart_travel = home edge length; soul rides behind LIVE node ----
-    if (S.heartTravel <= 0 && !S._won && S.bufDir != null) {
-      const c = S.nodes[S.soulNode].child[S.bufDir];
-      if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
-        S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
-        if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); }
-      S.bufDir = null;   // consume the buffer on arrival (used or not)
+    if (S.heartTravel <= 0 && !S._won) {
+      const dir = S.bufDir != null ? S.bufDir : heldDir;   // buffered tap first, else the held direction
+      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
+        if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
+          S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
+          if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
+      S.bufDir = null;   // consume the buffer on arrival
     }
     if (S.heartTravel > 0) { const t = S.nodes[S.target];
       const md = Math.atan2(t.y - S.soul.y, t.x - S.soul.x);              // live point_direction soul->node
@@ -2492,12 +2518,21 @@ PATTERNS.pinkn3_finalmaze = {
         if (t.checkpoint === 1) { for (const n of S.nodes) if (n.checkpoint > 1) n.checkpoint = 1; t.checkpoint = 2; } }
       else { S.soul.x = t.x - Math.cos(md) * S.heartTravel; S.soul.y = t.y - Math.sin(md) * S.heartTravel; }
     }
-    // ---- HUNTER (diff3): launch from (320,140) toward node_start every _frequency frames ----
-    if (S.drift && !S._won) {
-      const freq = 36 + Math.max(0, Math.min(4, S.hits - 1)) * 2;
-      if (S.hphase === 0) { if (S.soul.x > 320 + 96) { S.hphase = 1; S.htime = freq; } }
-      else { S.htime++; if (S.htime >= freq) { S.htime = 0;
-        S.acts.push({ node: S.start, _tnode: S.start, mode: 0, pattern: 3, x: 320, y: 140, life: 0, pdir: 0, _hunter: 1 }); } }
+    // ---- DIE-TRAIN (diff3): a LOOP of evenly-spaced DIE! buttons patrols the main chain (excl. start/end &
+    // the side SAFETY nodes), chasing the player. They wrap end->start endlessly. Hide in a safety node or
+    // reach the goal to survive; a hit sends you back to the START (not a checkpoint). ----
+    if (S.round === 3 && S.trainPath && !S._won) {
+      if (!S.trainStarted && S.soulNode !== S.start) {   // spawns once the player first leaves the start node
+        S.trainStarted = true; S.train = []; const NB = 4, tpN = S.trainPath.length;
+        for (let i = 0; i < NB; i++) S.train.push({ seg: Math.floor(i * tpN / NB) % tpN, prog: 0, x: 0, y: 0 }); }
+      if (S.trainStarted) { const tp = S.trainPath, tpN = tp.length, spd = 2.4 + S.hits * 0.18;   // speeds up as you get hit
+        for (const btn of S.train) {
+          let na = S.nodes[tp[btn.seg]], nb = S.nodes[tp[(btn.seg + 1) % tpN]], edge = Math.hypot(nb.x - na.x, nb.y - na.y) || 1;
+          btn.prog += spd; let guard = 0;
+          while (btn.prog >= edge && guard++ < 60) { btn.prog -= edge; btn.seg = (btn.seg + 1) % tpN; na = S.nodes[tp[btn.seg]]; nb = S.nodes[tp[(btn.seg + 1) % tpN]]; edge = Math.hypot(nb.x - na.x, nb.y - na.y) || 1; }
+          const tt = btn.prog / edge; btn.x = na.x + (nb.x - na.x) * tt; btn.y = na.y + (nb.y - na.y) * tt;
+        }
+      }
     }
     // ---- ACTS: obj_pinknodeact movement patterns ----
     for (const ac of S.acts) { ac.life++; const n = S.nodes[ac.node] || { x: 320, y: 268 };
@@ -2532,10 +2567,20 @@ PATTERNS.pinkn3_finalmaze = {
         S.soulNode = cp; const c = S.nodes[cp]; S.soul.x = c.x; S.soul.y = c.y; S.heartTravel = 0; }
       else if (ac.mode === 1) { S._won = 1; S._winT = 0; if (typeof Snd !== 'undefined') Snd.play('pinkcoin', 0.7); if (B) B.flash = 14; }
     }
+    // ---- DIE-TRAIN CONTACT (diff3): hit -> back to the START node + UNIQUE tiered damage (80/40/10 by HP%) ----
+    if (S.round === 3 && S.trainStarted && !S._won && S.iframes <= 0 && B) {
+      for (const btn of S.train) { if (Math.hypot(S.soul.x - btn.x, S.soul.y - btn.y) < 22) {
+        for (const m of (B.myTeam || [])) if (m && m.hp > 0) { const mx = m.max || m.maxhp || m.hp, pct = m.hp / mx;
+          const dmg = pct > 0.5 ? 80 : pct > 0.25 ? 40 : 10; m.hp = Math.max(0, m.hp - dmg); B.dmgTaken = (B.dmgTaken || 0) + dmg; }
+        S.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; if (typeof Snd !== 'undefined') Snd.play('hurt', 0.5); S.hits++;
+        S.soulNode = S.start; const c = S.nodes[S.start]; S.soul.x = c.x; S.soul.y = c.y; S.heartTravel = 0; break;
+      } }
+    }
     if (S._won) { S._winT++; if (S._winT >= 25) { if (S.round + 1 < S.ROUNDS) S.round++; else S._done = true; } }   // mode1 timer 2/frame->50 ~= 25 real frames
     // ---- POSSESSED Mew Mew backdrop (3-layer form + eye-lasers) is drawn behind the maze by drawMaze ----
     a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText, round: S.round,
       dokis: S.dokis.filter(d => d.spawned && !d.collected).map(d => ({ x: d.x, y: d.y })),
+      train: S.train ? S.train.map(b => ({ x: b.x, y: b.y })) : null,
       soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2 };
   },
 };
