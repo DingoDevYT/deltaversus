@@ -895,11 +895,29 @@ Battle.updDodge = function () {
       } else {                                        // mode 5 conveyor: lane 0 pushes DOWN, lane 1 pushes UP (1.25/frame)
         if (B.pLaneX === 0) B.pOnY = Math.min(B.pOnY + 1.25, ymax); else B.pOnY = Math.max(B.pOnY - 1.25, -ymax);
       }
-    } else if (pm === 7) {                            // 3-D TUNNEL: the heart ORBITS a ring around centre; L/R rotate around it
-      if (B.pAng == null) B.pAng = 90;
-      const rr = 4.2; if (D.left) B.pAng -= rr; if (D.right) B.pAng += rr;
-      const R = (CF.purpleSoul.ringR || 92);
-      B.pOnX = Math.cos(B.pAng * Math.PI / 180) * R; B.pOnY = Math.sin(B.pAng * Math.PI / 180) * R;
+    } else if (pm === 7) {                            // 3-D TUNNEL (obj_purplecontrols mode 7): the heart RIDES one of the
+      // 8 expanding rings (tunnel_lane_layer). UP hops INWARD (forward), DOWN hops outward, LEFT/RIGHT swing
+      // the heart ±90 degrees around the tunnel. The heart is carried outward as its ring grows and ZOOMS with
+      // it (image_xscale = radius/48). GML angles: screen pos = centre + (R*cos(a), -R*sin(a)); 270 = bottom.
+      const T = CF.purpleSoul || {};
+      if (B._pT7 == null) { B._pT7 = 1; B.pAng = 270; B.pLayer = 0; B.pRotT = 0; B._pShiftSeen = T.shiftN || 0; B.pR = 12; }
+      const rings = T.rings || [], lim = T.moveLimit || 131;
+      if (T.shiftN != null && T.shiftN !== B._pShiftSeen) { B.pLayer = Math.min(7, B.pLayer + (T.shiftN - B._pShiftSeen)); B._pShiftSeen = T.shiftN; }
+      if ((rings[B.pLayer] || 0) <= 0 && B.pLayer > 0) B.pLayer--;   // our ring got recycled -> drop to the next live one
+      if (B.pRotT === 0) {
+        if (H.left) B.pRotT = -90; else if (H.right) B.pRotT = 90;   // rotate_travel ±90 (discrete swings)
+        else if (H.up && B.pLayer > 0) { B.pLayer--; Snd.play('graze', 0.2); }   // heart_travel -1: hop INWARD
+        else if (H.down && B.pLayer < 7 && rings[B.pLayer + 1] > 0 && rings[B.pLayer + 1] <= lim && (rings[B.pLayer] || 0) <= lim) { B.pLayer++; Snd.play('graze', 0.2); }
+      }
+      if (B.pRotT !== 0) {   // GML: _rotation_speed = 4 + |to_go|/6, eased swing
+        const spd = 4 + Math.abs(B.pRotT) / 6, st = Math.sign(B.pRotT) * Math.min(spd, Math.abs(B.pRotT));
+        B.pAng = ((B.pAng + st) % 360 + 360) % 360; B.pRotT -= st;
+        if (Math.abs(B.pRotT) < 0.5) { B.pRotT = 0; B.pAng = Math.round(B.pAng / 90) * 90 % 360; }
+      }
+      B.pR = ap(B.pR, Math.max(12, rings[B.pLayer] || 12), 9);       // radius follows the ring (eased hop transitions)
+      const ar = B.pAng * Math.PI / 180;
+      B.pOnX = Math.cos(ar) * B.pR; B.pOnY = -Math.sin(ar) * B.pR;   // GML lengthdir: y is NEGATIVE sin
+      B.pHScale = Math.max(0.4, B.pR / 48);                          // pseudo-3D zoom (image_xscale = radius/48)
     } else if (pm === 3) {                            // ROTATING "+" cross: 5 cells (center + 4 arms at 56), whole box spins
       const ang = ((CF.purpleSoul.rot || 0)) * Math.PI / 180, cs = Math.cos(ang), sn = Math.sin(ang);
       const gx = B.pLaneX * 56, gy = B.pLaneY * 56;   // on-grid (pre-rotation) target
@@ -1389,36 +1407,78 @@ function drawBoxRect(ctx, cx, cy, w, h, rot, alpha) {
   ctx.strokeRect(-w / 2 - 1.5, -h / 2 - 1.5, w + 3, h + 3);
   ctx.restore();
 }
-// DATE minigame quiz: question + scrolling answer options + selection cursor + a timer bar.
-function drawDateUI(ctx, bx, D) {
+// DATE minigame: the FULL dating-sim takeover screen (obj_date_controller Draw_0 layout):
+// black screen + scrolling spr_diamond_loop tiles, spr_datingsim_ui_bg frame at (106,24)x2, Pink's
+// talking portrait, typewriter question text centred at (320,208) with a white 8-direction outline and
+// near-black fill (mainbig, sep 28, wrap 320), the purple gradient band, and the CYLINDRICAL option
+// carousel at y=291: boxes 200 apart on a strip projected via angle=lerp(0,180,(x+165)/970),
+// screenX = 240*cos(angle)+312 (perspective squeeze at the edges), scrolled LEFT/RIGHT.
+function drawDateUI(ctx, D) {
+  const bp = (typeof bulletProps === 'function') ? bulletProps : null;
+  const img = id => { const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; };
   ctx.save();
-  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  if (D.done) { ctx.fillStyle = '#ff8fe0'; ctx.font = "16px 'Determination Mono', monospace";
-    ctx.textAlign = 'center'; ctx.fillText('♥  DATE CLEARED  ♥', bx.x + bx.w / 2, bx.y + bx.h / 2 - 8); ctx.restore(); return; }
-  const pad = 12, ox = bx.x + pad, top = bx.y + 10;
-  // question (wraps)
-  ctx.fillStyle = D.flash > 0 && (D.flash % 4 < 2) ? '#ff5a5a' : '#fff';
-  ctx.font = "12px 'Determination Mono', monospace";
-  const words = (D.q || '').split(' '); let line = '', ly = top, maxw = bx.w - pad * 2;
-  for (const w of words) { const t = line ? line + ' ' + w : w;
-    if (ctx.measureText(t).width > maxw && line) { ctx.fillText(line, ox, ly); ly += 15; line = w; } else line = t; }
-  if (line) ctx.fillText(line, ox, ly);
-  ly += 24;
-  // options (scrolling list) with the heart cursor on the selected one
-  for (let i = 0; i < D.opts.length; i++) {
-    const sel = i === D.sel, y = ly + i * 20;
-    if (sel) { const im = A.soul('red0') || A.ui('soul'); if (im) drawSpr(ctx, im, ox + 6, y + 6, { scale: 1 }); }
-    ctx.fillStyle = sel ? (D.correct ? '#7dff7d' : '#ffe100') : '#c9c9c9';
-    ctx.fillText(D.opts[i], ox + 20, y);
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
+  const dia = img('dsimdiamond');   // scrolling diamond background (2x tiles)
+  if (dia) { ctx.globalAlpha = 0.55;
+    for (let ty = -80 + ((D.bgy || 0) - 80); ty < 480 + 80; ty += 80) for (let tx = -80 + (-(D.bg || 0)); tx < 640 + 80; tx += 80)
+      ctx.drawImage(dia, tx, ty, 80, 80);
+    ctx.globalAlpha = 1; }
+  const frame = img('dsimbg');      // spr_datingsim_ui_bg at (106,24) scale 2 (drawn from its corner)
+  if (frame) ctx.drawImage(frame, 106, 24, 480, 280);
+  if (D.done) {
+    ctx.fillStyle = '#fff'; ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center';
+    ctx.fillText('* You answered from the heart.', 320, 200);
+    ctx.restore(); return;
   }
-  // timer bar
-  if (D.timer != null) { const bw = bx.w - pad * 2, y = bx.y + bx.h - 12;
-    ctx.fillStyle = '#333'; ctx.fillRect(ox, y, bw, 4);
-    ctx.fillStyle = D.timer < 0.3 ? '#ff5a5a' : '#ff8fe0'; ctx.fillRect(ox, y, bw * D.timer, 4); }
-  // progress dots
-  for (let i = 0; i < D.total; i++) { ctx.fillStyle = i < D.qi ? '#7dff7d' : i === D.qi ? '#ff8fe0' : '#555';
-    ctx.beginPath(); ctx.arc(bx.x + bx.w - 12 - i * 10, bx.y + 8, 3, 0, 6.283); ctx.fill(); }
+  const tail = img('dsimtail'), po = img('dsimpink' + (D.talk || 0));   // talking portrait + tail (scale 2)
+  if (tail) ctx.drawImage(tail, 320 - 112, 21, 224, 232);
+  if (po) ctx.drawImage(po, 320 - 112, 26, 224, 232);
+  // purple gradient band above the options (dialoguebox trianglestrip 106..526, y 210..273)
+  const g = ctx.createLinearGradient(0, 210, 0, 273);
+  g.addColorStop(0, 'rgba(160,60,190,0.2)'); g.addColorStop(1, 'rgba(160,60,190,0.8)');
+  ctx.fillStyle = g; ctx.fillRect(106, 210, 420, 63);
+  // question: typewriter, centred at (320,208), wrap 320, sep 28; WHITE 8-dir outline + near-black fill
+  const text = (D.q || '').slice(0, D.chars != null ? D.chars : 1e9);
+  ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const words = text.split(' '), lines = []; let line = '';
+  for (const w of words) { const t = line ? line + ' ' + w : w;
+    if (ctx.measureText(t).width > 320 && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line);
+  const flash = D.flash > 0 && (D.flash % 4 < 2);
+  for (let li = 0; li < lines.length; li++) { const y = 208 + li * 28;
+    ctx.fillStyle = flash ? '#ff4040' : '#fff';
+    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(lines[li], 320 + dx, y + dy);
+    ctx.fillStyle = '#0d0d0d'; ctx.fillText(lines[li], 320, y); }
+  // ---- the option CAROUSEL (exact cylindrical projection) ----
+  const n = D.opts.length, order = [-3, 3, -2, 2, -1, 1, 0];
+  const proj = sx => 240 * Math.cos((Math.max(0, Math.min(1, (sx + 165) / 970)) * 180) * Math.PI / 180) + 312;
+  for (const k of order) {
+    const idx = ((D.sel + k) % n + n) % n, stripX = 233 + (D.off || 0) + k * 200;
+    if (stripX <= -366 || stripX >= 832) continue;
+    let xL = proj(stripX), xR = proj(stripX + 160);
+    const w = Math.abs(xL - xR); if (w < 3) continue;
+    const x0 = Math.min(xL, xR), y0 = 291;
+    ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, w, 60);                       // white border
+    ctx.fillStyle = '#000'; ctx.fillRect(x0 + 2, y0 + 2, w - 4, 56);           // black fill
+    const ts = Math.min(3, 3 * (w / 170));                                     // text squeezes with the box
+    if (ts > 0.35) {
+      ctx.font = Math.max(6, Math.round(9 * ts)) + "px 'Determination Mono', monospace";
+      ctx.fillStyle = k === 0 && D.correct ? '#7dff7d' : '#fff';
+      ctx.textBaseline = 'middle'; ctx.fillText(D.opts[idx], x0 + w / 2, y0 + 30);
+    }
+  }
+  // the date heart marks the centred (selected) option
+  const heart = A.soul('red0') || A.ui('soul');
+  if (heart) drawSpr(ctx, heart, 319, 283 + Math.sin((D.bg || 0) * 0.2) * 2, { scale: 1 });
+  // purple arrow hints (obj_marker spr_pink_purple_arrow, tinted purple)
+  const arw = img('pkarrow');
+  if (arw) for (const m of (D.marks || [])) { ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, m.alpha));
+    ctx.translate(m.x, m.y); ctx.rotate(m.rot); ctx.drawImage(arw, -14, -14, 28, 28); ctx.restore(); }
+  // question timer (timed questions only)
+  if (D.timer != null) { ctx.fillStyle = '#2a2a2a'; ctx.fillRect(160, 460, 320, 5);
+    ctx.fillStyle = D.timer < 0.3 ? '#ff5050' : '#c060e0'; ctx.fillRect(160, 460, 320 * D.timer, 5); }
   ctx.restore();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }
 // The battle box only exists during the dodge (and its spin-in / spin-out).
 Battle.renderBoxAndBullets = function (ctx) {
@@ -1463,7 +1523,7 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.lineTo(bx.x + bx.w, bx.y + bx.h - p); ctx.lineTo(bx.x, bx.y + bx.h); ctx.closePath();
     ctx.fill(); ctx.strokeStyle = '#00c000'; ctx.lineWidth = 3; ctx.stroke();
   } else drawBoxRect(ctx, cx, cy, bx.w, bx.h, (B.fx && B.fx.purpleSoul && B.fx.purpleSoul.mode === 3 ? (B.fx.purpleSoul.rot || 0) * Math.PI / 180 : (B.fx && B.fx.boxRot) || 0), 1);
-  if (B.fx && B.fx.date) { drawDateUI(ctx, bx, B.fx.date); return; }   // DATE minigame quiz UI (no bullets/soul)
+  if (B.fx && B.fx.date) { drawDateUI(ctx, B.fx.date); return; }   // DATE minigame: full dating-sim takeover screen
   // pattern-driven overlays: a second non-enterable box (face attack) + green connector arms (phones/heart)
   if (B.fx) {
     if (B.fx.arms) { ctx.strokeStyle = '#49d049'; ctx.lineWidth = 3; ctx.lineCap = 'round';
@@ -1531,13 +1591,13 @@ Battle.renderBoxAndBullets = function (ctx) {
       ctx.beginPath(); ctx.moveTo(gcx + o, gcy - bx.h / 2 + 6); ctx.lineTo(gcx + o, gcy + bx.h / 2 - 6); ctx.stroke(); } }
     else if (B._pmode === 3) { const a = ((B.fx && B.fx.purpleSoul && B.fx.purpleSoul.rot) || 0) * Math.PI / 180;   // rotating "+" cross arms
       for (let k = 0; k < 4; k++) { const t = a + k * Math.PI / 2; ctx.beginPath(); ctx.moveTo(gcx, gcy); ctx.lineTo(gcx + Math.cos(t) * 62, gcy + Math.sin(t) * 62); ctx.stroke(); } }
-    else if (B._pmode === 7) { const ps = (B.fx && B.fx.purpleSoul) || {}, R = ps.ringR || 92;   // 3-D TUNNEL
-      // concentric expanding rings = the pseudo-3D tunnel depth (obj_purplecontrols tunnel_radius[8])
-      if (ps.rings) for (const rr of ps.rings) { if (rr <= 2) continue;
-        ctx.strokeStyle = 'rgba(181,105,214,' + Math.max(0.12, 0.5 - rr / 340) + ')'; ctx.lineWidth = 1 + rr / 90;
+    else if (B._pmode === 7) { const ps = (B.fx && B.fx.purpleSoul) || {};   // 3-D TUNNEL
+      // the 8 expanding tunnel_radius rings (pseudo-3D depth); the heart's ring is highlighted
+      if (ps.rings) for (let i = 0; i < ps.rings.length; i++) { const rr = ps.rings[i]; if (rr <= 2) continue;
+        const mine = i === B.pLayer;
+        ctx.strokeStyle = mine ? 'rgba(220,160,255,0.85)' : 'rgba(181,105,214,' + Math.max(0.14, 0.55 - rr / 300) + ')';
+        ctx.lineWidth = mine ? 2 : 1 + rr / 110;
         ctx.beginPath(); ctx.arc(gcx, gcy, rr, 0, 6.283); ctx.stroke(); }
-      ctx.strokeStyle = 'rgba(181,105,214,0.7)'; ctx.lineWidth = 1.5;   // the soul's orbit ring
-      ctx.beginPath(); ctx.arc(gcx, gcy, R, 0, 6.283); ctx.stroke();
       if (ps.elec != null) {   // flickering electric frame around the box (obj_pink3durgenter)
         const seg = 9, w = bx.w, h = bx.h, ph = ps.elec;
         ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2;
@@ -1554,8 +1614,9 @@ Battle.renderBoxAndBullets = function (ctx) {
   const blink = B.iframes > 0 && (B.anim.f % 8 < 4);
   if (!blink) {
     // the real heart sprites: yellow "Justice" soul, green (block), purple (Pink grid), or the normal red heart
-    const soulImg = B.soulPurple ? tintedSoul('#b25cff') : B.soulGreen ? tintedSoul('#33d13a') : B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
-    drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: 1 });
+    const soulImg = B.soulPurple ? (A.soul(B.anim.f % 20 < 10 ? 'pheart0' : 'pheart1') || tintedSoul('#b25cff'))   // the REAL spr_purpleheart (20px, 2 frames)
+      : B.soulGreen ? tintedSoul('#33d13a') : B.soulYellow ? A.soul(B.anim.f % 20 < 10 ? 'yheart0' : 'yheart1') : (A.soul('red0') || A.ui('soul'));
+    drawSpr(ctx, soulImg, B.soul.x, B.soul.y, { scale: B.soulPurple && B._pmode === 7 ? (B.pHScale || 1) : 1 });   // tunnel: heart ZOOMS with its ring (radius/48)
   }
   if (B.grazeFx) {   // graze sparkle: spr_grazeappear_0..3 (yellow variant for the yellow soul)
     const fr = Math.min(3, Math.floor((8 - B.grazeFx.t) / 2));

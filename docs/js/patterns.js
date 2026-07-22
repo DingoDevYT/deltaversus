@@ -1540,7 +1540,7 @@ function pinkFireCat(add, cx, cy, e) {
 }
 function pinkCatsPattern(chart) {
   return {
-    box: { w: 150, h: 130 }, hz30: 1, dur: pinkCatsSchedule(chart).total + 90,
+    box: { w: 150, h: 150 }, hz30: 1, dur: pinkCatsSchedule(chart).total + 90,   // growtangle 75x75 hitbox at scale 2 = 150x150
     tick(a) {
       const { f, box, add } = a; a.fx.purpleSoul = { mode: 1, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -1572,43 +1572,56 @@ function pinkDatePattern(questions) {
   return {
     box: { w: 300, h: 190 }, hz30: false, dur: 100000,   // 60Hz (menu input); ends itself when all questions cleared
     tick(a) {
-      const { f, box } = a;
+      const { f } = a;
       const IN = (typeof Input !== 'undefined') ? Input : { hit: {}, down: {} };
-      if (f === 0) { this._qi = 0; this._sel = 0; this._timer = 0; this._flash = 0; this._con = 0; this._done = false; }
-      if (this._done) { a.fx.date = { done: true }; return; }
+      if (f === 0) { this._qi = 0; this._sel = 0; this._timer = 0; this._flash = 0; this._con = 0; this._done = false;
+                     this._chars = 0; this._off = 0; this._marks = []; this._bg = 0; this._bgy = 0; this._talk = 0; }
+      this._bg = (this._bg + 0.7) % 80; this._bgy = (this._bgy + 0.4) % 80;   // scrolling diamond bg
+      // purple arrow hints (obj_marker spr_pink_purple_arrow: down @319,375 every 15f, left @309,385)
+      if (!this._done && this._con === 0 && (f % 30) === 0) {
+        this._marks.push({ x: 319, y: 375, rot: Math.PI / 2, spd: 0.65, fade: 0.02, alpha: 1 });
+        if (!(this._qi === 0 && questions === PINK_DATE1)) this._marks.push({ x: 309, y: 385, rot: Math.PI, spd: 1, fade: 0.005, alpha: 1 });
+      }
+      for (const m of this._marks) { m.x += Math.cos(m.rot) * m.spd; m.y += Math.sin(m.rot) * m.spd; m.alpha -= m.fade; }
+      this._marks = this._marks.filter(m => m.alpha > 0);
+      if (this._done) { a.fx.date = { done: true, bg: this._bg, bgy: this._bgy }; return; }
       const Q = questions[this._qi], n = Q.opts.length;
       this._timer++;
-      const LIMIT = Q.timed ? 300 : 1e9;   // ~10s at 30Hz for timed questions
+      this._chars += 1;                                     // typewriter (+2/frame at 30fps = +1 at 60Hz)
+      this._talk += 0.167;
+      if (this._off !== 0) this._off += (0 - this._off) * 0.25;   // carousel scroll ease back to centre
+      if (Math.abs(this._off) < 1) this._off = 0;
+      const LIMIT = Q.timed ? 600 : 1e9;                    // timed questions run out (600 @60Hz = 10s)
       if (this._flash > 0) this._flash--;
-      // navigate
       if (this._con === 0) {
-        if (IN.hit && (IN.hit.up)) this._sel = (this._sel - 1 + n) % n;
-        else if (IN.hit && (IN.hit.down)) this._sel = (this._sel + 1) % n;
-        const confirm = (IN.hit && IN.hit.ok) || (IN.down && IN.down.ok && this._timer % 6 === 0 && this._timer > 6);
+        if (IN.hit && IN.hit.left) { this._sel = (this._sel - 1 + n) % n; this._off = -200; Snd.play('menumove', 0.4); }
+        else if (IN.hit && IN.hit.right) { this._sel = (this._sel + 1) % n; this._off = 200; Snd.play('menumove', 0.4); }
+        const confirm = IN.hit && IN.hit.ok && this._timer > 8;
         if (confirm) {
-          if (this._sel === Q.correct) { this._con = 1; this._conT = 0; }   // correct -> advance
-          else { this._wrong(); }
+          if (this._sel === Q.correct) { this._con = 1; this._conT = 0; Snd.play('healspark', 0.5); }
+          else this._wrong();
         }
-        if (this._timer >= LIMIT) this._wrong();   // timeout = wrong
-      } else {   // brief "correct!" beat then next question
+        if (this._timer >= LIMIT) this._wrong();
+      } else {
         this._conT = (this._conT || 0) + 1;
-        if (this._conT >= 24) {
-          this._qi++; this._sel = 0; this._timer = 0; this._con = 0;
+        if (this._conT >= 48) {
+          this._qi++; this._sel = 0; this._timer = 0; this._chars = 0; this._con = 0;
           if (this._qi >= questions.length) this._done = true;
         }
       }
       a.fx.date = {
-        q: Q.q, opts: Q.opts, sel: this._sel, qi: this._qi, total: questions.length,
-        timer: Q.timed ? Math.max(0, 1 - this._timer / LIMIT) : null,
-        flash: this._flash, correct: this._con === 1,
+        q: Q.q, chars: Math.floor(this._chars), opts: Q.opts, sel: this._sel, off: this._off,
+        qi: this._qi, total: questions.length, timer: Q.timed ? Math.max(0, 1 - this._timer / LIMIT) : null,
+        flash: this._flash, correct: this._con === 1, marks: this._marks, bg: this._bg, bgy: this._bgy,
+        talk: Math.floor(this._talk) % 2,
       };
     },
     _wrong() {
-      this._flash = 12; this._timer = 0;
+      this._flash = 20; this._timer = 0; this._chars = 0;
       if (typeof Battle !== 'undefined') {
         Battle.shake = Math.max(Battle.shake || 0, 12); Battle.flash = 8;
         Snd.play('hurt', 0.5);
-        for (const m of (Battle.myTeam || [])) if (m && m.hp > 0) { m.hp = Math.max(m.hp > 100 ? m.hp - 40 : 1, m.hp - 40); }   // damages the whole party
+        for (const m of (Battle.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(1, m.hp - 40);   // wrong/timeout damages the party
       }
     },
   };
@@ -1621,7 +1634,7 @@ PATTERNS.pinkn_date2 = pinkDatePattern(PINK_DATE2);
 // frames. Ported 1:1 from the btimer_array burst/break logic. Swap lanes L/R, weave vertically.
 function pinkVLaneBurst(streams, mode, boxH, spdMod, dmg, corners) {
   return {
-    box: { w: 168, h: boxH }, hz30: 1, dur: 420,
+    box: { w: 169, h: boxH }, hz30: 1, dur: 420,   // 150 x1.125 = 169 wide
     tick(a) {
       const { f, box, add } = a; a.fx.purpleSoul = { mode, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2, bh = box.h;
@@ -1649,7 +1662,7 @@ PATTERNS.pinkn_vrain = pinkVLaneBurst([
   { xoff: -28, dir: 'down', interval: 7, number: 3, break: -30, speed: 3.2 },
   { xoff: 0, dir: 'up', interval: 10, number: 2, break: -36, speed: 2 },
   { xoff: 28, dir: 'down', interval: 36, number: 1, break: -24, speed: 1.25 },
-], 4, 230, 1, 22);
+], 4, 225, 1, 22);
 // ============ TYPE 202 — PLUS-GRID / ROTATING BOX: 1:1 port ============
 // purple mode 3 (5-cell "+" cross). obj_dbulletcontroller(202) plays a ds_bullet_list of [shot, dir,
 // interval, speed]. dir = 0/90/180/270 (GML: right/up/left/down) = which of the 4 arms the bullet streams
@@ -1683,7 +1696,7 @@ function pinkPlusSchedule(chart) {
 }
 function pinkPlusGridPattern(chart, spin) {
   return {
-    box: { w: 160, h: 160 }, hz30: 1, dur: pinkPlusSchedule(chart).total + 120,
+    box: { w: 150, h: 150 }, hz30: 1, dur: pinkPlusSchedule(chart).total + 120,   // base 150x150 box
     tick(a) {
       const { f, box, add } = a;
       if (f === 0) { this._S = pinkPlusSchedule(chart); this._si = 0; this._rot = 0; this._rtar = 0; this._grp = 0; }
@@ -1703,38 +1716,131 @@ function pinkPlusGridPattern(chart, spin) {
 PATTERNS.pinkn_plusgrid = pinkPlusGridPattern(PINK_PLUS_D0, false);   // P2 T1 — static
 PATTERNS.pinkn_plusgrid2 = pinkPlusGridPattern(PINK_PLUS_D2, false);  // P2 T5 — static, faster
 PATTERNS.pinkn_rotbox = pinkPlusGridPattern(PINK_PLUS_D0, true);      // P3 T1 — 90° box knocks (giant ghost)
-// ============ TYPE 208 — 3-D TUNNEL (purple mode 7): 1:1-structured port ============
-// obj_purplecontrols mode 7: 8 concentric tunnel_radius[] rings expand outward from the vanishing point
-// (r *= 1 + r/(grow_factor/speed), +grow_addition*speed; recycle past _circle_grow_limit; new ring at 12
-// every _circle_interval/speed). tunnel_speed ramps min(life/10, 1.5+life/50, 11) then SLOWS as a ring
-// nears your orbit. Press UP to start (auto after 40f here). obj_pinkzap arrows ride a ring, orbiting
-// (wave_dir += sign(pattern_speed)*48, pattern_speed = choose(-1,1)*(2+rand4)) in groups of 6/8; + hearts.
+// ============ TYPE 208 — 3-D TUNNEL (purple mode 7): FULL 1:1 port ============
+// obj_purplecontrols mode 7, EXACT constants: 8 tunnel_radius[] rings; grow r = r*(1 + r/(32000/speed))
+// + 0.0375*speed; recycle at 224; new ring at radius 12 every 188 tunnel-units; tunnel_speed_base =
+// min(life/10, 1.5+life/50, 11) with the huge early kick (life<40: += (240/max(1,life*.9))*(40-life)/40)
+// that floods the tunnel at the start; zoom-in boost (x4/3 stacking while the heart is near centre);
+// STALLS when the heart's ring passes moveLimit = 35*box_scale (1/3 -> 1/6 -> 0) — hop INWARD (UP) to
+// keep moving. Box shrinks: scale = 3.75 - min(life*.0025,(life+30)*.002,(life+135)*.0015,(life+390)*.001),
+// box = 75*scale. Zap WALLS spawn at centre on the newest ring: pattern_list [atk, angle] chain generator
+// (exact _atk switch), walls of `repeats` zaps spaced 10 degrees (ends harmless, mask_empty), variants:
+// 0=6@cardinal, 1=15@diagonal, 2=29 near-full ring, 3=6-8 MOVING (spr_pinkzap_arrow, drifts ±2.5/5),
+// 4=6x2 opposite. Dokis ride rings on non-attack shifts. tunnel_lane_direction = 270 rotates all spawns.
 PATTERNS.pinkn_tunnel = {
-  box: { w: 280, h: 280 }, hz30: 1, dur: 620,
+  box: { w: 281, h: 281 }, hz30: 1, dur: 900,
   tick(a) {
     const { f, box, add, rng } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, LIMIT = box.w / 2 - 6, ringR = 92;
-    if (f === 0) { this._rings = []; this._timer = 0; this._atimer = 0; this._life = 0; this._started = false; }
-    if (!this._started && ((typeof Input !== 'undefined' && Input.down && Input.down.up) || f > 40)) { this._started = true; this._rings = [12, 44, 82, 118]; }   // seed the tunnel so it's visible immediately
-    a.fx.purpleSoul = { mode: 7, ringR, rings: this._rings.slice(), elec: this._started ? Math.floor(f / 6) % 3 : null };
-    if (!this._started) return;
-    this._life++; const L = this._life;
-    let speed = Math.min(L / 10, 1.5 + L / 50, 11) * 0.5;   // tunnel_speed ramp (halved for our 30Hz sim)
-    for (const r of this._rings) if (Math.abs(r - ringR) < 10) speed = Math.min(speed, 0.5);   // slow as a ring nears the orbit
-    for (let i = 0; i < this._rings.length; i++) { let r = this._rings[i]; this._rings[i] = r * (1 + r / (9000 / speed)) + 0.6 * speed; }
-    this._rings = this._rings.filter(r => r <= LIMIT);
-    this._timer += speed;
-    if (this._timer >= 34 && this._rings.length < 8) { this._timer -= 34; this._rings.push(12); }   // new tunnel ring (max 8)
-    // arrow groups are periodic attacks (obj_pinkzap on pattern_list), NOT one per ring
-    this._atimer += speed;
-    if (this._atimer >= 62 && this._life < 560) {
-      this._atimer -= 62;
-      const cnt = rng() < 0.5 ? 6 : 8, dir = rng() < 0.5 ? 1 : -1, w = dir * (0.06 + rng() * 0.03), base = rng() * Math.PI * 2, grow = 1.7 + speed * 0.6;
-      for (let i = 0; i < cnt; i++) { const ang = base + i * (Math.PI * 2 / cnt);
-        add({ ...bulletProps('pzap'), x: cx + Math.cos(ang) * 12, y: cy + Math.sin(ang) * 12, vx: 0, vy: 0, r: 7, grazeR: 10, scale: PS(1.4), dmg: 26, life: 240, orbit: { cx, cy, ang, w, R: 12, grow } });
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const ir = n => Math.floor(rng() * (n + 1)), pick = (...xs) => xs[Math.floor(rng() * xs.length)];
+    const wrap = d => ((d % 360) + 360) % 360;
+    if (f === 0) {
+      this.S = { rings: [0, 0, 0, 0, 0, 0, 0, 0], timer: 0, life: 0, started: false, shiftN: 0,
+                 list: [], phase: -2, laneDir: 270, lastAtk: -1, cx, cy };
+    }
+    const S = this.S;
+    if (!S.started && ((typeof Input !== 'undefined' && Input.down && Input.down.up) || f > 150)) S.started = true;
+    const L = S.life;
+    const scale = 3.75 - Math.min(L * 0.0025, (L + 30) * 0.002, (L + 135) * 0.0015, (L + 390) * 0.001);
+    const moveLimit = 35 * scale;
+    const bw = Math.round(75 * scale);
+    a.fx.boxTarget = { x: cx - bw / 2, y: cy - bw / 2, w: bw, h: bw };   // the box SHRINKS over the attack
+    a.fx.purpleSoul = { mode: 7, rings: S.rings.slice(), moveLimit, shiftN: S.shiftN, elec: S.started ? Math.floor(f / 4) % 3 : null };
+    if (!S.started) return;
+    S.life++;
+    // ---- tunnel_speed (exact) ----
+    let speed = Math.min(L / 10, 1.5 + L / 50, 11);
+    if (L < 40) speed += ((240 / Math.max(1, L * 0.9)) * (40 - L)) / 40;   // the early flood
+    const hl = (typeof Battle !== 'undefined' && Battle.pLayer != null) ? Battle.pLayer : 0;
+    const hR = (typeof Battle !== 'undefined' && Battle.pR != null) ? Battle.pR : 12;
+    if (L >= 40) { let base = Math.min(L / 10, 1.5 + L / 50, 11);          // zoom-in boost while near the centre
+      for (let i = 0; i < 8; i++) { if (hR < Math.max(34, 59 - base * 3) - (i * i) / 2) { if (i === 0) speed = Math.max(speed, 2); else speed *= 4 / 3; } else break; } }
+    const rHeart = S.rings[hl] || 0;                                       // stall if your ring is past the limit
+    if (rHeart > moveLimit + 2) { speed = 1 / 3; if (rHeart > moveLimit + 8) { speed = 1 / 6; if (rHeart > moveLimit + 15) speed = 0; } }
+    // ---- grow + recycle rings (exact formula) ----
+    if (speed > 0) for (let i = 0; i < 8; i++) { let r = S.rings[i]; if (r > 0) {
+      r = r * (1 + r / (32000 / speed)) + 0.0375 * speed;
+      S.rings[i] = r > 224 ? 0 : r; } }
+    // ---- shift: new ring + attack/doki ----
+    S.timer += speed;
+    if (S.timer >= 188) {
+      S.timer -= 188;
+      for (let i = 7; i >= 1; i--) S.rings[i] = S.rings[i - 1];
+      S.rings[0] = 12; S.shiftN++;
+      let dokidir = ir(3) * 90;
+      S.phase++;
+      if (S.phase >= 1) {
+        if (S.list.length <= 0) {   // refill pattern_list with the EXACT _atk chain generator
+          let atk = S.lastAtk, ang = S.list.length ? 0 : ir(7) * 45;
+          for (let k = 0; k < 3; k++) {
+            let na, nang = ang;
+            switch (atk) {
+              case 0: na = pick(1, 3, 4);
+                if (na === 1) nang = ang + 45 + 90 * pick(1, 2); else if (na === 4) nang = 45 * pick(1, 3, 5, 7); else nang = 45 * ir(7); break;
+              case 1: na = pick(-1, 3); nang = na === 1 ? ang + 90 * pick(1, 3) : 45 * ir(7); break;
+              case 2: na = pick(-1, 0); nang = na === 0 ? ang + 90 * pick(0, 1, 3) : 45 * ir(7); break;
+              case 4: na = pick(-1, 0, 3, 4);
+                if (na === 0) nang = 90 * ir(3); else if (na === 4) nang = ang + 90; else nang = 45 * ir(7); break;
+              case 3: {
+                const prev4 = S.list.length >= 4 && S.list[S.list.length - 4] === 3;
+                na = prev4 ? -1 : pick(-1, 0, 1, 2, 3, 4);
+                if (na === 0 || na === 2) nang = 90 * ir(3); else if (na === 1 || na === 4) nang = 45 * pick(1, 3, 5, 7); else nang = 45 * ir(7); break; }
+              default: na = pick(0, 1, 2, 3, 4);
+                if (na === 0 || na === 2) nang = 90 * ir(3); else if (na === 1 || na === 4) nang = 45 * pick(1, 3, 5, 7); else nang = 45 * ir(7);
+            }
+            nang = wrap(nang);
+            if (na >= 0) { S.list.push(na, nang); atk = na; ang = nang; } else break;
+          }
+          S.lastAtk = atk;
+        }
+        S.phase -= 1;
+        const variant = S.list.shift(), vdir = S.list.shift();
+        if (S.list.length <= 0) S.phase -= 1;
+        // wall parameters (exact per-variant table)
+        const dirAdd = pick(-1, 1) * 10; let repeats = 6, moving = 0, multiple = 1, dir0 = vdir;
+        if (variant === 0) repeats = 6;
+        else if (variant === 1) repeats = 15;
+        else if (variant === 2) repeats = 29;
+        else if (variant === 3) { repeats = 6 + ir(2); moving = pick(-1, 1) * pick(2.5, 5); if (S.list.length >= 2 && (S.list[0] === 4 || S.list[0] === 2 || S.list[0] === 1)) repeats = 6; }
+        else { repeats = 6; multiple = 2; }
+        let dir = wrap((dir0 - (dirAdd / 2) * (repeats - 1)) + S.laneDir);
+        const mkZap = (angDeg, cap) => {
+          const b = { ...bulletProps(moving !== 0 ? 'pzaparrow' : 'pzap'), x: cx, y: cy, vx: 0, vy: 0,
+                      r: 7, grazeR: 10, scale: PS(1), dmg: 26, life: 9000, noHit: !!cap, alpha: 0,
+                      _zap: 1, _layer: 0, _ss: S.shiftN, _angDeg: angDeg, _spin: moving };
+          const SS = S;
+          b.emit = function (b) {
+            while (b._ss < SS.shiftN) { b._layer++; b._ss++; }
+            if (b._layer > 7 || (SS.rings[b._layer] || 0) <= 0) { b.dead = true; return; }
+            b._angDeg = wrap(b._angDeg + b._spin);
+            const R = SS.rings[b._layer], ar = b._angDeg * Math.PI / 180;
+            b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;   // GML lengthdir (y = -sin)
+            b.scale = PS(Math.max(0.5, R / 48));                              // pseudo-3D zoom with the ring
+            b.rot = Math.atan2(-Math.cos(ar), -Math.sin(ar)) + (b._spin < 0 ? Math.PI : 0);   // tangent
+            if (b.alpha < 1) b.alpha = Math.min(1, (b.alpha || 0) + 0.2);
+          };
+          add(b);
+        };
+        for (let i = 0; i < repeats * multiple; i++) {
+          const cap = (i % repeats) === 0 || (i % repeats) === (repeats - 1);   // wall end-caps are harmless
+          mkZap(dir, cap);
+          dir = wrap(dir + dirAdd);
+          if (multiple > 1 && ((i + 1) % repeats) === 0) dir = wrap(dir + 180 - dirAdd * repeats);
+        }
+        dokidir = -1;
       }
-      if (rng() < 0.5) { const ang = rng() * Math.PI * 2;
-        add({ ...bulletProps('pdoki'), x: cx + Math.cos(ang) * 12, y: cy + Math.sin(ang) * 12, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.4), life: 240, orbit: { cx, cy, ang, w: dir * 0.03, R: 12, grow } });
+      if (S.rings[5] > 0 && dokidir >= 0) {   // non-attack shifts drop a doki-heart riding the new ring
+        const b = { ...bulletProps('pdoki'), x: cx, y: cy, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1), life: 9000,
+                    _layer: 0, _ss: S.shiftN, _angDeg: wrap(dokidir + S.laneDir) };
+        const SS = S;
+        b.emit = function (b) {
+          while (b._ss < SS.shiftN) { b._layer++; b._ss++; }
+          if (b._layer > 7 || (SS.rings[b._layer] || 0) <= 0) { b.dead = true; return; }
+          const R = SS.rings[b._layer], ar = b._angDeg * Math.PI / 180;
+          b.x = SS.cx + Math.cos(ar) * R; b.y = SS.cy - Math.sin(ar) * R;
+          b.scale = PS(Math.max(0.5, R / 48));
+        };
+        add(b);
       }
     }
   },
@@ -1746,7 +1852,7 @@ PATTERNS.pinkn_tunnel = {
 // aimed direction (obj_audienceheart phase 0->1). A heart that flies past the top (reaching Pink) becomes
 // a bigger COLLECTABLE pink heart. Audience sit around the lower stage.
 PATTERNS.pinkn_concert = {
-  box: { w: 320, h: 180 }, hz30: 1, dur: 560,
+  box: { w: 360, h: 187 }, hz30: 1, dur: 560,   // concert: 150 x2.4 = 360 wide, x1.249 = 187 tall
   tick(a) {
     const { f, box, add, rng, soul } = a; a.fx.soulSpeed = 1.4;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -1790,7 +1896,7 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
   { xoff: -28, dir: 'down', interval: 4, number: 2, break: -20, speed: 5.4 },
   { xoff: 0, dir: 'up', interval: 5, number: 2, break: -24, speed: 4.4 },
   { xoff: 28, dir: 'down', interval: 18, number: 1, break: -12, speed: 3.4 },
-], 5, 230, 1, 22, true);
+], 5, 225, 1, 22, true);
 // ============ TYPE 203 — PINATA BOMBS: full 1:1 port ============
 // obj_dbulletcontroller(203) chart = [cmd, interval] pairs, wait after each = round(0.5 + 45*interval).
 //   cmd 0 = queue a small fusebomb   cmd 1 = Pink laughs (cosmetic)   cmd 2 = giant centre bomb
@@ -1925,7 +2031,7 @@ function pinkBombPattern(chart) {
   // GML round(0.5) = 0 (banker's): interval-0 commands queue the SAME frame — that's what forms volleys
   for (let k = 0; k < chart.length; k += 2) { sched.push({ f: t, cmd: chart[k] }); t += chart[k + 1] === 0 ? 0 : Math.max(1, Math.round(0.5 + 45 * chart[k + 1])); }
   return {
-    box: { w: 160, h: 160 }, hz30: 1, dur: t + 190,
+    box: { w: 150, h: 150 }, hz30: 1, dur: t + 190,   // base 150x150 box (bombs overhang edge cells slightly, as in GML)
     tick(a) {
       const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;

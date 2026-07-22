@@ -3353,6 +3353,41 @@
 "f": "pbombbig.png",
 "w": 61,
 "h": 56
+},
+"pzaparrow": {
+"f": "pzaparrow.png",
+"w": 16,
+"h": 18
+},
+"dsimbg": {
+"f": "dsimbg.png",
+"w": 240,
+"h": 140
+},
+"dsimdiamond": {
+"f": "dsimdiamond.png",
+"w": 40,
+"h": 40
+},
+"pkarrow": {
+"f": "pkarrow.png",
+"w": 14,
+"h": 14
+},
+"dsimpink0": {
+"f": "dsimpink0.png",
+"w": 112,
+"h": 116
+},
+"dsimpink1": {
+"f": "dsimpink1.png",
+"w": 112,
+"h": 116
+},
+"dsimtail": {
+"f": "dsimtail.png",
+"w": 112,
+"h": 116
 }
 },
 "bullet_cost": {
@@ -3496,7 +3531,14 @@
 "pbomb2": 1,
 "pbomb3": 1,
 "pbomb4": 1,
-"pbombbig": 1
+"pbombbig": 1,
+"pzaparrow": 1,
+"dsimbg": 1,
+"dsimdiamond": 1,
+"pkarrow": 1,
+"dsimpink0": 1,
+"dsimpink1": 1,
+"dsimtail": 1
 },
 "souls": {
 "yheart0": "yheart0.png",
@@ -3534,6 +3576,8 @@
 "graze0": "graze0.png",
 "graze1": "graze1.png",
 "graze2": "graze2.png",
-"graze3": "graze3.png"
+"graze3": "graze3.png",
+"pheart0": "pheart0.png",
+"pheart1": "pheart1.png"
 }
 }
