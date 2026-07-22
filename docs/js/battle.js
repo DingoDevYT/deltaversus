@@ -1727,36 +1727,39 @@ Battle.renderBoxAndBullets = function (ctx) {
           ctx.beginPath(); ctx.moveTo(bx.x + w, bx.y + t * h); ctx.lineTo(bx.x + w, bx.y + (t + 0.06) * h); ctx.stroke(); }
       }
     }
-    else if (B._pmode === 8) { const ps = (B.fx && B.fx.purpleSoul) || {};   // NODE MAZE (obj_pinknode render)
-      const nodes = ps.nodes || [], edges = ps.edges || [], acts = ps.acts || [], start = ps.start || 0;
-      const pulse = ps.pulse || null, lt = B.anim.f;
-      // connections: thin purple lines (obj_purplecontrols Draw d_line)
-      ctx.strokeStyle = 'rgba(181,139,214,0.85)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    else if (B._pmode === 8) { const ps = (B.fx && B.fx.purpleSoul) || {};   // NODE MAZE (obj_purplecontrols/obj_pinknode Draw)
+      const nodes = ps.nodes || [], edges = ps.edges || [], start = ps.start || 0, sc = ps.sc || 1, lt = B.anim.f;
+      // exact GML palette (BGR ints -> RGB): connections = _prpl_dark (85,0,85), nodes = _prpl_light (170,0,170),
+      // the START (checkpoint 2) pulses toward lightpink (247,91,200).
+      const PRPL_DARK = 'rgb(85,0,85)', PRPL_LIGHT = 'rgb(170,0,170)';
+      // connections: obj_purplecontrols Draw stacks 3 thin d_lines -> a ~3px dark-purple line
+      ctx.strokeStyle = PRPL_DARK; ctx.lineWidth = 3; ctx.lineCap = 'round';
       for (let i = 0; i < edges.length; i++) for (const j of (edges[i] || [])) { if (j <= i) continue; const a = nodes[i], b = nodes[j]; if (!a || !b) continue;
         ctx.beginPath(); ctx.moveTo(gcx + a.x, gcy + a.y); ctx.lineTo(gcx + b.x, gcy + b.y); ctx.stroke(); }
-      // the RED PULSE travels the path from the start node (the indicator) — a bright segment sweeping each edge
-      if (pulse && pulse.edges) { ctx.strokeStyle = '#ff3b5c'; ctx.lineWidth = 4;
-        for (const pe of pulse.edges) { const a = nodes[pe.i], b = nodes[pe.j]; if (!a || !b) continue;
-          const d = Math.hypot(b.x - a.x, b.y - a.y) || 1, ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
-          const s0 = Math.max(0, pe.p - 24), s1 = Math.min(d, pe.p);
-          if (s1 > s0) { ctx.beginPath(); ctx.moveTo(gcx + a.x + ux * s0, gcy + a.y + uy * s0); ctx.lineTo(gcx + a.x + ux * s1, gcy + a.y + uy * s1); ctx.stroke(); } } }
-      // nodes: small purple circles; the START pulses pink
-      const glow = (lt % 60) <= 30 ? (lt % 60) / 30 : 1 - ((lt - 30) % 60) / 30;
-      for (let i = 0; i < nodes.length; i++) { const n = nodes[i], isStart = i === start;
-        if (isStart) { ctx.fillStyle = 'rgba(247,91,200,' + (0.5 + glow * 0.4) + ')'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow, 0, 6.2832); ctx.fill(); }
-        else { ctx.fillStyle = '#b58bd6'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 4, 0, 6.2832); ctx.fill(); } }
-      // DIE! boxes (obj_pinknodeact mode 0): pulsing yellow->red bordered boxes with red "DIE!" text (DELTARUNE
-      // font via drawText). Hitbox 48x32 (per spec) -> half-extents 24x16 + a little border. Coords are RELATIVE
-      // to the box centre (the pattern passes offsets, render adds gcx/gcy — matches the collision exactly).
-      const bw = 26, bh = 17;
-      const drawNodeBox = (nx, ny, txt, border, fill, tcol) => {
-        ctx.fillStyle = border; ctx.fillRect(gcx + nx - bw - 2, gcy + ny - bh - 2, bw * 2 + 4, bh * 2 + 4);
-        ctx.fillStyle = fill; ctx.fillRect(gcx + nx - bw, gcy + ny - bh, bw * 2, bh * 2);
-        drawText(ctx, 'main', txt, gcx + nx, gcy + ny - 8, { color: tcol, align: 'center', scale: 1 });
+      // nodes: obj_pinknode Draw -> _prpl_light filled circle r4; START = merge(light, lightpink glow, .5) pulsing r5.2 + outer ring
+      const glowT = (lt % 60) / 60, glow = Math.cos(glowT * 6.2832) * 0.5 + 0.5;
+      for (let i = 0; i < nodes.length; i++) { const n = nodes[i];
+        if (i === start) {
+          ctx.fillStyle = 'rgba(208,45,170,0.55)'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 + glow * 0.5 + 2, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = 'rgb(208,45,170)'; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 5.2 - glow * 0.5, 0, 6.2832); ctx.fill();
+        } else { ctx.fillStyle = PRPL_LIGHT; ctx.beginPath(); ctx.arc(gcx + n.x, gcy + n.y, 4, 0, 6.2832); ctx.fill(); }
+      }
+      // DIE!/goal boxes (obj_pinknodeact Draw): 96x48 (x sc). mode 0 border pulses yellow->red every 40f with a
+      // thickness that spikes 3->2 at the top of each cycle; mode 1 (goal) border pulses white->pink. Black fill,
+      // "mainbig" text. The VISUAL box is bigger than the 48x32 hitbox — matches the source exactly.
+      const bw = 48 * sc, bh = 24 * sc;
+      const drawNodeBox = (nx, ny, txt, life, goal) => {
+        const p = (life || lt) % 40, k = Math.min(1, (p / 40) * 2);
+        let border, th = 1 * sc;
+        if (goal) { border = mixHex('#ffffff', '#ff9fd0', 0.25 + 0.75 * k); if (p < 1) th = 3 * sc; else if (p < 2) th = 2 * sc; else if (p < 5) th = 2 * sc; }
+        else { border = mixHex('#ffff00', '#ff0000', k); if (p < 2) th = 3 * sc; else if (p < 4) th = 2 * sc; }
+        ctx.fillStyle = border; ctx.fillRect(gcx + nx - bw - th, gcy + ny - bh - th, bw * 2 + th * 2, bh * 2 + th * 2);
+        ctx.fillStyle = '#000'; ctx.fillRect(gcx + nx - bw, gcy + ny - bh, bw * 2, bh * 2);
+        const tw = textWidth('big', txt) || 1;
+        drawText(ctx, 'big', txt, gcx + nx, gcy + ny - 11 * sc, { color: goal ? '#fff' : border, align: 'center', scale: Math.min(1, (86 * sc) / tw) });
       };
-      const flash = (lt % 40) < 20;
-      for (const d of (ps.dieBoxes || [])) drawNodeBox(d.x, d.y, 'DIE!', flash ? '#ffdd33' : '#ff2b2b', '#000', '#ff3b3b');
-      if (ps.goalBox) drawNodeBox(ps.goalBox.x, ps.goalBox.y, ps.goalText || 'Stop!', flash ? '#fff' : '#ff9fd0', '#1a0d20', '#fff');   // GOAL box (obj_pinknodeact mode 1)
+      for (const d of (ps.dieBoxes || [])) drawNodeBox(d.x, d.y, 'DIE!', d.life, false);
+      if (ps.goalBox) drawNodeBox(ps.goalBox.x, ps.goalBox.y, ps.goalText || 'Stop!', ps.goalBox.life, true);
     }
     else { for (let i = 0; i < 3; i++) { const o = (i - 1) * 56;
       ctx.beginPath(); ctx.moveTo(gcx - 63, gcy + o); ctx.lineTo(gcx + 63, gcy + o); ctx.stroke(); } }

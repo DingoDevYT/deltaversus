@@ -2239,15 +2239,15 @@ PATTERNS.pinkn_finalmaze = {
     }
     // ---- render channel + Pink SPLIT (body sings on stage, GHOST floats overhead) ----
     const goalAct = S.acts.find(x => x.mode === 1);
-    a.fx.purpleSoul = { mode: 8, gen: S._gen, nodes: S.nodes, edges: S.edges, start: S.start,
-      dieBoxes: S.acts.filter(x => x.mode === 0).map(x => ({ x: x.x, y: x.y })),
-      goalBox: goalAct ? { x: goalAct.x, y: goalAct.y } : null, goalText: S.goalText };
+    a.fx.purpleSoul = { mode: 8, gen: S._gen, nodes: S.nodes, edges: S.edges, start: S.start, sc: sc,
+      dieBoxes: S.acts.filter(x => x.mode === 0).map(x => ({ x: x.x, y: x.y, life: x.life })),
+      goalBox: goalAct ? { x: goalAct.x, y: goalAct.y, life: goalAct.life } : null, goalText: S.goalText };
     a.fx.pinkSing = { x: cx, y: box.y - 40, f };
     const gt = f / 12;
     a.fx.pinkGhost = { x: cx + Math.sin(gt) * 30, y: box.y - 104 + Math.cos(gt) * 12, frame: Math.floor(f / 10) % 2, kind: 'angry', ramming: false, scale: 1.4, flip: false };
     // ---- contact: DIE! box (mode 0) = damage + RESET to start; GOAL box (mode 1) = win the round ----
     if (B && !S._won) for (const ac of S.acts) {
-      if (!(Math.abs(B.soul.x - (cx + ac.x)) < 26 && Math.abs(B.soul.y - (cy + ac.y)) < 17)) continue;   // 48x32 hitbox
+      if (!(Math.abs(B.soul.x - (cx + ac.x)) < 24 * sc && Math.abs(B.soul.y - (cy + ac.y)) < 16 * sc)) continue;   // 48x32 hitbox (obj_pinknodeact collision_rectangle)
       if (ac.mode === 0 && B.iframes <= 0) { const dmg = 16; B.dmgTaken = (B.dmgTaken || 0) + dmg;
         for (const m of (B.myTeam || [])) if (m && m.hp > 0) m.hp = Math.max(0, m.hp - dmg);
         B.iframes = 40; B.shake = Math.max(B.shake || 0, 16); B.flash = 8; Snd.play('hurt', 0.5);

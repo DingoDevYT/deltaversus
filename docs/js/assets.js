@@ -160,6 +160,15 @@ function drawText(ctx, key, str, x, y, opts) {
   }
   return cx - x;
 }
+// mix two #rrggbb colors, t=0 -> a, t=1 -> b (GML merge_color)
+function mixHex(a, b, t) {
+  t = Math.max(0, Math.min(1, t));
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const r = Math.round(((pa >> 16) & 255) * (1 - t) + ((pb >> 16) & 255) * t);
+  const g = Math.round(((pa >> 8) & 255) * (1 - t) + ((pb >> 8) & 255) * t);
+  const bl = Math.round((pa & 255) * (1 - t) + (pb & 255) * t);
+  return 'rgb(' + r + ',' + g + ',' + bl + ')';
+}
 function textWidth(key, str) {
   const font = A.fonts[key];
   let w = 0;
