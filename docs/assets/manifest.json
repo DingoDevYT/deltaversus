@@ -3297,7 +3297,7 @@
     "pdoki": {
       "f": "pdoki.png",
       "w": 24,
-      "h": 22
+      "h": 24
     },
     "pbomb": {
       "f": "pbomb.png",
@@ -3312,7 +3312,7 @@
     "planeb": {
       "f": "planeb.png",
       "w": 19,
-      "h": 10
+      "h": 19
     },
     "pbell": {
       "f": "pbell.png",
@@ -3331,8 +3331,8 @@
     },
     "pzap": {
       "f": "pzap.png",
-      "w": 16,
-      "h": 18
+      "w": 17,
+      "h": 17
     },
     "pbomb0": {
       "f": "pbomb0.png",
@@ -3366,8 +3366,8 @@
     },
     "pzaparrow": {
       "f": "pzaparrow.png",
-      "w": 16,
-      "h": 18
+      "w": 17,
+      "h": 19
     },
     "dsimbg": {
       "f": "dsimbg.png",
@@ -3458,6 +3458,11 @@
       "f": "paudheart.png",
       "w": 38,
       "h": 34
+    },
+    "heartbullet": {
+      "f": "heartbullet.png",
+      "w": 18,
+      "h": 18
     }
   },
   "bullet_cost": {

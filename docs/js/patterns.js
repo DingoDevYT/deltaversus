@@ -1532,9 +1532,9 @@ function pinkFireCat(add, cx, cy, e) {
     add({ ...bulletProps('pcat'), x: cx + e.side * 416, y, vx, vy: 0, r: 9, grazeR: 14, scale: PS(2), spin: e.speed >= 1.5 ? 0.14 : 0.03, dmg: 24, life: 420 });
     const nd = Math.round((e.lane % 1) * 10);   // frac(lane)*10 trailing doki-heart collectables
     for (let i = 1; i <= nd; i++)
-      add({ ...bulletProps('pdoki'), x: cx + e.side * (416 - i * 72 * e.speed), y, vx, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 460 });
+      add({ ...bulletProps('pdoki'), x: cx + e.side * (416 - i * 72 * e.speed), y, vx, vy: 0, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1.5), life: 460 });
   } else if (e.lane >= 6 && e.lane <= 8) {
-    add({ ...bulletProps('pdoki'), x: cx + e.side * 416, y: cy + (e.lane - 7) * 56, vx, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 460 });
+    add({ ...bulletProps('pdoki'), x: cx + e.side * 416, y: cy + (e.lane - 7) * 56, vx, vy: 0, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1.5), life: 460 });
   }
   // lane 3/4/5 = Pink dance-move triggers (obj_pink_battlemovement), cosmetic — no bullet
 }
@@ -1744,7 +1744,7 @@ function pinkLaneFire(add, cx, cy, e, rotDeg) {
   // half-circles curve toward the lane centre so a PAIR reads as a CUT CIRCLE: the +270-offset half is drawn
   // at image_angle = dir+180 (flip), the +90-offset half at image_angle = dir (obj_dbulletcontroller L2299-2342).
   const mk = (ox, oy, sp, flip) => add({ ...bulletProps(sp), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd,
-    r: 8, grazeR: 12, scale: PS(2), rot: rot + (flip ? Math.PI : 0), dmg: 24, life: 130 });
+    r: 8, grazeR: 12, scale: PS(2.5), rot: rot + (flip ? Math.PI : 0), dmg: 24, life: 130 });
   if (e.shot < 6) {
     if (e.shot === 0 || e.shot === 3 || e.shot === 4) mk(p2x * off, p2y * off, 'planeb', true);   // +270 half, flipped
     else if (e.shot === 2) mk(p9x * off, p9y * off, 'planeb', false);                             // +90 half
@@ -1753,7 +1753,7 @@ function pinkLaneFire(add, cx, cy, e, rotDeg) {
   } else {
     const o2 = 66; let ox = 0, oy = 0;
     if (e.shot === 6 || e.shot === 9 || e.shot === 10) { ox = p2x * o2; oy = p2y * o2; } else if (e.shot === 8) { ox = p9x * o2; oy = p9y * o2; }
-    add({ ...bulletProps('pdoki'), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, pickup: true, tp: 8, r: 9, scale: PS(1.5), life: 140 });
+    add({ ...bulletProps('pdoki'), x: sx + ox, y: sy + oy, vx: tx * spd, vy: ty * spd, pickup: true, tp: 2, doki: 2, r: 9, scale: PS(1.5), life: 140 });
   }
 }
 function pinkPlusSchedule(chart) {
@@ -1979,7 +1979,7 @@ PATTERNS.pinkn_tunnel = {
         dokidir = -1;
       }
       if (S.rings[5] > 0 && dokidir >= 0) {   // non-attack shifts drop a doki-heart riding the new ring
-        const b = { ...bulletProps('pdoki'), x: cx, y: cy, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1), life: 9000,
+        const b = { ...bulletProps('pdoki'), x: cx, y: cy, vx: 0, vy: 0, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1), life: 9000,
                     _layer: 0, _ss: S.shiftN, _angDeg: wrap(dokidir + S.laneDir) };
         const SS = S;
         b.emit = function (b) {
@@ -2034,11 +2034,12 @@ PATTERNS.pinkn_concert = {
   },
 };
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
-  // small RED heart (per the in-game shot: a plain red soul-heart, not the giant cat-face one)
-  const b = { ...bulletProps('paudheart'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
-              r: 7, grazeR: 11, tint: hater ? '#d000d0' : '#ff2828', tintMul: true, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };
+  // obj_audienceheart: the REAL projectile is spr_heartbullet (18px red heart). Grows from tiny, aims, launches.
+  const b = { ...bulletProps('heartbullet'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
+              r: 7, grazeR: 11, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };
+  if (hater) { b.tint = '#d000d0'; b.tintMul = true; }   // haters (spr_dummyaudience frame1) fire a purple homing heart
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
-  const FINAL = 0.7;   // final display scale of the (38px) heart -> ~27px (small red soul-heart)
+  const FINAL = PS(1.5);   // obj_audienceheart _mainscale = 1.5 -> ~27px heart
   b.emit = function (b, out, sl) {
     if (b._phase !== 1) {   // PHASE 0: grow (tiny -> FINAL) + aim at the soul over 32 frames (obj_audienceheart)
       b._w++;
@@ -2054,9 +2055,9 @@ function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
         let dd = ((dest - b._dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI; b._dir += Math.max(-0.045, Math.min(0.045, dd)); }
       b.vx = Math.cos(b._dir) * b._spd; b.vy = Math.sin(b._dir) * b._spd;
       b.scale = FINAL;
-      if (!b._hater && b.y < box.y - 4 && !b._done) {   // reached Pink at the top -> becomes a collectable
+      if (!b._hater && b.y < box.y - 4 && !b._done) {   // reached Pink at the top -> becomes a DOKI collectable (spr_dokiheart)
         b._done = 1; b.dead = true;
-        out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 8, r: 9, scale: PS(1.9), life: 160 });
+        out.push({ ...bulletProps('pdoki'), x: b.x, y: box.y + 12, vx: 0, vy: 1, pickup: true, tp: 2, doki: 2, r: 9, scale: PS(0.9), life: 160 });
       }
     }
   };
@@ -2195,14 +2196,14 @@ function pinkBombExplode(b, out, box, giant) {
     }
   }
   if (b._heart) {
-    if (!giant) out.push({ ...bulletProps('pdoki'), x: b._dx, y: b._dy, vx: 0, vy: 0, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
+    if (!giant) out.push({ ...bulletProps('pdoki'), x: b._dx, y: b._dy, vx: 0, vy: 0, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1.5), life: 150 });
     else {   // giant has_heart sprays hearts along the row+column every 2 lanes, drifting (obj_fusebomb_big)
       let alt = 0;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let s = 0; s <= 3; s += 2) {
         const hx = b._dx + dx * 40 * s, hy = b._dy + dy * 40 * s;
         if (hx > box.x && hx < box.x + box.w && hy > box.y && hy < box.y + box.h) {
           const drift = [0, 2.9, -2.9][alt++ % 3];
-          out.push({ ...bulletProps('pdoki'), x: hx, y: hy, vx: dy !== 0 ? drift : 0, vy: dx !== 0 ? drift : 0, fric: 0.1, pickup: true, tp: 8, r: 8, scale: PS(1.5), life: 150 });
+          out.push({ ...bulletProps('pdoki'), x: hx, y: hy, vx: dy !== 0 ? drift : 0, vy: dx !== 0 ? drift : 0, fric: 0.1, pickup: true, tp: 2, doki: 2, r: 8, scale: PS(1.5), life: 150 });
         }
       }
     }
