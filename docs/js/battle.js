@@ -1709,12 +1709,28 @@ function renderMazeGraph(g, M) {
     if (im && im.width) { const bob = Math.sin((lt + d.x) / 6) * 2; g.drawImage(im, Math.round(d.x - im.width / 2), Math.round(d.y - im.height / 2 + bob), im.width, im.height); } }
   for (const ac of (M.acts || [])) drawMazeBox(g, ac.x, ac.y, ac.mode === 1 ? (M.goalText || 'Stop!') : 'DIE!', ac.mode === 1, lt);
 }
+// POSSESSED Mew Mew backdrop (obj_date_controller date3): 3-layer glow form + green eye-lasers, behind the maze
+function drawPossessedPink(ctx, M) {
+  const t = (M.life || 0) / 10, sw = Math.sin(t), fr = Math.floor((M.life || 0) / 8) % 3;
+  const ex = 320, ey = 158 + sw * 2;   // possessed form, centred upper (bobs)
+  const spr = k => { const info = (A.manifest.bullets || {})[k + fr]; return info && A.img['assets/bullets/' + info.f]; };
+  // 10 green eye-laser beams radiating down-and-out from the eyes (d_line_color 0,255,0)
+  ctx.save(); ctx.strokeStyle = 'rgba(0,255,0,0.5)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 10; i++) { const ang = Math.PI * 0.5 + (i - 4.5) * 0.17;
+    ctx.beginPath(); ctx.moveTo(ex, ey + 26); ctx.lineTo(ex + Math.cos(ang) * 420, ey + 26 + Math.sin(ang) * 420); ctx.stroke(); }
+  ctx.restore();
+  // 3-layer body: greyscale (0.95) + purple (0.7+sin*0.3) + pink (0.7-sin*0.3) cross-fade pulse
+  const draw = (im, a) => { if (im && im.width) { ctx.globalAlpha = Math.max(0, Math.min(1, a)); drawSpr(ctx, im, ex, ey, { scale: 2 }); } };
+  draw(spr('posgrey'), 0.95); draw(spr('pospurp'), 0.7 + sw * 0.3); draw(spr('pospink'), 0.7 - sw * 0.3);
+  const eyes = spr('poseyes'); if (eyes && eyes.width) { ctx.globalAlpha = Math.max(0, 0.7 - sw * 0.3); drawSpr(ctx, eyes, ex, ey - 16, { scale: 2 }); }
+  ctx.globalAlpha = 1;
+}
 function drawMaze(ctx, M) {
   ctx.save();
-  ctx.fillStyle = 'rgba(8,0,12,0.62)'; ctx.fillRect(0, 0, 640, 480);   // the purple void (box destroyed)
-  const gf = Math.floor((M.life || 0) / 6) % 5;   // Pink SPLIT: wave-distorted ghost + body behind the maze
-  drawWaveSprite(ctx, 'pinkghost2x' + gf, M.ghost.x, M.ghost.y, M.wave, 0.85);
-  drawWaveSprite(ctx, 'pinkhurt' + gf, M.body.x, M.body.y, M.wave, 1);
+  ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, 640, 480);   // the possessed date-screen backdrop (box destroyed)
+  drawPossessedPink(ctx, M);
+  const dk = [0, 0.4, 0.6, 0.8, 0][M.round || 0] || 0;   // per-difficulty darkener (date3darkner_alpha): diff3 = 80% black
+  if (dk > 0) { ctx.fillStyle = 'rgba(0,0,0,' + dk + ')'; ctx.fillRect(0, 0, 640, 480); }
   // glow surface — allocate ONCE (assigning canvas.width/height reallocates+clears the whole
   // backing store, which is what made the maze lag when done every frame). Reuse + clearRect.
   let s = drawMaze._s;

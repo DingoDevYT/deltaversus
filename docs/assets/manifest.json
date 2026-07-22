@@ -5456,6 +5456,114 @@
       "oh": 32,
       "ox": 0,
       "oy": 0
+    },
+    "posgrey0": {
+      "f": "posgrey0.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "posgrey1": {
+      "f": "posgrey1.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "posgrey2": {
+      "f": "posgrey2.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospurp0": {
+      "f": "pospurp0.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospurp1": {
+      "f": "pospurp1.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospurp2": {
+      "f": "pospurp2.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospink0": {
+      "f": "pospink0.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospink1": {
+      "f": "pospink1.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "pospink2": {
+      "f": "pospink2.png",
+      "w": 138,
+      "h": 119,
+      "ow": 138,
+      "oh": 119,
+      "ox": 0,
+      "oy": 0
+    },
+    "poseyes0": {
+      "f": "poseyes0.png",
+      "w": 138,
+      "h": 200,
+      "ow": 138,
+      "oh": 200,
+      "ox": 0,
+      "oy": 0
+    },
+    "poseyes1": {
+      "f": "poseyes1.png",
+      "w": 138,
+      "h": 200,
+      "ow": 138,
+      "oh": 200,
+      "ox": 0,
+      "oy": 0
+    },
+    "poseyes2": {
+      "f": "poseyes2.png",
+      "w": 138,
+      "h": 200,
+      "ow": 138,
+      "oh": 200,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

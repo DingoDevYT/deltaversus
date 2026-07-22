@@ -2322,7 +2322,7 @@ PATTERNS.pinkn_conveyor = pinkVLaneBurst([
 function mazeBuild(r, rng) {
   const D = 54, HM = 2.125, rnd = rng || Math.random;
   const N = [];
-  const node = (x, y) => { N.push({ x, y, child: [-1, -1, -1, -1], checkpoint: 0, darkify: 0 }); return N.length - 1; };
+  const node = (x, y) => { N.push({ x, y, child: [-1, -1, -1, -1], drawConn: [false, false, false, false], checkpoint: 0, darkify: 0 }); return N.length - 1; };
   const mk = (parent, dir, dist) => { const p = N[parent], rad = dir * Math.PI / 2;
     const i = node(p.x + Math.cos(rad) * dist, p.y - Math.sin(rad) * dist); N[parent].child[dir] = i; return i; };
   const goalText = ['Stop!', 'Calm down!', "Don't cry!", "It's OK!"][Math.min(3, r)];
@@ -2353,14 +2353,13 @@ function mazeBuild(r, rng) {
     for (const [si, dir, mul] of [[4, 1, 1.25], [11, 2, 1.25], [22, 3, 1]]) {   // checkpoint/dark branches
       const b = mk(seq[si], dir, D * mul); N[b].checkpoint = 1; N[b].darkify = 1; N[b].child[(dir + 2) % 4] = seq[si]; }
   }
-  // reciprocal back-links (obj_pinknode Other_10) -> bidirectional movement
+  // every edge built so far is a REAL (draw_connection) edge; the reciprocal back-links added next are not
+  for (const nd of N) for (let d = 0; d < 4; d++) if (nd.child[d] >= 0) nd.drawConn[d] = true;
+  // reciprocal back-links (obj_pinknode Other_10) -> bidirectional SOUL movement (hunter ignores these)
   for (let i = 0; i < N.length; i++) for (let d = 0; d < 4; d++) { const c = N[i].child[d]; if (c >= 0 && N[c].child[(d + 2) % 4] < 0) N[c].child[(d + 2) % 4] = i; }
-  // center the graph on the full screen at 1:1 (only shrink if it exceeds the play area)
-  let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9;
-  for (const n of N) { mnx = Math.min(mnx, n.x); mxx = Math.max(mxx, n.x); mny = Math.min(mny, n.y); mxy = Math.max(mxy, n.y); }
-  const sc = Math.min(1, 596 / ((mxx - mnx) || 1), 336 / ((mxy - mny) || 1));
-  const ox = (mnx + mxx) / 2, oy = (mny + mxy) / 2;
-  for (const n of N) { n.x = 320 + (n.x - ox) * sc; n.y = 268 + (n.y - oy) * sc; n.dx = n.x; n.dy = n.y; }
+  // RAW room coords (obj_pinknode uses absolute lengthdir positions; NO re-center/scale). Root at (320,360)
+  // = screen centre-x, lower-third-y, so small graphs cluster low-centre and diff-3 fills the screen.
+  for (const n of N) { n.x += 320; n.y += 360; n.dx = n.x; n.dy = n.y; }
   return { nodes: N, start, acts, dokis, rootHp, goalText };
 }
 PATTERNS.pinkn_finalmaze = {
@@ -2471,13 +2470,18 @@ PATTERNS.pinkn3_finalmaze = {
       else n.dir += (rng() < 0.5 ? -1 : 1) * STEER;
       n.x += Math.cos(n.dir) * n.spd; n.y += Math.sin(n.dir) * n.spd;
     }
+    // ---- INPUT (BUFFERED): a direction pressed DURING a slide is queued (~12f) and fired the instant the
+    // soul lands, so mashing a direction always registers -> snappy (fixes the multi-press lag) ----
+    let pressDir = -1; if (HIT('right')) pressDir = 0; else if (HIT('up')) pressDir = 1; else if (HIT('left')) pressDir = 2; else if (HIT('down')) pressDir = 3;
+    if (pressDir >= 0) { S.bufDir = pressDir; S.bufAge = 0; }
+    else if (S.bufDir != null) { S.bufAge = (S.bufAge || 0) + 1; if (S.bufAge > 12) S.bufDir = null; }
     // ---- SOUL node-hop movement: heart_travel = home edge length; soul rides behind LIVE node ----
-    if (S.heartTravel <= 0 && !S._won) {
-      let dir = -1; if (HIT('right')) dir = 0; else if (HIT('up')) dir = 1; else if (HIT('left')) dir = 2; else if (HIT('down')) dir = 3;
-      if (dir >= 0) { const c = S.nodes[S.soulNode].child[dir];
-        if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
-          S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
-          if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); } }
+    if (S.heartTravel <= 0 && !S._won && S.bufDir != null) {
+      const c = S.nodes[S.soulNode].child[S.bufDir];
+      if (c >= 0) { const cur = S.nodes[S.soulNode], t = S.nodes[c]; S.target = c;
+        S.heartTravel = Math.hypot((t.dx - cur.dx), (t.dy - cur.dy));   // point_distance(dest,dest)
+        if (typeof Snd !== 'undefined') Snd.play('graze', 0.2); }
+      S.bufDir = null;   // consume the buffer on arrival (used or not)
     }
     if (S.heartTravel > 0) { const t = S.nodes[S.target];
       const md = Math.atan2(t.y - S.soul.y, t.x - S.soul.x);              // live point_direction soul->node
@@ -2501,9 +2505,9 @@ PATTERNS.pinkn3_finalmaze = {
       else if (ac.pattern === 3) { const tg = S.nodes[ac._tnode] || n, dx = tg.x - ac.x, dy = tg.y - ac.y, dd = Math.hypot(dx, dy) || 1;
         const spd = Math.min(4 + ac.life / 2, Math.max(12, Math.min(15, 15 - (S.hits - 1) * 0.75))), mv = Math.min(spd, dd);
         ac.x += dx / dd * mv; ac.y += dy / dd * mv;
-        if (dd <= spd) { const sN = S.nodes[S.soulNode]; let best = -1, bd = 1e9;   // hop toward the child nearest the soul
-          for (const c of S.nodes[ac._tnode].child) { if (c < 0) continue; const cn = S.nodes[c], dist = Math.hypot(cn.x - sN.x, cn.y - sN.y); if (dist < bd) { bd = dist; best = c; } }
-          if (best >= 0) ac._tnode = best; else ac._dead = 1; } }   // dead-end -> retire hunter
+        if (dd <= spd) { const nd = S.nodes[ac._tnode];   // FIXED route: first available draw_connection child (E,U,W,D) — never the soul
+          let next = -1; for (let i = 0; i < 4; i++) { if (nd.child[i] >= 0 && nd.drawConn[i]) { next = nd.child[i]; break; } }
+          if (next >= 0) ac._tnode = next; else ac._dead = 1; } }   // dead-end -> retire hunter
       else { ac.x = n.x; ac.y = n.y; }
     }
     S.acts = S.acts.filter(ac => !ac._dead && !(ac._hunter && ac.life > 600));   // retire spent hunters
@@ -2528,12 +2532,10 @@ PATTERNS.pinkn3_finalmaze = {
       else if (ac.mode === 1) { S._won = 1; S._winT = 0; if (typeof Snd !== 'undefined') Snd.play('pinkcoin', 0.7); if (B) B.flash = 14; }
     }
     if (S._won) { S._winT++; if (S._winT >= 25) { if (S.round + 1 < S.ROUNDS) S.round++; else S._done = true; } }   // mode1 timer 2/frame->50 ~= 25 real frames
-    // ---- Pink SPLIT: wave-distorted body + detached ghost (obj_pink_ghost_marker) ----
-    const gt = f / 12;
-    a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText,
+    // ---- POSSESSED Mew Mew backdrop (3-layer form + eye-lasers) is drawn behind the maze by drawMaze ----
+    a.fx.maze = { active: true, done: S._done, nodes: S.nodes, acts: S.acts, hits: S.hits, life: f, goalText: S.goalText, round: S.round,
       dokis: S.dokis.filter(d => d.spawned && !d.collected).map(d => ({ x: d.x, y: d.y })),
-      soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2,
-      body: { x: 150, y: 92 }, ghost: { x: 150 + Math.sin(gt) * 10, y: 92 - 35 + Math.cos(gt) * 8 } };
+      soul: { x: S.soul.x, y: S.soul.y }, wave: f * 2 };
   },
 };
 
