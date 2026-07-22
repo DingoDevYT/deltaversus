@@ -5393,6 +5393,60 @@
       "oh": 50,
       "ox": 0,
       "oy": 0
+    },
+    "dsimtimer0": {
+      "f": "dsimtimer0.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimtimer1": {
+      "f": "dsimtimer1.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplateinv0": {
+      "f": "dsimplateinv0.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplateinv1": {
+      "f": "dsimplateinv1.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplateinv2": {
+      "f": "dsimplateinv2.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
+    },
+    "dsimplateinv3": {
+      "f": "dsimplateinv3.png",
+      "w": 320,
+      "h": 220,
+      "ow": 320,
+      "oh": 220,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

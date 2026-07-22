@@ -1024,6 +1024,7 @@ Battle.updDodge = function () {
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
   B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pinkn3_* patterns each tick)
+  B.fx.attackDone = false;  // a normal attack can signal "wrap up now" (e.g. bombs, ~2s after the last blast)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.maze) {   // GHOST/BODY MAZE: full-screen takeover; the pattern drives movement/collision itself
     if (B.fx.maze.done) { B._mazeEnd = (B._mazeEnd || 0) + 1;
@@ -1038,6 +1039,7 @@ Battle.updDodge = function () {
     return;
   }
   B._dokiDatedThisRun = 0;
+  if (B.fx.attackDone) B.dodgeT = Math.min(B.dodgeT, 1);   // pattern asked to wrap up -> end via the normal path
   tickPendingLasers(B.bullets, B.dodgeBox);
   if (B.iframes > 0) B.iframes--;
   if (B.grazeCd > 0) B.grazeCd--;
@@ -1500,6 +1502,14 @@ function drawDokiBar(ctx) {
   if ((B.dokiPhase || 0) >= phases) { ctx.fillStyle = '#ffe14d'; ctx.fillText('SPARE READY', 320, y + h + 12); }
   ctx.restore();
 }
+// red-tinted copy of a sprite (cached on the image) — used to make concert HATERS read clearly
+function redTintSprite(im) {
+  if (im._redTint) return im._redTint;
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(im, 0, 0);
+  x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,42,42,0.62)'; x.fillRect(0, 0, im.width, im.height);
+  im._redTint = c; return c;
+}
 // ---- PINK V3 dating-sim renderer: per-beat portrait swaps, ghost split (0.7a, facing), real UI ----
 function dsimImg(id) { const bp = (typeof bulletProps === 'function') ? bulletProps : null; const i = bp && bp(id); return i && i.img && i.img.width ? i.img : null; }
 function drawPortrait(ctx, key, frame, cx, bottomY, flip, alpha) {   // anchored by BOTTOM-CENTER (feet)
@@ -1509,39 +1519,37 @@ function drawPortrait(ctx, key, frame, cx, bottomY, flip, alpha) {   // anchored
   ctx.translate(cx, bottomY); if (flip) ctx.scale(-1, 1);
   ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore();               // bottom edge sits at bottomY
 }
-// centered dating-sim window opening (the plate's sky hole). All window content is CLIPPED here so it
-// can't overreach the frame; the frame plate is then drawn ON TOP to mask/border it.
-const DSIM_WIN = { x: 116, y: 34, w: 456, h: 262 };
 function drawDateUIV3(ctx, D) {
   ctx.save(); ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480);
-  // Layer 1 — scrolling diamond bg (full-screen, sits behind the frame margins)
+  // Layer 1 — scrolling diamond bg (full-screen, shows in the frame margins)
   const dia = dsimImg('dsimdiamond') || dsimImg('dsimdia1');
   if (dia) { ctx.globalAlpha = 0.5; for (let ty = -80 + ((D.bgy || 0) - 80); ty < 560; ty += 80) for (let tx = -(D.bg || 0) - 80; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80); ctx.globalAlpha = 1; }
   if (D.done) { ctx.restore(); return; }
-  const hasGhost = !!D.ghost;
-  const W = DSIM_WIN, feet = W.y + W.h - 2;   // portraits stand on the window floor (shared baseline)
-  ctx.save(); ctx.beginPath(); ctx.rect(W.x, W.y, W.w, W.h); ctx.clip();   // MASK window content
-  const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);   // sky
-  if (hasGhost) { drawPortrait(ctx, D.spk, D.talkF || 0, W.x + 96, feet, false, 1); drawPortrait(ctx, D.ghost, D.talkF || 0, W.x + W.w - 96, feet, true, 0.7); }
-  else drawPortrait(ctx, D.spk, D.talkF || 0, W.x + W.w / 2, feet, false, 1);
-  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? W.x + 96 : W.x + W.w / 2) - sw.width, feet - 232, sw.width * 2, sw.height * 2); }
-  // dialogue box gradient (purple fade) in the lower window + text flush inside it
-  const boxT = W.y + W.h - 76, boxB = W.y + W.h - 8, boxCY = (boxT + boxB) / 2;
-  const grad = ctx.createLinearGradient(0, boxT, 0, boxB); grad.addColorStop(0, 'rgba(102,86,177,0.12)'); grad.addColorStop(1, 'rgba(102,86,177,0.72)');
-  ctx.fillStyle = grad; ctx.fillRect(W.x + 10, boxT, W.w - 20, boxB - boxT);
+  const hasGhost = !!D.ghost, inv = D.date >= 3;   // date3/final uses the inverted (dark) plate
+  // Layer 2 — sky window bg (spr_datingsim_ui_bg @ (106,24) 2x). The frame plate (drawn LAST) masks it.
+  const win = dsimImg('dsimbg0') || dsimImg('dsimbg'); if (win) ctx.drawImage(win, 106, 24, 480, 280);
+  // Layer 3 — portraits, anchored by FEET at the window floor so different-sized sprites don't jump
+  const feet = 288;
+  if (hasGhost) { drawPortrait(ctx, D.spk, D.talkF || 0, 214, feet, false, 1); drawPortrait(ctx, D.ghost, D.talkF || 0, 426, feet, true, 0.7); }
+  else drawPortrait(ctx, D.spk, D.talkF || 0, 320, feet, false, 1);
+  if (D.sweat) { const sw = dsimImg('spksweat' + (Math.floor((D.bg || 0) / 6) % 3)); if (sw) ctx.drawImage(sw, (hasGhost ? 214 : 320) - sw.width, feet - 232, sw.width * 2, sw.height * 2); }
+  // Layer 4/5 — dialogue gradient + text (lower window, over the body); text centered flush in the box
+  const boxT = 226, boxB = 292, boxCY = (boxT + boxB) / 2;
+  const grad = ctx.createLinearGradient(0, boxT, 0, boxB); grad.addColorStop(0, 'rgba(102,86,177,0.12)'); grad.addColorStop(1, 'rgba(102,86,177,0.7)');
+  ctx.fillStyle = grad; ctx.fillRect(120, boxT, 400, boxB - boxT);
   const lines = D.lines || [], flash = D.flash > 0 && (D.flash % 4 < 2);
   ctx.font = "16px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const outline = (str, x, y, fillc) => { ctx.fillStyle = '#0a0a0a'; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-2, -2], [2, 2], [-2, 2], [2, -2]]) ctx.fillText(str, x + dx, y + dy); ctx.fillStyle = fillc; ctx.fillText(str, x, y); };
-  const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0');
-  const nz = lines.filter(Boolean);
-  if (hasGhost) { const sx = W.x + W.w * 0.28, gx = W.x + W.w * 0.72;
-    nz.forEach((ln, i) => outline(ln, sx, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
-    if (D.ghostHint) outline(D.ghostHint, gx, boxCY, '#c7b9d7'); }
-  else nz.forEach((ln, i) => outline(ln, W.x + W.w / 2, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
-  ctx.restore();   // end window clip
-  // Layer 6 — UI frame plate ON TOP: masks the window to a centered opening + gives the black lower box
-  const plate0 = dsimImg('dsimplate0'); if (plate0) ctx.drawImage(plate0, 0, 0, 640, 440);
+  const spkCol = flash ? '#ff4040' : (hasGhost ? '#ff8a90' : '#f0f0f0'), nz = lines.filter(Boolean);
+  if (hasGhost) {
+    if (D.who === 'ghost') nz.forEach((ln, i) => outline(ln, 426, boxCY + (i - (nz.length - 1) / 2) * 20, '#c7b9d7'));   // the GHOST is speaking
+    else { nz.forEach((ln, i) => outline(ln, 224, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));   // speaker LEFT (salmon)
+      if (D.gtext) outline(D.gtext, 426, boxCY, '#c7b9d7'); }   // ghost line RIGHT (lavender)
+  } else nz.forEach((ln, i) => outline(ln, 320, boxCY + (i - (nz.length - 1) / 2) * 20, spkCol));
+  // Layer 6 — OFFICIAL FRAME: nodiamonds plate frames (320x220 @2x -> fill 640x440) ON TOP; masks + borders
+  const pfx = inv ? 'dsimplateinv' : 'dsimplate';
+  for (const fr of [0, 1]) { const p = dsimImg(pfx + fr); if (p) ctx.drawImage(p, 0, 0, 640, 440); }
   // Layer 9 — 3-question progress hearts (over the plate, top-left slot)
   for (let i = 0; i < 3; i++) { const hi = dsimImg('dsimheart' + (i < (D.hearts || 0) ? 0 : 8)); if (hi) { ctx.save(); if (i >= (D.hearts || 0)) ctx.globalAlpha = 0.85; ctx.drawImage(hi, 42 + i * 26, 40, hi.width, hi.height); ctx.restore(); } }
   // Layer 10 — choice carousel: horizontal CYLINDER projection (flat row, edges compressed) + connector
@@ -2040,8 +2048,9 @@ Battle.renderBoxAndBullets = function (ctx) {
   // OUT of its edge (audience_popout) when its wave is up, then fires a heart inward.
   if (B.fx && B.fx.audienceFront) for (const m of B.fx.audienceFront) {
     const key = m.hater ? 'paudience1.png' : 'paudience0.png';
-    const aim = A.img['assets/bullets/' + key] || A.img['assets/bullets/paudience0.png'];
-    if (aim && aim.width) drawSpr(ctx, aim, m.x, m.y, { scale: 1.5, flip: m.side === 'right', alpha: m.pop > 0.02 ? 1 : 0.55 });
+    let aim = A.img['assets/bullets/' + key] || A.img['assets/bullets/paudience0.png'];
+    if (aim && aim.width) { const al = Math.max(0.2, Math.min(1, (m.pop || 0) * 1.7));   // fade in as they pop out
+      drawSpr(ctx, m.hater ? redTintSprite(aim) : aim, m.x, m.y, { scale: 1.5, flip: m.side === 'right', alpha: al }); }   // haters tinted RED
   }
   if (B.soulYellow) drawText(ctx, 'main', 'YELLOW SOUL - HOLD [Z] then RELEASE to FIRE (hold longer = BIG SHOT)', bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#ee0', align: 'center' });
   if (B.soulGreen) drawText(ctx, 'main', "GREEN SOUL - can't move! Aim [ARROWS] to BLOCK with Susie's AXE", bx.x + bx.w / 2, bx.y + bx.h + 8, { color: '#4de04d', align: 'center' });

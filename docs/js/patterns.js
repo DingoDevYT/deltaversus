@@ -1721,7 +1721,7 @@ const PINK_N3_DATE2 = {
     { spk: 'spkshock', ghost: 'ghshock', text: "H-hey! There's|TWO of us now!" },
     { spk: 'spkjoy', ghost: 'ghconc', text: "Now we can BOTH|date you!" },
     { spk: 'spknya', ghost: 'ghconc', text: "So… say something|sweet to us?" },
-    { spk: 'spknya', ghost: 'ghangry', text: "No way— say|something MEAN!!" },
+    { spk: 'spkconc', ghost: 'ghangry', who: 'ghost', text: "No way—|say something MEAN!!" },
   ],
   qs: [   // ghost (nasty side) blurts the "mean" hint that is ALSO the correct pun answer
     { spk: 'spkwink', ghost: 'ghangry', text: "Where should we|take our date?", ghostHint: "Tell us to get LOST!", opts: ["A mountain hike", "Get lost!", "Stargazing"], correct: [0], timed: true },
@@ -1745,16 +1745,26 @@ function pinkDateN3Pattern(D) {
       const beat = () => (S.ph === 'cut' ? D.cut[S.ci] : S.ph === 'outro' ? D.outro : D.qs[S.qi]);
       const setText = str => { const p = (str || '').split('|'); S._t = p; S.chars = 0; };
       const cur = beat() || {};
+      const rng = (a.rng || Math.random);
       if (S._shown !== S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi)) { setText(cur.text); S._shown = S.ph + ':' + (S.ph === 'cut' ? S.ci : S.qi);
-        if (cur.split) S.ghostOn = true; if (cur.sfx && typeof Snd !== 'undefined') Snd.play(cur.sfx, 0.5); S.askDwell = 0; if (S.ph === 'ask' || S.ph === 'cut') { S.sel = 0; S.heartY = 400; S.timer = 240; } }
+        if (cur.split) S.ghostOn = true; if (cur.sfx && typeof Snd !== 'undefined') Snd.play(cur.sfx, 0.5); S.askDwell = 0;
+        if (S.ph === 'ask') { const nn = D.qs[S.qi].opts.length;   // SHUFFLE the option order (correct was always first)
+          S.perm = Array.from({ length: nn }, (_, i) => i); for (let i = nn - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const t = S.perm[i]; S.perm[i] = S.perm[j]; S.perm[j] = t; }
+          S.sel = Math.floor(rng() * nn); S.heartY = 400; S.timer = 240; }
+        else if (S.ph === 'cut') { S.sel = 0; S.heartY = 400; S.timer = 240; } }
       const full = S._t.join('').length;
       S.chars = Math.min(full + 2, S.chars + 2);
       const talkF = (S.chars < full && (Math.floor(S.talk) % 2)) ? 1 : 0;
       const ghostKey = (S.ghostOn || S.ph === 'outro') ? (cur.ghost || 'ghconc') : (cur.ghost || null);
+      const Qh = (S.ph === 'ask' || S.ph === 'choose' || S.ph === 'react') && D.qs[S.qi] ? D.qs[S.qi].ghostHint : null;
+      const dispOpts = () => (S.perm ? S.perm.map(i => D.qs[S.qi].opts[i]) : (D.qs[S.qi] ? D.qs[S.qi].opts : []));
+      const realIdx = () => (S.perm ? S.perm[S.sel] : S.sel);
       const emit = extra => { a.fx.date = Object.assign({
         v3: true, date: D.date, bg: S.bg, bgy: S.bgy, ph: S.ph, flash: S.flash, qi: S.qi, total: D.qs.length,
-        spk: cur.spk || 'spktalk', ghost: ghostKey, talkF, sweat: !!cur.sweat && (S.timer < 84 || S.ph !== 'choose') ? 0 : (cur.sweat ? 1 : 0),
-        lines: S._t.map((ln, i) => ln.slice(0, Math.max(0, Math.floor(S.chars) - i * 0))), chars: Math.floor(S.chars), fullChars: full,
+        spk: cur.spk || 'spktalk', ghost: ghostKey, talkF, who: cur.who || null, gtext: cur.gtext || Qh,
+        sweat: !!cur.sweat && (S.timer < 84 || S.ph !== 'choose') ? 0 : (cur.sweat ? 1 : 0),
+        lines: (() => { let acc = 0; const c = Math.floor(S.chars); return S._t.map(ln => { const s = ln.slice(0, Math.max(0, c - acc)); acc += ln.length; return s; }); })(),
+        chars: Math.floor(S.chars), fullChars: full,
         hearts: S.correct, heartY: S.heartY,
       }, extra || {}); };
       const typed = () => Math.floor(S.chars) >= full;
@@ -1766,7 +1776,7 @@ function pinkDateN3Pattern(D) {
         emit({}); return;
       }
       const Q = D.qs[S.qi], n = Q.opts.length;
-      if (S.ph === 'ask') { emit({ opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghostHint: Q.ghostHint, timer: null });
+      if (S.ph === 'ask') { emit({ opts: dispOpts(), sel: S.sel, boxOff: 0, single: !!Q.single, timer: null });
         if (typed()) { S.askDwell = (S.askDwell || 0) + 1; if (S.askDwell > 6) { S.ph = 'choose'; S.bt = 0; S.askDwell = 0; } } return; }
       if (S.ph === 'choose') {
         if (Q.timed && S.boxCon === 0) S.timer -= 0.5;
@@ -1778,15 +1788,15 @@ function pinkDateN3Pattern(D) {
         else if (S.boxCon === 1) { S.bt++; S.boxOff = lerp2(0, 200, S.bt / 5); if (S.bt >= 5) { S.boxCon = 0; S.boxOff = 0; S.sel = (S.sel - 1 + n) % n; } }
         else if (S.boxCon === 2) { S.bt++; S.heartY = lerp2(400, 344, S.bt / 3);
           if (S.bt >= 3) { S.boxCon = 0; S.heartY = 400;
-            if (Q.correct.indexOf(S.sel) >= 0) { S.ph = 'react'; S._react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }
+            if (Q.correct.indexOf(realIdx()) >= 0) { S.ph = 'react'; S._react = 1; S.reactT = 0; Snd.play('pinkcoin', 0.6); }
             else { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); } } }
         if (Q.timed && S.timer <= 0) { S.ph = 'react'; S._react = -1; S.reactT = 0; S.flash = 24; pinkDateWrong(); }
-        emit({ opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single, ghostHint: Q.ghostHint, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        emit({ opts: dispOpts(), sel: S.sel, boxOff: S.boxOff, single: !!Q.single, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         return;
       }
       if (S.ph === 'react') { S.reactT++;
         const spk = S._react > 0 ? (['spknya', 'spknya2', 'spktongue'][S.qi % 3]) : 'spkangry';
-        emit({ opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghostHint: Q.ghostHint, correct: S._react > 0, spk, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
+        emit({ opts: dispOpts(), sel: S.sel, boxOff: 0, single: !!Q.single, correct: S._react > 0, spk, timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         if (S.reactT >= 30) {
           if (S._react > 0) { S.correct++; if (S.qi + 1 >= D.qs.length) { S.ph = 'outro'; S.reactT = 0; S._shown = null; Snd.play('boost', 0.5); } else { S.qi++; S.ph = 'ask'; S._shown = null; } }
           else { S.ph = 'ask'; S._shown = null; }
@@ -2215,7 +2225,7 @@ function pinkConcertPattern(diff) { return {
     S.dummies = S.dummies.filter(d => d.t < 90);
     // draw the U-ring IN FRONT of the box + bullets, each popped inward from its edge
     a.fx.audienceFront = S.dummies.map(d => {
-      const off = d.pop * 12;
+      const off = d.pop * 12 * (d.hater ? 1.5 : 1);   // haters pop/jump ~1.5x higher
       const px = d.side === 'left' ? d.x + off : d.side === 'right' ? d.x - off : d.x;
       const py = d.side === 'bottom' ? d.y - off : d.y;
       return { x: px, y: py, side: d.side, pop: d.pop, hater: d.hater };
@@ -2229,10 +2239,10 @@ PATTERNS.pinkn_concert2 = pinkConcertPattern(1);   // hard (phase-2) concert: he
 function mkAudienceHater(add, x, y, box) {
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.3);
   const b = { ...bulletProps('dummyaud1'), x, y, vx: 0, vy: 0, noHit: true, scale: PS(1), dmg: 26, life: 320,
-              rot: 0, tint: '#1d1111', tintMul: true, _wind: 32 };
+              rot: 0, tint: '#ff2a2a', tintMul: true, _wind: 32 };   // haters are RED (easy to see)
   b.emit = function (b, out, sl) {
     if (b._wind > 0) { b._wind--;
-      b.tint = (b._wind < 9 && (b._wind % 2)) ? '#ffff88' : '#1d1111';    // yellow pre-throw flash
+      b.tint = (b._wind < 9 && (b._wind % 2)) ? '#ffff88' : '#ff2a2a';    // yellow pre-throw flash
       b.x = x + (b._wind < 12 ? ((b._wind % 2) * 2 - 1) * 2 : 0);          // jitter windup
       if (b._wind === 0 && sl) {                                          // LAUNCH: lob at the soul with overshoot
         const dist = Math.hypot(sl.x - b.x, sl.y - b.y), over = dist * dist / 900;
@@ -2675,8 +2685,8 @@ function pinkBombPattern(chart) {
   return {
     // the OVERLAP GUARD freezes the schedule while a batch is on the board, so the real playtime is longer
     // than the raw schedule: pad the duration by ~110 frames per volley so the final volley/finale resolves.
-    // end shortly after the last bomb resolves (finale slide-bomb needs a longer tail than the others)
-    box: { w: 150, h: 150 }, hz30: 1, dur: t + 55 + volleys * 42 + (sched.some(s => s.cmd === 4) ? 150 : 0),
+    // generous cap; the real end is fx.attackDone (2s after the last blast, set in the tick)
+    box: { w: 150, h: 150 }, hz30: 1, dur: t + 500 + volleys * 140,
     tick(a) {
       const { f, box, add, rng, soul } = a; a.fx.purpleSoul = { mode: 2, diff: 0 };
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
@@ -2752,6 +2762,11 @@ function pinkBombPattern(chart) {
         S.wind = S.queue.length ? 6 : -1;
         if (!S.queue.length) S.rep++;
       } else if (!S.queue.length) S.wind = -1;
+      // END: once the chart is done, the queue is empty, and NO bomb is still live, wait ~2s then wrap up
+      const anyLive = bl.some(b => b._pinkBomb && !b.dead);
+      if (S.si >= sched.length && S.queue.length === 0 && S.wind < 0 && !anyLive) {
+        S.endT = (S.endT || 0) + 1; if (S.endT >= 60) a.fx.attackDone = true;   // 60 @30Hz = 2s after the last blast
+      } else S.endT = 0;
     },
   };
 }
