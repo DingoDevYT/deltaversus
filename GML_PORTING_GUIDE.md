@@ -1,5 +1,10 @@
 # GML → DELTAVERSUS Porting Guide (the method that works)
 
+> **➜ For a NEW boss rebuild, start with `DELTAVERSUS_PORTING_PLAYBOOK.md`** — the up-to-date, character-
+> agnostic playbook (engine, GML conventions, tooling, verification, agent strategy, and hard-won gotchas)
+> written after the full Pink V3 rebuild. `GERSON_REBUILD_HANDOVER.md` is the current mission + agentic prompt.
+
+
 This is the distilled process after Pink. It applies to every future boss (Landon plans many more).
 
 ## Rules of engagement
