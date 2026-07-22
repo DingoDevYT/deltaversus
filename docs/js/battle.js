@@ -1735,7 +1735,7 @@ function drawPossessedPink(ctx, M) {
   const spr = k => { const info = (A.manifest.bullets || {})[k + fr]; return info && A.img['assets/bullets/' + info.f]; };
   // 10 green eye-laser beams radiating down-and-out FROM THE EYES (d_line_color 0,255,0). Two eyes, offset up.
   ctx.save(); ctx.strokeStyle = 'rgba(0,255,0,0.5)'; ctx.lineWidth = 2;
-  const eyeY = ey - 64;   // the white eyes sit high on the face
+  const eyeY = ey - 86;   // the white eyes (measured at screen y~71 for ey~158)
   for (const eyeX of [ex - 26, ex + 26]) for (let i = 0; i < 5; i++) { const ang = Math.PI * 0.5 + (i - 2) * 0.22;
     ctx.beginPath(); ctx.moveTo(eyeX, eyeY); ctx.lineTo(eyeX + Math.cos(ang) * 460, eyeY + Math.sin(ang) * 460); ctx.stroke(); }
   ctx.restore();
@@ -1749,16 +1749,18 @@ function drawMaze(ctx, M) {
   ctx.save();
   ctx.fillStyle = '#12000a'; ctx.fillRect(0, 0, 640, 480);   // the possessed date-screen backdrop (box destroyed)
   const life = M.life || 0;
-  // INVERTED dating-sim backdrop (behind everything, so the maze graph stays fully visible on top):
-  // scrolling inverted diamond tiles + the inverted portrait-window bg
-  const dia = A.img['assets/bullets/dsimdiainv' + (Math.floor(life / 12) % 3) + '.png'];
-  if (dia && dia.width) { const ox = (life * 0.7) % 80, oy = (life * 0.4) % 80; ctx.globalAlpha = 0.5;
+  // INVERTED dating-sim backdrop: ONE red diamond tile scrolling (like the other date bgs) + inverted portrait bg
+  const dia = A.img['assets/bullets/dsimdiainv0.png'];
+  if (dia && dia.width) { const ox = (life * 0.7) % 80, oy = (life * 0.4) % 80; ctx.globalAlpha = 0.55;
     for (let ty = -80 + oy; ty < 560; ty += 80) for (let tx = -80 - ox; tx < 720; tx += 80) ctx.drawImage(dia, tx, ty, 80, 80);
     ctx.globalAlpha = 1; }
   const uibg = A.img['assets/bullets/dsimbginv0.png']; if (uibg && uibg.width) ctx.drawImage(uibg, 106, 24, 480, 280);
   drawPossessedPink(ctx, M);
   const dk = [0, 0.4, 0.6, 0.8, 0][M.round || 0] || 0;   // per-difficulty darkener (date3darkner_alpha): diff3 = 80% black
   if (dk > 0) { ctx.fillStyle = 'rgba(0,0,0,' + dk + ')'; ctx.fillRect(0, 0, 640, 480); }
+  // HUD OVERLAY: the inverted nodiamonds frame ON TOP of the bg + portrait (but UNDER the maze graph, which
+  // blits next, so the frame borders the scene without hiding the maze)
+  for (const fr of [0, 1]) { const p = dsimImg('dsimplateinv' + fr); if (p) ctx.drawImage(p, 0, 0, 640, 440); }
   // glow surface — allocate ONCE (assigning canvas.width/height reallocates+clears the whole
   // backing store, which is what made the maze lag when done every frame). Reuse + clearRect.
   let s = drawMaze._s;

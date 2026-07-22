@@ -1974,7 +1974,7 @@ function pinkRotboxD1Pattern() {
     tick(a) {
       const { f, box, add, rng } = a; const S = this;
       const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-      const restX = cx - box.w / 2 - 84;   // the giant ghost appears on the LEFT (wiki) and rams rightward
+      const restX = cx - box.w / 2 - 130;   // rests FAR left -> a long run-up/wind-up before each ram
       if (f === 0) { S._q = []; S._t = 8; S._rot = 0; S._rtar = 0; S._pendKnock = 0;
         S._ghost = { x: restX, ram: 0, bob: 0, enter: 0, bumps: 0, hsp: 0, flip: false, frame: 0 }; }
       // ROTATION: the box eases toward its target at 6°/frame (obj_purplecontrols rotate_speed = 6)
@@ -1988,7 +1988,7 @@ function pinkRotboxD1Pattern() {
       gh.bob += 0.22;
       // bumps -> approach speed multiplier (obj_huge_anime_face Step: 0->32, 1->1.5, 2->4, 3->9, >=4->11).
       const sm = gh.bumps <= 0 ? 32 : gh.bumps < 2 ? 1.5 : gh.bumps < 3 ? 4 : gh.bumps < 4 ? 9 : 11;
-      const hitX = cx - box.w / 2 - 66;   // stops when the portrait's EDGE meets the box edge (barely overlaps)
+      const hitX = cx - box.w / 2 - 92;   // stops with the portrait's EDGE just at the box edge (doesn't run inside)
       if (S._pendKnock > 0 && gh.ram === 0 && gh.enter >= 1) { gh.ram = 1; gh.hsp = 0; if (typeof Snd !== 'undefined') Snd.play('heavyswing', 0.4); }   // lunge whoosh
       if (gh.ram === 1) {                                  // accelerate toward the box (GML accel tiers by hspeed)
         gh.hsp += gh.hsp < 2.5 ? 0.6 : gh.hsp < 4 ? 0.35 : 0.12;
@@ -1999,7 +1999,7 @@ function pinkRotboxD1Pattern() {
           gh.flip = !gh.flip; gh.frame ^= 1;               // image_xscale flip + image_index toggle each bump
           if (typeof Snd !== 'undefined') { Snd.play('bosshit', 0.6); Snd.play('explosionmmx', 0.35); Snd.play('boarddmg', 0.4); }
           if (typeof Battle !== 'undefined') Battle.shake = Math.max(Battle.shake || 0, 14);
-          S._knock = 22;                                   // shove the box RIGHT (rolled from the impact), eases back
+          S._knock = 34;                                   // shove the box RIGHT harder (rolled from the impact)
           gh.hsp = Math.max(1, gh.hsp * 0.5);
         }
       } else if (gh.ram === 2) { gh.x -= 6; if (gh.x <= restX) { gh.x = restX; gh.ram = 0; } }   // recoil back left
@@ -2008,7 +2008,7 @@ function pinkRotboxD1Pattern() {
       if (typeof Battle !== 'undefined' && Battle.dodgeBox) {
         const want = S._knock || 0, applied = S._knockApplied || 0, delta = want - applied;
         if (delta) { Battle.dodgeBox.x += delta; for (const b of (Battle.bullets || [])) b.x += delta; }
-        S._knockApplied = want; S._knock = want * 0.8;   // decay toward 0 (net displacement returns to rest)
+        S._knockApplied = want; S._knock = want * 0.92;   // decay SLOWLY so it lingers offset-right (room to keep pushing)
       }
       const riseY = (1 - gh.enter) * 150;                  // starts 150px below, rises to rest
       const kind = gh.bumps >= 7 ? 'shock' : gh.bumps >= 6 ? 'yell' : 'angry';   // angry -> yell_full -> shock_full
@@ -2494,9 +2494,12 @@ PATTERNS.pinkn3_finalmaze = {
       else n.dir += (rng() < 0.5 ? -1 : 1) * STEER;
       n.x += Math.cos(n.dir) * n.spd; n.y += Math.sin(n.dir) * n.spd;
     }
-    // ---- INPUT: ONE press = ONE node move (NOT hold-to-repeat). A tap made mid-slide is buffered (~10f) and
-    // fired the instant the soul lands, so it feels instant without auto-repeating while a key is held. ----
-    let pressDir = -1; if (HIT('right')) pressDir = 0; else if (HIT('up')) pressDir = 1; else if (HIT('left')) pressDir = 2; else if (HIT('down')) pressDir = 3;
+    // ---- INPUT: ONE press = ONE node move. Detect the press EDGE from the HELD state (Input.down) so a tap
+    // is NEVER dropped at 30Hz — Input.hit clears every 60Hz frame, so the 30Hz sim would randomly miss it
+    // (that was the "can't move during a flash"). A tap mid-slide is buffered (~10f) and fired on arrival. ----
+    const DOWN = k => IN.down && IN.down[k];
+    S._wd = S._wd || {}; const DIRK = ['right', 'up', 'left', 'down'];
+    let pressDir = -1; for (let i = 0; i < 4; i++) { const nowD = DOWN(DIRK[i]); if (nowD && !S._wd[DIRK[i]]) pressDir = i; S._wd[DIRK[i]] = nowD; }
     if (pressDir >= 0) { S.bufDir = pressDir; S.bufAge = 0; }
     else if (S.bufDir != null) { S.bufAge = (S.bufAge || 0) + 1; if (S.bufAge > 10) S.bufDir = null; }
     // ---- SOUL node-hop movement: heart_travel = home edge length; soul rides behind LIVE node ----
