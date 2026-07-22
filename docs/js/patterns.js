@@ -2059,11 +2059,11 @@ PATTERNS.pinkn_concert = {
   },
 };
 function mkAudienceHeart(add, x, y, dir, cx, cy, box, hater) {
+  // small RED heart (per the in-game shot: a plain red soul-heart, not the giant cat-face one)
   const b = { ...bulletProps('paudheart'), x, y, vx: 0, vy: 0, noHit: true, scale: 0.02, dmg: 22, life: 340,
-              r: 8, grazeR: 12, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };   // spr_heart_pop: a SMALL faceless heart, tiny -> grows
-  if (hater) { b.tint = '#ff3b3b'; b.tintMul = true; }
+              r: 7, grazeR: 11, tint: hater ? '#d000d0' : '#ff2828', tintMul: true, _w: 0, _aim: dir != null ? dir : -Math.PI / 2, _hater: hater };
   if (typeof Snd !== 'undefined') Snd.play('pinkelectric', 0.25);
-  const FINAL = 0.85;   // final display scale of the (38px) heart -> ~32px (small, not the giant cat-face heart)
+  const FINAL = 0.7;   // final display scale of the (38px) heart -> ~27px (small red soul-heart)
   b.emit = function (b, out, sl) {
     if (b._phase !== 1) {   // PHASE 0: grow (tiny -> FINAL) + aim at the soul over 32 frames (obj_audienceheart)
       b._w++;
@@ -2123,9 +2123,11 @@ PATTERNS.pinkn_finalmaze = {
     if (B && B.bullets && S.goal < 0 && B.bullets.filter(b => b._mazeHeart && !b.dead).length === 0) { S.goal = S.start; Snd.play('pinkcoin', 0.5); if (B) B.flash = 8; }
     a.fx.purpleSoul = { mode: 8, gen: 1, nodes: S.nodes, edges: S.edges, acts: [], start: S.start, goal: S.goal,
       goalText: 'Stop!', dieBoxes: S.die.map(d => ({ x: cx + d.x, y: cy + d.y })) };
-    // Pink SPLIT IN TWO: BODY on the left, GHOST on the right
-    a.fx.boss = { key: 'pinkghost' + (Math.floor(f / 10) % 2), x: cx - box.w / 2 - 78, y: cy - 20, scale: 2.0, flip: false };
-    a.fx.pinkGhost = { x: cx + box.w / 2 + 78, y: cy - 20, frame: Math.floor(f / 10) % 2, ramming: false };
+    // Pink SPLIT: her BODY (spr_pink_very_hurt) looms at top-centre above the maze, with her detached GHOST
+    // floating overhead (obj_pink_enemy body-state + ghostmarker orbital float).
+    a.fx.boss = { key: 'pinksing' + (Math.floor(f / 12) % 2), x: cx, y: box.y - 66, scale: 2.2, flip: false };
+    const gt = f / 12;
+    a.fx.pinkGhost = { x: cx + Math.sin(gt) * 26, y: box.y - 118 + Math.cos(gt) * 12, frame: Math.floor(f / 10) % 2, ramming: false, scale: 1.5, flip: false };
     // WIN: reach the GOAL box (obj_pinknodeact mode 1 -> maze cleared)
     if (B && S.goal >= 0 && B.pNodeReached === S.goal && !S._won) {
       S._won = 1; Snd.play('pinkcoin', 0.7); B.flash = 12;
