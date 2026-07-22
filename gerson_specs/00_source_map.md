@@ -34,5 +34,29 @@ green-soul fight. NOT a custom design — this is a true 1:1 port target.
 
 ## STATUS OF EXISTING KIT (verified 2026-07-23)
 All 10 attacks RUN without update/render errors; green block mechanic works (0 dmg perfect / 72+ miss).
-They are functional approximations already derived from this GML. The rebuild goal = raise each to exact
-GML fidelity (spawn positions, speeds, cadence, visuals) and density, verifying each, deploying in batches.
+They were already functional GML-derived ports — the handover's "not working" premise did NOT hold up
+(no crashes, block mechanic correct). So the work became a FIDELITY + BALANCE pass, not a teardown.
+
+### DONE (verified headless + canvas-sampled, deployed in 2 batches, live on GitHub Pages)
+- **gerson_squish** — REBUILT to the real GML (`obj_gerson_box_hit`, code 13): box snaps WIDE + shoves L/R;
+  rows of white DIAMONDS fire HORIZONTALLY from alternating edges with friction-0.14 decel. (Was wrongly
+  raining vertical columns — the spec explicitly says no gravity-rain exists.) Added a `diamond` bullet shape.
+- **gerson_rudebuster** — UPGRADED to real accel-homing orb (speed→9, homing) that BURSTS into 8 radial
+  bolts (GML 8 shots @45+90i) if it reaches you undeflected; still Z-deflectable. Verified burst fires.
+- **gerson_boxthrow** — tuned to spec physics (fakevspeed clamp 11, phase-1 sin amplitude 80, x1.5 hammers).
+- **gerson_finale** — REBUILT as an escalating all-blockable green climax (rotating spear volleys →
+  multi-block shells → giant "holy hammer" overhead). FIXED a real bug: old version spawned `line` cuts
+  through centre while in green (can't-move) mode = unavoidable damage. Now everything is blockable.
+- **Green spears tinted c_lime** (`gSpear`): the chevron sprite was grey; now renders green (RGB 0,192,0),
+  matching the GML `c_lime` blend. Affects spears/barrage/spearsweep/shellvolley/finale.
+- **Damage balanced** to peer parity (green ~38-42, red ~46-52, ult 58) — was badly under-tuned (18-22).
+
+### ALREADY ACCURATE (left as-is, confirmed against specs)
+- gerson_shellkick — starburst arcs match GML EXACTLY ([4,0,12.0,0.535],[10,24,13.25,0.5],[8,0,14.5,0.465],[6,-24,15.75,0.43]).
+- gerson_spears/barrage/spearsweep/shellvolley — volley cadence + 50° block arc + 4-frame parry match GML.
+
+### KNOWN STYLIZATION / FUTURE WORK
+- gerson_swingdown — uses abstract red telegraph-lines (Knight red-slash mechanic) instead of the
+  `spr_gerson_swing_down_new` blade sprite lunge. Mechanic (telegraph→cut) is faithful; visual is stylized.
+- NOT YET IN KIT (real attacks, sprites already imported): BELL (musical-note radial, `gbell`+notes),
+  CANE (belongs to obj_guei_enemy, not the hammer boss), GROWTANGLE vines. Additive scope — see specs.
