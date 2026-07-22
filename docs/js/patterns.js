@@ -1571,12 +1571,13 @@ const PINK_DATE1 = {
   ],
   outro: "ARRRGH, enough already!|This is OVER!",
 };
-const PINK_DATE2 = {   // Date 2 (datecount 2): pun answers — the correct one is index 0 (obj_date_controller Other_11)
+const PINK_DATE2 = {   // Date 2 (datecount 2): the GHOST side of Pink (second_text) blurts a hint that points to the
+  // correct pun answer (rand_array[0]) — obj_date_controller Other_11 first_text/second_text pairs.
   intro: ["Let's date, mew!"],
   qs: [
-    { q: "Date location?", opts: ["Go to mountain", "Get lost!", "Planetarium"], correct: [0], timed: true },
-    { q: "Were you... moved?", opts: ["Tear up", "Rip up", "Cry"], correct: [0], timed: true },
-    { q: "A gift for me?", opts: ["Stinky fish", "Rotten", "Diamond"], correct: [0], timed: true },
+    { q: "Date location?", ghost: "Take a HIKE!!!", opts: ["Go to mountain", "Get lost!", "Planetarium"], correct: [0], timed: true },
+    { q: "Were you... moved?", ghost: "Destroy her letter!", opts: ["Tear up", "Rip up", "Cry"], correct: [0], timed: true },
+    { q: "A gift for me?", ghost: "Call me ROTTEN!", opts: ["Stinky fish", "Rotten", "Diamond"], correct: [0], timed: true },
   ],
   outro: "...H-heh. Not bad, mew.",
 };
@@ -1619,7 +1620,7 @@ function pinkDatePattern(D) {
       if (S.ph === 'ask') {
         if (S._shownLine !== ('q' + S.qi)) { setText(Q.q); S._shownLine = 'q' + S.qi; S.sel = 0; S.heartY = 385; S.timer = 240; }
         S.chars += 1;
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, timer: null });
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghost: Q.ghost, timer: null });
         if (S.chars > (S._l1.length + S._l2.length) + 6) { S.ph = 'choose'; S.bt = 0; }
         return;
       }
@@ -1648,7 +1649,7 @@ function pinkDatePattern(D) {
           }
         }
         if (Q.timed && S.timer <= 0) { S.ph = 'react'; S.react = -1; S.reactT = 0; S.flash = 24; wrongReactSfx(); }   // timeout = wrong
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single,
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: S.boxOff, single: !!Q.single, ghost: Q.ghost,
                timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         return;
       }
@@ -1656,7 +1657,7 @@ function pinkDatePattern(D) {
       // ---- REACT (con 3 correct / con 4 wrong): brief reaction, then advance or repeat ----
       if (S.ph === 'react') {
         S.reactT++;
-        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, correct: S.react > 0,
+        emit({ q: Q.q, opts: Q.opts, sel: S.sel, boxOff: 0, single: !!Q.single, ghost: Q.ghost, correct: S.react > 0,
                timer: Q.timed ? Math.max(0, S.timer / 240) : null });
         if (S.reactT >= 34) {
           if (S.react > 0) {                                 // correct -> next question (or win)

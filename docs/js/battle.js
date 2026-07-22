@@ -1482,6 +1482,15 @@ function drawDateUI(ctx, D) {
   const tail = img('dsimtail'), po = img('dsimpink' + (D.talk || 0));   // talking portrait + tail (scale 2)
   if (tail) ctx.drawImage(tail, 320 - 112, 21, 224, 232);
   if (po) ctx.drawImage(po, 320 - 112, 26, 224, 232);
+  // DATE 2: the GHOST side of Pink (pinkportrait2) floats beside her and blurts a HINT that points to the pun
+  // answer (obj_date_controller second_text). Drawn semi-transparent with its own speech line.
+  if (D.ghost) {
+    const gim = img('pinkghost' + (D.talk || 0)) || img('pinkghost0');
+    if (gim) { ctx.save(); ctx.globalAlpha = 0.7; ctx.drawImage(gim, 430, 40, gim.width * 1.5, gim.height * 1.5); ctx.restore(); }
+    ctx.font = "14px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) { ctx.fillStyle = '#3a0d2e'; ctx.fillText('"' + D.ghost + '"', 496 + dx, 150 + dy); }
+    ctx.fillStyle = '#ff9fe0'; ctx.fillText('"' + D.ghost + '"', 496, 150);
+  }
   // Pink's spoken lines / the current question: typewriter, centred, WHITE 8-dir outline + near-black fill.
   const full = (D.line1 || '') + (D.line2 || ''); let shown = D.chars != null ? D.chars : full.length;
   const l1 = (D.line1 || '').slice(0, shown); const l2 = (D.line2 || '').slice(0, Math.max(0, shown - (D.line1 || '').length));
