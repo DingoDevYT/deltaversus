@@ -1097,192 +1097,6 @@ PATTERNS.knight_roar = {
   },
 };
 
-// ============================================================================
-// JEVIL — "NEW SET" (Gemini recipes, FULL specs). TEST patterns wired only into the
-// attack tester + showcase, NOT Jevil's real in-game moveset. Real suit sprites.
-//
-// UNIT CONVERSIONS (DELTARUNE 30 FPS -> our fixed 60 Hz):
-//  * speeds/rotations are PER-FRAME @30fps -> multiply by F (=0.5) for per-tick @60fps.
-//  * absolute delays stay in real seconds (seconds*60 = ticks).
-//  * DISPLAY size: SZ(nativeMax, dispPx) -> the scale that draws the sprite at dispPx
-//    (our draw = native*scale*1.6). Native sizes: spade36 heart18 club34 clubball18
-//    diamond33 jdevil47 jdevilgiant62.
-//  * HURTBOX: b.r ~= recipe_hurtbox/2 - 2 (our collision adds SOUL_R=5), kept smaller
-//    than the sprite for tight grazing; rect blades use hitW/hitH; b.grazeR per recipe.
-// ============================================================================
-const F = 0.5;
-const SZ = (nat, disp) => disp / (nat * 1.6);
-const SC_SPADE12 = SZ(36, 12), SC_SPADE16 = SZ(36, 16), SC_SPADE32 = SZ(36, 26), SC_HEART24 = SZ(18, 24), SC_HEART16 = SZ(18, 16),
-      SC_CLUB24 = SZ(34, 24), SC_CLUB16 = SZ(18, 16), SC_DIA = SZ(33, 16),
-      SC_DEVIL = SZ(47, 64), SC_DEVILSM = SZ(47, 46), SC_DEVILRED = SZ(62, 92), SC_DEVILGIANT = SZ(47, 84), SC_DEVILULT = SZ(47, 190), SC_BOMB = SZ(23, 26);
-
-PATTERNS.jx_spread = {   // Five-Spade Teleport Spread. spade 16px | hurtbox 8 | graze 24 | speed 6px/f
-  dur: 340, box: { w: 160, h: 160 },
-  tick(a) {
-    const { f, box, tier, add, soul } = a;
-    const CYC = rate(30, tier), k = Math.floor(f / CYC);   // teleport + fan every 0.5s, 10 waves
-    if (k >= 10) return;
-    const left = (k % 2) === 0;
-    const oy = box.y + box.h * (0.2 + ((k * 37) % 100) / 100 * 0.6);       // random Y 20%-80%
-    a.fx.boss = { key: 'jevilcast', x: left ? box.x - 40 : box.x + box.w + 40, y: oy, scale: 1, flip: !left };
-    if (f % CYC === 0) {
-      const ox = left ? box.x - 18 : box.x + box.w + 18;
-      const base = Math.atan2(soul.y - oy, soul.x - ox);                   // middle spade AIMED
-      for (const off of [-0.524, -0.262, 0, 0.262, 0.524]) {              // -30, -15, 0, +15, +30 deg
-        const ang = base + off;
-        add({ ...bulletProps('suitspade'), x: ox, y: oy, vx: Math.cos(ang) * 6 * F, vy: Math.sin(ang) * 6 * F, rot: ang, spin: 0, r: 2, grazeR: 7, scale: SC_SPADE12 });   // smaller, points travel dir (sprite faces right)
-      }
-    }
-  },
-};
-PATTERNS.jx_spiral = {   // Spade Spiral. large spade 32px | hurtbox 16 | graze 40 | speed 5.5 then 7.0px/f
-  dur: 280, box: { w: 160, h: 160 },
-  tick(a) {
-    const { f, box, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2, R = 130;         // 140px ring, clamped to the 160 box
-    for (const w0 of [0, 120]) {
-      if (f !== w0) continue;
-      const dir = w0 === 0 ? -1 : 1, spd = (w0 === 0 ? 5.5 : 7.0) * F;      // wave 2 is faster
-      for (let i = 0; i < 10; i++) {                                        // 10 spades, 36 deg apart
-        const ang = i / 10 * Math.PI * 2, x = cx + Math.cos(ang) * R, y = cy + Math.sin(ang) * R;
-        const toC = Math.atan2(cy - y, cx - x);                            // PURE inward -> each spade drives straight THROUGH the centre and out the far side (no safe middle)
-        const vx = Math.cos(toC) * spd, vy = Math.sin(toC) * spd;
-        add({ ...bulletProps('suitspade'), x, y, vx: 0, vy: 0, r: 6, grazeR: 15, scale: SC_SPADE32, spin: 0, rot: Math.atan2(vy, vx),   // points travel dir
-              noHit: true, fireAt: 24 + i * 4, fireVX: vx, fireVY: vy, life: 24 + i * 4 + 200 });   // 0.4s tell, launch 0.06s apart, live long enough to cross + exit
-      }
-    }
-  },
-};
-PATTERNS.jx_heartbomb = {   // Heart Bomb (HORIZONTAL): bomb-sprite hearts fly in from the SIDE, burst into a SPACED
-  dur: 360, box: { w: 160, h: 160 },   // 4-heart cluster that spins while continuing across. bomb 4px/f, cluster 3px/f + 0.1rad/f
-  tick(a) {
-    const { f, box, tier, add } = a;
-    const CYC = rate(48, tier);                                            // a bomb every 0.8s
-    if (f % CYC === 0 && f < 300) {
-      const k = f / CYC, left = (k % 2) === 0, dir = left ? 1 : -1;
-      const LANES = [0.12, 0.62, 0.37, 0.87, 0.25, 0.75, 0.5, 0.06, 0.94];  // fixed spread hits top, bottom & middle every run
-      const y = box.y + box.h * LANES[k % LANES.length];                    // no permanent safe zone anywhere vertically
-      const bomb = { ...bulletProps('jbombheart0'), animKeys: ['jbombheart0', 'jbombheart1'], animRate: 8,
-                     x: left ? box.x - 16 : box.x + box.w + 16, y, vx: dir * 4 * F, vy: 0, r: 6, grazeR: 11, scale: SC_BOMB, _burstX: left ? box.x + box.w * 0.35 : box.x + box.w * 0.65 };
-      bomb.emit = function (b, out) {
-        if ((dir > 0 ? b.x >= b._burstX : b.x <= b._burstX) && !b._done) {
-          b._done = 1; b.dead = true;
-          const cx = b.x, cy = b.y;
-          for (let i = 0; i < 4; i++) { const ang = i / 4 * Math.PI * 2 + Math.PI / 4;   // SPACED 4-heart square (R 26) continuing across
-            out.push({ ...bulletProps('suitheart'), x: cx + Math.cos(ang) * 26, y: cy + Math.sin(ang) * 26, r: 2, grazeR: 7, scale: SC_HEART16,
-                       orbit: { cx, cy, R: 26, w: 0.1 * F, ang, vx: dir * 3 * F }, life: 170 }); }
-        }
-      };
-      add(bomb);
-    }
-  },
-};
-PATTERNS.jx_clubbomb = {   // Club Bomb. bomb 24px/hb12 | club 16px/hb8 | bomb 5px/f, burst 5.5px/f aimed +/-20
-  dur: 340, box: { w: 160, h: 160 },
-  tick(a) {
-    const { f, box, tier, add } = a;
-    const CYC = rate(36, tier);                                            // a bomb every 0.6s
-    if (f % CYC === 0 && f < 300) {
-      const k = f / CYC, x = box.x + box.w * (0.1 + ((k * 61) % 100) / 100 * 0.8);
-      const bomb = { ...bulletProps('jbombclub0'), animKeys: ['jbombclub0', 'jbombclub1'], animRate: 8, x, y: box.y - 16, vx: 0, vy: 5 * F, r: 6, grazeR: 11, scale: SC_BOMB };
-      bomb.emit = function (b, out, s) {
-        if (b.y >= box.y + 14 && !b._done) {
-          b._done = 1; b.dead = true;
-          const base = Math.atan2(s.y - b.y, s.x - b.x);                   // middle AIMED, outer +/-20 deg
-          for (const off of [-0.349, 0, 0.349]) { const ang = base + off;
-            out.push({ ...bulletProps('suitclub'), x: b.x, y: b.y, vx: Math.cos(ang) * 5.5 * F, vy: Math.sin(ang) * 5.5 * F, r: 2, grazeR: 7, scale: SC_CLUB16, spin: 0, rot: ang }); }   // clubs point travel dir
-        }
-      };
-      add(bomb);
-    }
-  },
-};
-PATTERNS.jx_diamond = {   // Diamond Shower. vertical diamond 12x16px | hurtbox 6x8. A solid diamond TELLS at the
-  dur: 360, box: { w: 160, h: 160 },   // bottom (parked, no hit) showing where it will fire, then launches UP ~5.5px/f. ~60% density.
-  tick(a) {
-    const { f, rng, box, add } = a;
-    if (f < 290 && f % (f < 180 ? 5 : 4) === 0) {   // ~60% of the old rate
-      const x = box.x + box.w * (0.05 + rng() * 0.9);
-      add({ ...bulletProps('suitdiamondv'), tint: '#fff', x, y: box.y + box.h - 6, vx: 0, vy: 0, r: 3, grazeR: 8, spin: 0, scale: SC_DIA,
-            noHit: true, fireAt: 24, fireVX: 0, fireVY: -5.5 * F, life: 120 });   // solid WHITE diamond parks at bottom as the tell (0.4s), then fires up
-    }
-  },
-};
-// Both carousels reuse the GAME'S proven fake-3D CYLINDER (updCarousel): 8 columns x 3 rows rotate
-// around a cylinder with the box inside; the far side is hidden, front columns bob - slip the gaps.
-// (Recipe: horse hurtbox 16 much smaller than the 48px sprite - the cylinder keeps r tight below.)
-function jxCarousel(a, keyFor) {
-  const { f, rng, box, add } = a;
-  if (f !== 0) return;
-  const cols = 6, rows = 3, cx = box.x + box.w / 2, R = box.w / 2 + 24;
-  const rowGap = box.h * 0.34, midY = box.y + box.h / 2;
-  for (let c = 0; c < cols; c++) { const ang0 = c / cols * Math.PI * 2;
-    for (let r = 0; r < rows; r++) { const rowY = midY + (r - 1) * rowGap;
-      add({ ...bulletProps(keyFor(c, r, rng)), x: cx, y: rowY, vx: 0, vy: 0, r: 7, grazeR: 14,
-            carousel: { ang: ang0, w: 0.018, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } }); } }
-}
-PATTERNS.jx_carousel_h = {   // Carousel (horses): the cylinder, random duck-horse variants
-  dur: 520, box: { w: 160, h: 160 },
-  tick(a) { jxCarousel(a, (c, r, rng) => 'carousel' + Math.floor(rng() * 3)); },
-};
-PATTERNS.jx_carousel_hd = {   // Carousel (horses & ducks): the cylinder, alternating horse/duck sprites + a rare Everyman (1%)
-  dur: 520, box: { w: 160, h: 160 },
-  tick(a) { jxCarousel(a, (c, r, rng) => { const duck = (c + r) % 2 === 1; return duck ? (rng() < 0.01 ? 'carousel2' : 'carousel1') : 'carousel0'; }); },
-};
-PATTERNS.jx_scythes = {   // Orbiting Devilsknives. scythe 64px | hurtbox r12 circle | graze 56 | orbit 0.04 spin 0.15 rad/f
-  dur: 420, box: { w: 160, h: 160 },
-  tick(a) {
-    const { f, box, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('jdevil'), x: cx, y: cy, r: 8, grazeR: 20, scale: SC_DEVILSM, spin: 0.24 * F, vx: 0, vy: 0, life: 400,   // smaller + faster spin
-            orbit: { cx, cy, R: 58, w: 0.075 * F, ang: k * Math.PI / 2, pulse: { base: 58, amp: 10, freq: 0.03 * F },
-                     center: { cx0: cx, cy0: cy, ax: 34, ay: 26, f: 0.02 * F } } });   // orbit centre WANDERS so the middle isn't a free safe spot
-  },
-};
-PATTERNS.jx_redsweep = {   // Red Devilsknife Sweep. grey scythe 64px + red 128px/hb 80x32 | red speed 8px/f
-  dur: 380, box: { w: 160, h: 160 },
-  tick(a) {
-    const { f, box, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f === 0) for (let k = 0; k < 4; k++)
-      add({ ...bulletProps('jdevil'), x: cx, y: cy, r: 8, grazeR: 20, scale: SC_DEVILSM, spin: 0.24 * F, vx: 0, vy: 0, life: 380,   // smaller + faster
-            orbit: { cx, cy, R: 52, w: 0.075 * F, ang: k * Math.PI / 2, center: { cx0: cx, cy0: cy, ax: 30, ay: 24, f: 0.02 * F } } });   // wandering centre
-    // 4 red sweeps alternating TOP/BOTTOM lanes at 0.5 / 1.8 / 3.1 / 4.4s
-    const sweeps = [[30, 0.25, 1], [108, 0.75, -1], [186, 0.25, 1], [264, 0.75, -1]];
-    for (const [t, laneP, dir] of sweeps) if (f === t)
-      add({ ...bulletProps('jdevilgiant'), tint: '#e83030', x: dir > 0 ? box.x - 70 : box.x + box.w + 70, y: box.y + box.h * laneP,
-            vx: dir * 8 * F, vy: 0, scale: SC_DEVILRED, spin: 0.1 * F, hitW: 52, hitH: 18, flip: dir < 0 });   // smaller red blade
-  },
-};
-PATTERNS.jx_finalchaos = {   // Final Chaos (ult). full-screen arena; devilsknife (same sprite as the orbiting set,
-  dur: 900, box: { w: 160, h: 160 },   // just bigger) -> full-height light beam; ends with a huge descending ultimate + white flash.
-  tick(a) {
-    const { f, rng, box, tier, add } = a;
-    a.fx.arena = true;
-    const gY = box.y + box.h - 8;
-    const drop = (x, vy) => {   // a scythe -> smashes into a full-height light beam (thick column)
-      const k = { ...bulletProps('jdevil'), x, y: box.y + 30, vx: 0, vy, spin: 0.04, scale: SC_DEVILGIANT, hitW: 58, hitH: 18, _gy: gY };
-      k.emit = function (b, out) {
-        if (b.y >= b._gy && !b._s) { b._s = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: box.y + box.h / 2, rot: Math.PI / 2, len: box.h + 40, thick: 26, armed: true, life: 24, dmg: b.dmg, vx: 0, vy: 0 });   // beam lingers 0.4s
-          Snd.play('boarddmg', 0.3);
-        }
-      };
-      add(k);
-    };
-    if (f >= 30 && f < 420 && (f - 30) % 18 === 0) drop(box.x + 30 + rng() * (box.w - 60), 12 * F);   // PHASE 1: random rain every 0.3s @12px/f (doubled spacing)
-    const seq = f - 440;                                                                              // PHASE 2: edges -> centre, 0.4s apart (doubled)
-    if (seq >= 0 && seq < 120 && seq % 24 === 0) {
-      const pairs = [[0.1, 0.9], [0.25, 0.75], [0.4, 0.6], [0.5]][Math.floor(seq / 24)];
-      if (pairs) for (const p of pairs) drop(box.x + box.w * p, 12 * F);
-    }
-    // PHASE 3: the ULTIMATE scythe (190px, hurtbox 150x46) descends over ~2.5s, stops with a 30px safe zone at the bottom
-    if (f === 580) add({ ...bulletProps('jdevil'), x: box.x + box.w / 2, y: box.y - 90, vx: 0, vy: 0,
-                         lerpY: box.y + box.h - 30 - 20, lerpRate: 0.035, scale: SC_DEVILULT, hitW: 150, hitH: 46, life: 320 });
-    if (f > 860) { a.fx.whiteout = Math.min(1, (f - 860) / 24); a.fx.shake = 8; }                     // white-flash ending (well after the ultimate is on-screen)
-  },
-};
 
 // GREEN SOUL test bench: locks the soul, you aim Susie's axe to BLOCK. Square (4-way) then octagon
 // (8-way), plus multi-hit turtle shells (colour = blocks left) — regular and spinning. Tester only.
@@ -2020,9 +1834,9 @@ const PINK_N3_DATE4 = {
   ],
   outro: { spk: 'spkhappy', ghost: 'ghconc', text: "…Heh.|Together, then —|for real this time, mew." },
 };
-PATTERNS.pinkn3_date1 = pinkDateN3Pattern(PINK_N3_DATE1);
-PATTERNS.pinkn3_date2 = pinkDateN3Pattern(PINK_N3_DATE2);
-PATTERNS.pinkn3_date4 = pinkDateN3Pattern(PINK_N3_DATE4);   // the confession that ends the fight
+PATTERNS.pink_date1 = pinkDateN3Pattern(PINK_N3_DATE1);
+PATTERNS.pink_date2 = pinkDateN3Pattern(PINK_N3_DATE2);
+PATTERNS.pink_date4 = pinkDateN3Pattern(PINK_N3_DATE4);   // the confession that ends the fight
 
 // TYPE 204 — Vertical cat rain (purple mode 4: 2 vertical lanes, tall box, free Y). Cats fall/rise in 3
 // columns (x -28/0/+28) in bursts: each stream fires b_number cats b_interval apart, then rests b_break
@@ -2539,7 +2353,7 @@ function mazeBuild(r, rng) {
 // (320,140) toward node_start at cadence 36+clamp(hits-1,0,4)*2 (spec §9), and doki RELOCATION
 // to a backup node when the soul camps the doki's node (spec §6). Shares mazeBuild + drawMaze
 // (drawMaze's per-frame surface realloc — the lag — is fixed).
-PATTERNS.pinkn3_finalmaze = {
+PATTERNS.pink_finalmaze = {
   box: { w: 565, h: 372 }, hz30: 1, dur: 12000, fullscreen: true, ROUNDS: 4,
   tick(a) {
     const { f, rng } = a; const S = this;
@@ -2914,22 +2728,22 @@ function pinkBombPattern(chart) {
 // is that they now render on the actual Pink stage (MEWERS LIVE + dancers + petals) via fx.pinkScene
 // instead of the default battle bg. Wrap each so it flags the scene, keeping the V2 logic intact.
 function withPinkScene(p) { return Object.assign({}, p, { tick(a) { a.fx.pinkScene = true; return p.tick.call(this, a); } }); }
-PATTERNS.pinkn3_cats      = withPinkScene(pinkCatsPattern(PINK_CATS_D0));
-PATTERNS.pinkn3_cats2     = withPinkScene(pinkCatsPattern(PINK_CATS_D1));
-PATTERNS.pinkn3_bombs     = withPinkScene(pinkBombPattern(PINK_BOMB_D0));
-PATTERNS.pinkn3_bombs2    = withPinkScene(pinkBombPattern(PINK_BOMB_D1));
-PATTERNS.pinkn3_bombsg    = withPinkScene(pinkBombPattern(PINK_BOMB_D3));
-PATTERNS.pinkn3_bombsfin  = withPinkScene(pinkBombPattern(PINK_BOMB_D2));
-PATTERNS.pinkn3_plusgrid  = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D0, false));
-PATTERNS.pinkn3_plusgrid2 = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D2, false));
-PATTERNS.pinkn3_rotbox    = pinkRotboxD1Pattern();   // its own scrolling parallax backdrop (fx.pinkRoll)
-PATTERNS.pinkn3_tunnel    = withPinkScene(pinkTunnelPattern);
-PATTERNS.pinkn3_concert   = withPinkScene(pinkConcertPattern(0));
-PATTERNS.pinkn3_concert2  = withPinkScene(pinkConcertPattern(1));   // hard concert (haters), phase-2 variant
+PATTERNS.pink_cats      = withPinkScene(pinkCatsPattern(PINK_CATS_D0));
+PATTERNS.pink_cats2     = withPinkScene(pinkCatsPattern(PINK_CATS_D1));
+PATTERNS.pink_bombs     = withPinkScene(pinkBombPattern(PINK_BOMB_D0));
+PATTERNS.pink_bombs2    = withPinkScene(pinkBombPattern(PINK_BOMB_D1));
+PATTERNS.pink_bombsg    = withPinkScene(pinkBombPattern(PINK_BOMB_D3));
+PATTERNS.pink_bombsfin  = withPinkScene(pinkBombPattern(PINK_BOMB_D2));
+PATTERNS.pink_plusgrid  = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D0, false));
+PATTERNS.pink_plusgrid2 = withPinkScene(pinkPlusGridPattern(PINK_PLUS_D2, false));
+PATTERNS.pink_rotbox    = pinkRotboxD1Pattern();   // its own scrolling parallax backdrop (fx.pinkRoll)
+PATTERNS.pink_tunnel    = withPinkScene(pinkTunnelPattern);
+PATTERNS.pink_concert   = withPinkScene(pinkConcertPattern(0));
+PATTERNS.pink_concert2  = withPinkScene(pinkConcertPattern(1));   // hard concert (haters), phase-2 variant
 
-// ===== PINK V3 (pinkn3_*) — from-scratch rebuild on the real STAGE SCENE =====
-// pinkn3_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).
-PATTERNS.pinkn3_scene = { box: { w: 180, h: 140 }, hz30: 1, dur: 900, tick(a) { a.fx.pinkScene = true; } };
+// ===== PINK V3 (pink_*) — from-scratch rebuild on the real STAGE SCENE =====
+// pink_scene: scenery-layer verification stub (MEWERS LIVE + dancers + petals, no bullets).
+PATTERNS.pink_scene = { box: { w: 180, h: 140 }, hz30: 1, dur: 900, tick(a) { a.fx.pinkScene = true; } };
 
 // obj_pinkcatbullet: the cat FACE bullet (spr_bullet_catface, 4-frame anim at image_speed 0.334, scale 2).
 // It ANIMATES through its frames and does NOT rotate (spin_dir is a movement spiral, not sprite rotation).

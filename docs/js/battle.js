@@ -179,13 +179,14 @@ const MOVE_SFX = {
   lancer_ult: 'ultraswing',
   berdly_fight: 'swing', berdly_bolt: 'icespell', berdly_books: 'spellcast', berdly_ult: 'ultraswing',
   // Jevil - his own voice/laughs (Ch1 snd_joker_*)
-  jevil_spade: 'jokerha', jevil_diamond: 'jokerlaugh', jevil_carousel: 'jokerlaugh', jevil_ult: 'jokerchaos',
-  // Spamton NEO - his real Ch2 sounds (laser / pipis mail / overpower voice)
-  sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_mail: 'pipis', sneo_phones: 'laz',
+  jevil_spade: 'jokerha', jevil_diamond: 'jokerlaugh', jevil_verticals: 'jokerlaugh', jevil_clubs: 'jokerha',
+  jevil_carousel: 'jokerlaugh', jevil_ult: 'jokerchaos',
+  // Spamton NEO - his real Ch2 sounds (laser / pipis / overpower voice)
+  sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_columns: 'pipis', sneo_phones: 'laz',
   sneo_face: 'spamtonlaugh', sneo_bigshot: 'sneoover',
   // The Roaring Knight - the Ch3 board-battle sounds
-  knight_corridor: 'knightsword', knight_circle: 'knightsword', knight_slash: 'boarddmg',
-  knight_board: 'boardbomb', knight_roar: 'knightlaugh',
+  knight_stars: 'boardsummon', knight_tracking: 'knightsword', knight_tunnel: 'knightsword',
+  knight_flurry: 'boardbomb', knight_rotslash: 'boarddmg', knight_vortex: 'knightsword', knight_roar: 'knightlaugh',
 };
 
 // ---------- init ----------
@@ -1066,7 +1067,7 @@ Battle.updDodge = function () {
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
-  B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pinkn3_* patterns each tick)
+  B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pink_* patterns each tick)
   B.fx.pinkRoll = null;     // rotating-grid scrolling parallax backdrop
   B.fx.attackDone = false;  // a normal attack can signal "wrap up now" (e.g. bombs, ~2s after the last blast)
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
@@ -1859,7 +1860,7 @@ function drawMaze(ctx, M) {
 // ===================== PINK STAGE SCENE (obj_pink_enemy scenery) =====================
 // The Pink fight is a whole stage: black backdrop + "MEWERS LIVE" marquee + 16 bg
 // dancers + 8 fg dancers (glowsticks) + falling petals + per-hero spotlights.
-// Rendered when a pinkn3_* pattern sets B.fx.pinkScene truthy. Derived deterministically
+// Rendered when a pink_* pattern sets B.fx.pinkScene truthy. Derived deterministically
 // from the frame counter (like all transient fx) — no persistent state to desync.
 // Sprite origins are from refdata (originX,originY at native px; ×2 stage scale).
 function pinkSceneImg(key) {

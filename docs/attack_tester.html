@@ -68,13 +68,13 @@
 
 <!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
 <script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
-<script src="js/rng.js?v=177"></script>
-<script src="js/assets.js?v=177"></script>
-<script src="js/audio.js?v=177"></script>
-<script src="js/input.js?v=177"></script>
-<script src="js/characters.js?v=177"></script>
-<script src="js/patterns.js?v=177"></script>
-<script src="js/battle.js?v=177"></script>
+<script src="js/rng.js?v=178"></script>
+<script src="js/assets.js?v=178"></script>
+<script src="js/audio.js?v=178"></script>
+<script src="js/input.js?v=178"></script>
+<script src="js/characters.js?v=178"></script>
+<script src="js/patterns.js?v=178"></script>
+<script src="js/battle.js?v=178"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
@@ -86,25 +86,6 @@ function fitCanvas() {
 }
 addEventListener('resize', fitCanvas); fitCanvas();
 const el = id => document.getElementById(id);
-// TESTER-ONLY: Jevil "new set" (Gemini recipes). Registered on CHARS in THIS page's runtime only,
-// so they show up as playable test attacks here but are NOT part of the real game.
-CHARS.jeviltest = {
-  name: 'JEVIL — NEW SET', shortName: 'JEVIL·NEW', base: 'jevil', color: '#7a5cff', hp: 1000,
-  secretBoss: true, level: 3, spare: {}, cost: 3,
-  desc: 'GEMINI RECIPE TEST SET',
-  fight: { id: 'jx_spread', name: 'Five-Spade Spread', dmg: 26, dur: 340, kind: 'attack', text: '' },
-  spells: [
-    { id: 'jx_spiral',      name: 'Spade Spiral',        tp: 40, dmg: 30, dur: 280, kind: 'attack', text: '' },
-    { id: 'jx_heartbomb',   name: 'Heart Bomb',          tp: 40, dmg: 30, dur: 360, kind: 'attack', text: '' },
-    { id: 'jx_clubbomb',    name: 'Club Bomb',           tp: 40, dmg: 30, dur: 340, kind: 'attack', text: '' },
-    { id: 'jx_diamond',     name: 'Diamond Shower',      tp: 40, dmg: 28, dur: 360, kind: 'attack', text: '' },
-    { id: 'jx_carousel_h',  name: 'Carousel (Horses)',   tp: 48, dmg: 34, dur: 450, kind: 'attack', text: '' },
-    { id: 'jx_carousel_hd', name: 'Carousel (H & Ducks)', tp: 48, dmg: 34, dur: 450, kind: 'attack', text: '' },
-    { id: 'jx_scythes',     name: 'Orbiting Devilsknives', tp: 48, dmg: 36, dur: 420, kind: 'attack', text: '' },
-    { id: 'jx_redsweep',    name: 'Red Devilsknife Sweep', tp: 48, dmg: 40, dur: 380, kind: 'attack', text: '' },
-  ],
-  ult: { id: 'jx_finalchaos', name: 'Final Chaos', tp: 100, dmg: 50, dur: 900, kind: 'attack', text: '' },
-};
 // TESTER-ONLY: GREEN SOUL bench (Hammer/Sound of Justice mechanic). Lock + block with Susie's axe.
 CHARS.greentest = {
   name: 'GREEN SOUL — TEST', shortName: 'GREEN', base: 'knight', color: '#33d13a', hp: 900,
@@ -112,31 +93,27 @@ CHARS.greentest = {
   fight: { id: 'green_test', name: 'Hammer of Justice (block!)', dmg: 18, dur: 1300, kind: 'attack', text: '' },
   spells: [], ult: { id: 'green_test', name: 'Hammer of Justice (block!)', tp: 100, dmg: 18, dur: 1300, kind: 'attack', text: '' },
 };
-// TESTER-ONLY: PINK — NEW (GML-faithful rebuild, PURPLE GRID SOUL). Old 'pink' roster stays untouched.
-CHARS.pinknew = {
-  name: 'PINK — NEW', shortName: 'PINK·NEW', base: 'pink', color: '#ff5ca8', hp: 1300,
+// TESTER-ONLY: PINK variant/scene bench — the extra test entries (scene, dates, hard variants)
+// that aren't exposed on the real PINK roster kit. Same canonical pink_* patterns as the game.
+CHARS.pinkbench = {
+  name: 'PINK — TEST BENCH', shortName: 'PINK·T', base: 'pink', color: '#ff5ca8', hp: 1300,
   secretBoss: true, level: 3, spare: {}, cost: 3, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
-  desc: 'GML-FAITHFUL PINK (purple grid soul)',
+  desc: 'PINK scene/date/hard-variant test entries',
   spells: [
-    { id: 'pinkn3_scene', name: 'V3: STAGE SCENE (scenery test)', tp: 44, dmg: 1, dur: 900, kind: 'attack', text: '' },
-    { id: 'pinkn3_finalmaze', name: 'V3: FINAL Ghost/Body Maze', tp: 44, dmg: 24, dur: 900, kind: 'attack', text: '' },
-    { id: 'pinkn3_date1', name: 'V3: DATE 1 (portraits)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn3_date2', name: 'V3: DATE 2 (split+ghost)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn3_date4', name: 'V3: DATE 4 (CONFESSION finale)', tp: 44, dmg: 1, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pinkn3_cats', name: 'V3: Cats (on stage)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombs', name: 'V3: Pinata Bombs (on stage)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn3_plusgrid', name: 'V3: Plus-Grid (on stage)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_tunnel', name: 'V3: 3-D Tunnel (on stage)', tp: 44, dmg: 50, dur: 500, kind: 'attack', text: '' },
-    { id: 'pinkn3_concert', name: 'V3: IDOL CONCERT (on stage)', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
-    { id: 'pinkn3_cats2', name: 'V3: Cats — hard (conga+finale)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombs2', name: 'V3: Bombs (P1 T4, fast)', tp: 44, dmg: 50, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombsg', name: 'V3: Bombs + Giant ender (P2 T3)', tp: 44, dmg: 50, dur: 620, kind: 'attack', text: '' },
-    { id: 'pinkn3_bombsfin', name: 'V3: Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
-    { id: 'pinkn3_plusgrid2', name: 'V3: Plus-Grid (P2 T5, fast)', tp: 44, dmg: 48, dur: 420, kind: 'attack', text: '' },
-    { id: 'pinkn3_rotbox', name: 'V3: Rotating 90° Grid (running Pink)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
-    { id: 'pinkn3_concert2', name: 'V3: IDOL CONCERT — hard (haters)', tp: 100, dmg: 52, dur: 560, kind: 'attack', text: '' },
+    { id: 'pink_scene', name: 'STAGE SCENE (scenery test)', tp: 44, dmg: 1, dur: 900, kind: 'attack', text: '' },
+    { id: 'pink_finalmaze', name: 'FINAL Ghost/Body Maze', tp: 44, dmg: 24, dur: 900, kind: 'attack', text: '' },
+    { id: 'pink_date1', name: 'DATE 1 (portraits)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
+    { id: 'pink_date2', name: 'DATE 2 (split+ghost)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
+    { id: 'pink_date4', name: 'DATE 4 (CONFESSION finale)', tp: 44, dmg: 1, dur: 100000, kind: 'attack', text: '' },
+    { id: 'pink_cats2', name: 'Cats — hard (conga+finale)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
+    { id: 'pink_bombs2', name: 'Bombs (P1 T4, fast)', tp: 44, dmg: 50, dur: 480, kind: 'attack', text: '' },
+    { id: 'pink_bombsg', name: 'Bombs + Giant ender (P2 T3)', tp: 44, dmg: 50, dur: 620, kind: 'attack', text: '' },
+    { id: 'pink_bombsfin', name: 'Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
+    { id: 'pink_plusgrid2', name: 'Plus-Grid (P2 T5, fast)', tp: 44, dmg: 48, dur: 420, kind: 'attack', text: '' },
+    { id: 'pink_rotbox', name: 'Rotating 90° Grid (running Pink)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
+    { id: 'pink_concert2', name: 'IDOL CONCERT — hard (haters)', tp: 100, dmg: 52, dur: 560, kind: 'attack', text: '' },
   ],
-  ult: { id: 'pinkn3_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
+  ult: { id: 'pink_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
 };
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;
