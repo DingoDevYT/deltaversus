@@ -1613,10 +1613,12 @@ PATTERNS.gn_atk21 = {
     gRun(a, this._seq);
     if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }
     // 18 slashes spiralling CCW from the top-right, 45deg step, ACCELERATING (beat 16 -> 6) — orbit the centre.
-    if (!this._spiral) { const s = []; let t = RED + 16; for (let i = 0; i < 18; i++) { s.push({ t, deg: -45 - i * 45 }); t += Math.round(Math.max(6, 16 - i * 0.6)); } this._spiral = s; }
+    // Lead-in after the red flip (34f) + a bigger telegraph on the first slash so you can start circling.
+    if (f <= 1) this._spiral = null;
+    if (!this._spiral) { const s = []; let t = RED + 34; for (let i = 0; i < 18; i++) { s.push({ t, deg: -45 - i * 45, tel: i === 0 ? 20 : 12 }); t += Math.round(Math.max(6, 16 - i * 0.6)); } this._spiral = s; }
     for (const e of this._spiral) if (f === e.t) {
       const va = ((e.deg % 360) + 360) % 360 * Math.PI / 180, D = 150;
-      gBladeSlash(a, cx - Math.cos(va) * D, cy + Math.sin(va) * D, va, Math.cos(va) * 42, -Math.sin(va) * 42, 54, 54, 10);
+      gBladeSlash(a, cx - Math.cos(va) * D, cy + Math.sin(va) * D, va, Math.cos(va) * 42, -Math.sin(va) * 42, 54, 54, e.tel);
     }
   },
 };
