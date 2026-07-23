@@ -440,8 +440,8 @@ PATTERNS.jevil_spade = {
     if (f % 20 !== 0 || f > 340) return;
     const jx = cx + (rng() < 0.5 ? -1 : 1) * (90 + rng() * 70), jy = cy + (rng() - 0.5) * 90;
     const aim = Math.atan2(soul.y - jy, soul.x - jx);
-    for (let i = 0; i < 5; i++) { const ang = aim + (-36 + 18 * i) * Math.PI / 180;
-      add({ ...bulletProps('suitspade'), x: jx, y: jy, vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5, rot: ang, scale: JS(0.75), r: 5, grazeR: 11, dmg: 18, life: 130 }); }
+    for (let i = 0; i < 5; i++) { const ang = aim + (-36 + 18 * i) * Math.PI / 180;   // GML fan +-36/-18/0, spd 4.5, scale 0.4
+      add({ ...bulletProps('suitspade'), x: jx, y: jy, vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5, rot: ang, scale: JS(0.5), r: 5, grazeR: 11, dmg: 18, life: 130 }); }
     Snd.play('jokerha', 0.3);
   },
 };
@@ -472,7 +472,7 @@ PATTERNS.jevil_bombs = {
         b._done = 1; b.dead = true; Snd.play('boardbomb', 0.3);
         if (b._suit === 0) for (let i = 0; i < 12; i++) { const ang = Math.random() * 6.28 + i * Math.PI / 6; out.push({ ...bulletProps('suitspade'), x: b.x, y: b.y, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang, scale: JS(0.55), r: 4, life: 90, dmg: b.dmg }); }
         else if (b._suit === 1) for (let i = 0; i < 3; i++) { const ang = Math.atan2(s.y - b.y, s.x - b.x), sp = 11 - i; out.push({ ...bulletProps('suitdiamondv'), x: b.x, y: b.y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, scale: JS(0.6), r: 4, life: 90, dmg: b.dmg }); }
-        else if (b._suit === 2) for (let i = 0; i < 8; i++) { const ang = i / 8 * 6.28; out.push({ ...bulletProps('suitheart'), x: b.x, y: b.y, vx: Math.cos(ang) * 6, vy: Math.sin(ang) * 6, scale: JS(0.7), r: 4, life: 80, dmg: b.dmg }); }
+        else if (b._suit === 2) for (let i = 0; i < 4; i++) { const ang = i * Math.PI / 2; out.push({ ...bulletProps('suitheart'), x: b.x, y: b.y, vx: Math.cos(ang) * 3, vy: Math.sin(ang) * 3, scale: JS(0.7), r: 5, spin: 0.1, homing: 0.06, life: 120, dmg: b.dmg }); }   // GML heartbomb_blast: 4 orbiting hearts + homing
         else for (let i = 0; i < 3; i++) { const base = Math.atan2(s.y - b.y, s.x - b.x), ang = base + (-20 + i * 20) * Math.PI / 180; out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, scale: JS(0.7), r: 4, life: 90, dmg: b.dmg }); }
       }
     };
@@ -516,12 +516,50 @@ PATTERNS.jevil_diamond = {
     add({ ...bulletProps('suitdiamondv'), x: jx, y: jy, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang + Math.PI / 2, scale: JS(0.7), r: 5, grazeR: 11, dmg: 16, life: 120 });
   },
 };
+// TYPE 73/74 — Vertical Diamonds: a DENSE curtain of diamonds pours down (biased toward the SOUL's
+// column ~40% of the time), fading in + growing 3->1 as it falls; thread the gaps. (obj_dbullet_vert)
+PATTERNS.jevil_verticals = {
+  dur: 320, hz30: 1,
+  tick(a) {
+    const { f, box, add, soul, rng } = a;
+    if (f % 4 !== 0 || f > 280) return;
+    const bias = rng() < 0.4;                                   // GML num==3 biases xx into the soul's lane
+    let x = bias ? soul.x + (rng() - 0.5) * 30 : box.x + 10 + rng() * (box.w - 20);
+    x = Math.max(box.x + 6, Math.min(box.x + box.w - 6, x));
+    add({ ...bulletProps('suitdiamondv'), x, y: box.y - 8, vx: 0, vy: 2.6 + rng() * 1.2, r: 5, grazeR: 11,
+          scale: 0.18, grow: 0.1, growMax: JS(0.75), spin: 0.12, dmg: 16, life: 150 });
+  },
+};
+// TYPE 72 — Corner Clubs: a club rockets in FAST from a diagonal toward the SOUL, decelerates to a near-
+// stop, then bursts a 3-club +-19deg fan. Alternating sides every fire. (obj_clubsbullet_dark)
+PATTERNS.jevil_clubs = {
+  dur: 360, hz30: 1,
+  tick(a) {
+    const { f, box, add, soul, rng } = a;
+    if (f % 18 !== 0 || f > 320) return;
+    const side = (Math.floor(f / 18) % 2) ? 1 : -1;
+    const dir = (side > 0 ? (rng() < 0.5 ? 225 : 315) : (rng() < 0.5 ? 45 : 135)) * Math.PI / 180;   // GML corner dir
+    const R = Math.min(box.w, box.h) * 0.95, sx = soul.x - Math.cos(dir) * R, sy = soul.y + Math.sin(dir) * R;
+    const toS = Math.atan2(soul.y - sy, soul.x - sx);
+    const club = { ...bulletProps('suitclubball'), x: sx, y: sy, vx: Math.cos(toS) * 11, vy: Math.sin(toS) * 11,
+      fric: 0.5, r: 7, grazeR: 12, scale: JS(0.95), spin: 0.22, dmg: 18, _burst: 20 };
+    club.emit = function (b, out) {
+      if (--b._burst === 0) { const base = Math.atan2(b.vy, b.vx);
+        for (let i = -1; i <= 1; i++) { const ang = base + i * 19 * Math.PI / 180;
+          out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(ang) * 3.5, vy: Math.sin(ang) * 3.5, scale: JS(0.62), r: 5, spin: 0.2, dmg: b.dmg, life: 100 }); }
+        b.dead = true; Snd.play('boardbomb', 0.25);
+      }
+    };
+    add(club);
+  },
+};
 // TYPE 77 — ChaosChaos ULT: the box vanishes; giant Devilsknives rain in lanes and smash into ground
 // shockwaves; a huge final scythe + whiteout.
 PATTERNS.jevil_ult = {
   dur: 600, hz30: 1,
   tick(a) {
     const { f, rng, box, add } = a; a.fx.arena = true;
+    if (f === 0) Snd.play('jokerchaos', 0.6);   // "CHAOS, CHAOS!" (snd_joker_byebye/neochaos)
     const gY = box.y + box.h - 6;
     const drop = (x) => {
       const k = { ...bulletProps('jdevilgiant'), x, y: box.y - 60, vx: 0, vy: 5, ay: 1, maxv: 16, spin: 0.24, scale: JS(2.0), hitW: 30, hitH: 72, _gy: gY };
@@ -686,11 +724,11 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
       out.push(topPh, botPh);
       // DIAGONAL green arms: the head sits behind its phone-hands
       if (fx) fx.arms = [{ x1: b.x, y1: b.y - 6, x2: topPh.x, y2: topPh.y + 3 }, { x1: b.x, y1: b.y + 6, x2: botPh.x, y2: botPh.y - 3 }];
-      // spit a SMALLER yellow ball that drifts left & decelerates, flashes, then bursts into 3 soundwaves
+      // GML Phonehands: fires a leftward SPREADSHOT every ~20f (dir 180 +/- ~14deg, spd ~8)
       if (--b._ball <= 0) {
-        b._ball = 70;
-        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -2.2, ax: 0.04, vy: 0, r: 6, scale: 0.6, flash: true,
-          burst: 58, burstN: 3, burstArc: Math.PI / 2, burstAng: Math.PI, burstSpeed: 2.0, burstImg: 'sneosound', burstScale: 1.0, burstR: 10 });
+        b._ball = 22; Snd.play('sneofire', 0.3);
+        for (let k = -2; k <= 2; k++) { const ang = Math.PI + k * 0.12;
+          out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: Math.cos(ang) * 4.4, vy: Math.sin(ang) * 4.4, r: 6, scale: 0.6, spin: 0.2 }); }
       }
     };
     add(head);
