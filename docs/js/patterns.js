@@ -452,7 +452,8 @@ PATTERNS.jevil_ring = {
     const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f % 90 !== 0 || f > 300) return;
     const N = 10, R = Math.min(box.w, box.h) * 0.55;
-    for (let i = 0; i < N; i++) { const ang = i / N * Math.PI * 2;
+    this._rot = (this._rot || 0) + (45 / 4) * Math.PI / 180;   // GML: the ring rotates 45/4 deg each spawn
+    for (let i = 0; i < N; i++) { const ang = i / N * Math.PI * 2 + this._rot;
       add({ ...bulletProps('suitspade'), x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R, vx: 0, vy: 0, rot: ang + Math.PI, scale: JS(0.85), r: 5, grazeR: 11, noHit: true,
             fireAt: 18 + i * 4, fireVX: -Math.cos(ang) * 6, fireVY: -Math.sin(ang) * 6, dmg: 18, life: 18 + i * 4 + 100 }); }
     Snd.play('jokerha', 0.25);
@@ -486,34 +487,48 @@ PATTERNS.jevil_scythes = {
     const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, RAD = Math.min(box.w, box.h) * 0.5;
     if (f !== 0) return;
     for (let k = 0; k < 4; k++) {
-      const s = { ...bulletProps('jdevil'), x: cx, y: cy, r: 9, grazeR: 20, scale: JS(1.0), rot: 0, _sine: k * 20, _dir: k * 90, life: 420 };
-      s.emit = function (b) { b._sine += 1.4; b._dir += 1.5; const L = Math.cos(b._sine / 18) * RAD, va = -b._dir * Math.PI / 180; b.x = cx - Math.cos(va) * L; b.y = cy - Math.sin(va) * L; b.rot += 0.17; };
+      const s = { ...bulletProps('jdevil'), x: cx, y: cy, r: 9, grazeR: 20, scale: JS(1.0), rot: 0, _sine: k * 20, _dir: k * 90, life: 420,
+        noHit: true, alpha: 0.4 };   // ~24f materialise/telegraph so it can't hit on frame 1
+      s.emit = function (b) { b._sine += 1.4; b._dir += 1.5; const L = Math.cos(b._sine / 18) * RAD, va = -b._dir * Math.PI / 180; b.x = cx - Math.cos(va) * L; b.y = cy - Math.sin(va) * L; b.rot += 0.17;
+        if (b.t < 24) b.alpha = 0.4 + 0.6 * (b.t / 24); else if (b.noHit) { b.noHit = false; b.alpha = 1; } };
       add(s);
     }
     Snd.play('boardsummon', 0.35);
   },
 };
-// TYPE 62 — The Carousel: pseudo-3D horses sweep around the box; only FRONT-facing ones hurt (updCarousel).
-PATTERNS.jevil_carousel = {
-  dur: 480, hz30: 1,
-  tick(a) {
-    const { f, box, add, rng } = a;
-    if (f !== 0) return;
-    const cols = 7, rows = 3, cx = box.x + box.w / 2, R = box.w / 2 + 24, rowGap = box.h * 0.34, midY = box.y + box.h / 2;
-    for (let c = 0; c < cols; c++) { const ang0 = c / cols * Math.PI * 2;
-      for (let r = 0; r < rows; r++) { const rowY = midY + (r - 1) * rowGap;
-        add({ ...bulletProps('carousel' + Math.floor(rng() * 3)), x: cx, y: rowY, vx: 0, vy: 0, r: 11, grazeR: 16,
-              carousel: { ang: ang0, w: 0.03, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } }); } }
-  },
-};
-// TYPE 71 — Teleport diamonds: dense aimed diamonds fired from teleport spots (spd 8, every 9t).
+// TYPE 62/61 — The Carousel: pseudo-3D figures sweep around the box like a rotating cylinder; only
+// FRONT-facing ones hurt (updCarousel). EASY = ducks only (carousel1/2). (See jevil_carousel2 for the
+// hard horses+ducks version.) carousel0 = horse (unicorn), carousel1/2 = ducks.
+function jevilCarousel(hard) {
+  return {
+    dur: 480, hz30: 1,
+    tick(a) {
+      const { f, box, add, rng } = a;
+      if (f !== 0) return;
+      const cols = 7, rows = 3, cx = box.x + box.w / 2, R = box.w / 2 + 24, rowGap = box.h * 0.34, midY = box.y + box.h / 2;
+      const w = hard ? 0.035 : 0.03;   // horses ride a slightly faster carousel
+      for (let c = 0; c < cols; c++) { const ang0 = c / cols * Math.PI * 2;
+        for (let r = 0; r < rows; r++) { const rowY = midY + (r - 1) * rowGap;
+          const isHorse = hard && rng() < 0.4;                 // easy = ducks only; hard = ~40% horses
+          const key = isHorse ? 'carousel0' : ('carousel' + (1 + Math.floor(rng() * 2)));
+          add({ ...bulletProps(key), x: cx, y: rowY, vx: 0, vy: 0, r: isHorse ? 14 : 11, grazeR: 16,   // horse head = bigger hitbox
+                carousel: { ang: ang0, w, R, cx, rowY, bob: box.h * 0.11, phase: ang0 } }); } }
+    },
+  };
+}
+PATTERNS.jevil_carousel = jevilCarousel(false);
+PATTERNS.jevil_carousel2 = jevilCarousel(true);
+// TYPE 71 — Teleport diamonds: a teleport clone spawns a diamond that TELEGRAPHS (points at where it
+// will fire) for a beat, THEN launches at the SOUL. Telegraphed so the first shots are dodgeable.
 PATTERNS.jevil_diamond = {
   dur: 340, hz30: 1,
   tick(a) {
     const { f, box, add, soul, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    if (f % 9 !== 0 || f > 300) return;
+    if (f < 16 || f % 11 !== 0 || f > 300) return;   // small startup so nothing hits on frame 1
     const jx = cx + (rng() - 0.5) * box.w * 0.8, jy = cy + (rng() - 0.5) * box.h * 0.8, ang = Math.atan2(soul.y - jy, soul.x - jx);
-    add({ ...bulletProps('suitdiamondv'), x: jx, y: jy, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang + Math.PI / 2, scale: JS(0.7), r: 5, grazeR: 11, dmg: 16, life: 120 });
+    add({ ...bulletProps('suitdiamondv'), x: jx, y: jy, vx: 0, vy: 0, rot: ang + Math.PI / 2, scale: JS(0.7), r: 5, grazeR: 11, dmg: 16,
+      noHit: true, tint: '#c89bff', alpha: 0.75, fireAt: 14, fireVX: Math.cos(ang) * 8, fireVY: Math.sin(ang) * 8, life: 130,
+      emit(b) { if (b.t === 14) { b.tint = null; b.alpha = 1; Snd.play('jokerha', 0.18); } } });   // 14f telegraph -> fire
   },
 };
 // TYPE 73/74 — Vertical Diamonds: a DENSE column of diamonds spawns from the BOTTOM and flies
@@ -542,40 +557,48 @@ PATTERNS.jevil_clubs = {
     const dir = (side > 0 ? (rng() < 0.5 ? 225 : 315) : (rng() < 0.5 ? 45 : 135)) * Math.PI / 180;   // GML corner dir
     const R = Math.min(box.w, box.h) * 0.95, sx = soul.x - Math.cos(dir) * R, sy = soul.y + Math.sin(dir) * R;
     const toS = Math.atan2(soul.y - sy, soul.x - sx);
-    const club = { ...bulletProps('suitclubball'), x: sx, y: sy, vx: Math.cos(toS) * 11, vy: Math.sin(toS) * 11,
+    const club = { ...bulletProps('suitclub'), x: sx, y: sy, vx: Math.cos(toS) * 11, vy: Math.sin(toS) * 11,
       fric: 0.5, r: 7, grazeR: 12, scale: JS(0.95), spin: 0.22, dmg: 18, _burst: 20 };
     club.emit = function (b, out) {
       if (--b._burst === 0) { const base = Math.atan2(b.vy, b.vx);
         for (let i = -1; i <= 1; i++) { const ang = base + i * 19 * Math.PI / 180;
-          out.push({ ...bulletProps('suitclubball'), x: b.x, y: b.y, vx: Math.cos(ang) * 3.5, vy: Math.sin(ang) * 3.5, scale: JS(0.62), r: 5, spin: 0.2, dmg: b.dmg, life: 100 }); }
+          out.push({ ...bulletProps('suitclub'), x: b.x, y: b.y, vx: Math.cos(ang) * 3.5, vy: Math.sin(ang) * 3.5, scale: JS(0.62), r: 5, spin: 0.2, dmg: b.dmg, life: 100 }); }
         b.dead = true; Snd.play('boardbomb', 0.25);
       }
     };
     add(club);
   },
 };
-// TYPE 77 — ChaosChaos ULT: the box vanishes; giant Devilsknives rain in lanes and smash into ground
-// shockwaves; a huge final scythe + whiteout.
+// TYPE 77 — CHAOS, CHAOS! (obj_laserscythe): the arena fills the screen; Devilsknives (spr_joker_
+// scythebody) rain in 5 lanes and smash into the floor, each raising a PILLAR OF LIGHT that grows
+// wide then SHRINKS width-wise (its hitbox with it). Then a GIANT scythe slowly falls (easy to
+// dodge, never reaches the bottom) with a rumble, and only THEN the screen whites out. (See chaos_v2.)
 PATTERNS.jevil_ult = {
-  dur: 600, hz30: 1,
+  dur: 520, hz30: 1,
   tick(a) {
-    const { f, rng, box, add } = a; a.fx.arena = true;
-    if (f === 0) Snd.play('jokerchaos', 0.6);   // "CHAOS, CHAOS!" (snd_joker_byebye/neochaos)
-    const gY = box.y + box.h - 6;
-    const drop = (x) => {
-      const k = { ...bulletProps('jdevilgiant'), x, y: box.y - 60, vx: 0, vy: 5, ay: 1, maxv: 16, spin: 0.24, scale: JS(2.0), hitW: 30, hitH: 72, _gy: gY };
+    const { f, rng, add, soul } = a; a.fx.arena = true;
+    if (f === 0) Snd.play('jokerchaos', 0.6);            // snd_joker_byebye
+    const topY = -24, floorY = 442;
+    const dropScythe = (x, chase) => {
+      const k = { ...bulletProps('scythe'), x: chase ? soul.x : x, y: topY, vx: 0, vy: 5, ay: 0.35, maxv: 13,
+        rot: rng() * 6.28, spin: 0.28, scale: JS(2.0), r: 15, _hit: 0, dmg: 40 };   // spr_joker_scythebody, rotspeed 14, vsp5 grav1
       k.emit = function (b, out) {
-        if (b.y >= b._gy && !b._s) { b._s = 1; b.dead = true;
-          out.push({ shape: 'line', color: '#fff', x: b.x, y: gY, rot: 0, len: 160, thick: 30, armed: true, life: 22, dmg: b.dmg, vx: 0, vy: 0 });
-          Snd.play('boardbomb', 0.4);
+        if (!b._hit && b.y >= floorY) { b._hit = 1; b.dead = true; Snd.play('explosionmmx', 0.3);   // snd_scytheburst
+          out.push({ shape: 'line', color: '#fff', rot: Math.PI / 2, x: b.x, y: (topY + floorY) / 2, len: floorY - topY,
+            thick: 2, armed: false, vx: 0, vy: 0, _w: 2, _grow: 1, dmg: 40,   // spr_tallpx pillar: grows wide (xscale+8) then shrinks (-4), hitbox follows
+            emit(p) { if (p._grow) { p._w += 3; if (p._w >= 30) p._grow = 0; } else { p._w -= 2.4; if (p._w <= 0) { p.dead = true; return; } }
+              p.thick = p._w; p.armed = p._w >= 10; } });
         }
       };
       add(k);
     };
-    if (f === 20) drop(box.x - 30); if (f === 40) drop(box.x + box.w + 30);
-    if (f >= 60 && f % 12 === 0 && f < 420) drop(box.x + box.w * (Math.floor(rng() * 5) / 4));
-    if (f === 440) add({ ...bulletProps('jdevilgiant'), x: box.x + box.w / 2, y: box.y - 200, vx: 0, vy: 0, lerpY: box.y + box.h * 0.3, lerpRate: 0.02, spin: 0.03, scale: JS(6), hitW: 280, hitH: 220, dmgMult: 2, life: 200 });
-    if (f > 500) { a.fx.whiteout = Math.min(1, (f - 500) / 24); a.fx.shake = 8; }
+    if (f === 20) dropScythe(140, false);
+    if (f === 40) dropScythe(500, false);
+    if (f >= 60 && f < 340 && f % 9 === 0) dropScythe(60 + Math.floor(rng() * 5) * 130, (Math.floor(f / 9) % 3 === 2));   // 5 lanes, every 3rd chases the soul
+    // GIANT final Devilsknife: SAME sprite at huge scale, slow fall from the top (can't reach the floor)
+    if (f === 360) { Snd.play('jokerchaos', 0.5);        // snd_rumble
+      add({ ...bulletProps('scythe'), x: 320, y: -170, vx: 0, vy: 1.0, ay: 0.02, maxv: 3.2, rot: 160 * Math.PI / 180, spin: 0.02, scale: JS(8), r: 88, dmg: 55, life: 200 }); }
+    if (f > 440) { a.fx.whiteout = Math.min(1, (f - 440) / 28); a.fx.shake = 6; }   // whiteout AFTER the giant scythe
   },
 };
 
