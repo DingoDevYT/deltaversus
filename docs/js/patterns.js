@@ -769,6 +769,11 @@ PATTERNS.sneo_columns3 = { // Hard (v3)
     if (a.f < 440 && a.f % 20 === 0) spawnRecrewWall(a, -17, -5, 12, 0.3, 0.25, 0.05, 0.15);
   },
 };
+
+// Aliases matching naming convention (sneo_recrew, sneo_recrew2, sneo_recrew3)
+PATTERNS.sneo_recrew  = PATTERNS.sneo_columns;
+PATTERNS.sneo_recrew2 = PATTERNS.sneo_columns2;
+PATTERNS.sneo_recrew3 = PATTERNS.sneo_columns3;
 PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones (its hands on the box); shoot to delay
   dur: 560, box: { w: 240, h: 160 },
   tick(a) {
@@ -1162,21 +1167,23 @@ function knightTunnel(v) {
         const spawnX = box.x + box.w + 40;
         
         const gapTop = cy + this._vertPos - holeSize / 2;
-        const topH = Math.max(0, gapTop - box.y);
+        const topH = Math.max(10, gapTop - (box.y - 20));
         const topSpr = topH > 80 ? 'knightdiamondl2' : (topH > 48 ? 'knightdiamondm' : 'knightdiamond');
+        const topSpriteH = topH > 80 ? 110 : (topH > 48 ? 64 : 32);
         if (topH > 0) {
-          add({ ...bulletProps(topSpr), x: spawnX, y: gapTop - topH / 2,
+          add({ ...bulletProps(topSpr), x: spawnX, y: (box.y - 20) + topH / 2,
             vx: -0.5, vy: 0.15 + rng() * 0.6 * (rng() < 0.5 ? 1 : -1), ax: -0.4,
-            maxv: 14, scale: topH / (topH > 80 ? 110 : (topH > 48 ? 64 : 32)), rot: Math.PI / 2, r: 12, life: 70 });
+            maxv: 14, scale: topH / (1.6 * topSpriteH), rot: Math.PI / 2, r: 12, life: 70 });
         }
 
         const gapBot = cy + this._vertPos + holeSize / 2;
-        const botH = Math.max(0, (box.y + box.h) - gapBot);
+        const botH = Math.max(10, (box.y + box.h + 20) - gapBot);
         const botSpr = botH > 80 ? 'knightdiamondl2' : (botH > 48 ? 'knightdiamondm' : 'knightdiamond');
+        const botSpriteH = botH > 80 ? 110 : (botH > 48 ? 64 : 32);
         if (botH > 0) {
           add({ ...bulletProps(botSpr), x: spawnX, y: gapBot + botH / 2,
             vx: -0.5, vy: 0.15 + rng() * 0.6 * (rng() < 0.5 ? 1 : -1), ax: -0.4,
-            maxv: 14, scale: botH / (botH > 80 ? 110 : (botH > 48 ? 64 : 32)), rot: -Math.PI / 2, r: 12, life: 70 });
+            maxv: 14, scale: botH / (1.6 * botSpriteH), rot: -Math.PI / 2, r: 12, life: 70 });
         }
 
         Snd.play('heavyswing', 0.16);
@@ -1186,7 +1193,7 @@ function knightTunnel(v) {
         for (let i = 0; i < 16; i++) {
           const rx = box.x + rng() * box.w, ry = box.y + rng() * box.h, rr = rng() * Math.PI;
           add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.3, thick: 5, x: rx, y: ry, rot: rr, vx: 0, vy: 0,
-            tellT: 42, armWindow: 7, tellRamp: true, tellMax: 42, cutSnd: 'knightsword', shakeOnCut: true });
+            tellT: 42, armWindow: 7, tellRamp: true, tellMax: 42, cutSnd: (i === 0 ? 'knightsword' : null), shakeOnCut: (i === 0) });
         }
         knightAtk(a);
       }
@@ -1195,8 +1202,7 @@ function knightTunnel(v) {
   };
 }
 
-// ROTATING SLASH (type 104) — GML 1:1 (rotation speed slowed by 25% for readability):
-// Finale in P3: accelerating 28-cut spiral sweep (speed_gain 12->18) advancing aim_direction continuously
+// ROTATING SLASH (type 104) — GML 1:1 (speed_gain 10->15 degrees):
 function knightRotslash(v) {
   const SEQ = v === 1 ? [1, 2, 2, 3, 3, 4] : v === 2 ? [3, 3, 4, 4, 4, 4] : [3, 4, 4, 4, 4, 4];
   const finale = v === 3, LINE = 1400;
@@ -1219,9 +1225,9 @@ function knightRotslash(v) {
         if (f === FSTART) {
           Snd.play('smallswing', 0.5);
           this._curAngle = this._lastBase || (rng() * Math.PI);
-          this._speedGain = 12; // 25% slower than 16
+          this._speedGain = 10;
           this._spinDir = rng() < 0.5 ? 1 : -1;
-          this._telegraphSpin = 0.09 * this._spinDir;
+          this._telegraphSpin = 0.08 * this._spinDir;
           // Initial telegraph cut
           add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
             spin: this._telegraphSpin, spinDecay: 0.92, tellT: 28, armWindow: 6, tellRamp: true, tellMax: 28, cutSnd: 'knightsword', shakeOnCut: true });
@@ -1232,9 +1238,9 @@ function knightRotslash(v) {
           for (let k = 0; k < 28; k++) { acc += s; s *= 0.92; }
           this._curAngle += acc;
         }
-        // 28 rapid cuts every 2 ticks, speed_gain accelerating 12->18 (25% slower)
+        // 28 rapid cuts every 2 ticks, speed_gain accelerating 10->15
         if (f >= SP_START && f < SP_START + 56 && (f - SP_START) % 2 === 0) {
-          this._speedGain = Math.min(18, (this._speedGain || 12) + 0.75);
+          this._speedGain = Math.min(15, (this._speedGain || 10) + 0.4);
           this._curAngle = (this._curAngle || 0) + (this._speedGain * D2R * this._spinDir);
           add({ shape: 'line', color: '#f33', len: LINE, thick: 6, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
             tellT: 2, armWindow: 4, cutSnd: 'knightsword', cutVol: 0.35, shakeOnCut: true });
@@ -1997,41 +2003,34 @@ PATTERNS.gerson_boxthrow = {
 };
 
 // #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES board THIN + WIDE
-// The whole row of Gersons appears simultaneously showing the visual gap, then they slam down together.
+// Gersons visually line up above the box at ~0.1s intervals to reveal the gap, then slam down on GML timing.
 PATTERNS.gerson_squish = {
   dur: 490, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 26) { Battle.shake = 16; Snd.play('bosshit', 0.6); }
-    // Spring bounce: squishes to 450x30 then bounces back
     if (f > 24) {
       const bounce = f < 40 ? Math.sin((f - 24) * 0.25) * 48 : 0;
       a.fx.boxTarget = { x: cx - 225 - bounce / 2, y: cy - 15, w: 450 + bounce, h: 30 };
     }
     const L = cx - 190, R = cx + 190, span = R - L, N = 9, W = 46;
-    const slash = colX => gBladeSlash(a, colX, cy - 30, 0, 0, 46, W, 30, 14, 30);
-    
-    // WAVE 1 (frame 56): whole row appears together leaving gap on the right (index 7 skipped)
-    if (f === 56) {
-      for (let i = 0; i < N; i++) {
-        if (i === 7) continue; // the visual GAP
-        slash(L + span * (i / (N - 1)));
-      }
-    }
-    // WAVE 2 (frame 200): whole row appears together leaving gap on the left (index 1 skipped)
-    if (f === 200) {
-      for (let i = 0; i < N; i++) {
-        if (i === 1) continue; // the visual GAP
-        slash(L + span * (i / (N - 1)));
-      }
-    }
-    // WAVE 3 (frame 340): whole row appears together leaving gap in center (index 4 skipped)
-    if (f === 340) {
-      for (let i = 0; i < N; i++) {
-        if (i === 4) continue; // the visual GAP
-        slash(L + span * (i / (N - 1)));
-      }
-    }
+    const slash = (colX, tel) => gBladeSlash(a, colX, cy - 30, 0, 0, 46, W, 30, tel, 30);
+    const visTell = (colX, tel) => add({ shape: 'rect', color: 'rgba(255,255,255,0.5)', fill: true, x: colX - W / 2, y: box.y + 5, w: W, h: 30, tellT: tel, noHit: true, life: tel });
+
+    // PHASE 1: visual row appears 36..60 (gap at 7), GML slashes land 56 + i*16
+    for (let i = 0; i < N; i++) if (i !== 7 && f === 36 + i * 3) visTell(L + span * 0.92 * (i / (N - 1)), 28 - i * 3);
+    for (let i = 0; i < N; i++) if (i !== 7 && f === 56 + i * 16) slash(L + span * 0.92 * (i / (N - 1)), 8);
+
+    // PHASE 2: visual row appears 216..240 (gap at 1), GML slashes land 240 + i*16
+    for (let i = 0; i < N; i++) if (i !== 1 && f === 216 + i * 3) visTell(R - span * 0.92 * (i / (N - 1)), 28 - i * 3);
+    for (let i = 0; i < N; i++) if (i !== 1 && f === 240 + i * 16) slash(R - span * 0.92 * (i / (N - 1)), 8);
+
+    // PHASE 3: visual row appears 400..416, GML slashes land 424 + i*8
+    const FRAC = [0.0, 0.13, 0.26, 0.39, 0.52, 0.65, 1.0];
+    FRAC.forEach((fr, i) => {
+      if (f === 400 + i * 3) visTell(L + span * fr, 28 - i * 3);
+      if (f === 424 + i * 8) slash(L + span * fr, 8);
+    });
   },
 };
 // #C RUDE BUSTER (RED, obj_gerson_rudebuster) — Gerson hurls an ACCELERATING homing orb (GML speed 9,
