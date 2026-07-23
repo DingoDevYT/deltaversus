@@ -245,7 +245,12 @@ const CHARS = {
     dokiDates: [
       { id: 'pink_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
       { id: 'pink_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
+      { id: 'pink_date4', name: 'DATE', dmg: 1, dur: 100000, kind: 'attack', text: 'PINK has a... CONFESSION.' },
       { id: 'pink_finalmaze', name: 'DATE', dmg: 24, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
+    ],
+    // scenery-only backdrop test (no bullets) — surfaced in the attack tester, not a combat move
+    testMoves: [
+      { id: 'pink_scene', name: 'Stage Scene (test)', dmg: 1, dur: 900, kind: 'attack', text: '' },
     ],
   },
 };

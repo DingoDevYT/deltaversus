@@ -139,7 +139,8 @@ function moveDefOf(def, a) {
   if (!a) return null;
   if (a.cmd === 'fight') return def.fight;
   if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult
-    : (def.spells || []).find(s => s.id === a.move) || (def.dokiDates || []).find(s => s.id === a.move);   // PINK DATE moves
+    : (def.spells || []).find(s => s.id === a.move) || (def.dokiDates || []).find(s => s.id === a.move)   // PINK DATE moves
+      || (def.testMoves || []).find(s => s.id === a.move);   // tester-only scenery entries (e.g. pink_scene)
   if (a.cmd === 'act') return findAct(a.move);
   return null;
 }

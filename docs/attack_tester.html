@@ -68,13 +68,13 @@
 
 <!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
 <script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
-<script src="js/rng.js?v=180"></script>
-<script src="js/assets.js?v=180"></script>
-<script src="js/audio.js?v=180"></script>
-<script src="js/input.js?v=180"></script>
-<script src="js/characters.js?v=180"></script>
-<script src="js/patterns.js?v=180"></script>
-<script src="js/battle.js?v=180"></script>
+<script src="js/rng.js?v=181"></script>
+<script src="js/assets.js?v=181"></script>
+<script src="js/audio.js?v=181"></script>
+<script src="js/input.js?v=181"></script>
+<script src="js/characters.js?v=181"></script>
+<script src="js/patterns.js?v=181"></script>
+<script src="js/battle.js?v=181"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
@@ -96,22 +96,24 @@ function moveAction(defId, move) {
   const def = CHARS[defId];
   if (move === def.fight) return { cmd: 'fight', target: 0 };
   if (def.ult && move === def.ult) return { cmd: 'magic', move: def.ult.id, target: 0 };
-  if ((def.spells || []).includes(move)) return { cmd: 'magic', move: move.id, target: 0 };
   if ((def.acts || []).includes(move)) return { cmd: 'act', move: move.id, target: 0 };
-  return null;
+  // spells + DATE minigames (dokiDates) + scenery tests (testMoves) all drive as a magic cast here
+  return { cmd: 'magic', move: move.id, target: 0 };
 }
 function buildList() {
   const list = el('list'); list.innerHTML = '';
   for (const id of CHAR_IDS) {
     const def = CHARS[id];
-    const moves = [def.fight, ...(def.spells || []), def.ult, ...(def.acts || [])].filter(m => m && isAttack(m));
+    // include DATE minigames (dokiDates) + scenery tests (testMoves) so a boss's FULL arsenal is testable
+    const moves = [def.fight, ...(def.spells || []), def.ult, ...(def.acts || []), ...(def.dokiDates || []), ...(def.testMoves || [])].filter(m => m && isAttack(m));
     if (!moves.length) continue;
     const grp = document.createElement('div'); grp.className = 'grp';
     grp.innerHTML = '<h2>' + (def.shortName || def.name) + '</h2>';
     const row = document.createElement('div'); row.className = 'row';
     for (const m of moves) {
       const b = document.createElement('button'); b.className = 'atk';
-      const kind = m === def.fight ? 'FIGHT' : m === def.ult ? 'ULT' : (def.acts || []).includes(m) ? 'ACT' : 'SPELL';
+      const kind = m === def.fight ? 'FIGHT' : m === def.ult ? 'ULT' : (def.acts || []).includes(m) ? 'ACT'
+                 : (def.dokiDates || []).includes(m) ? 'DATE' : (def.testMoves || []).includes(m) ? 'TEST' : 'SPELL';
       b.innerHTML = m.name + '<span class="k">' + kind + ' · ' + (m.dmg || '?') + ' dmg</span>';
       b.onclick = () => startAttack(id, m);
       row.appendChild(b);
