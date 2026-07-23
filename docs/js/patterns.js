@@ -1253,56 +1253,76 @@ function gShell(a, gd, hp) {
         vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 10, blockArc: 50, dmg: 20 });
 }
 // play a fixed spear sequence (each entry [gmlTick, gmlDirString-or-number, speed]); auto green.
-function gSeq(a, seq, oct) { a.fx.greenSoul = oct ? { oct: true } : true;
-  for (const e of seq) if (a.f === e[0]) gSpear(a, typeof e[1] === 'string' ? G_STR2GML[e[1]] : ((e[1] % 360) + 360) % 360, e[2]); }
-
-// --- GREEN: SPEAR VOLLEY (fight) = AP 0 warm-up: 3 up jabs, then l / d / r on the double-beat. ---
+// GREEN sequence system (wiki-exact). Tokens: ['s',dir]=slow spear, ['f',dir]=fast spear,
+// ['H',dir,hp]=shell (2=green,3=blue,4=purple,5=red), ['w',frames]=extra pause. dir = a G_STR2GML key
+// (the direction the SHIELD must FACE to block, per the wiki). Cadence: slow 26f, fast 13f, shell 44f.
+const G_SLOW = 6.2, G_FAST = 9.6;
+function gBuild(tokens, t0) {
+  let t = (t0 == null ? 20 : t0); const seq = [];
+  for (const [ty, a1, a2] of tokens) {
+    if (ty === 'w') { t += a1; continue; }
+    if (ty === 'H') { seq.push({ t, dir: a1, kind: 'shell', hp: a2 || 2 }); t += 44; continue; }
+    seq.push({ t, dir: a1, spd: ty === 'f' ? G_FAST : G_SLOW }); t += (ty === 'f' ? 13 : 26);
+  }
+  return seq;
+}
+function gRun(a, seq) {
+  for (const e of seq) if (a.f === e.t) {
+    const d = typeof e.dir === 'string' ? G_STR2GML[e.dir] : (((e.dir % 360) + 360) % 360);
+    if (e.kind === 'shell') gShell(a, d, e.hp); else gSpear(a, d, e.spd);
+  }
+}
+// --- GREEN: SPEAR VOLLEY (fight) = wiki Attack 1 + Attack 3, exact. ---
+// A1: u u u l d r (slow). A3: slow u u u l d, then fast r r l l r l u u u.
+const GSEQ_SPEARS = gBuild([
+  ['s','u'],['s','u'],['s','u'],['s','l'],['s','d'],['s','r'], ['w',36],
+  ['s','u'],['s','u'],['s','u'],['s','l'],['s','d'], ['w',10],
+  ['f','r'],['f','r'],['f','l'],['f','l'],['f','r'],['f','l'],['f','u'],['f','u'],['f','u'],
+]);
 PATTERNS.gerson_spears = {
-  dur: 300, box: { w: 150, h: 150 }, hz30: 1,
-  tick(a) {
-    const { f } = a; a.fx.greenSoul = true;
-    let t = 20, seq = []; const rounds = [['u', 6.4, 14], ['u', 6.4, 14], ['u', 6.4, 28], ['l', 8, 28], ['d', 6.4, 28], ['r', 8, 28]];
-    for (let rep = 0; rep < 3; rep++) for (const [d, s, w] of rounds) { seq.push([t, d, s]); t += w; }
-    gSeq(a, seq);
-  },
+  dur: 515, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) { a.fx.greenSoul = true; gRun(a, GSEQ_SPEARS); },
 };
-// --- GREEN: UPPER-ARC BARRAGE (AP 6) — ul/u/ur pulse accelerating, then a quick down finisher. octagon. ---
+// --- GREEN: UPPER BARRAGE (spell) = wiki Attack 9, exact. octagon. ---
+// normal ul ul u u ur ur | fast ul u ur u u ul u ur | normal d dl d dr.
+const GSEQ_BARRAGE = gBuild([
+  ['s','ul'],['s','ul'],['s','u'],['s','u'],['s','ur'],['s','ur'], ['w',10],
+  ['f','ul'],['f','u'],['f','ur'],['f','u'],['f','u'],['f','ul'],['f','u'],['f','ur'], ['w',12],
+  ['s','d'],['s','dl'],['s','d'],['s','dr'],
+]);
 PATTERNS.gerson_barrage = {
-  dur: 300, box: { w: 150, h: 150 }, hz30: 1,
-  tick(a) {
-    const { f } = a; a.fx.greenSoul = { oct: true };
-    const rows = [['ul', 10, 10], ['ul', 10, 10], ['u', 10, 10], ['u', 10, 10], ['ur', 12, 15], ['ur', 12, 30],
-                  ['ul', 14, 10], ['u', 14, 10], ['ur', 14, 10], ['u', 14, 5], ['u', 14, 5], ['ul', 14, 10],
-                  ['u', 16, 10], ['ur', 20, 30], ['d', 16, 12], ['dl', 20, 12], ['d', 16, 8], ['dr', 20, 8]];
-    let t = 20, seq = []; for (const [d, s, w] of rows) { seq.push([t, d, s]); t += w; }
-    for (const e of seq) if (f === e[0]) gSpear(a, G_STR2GML[e[1]], e[2]);
-  },
+  dur: 440, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, GSEQ_BARRAGE); },
 };
-// --- GREEN: ROTATING SPEAR SWEEP (AP 53) — 45deg sweeps, 4-beat, ending in a 30-spear ramp. octagon. ---
+// --- GREEN: ROTATING SPEAR SWEEP (spell) = wiki Attack 17, exact. octagon. ---
+// 5 arrows CW right->..., 5 CCW down->..., 11 CW, then 30 CCW accelerating. 45deg steps (8-dir).
+function gSweepSeq() {
+  const seq = []; let t = 16;
+  const push = (n, base, step, gap0, gapK) => { for (let i = 0; i < n; i++) {
+    seq.push({ t: Math.round(t), dir: ((base + step * i) % 360 + 360) % 360, spd: G_FAST + (gapK ? i * 0.14 : 0) });
+    t += Math.max(4, gap0 - (gapK ? i * gapK : 0)); } };
+  push(5, 180, -45, 8, 0); t += 10;   // right -> ... (CW)
+  push(5, 90, 45, 8, 0);  t += 10;    // down -> ... (CCW)
+  push(11, 180, -45, 8, 0); t += 12;  // 11 CW
+  push(30, 90, 45, 8, 0.13);          // 30 CCW, accelerating
+  return seq;
+}
+const GSEQ_SWEEP = gSweepSeq();
 PATTERNS.gerson_spearsweep = {
-  dur: 340, box: { w: 150, h: 150 }, hz30: 1,
-  tick(a) {
-    const { f } = a; a.fx.greenSoul = { oct: true };
-    let t = 10, seq = [];
-    for (let i = 0; i < 5; i++) { seq.push([t, 90 + 45 * i, 9]); t += 4; } t += 8;
-    for (let i = 0; i < 5; i++) { seq.push([t, 180 - 45 * i, 9]); t += 4; } t += 8;
-    for (let i = 0; i < 5; i++) { seq.push([t, 90 + 45 * i, 9]); t += 4; } t += 8;
-    for (let i = 0; i < 11; i++) { seq.push([t, 180 - 45 * i, 9]); t += 4; } t += 8;
-    for (let i = 0; i < 30; i++) { seq.push([t, 90 + 45 * i, 9 + 0.5 * i]); t += 4; }
-    for (const e of seq) if (f === e[0]) gSpear(a, ((e[1] % 360) + 360) % 360, e[2]);
-  },
+  dur: 460, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, GSEQ_SWEEP); },
 };
-// --- GREEN: SHELL VOLLEY — spears interleaved with multi-block turtle shells (AP 7/13 flavour). ---
+// --- GREEN: SHELL VOLLEY (spell) = wiki Attack 11, exact. octagon. ---
+// 4 fast shells u l r d; shell(top)+5 arrows; reflected shell(bottom)+5 arrows; arrows r l d ul dl.
+const GSEQ_SHELLVOLLEY = gBuild([
+  ['H','u',2],['w',-30],['H','l',2],['w',-30],['H','r',2],['w',-30],['H','d',2], ['w',24],
+  ['H','u',2], ['f','l'],['f','dl'],['f','d'],['f','dr'],['f','r'], ['w',20],
+  ['H','d',2], ['f','l'],['f','ul'],['f','u'],['f','ur'],['f','r'], ['w',20],
+  ['s','r'],['s','l'],['s','d'],['s','ul'],['s','dl'],
+]);
 PATTERNS.gerson_shellvolley = {
-  dur: 360, box: { w: 150, h: 150 }, hz30: 1,
-  tick(a) {
-    const { f } = a; a.fx.greenSoul = true;
-    const spears = [[24, 'l', 8], [48, 'r', 8], [72, 'u', 8], [96, 'd', 8], [180, 'r', 8], [204, 'l', 8], [228, 'u', 8], [300, 'd', 8], [324, 'l', 8]];
-    for (const e of spears) if (f === e[0]) gSpear(a, G_STR2GML[e[1]], e[2]);
-    if (f === 120) gShell(a, G_STR2GML.l, 2);
-    if (f === 150) gShell(a, G_STR2GML.r, 3);
-    if (f === 264) gShell(a, G_STR2GML.u, 2);
-  },
+  dur: 555, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, GSEQ_SHELLVOLLEY); },
 };
 // --- RED (free move): SHELL KICK (AP 72) — a shell ricochets; side-wall hits re-aim it at the SOUL and
 // ramp its speed to 15; the 7th kick sends it up, then it slams straight down into a 28-star starburst. ---
