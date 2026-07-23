@@ -1195,13 +1195,13 @@ PATTERNS.knight_rotslash2 = knightRotslash(2);
 PATTERNS.knight_rotslash3 = knightRotslash(3);
 
 // THE ROARING (ULT, type 107 / obj_knight_roaring2) — REBUILT 1:1 FROM DECOMPILED GML (30Hz timeline, 815 frames)
-// Center focus origin: (320, 79) — top-center of screen above battlebox
+// Center focus origin: (320, 95) — top-center of screen above battlebox (1x Dark World sprite scale: 1.15)
 PATTERNS.knight_roar = {
   dur: 820, hz30: 1, box: KN_BOX,
   tick(a) {
     const { f, rng, box, add } = a;
     a.fx.blackout = true; a.fx.hideBox = true; a.fx.arena = true; a.fx.bgStars = true; a.fx.crt = true;
-    const cx = 320, cy = 79;   // exact GML camera center (camerax + 320, cameray + 79)
+    const cx = 320, cy = 95;   // exact top-center of screen above battlebox
 
     if (f === 0) {
       this._intensity = 1.5;
@@ -1222,11 +1222,11 @@ PATTERNS.knight_roar = {
       this._suck = Math.max(0, this._suck - 0.15);
       a.fx.pull = { x: cx, y: cy, force: this._suck * 0.45 };
 
-      if (f === 132) Snd.play('knightstretch', 0.1);
+      if (f === 132) Snd.play('sneocharge', 0.12);
 
-      if (f < 80) a.fx.boss = { key: 'knightfront', x: cx, y: cy - 20, scale: 2.1 };
-      else if (f < 398) a.fx.boss = { key: 'knightfront', x: cx, y: cy, scale: 2.2 };
-      else a.fx.boss = { key: 'knightflourish' + (Math.floor(f / 4) % 7), x: cx, y: cy, scale: 2.2 };
+      if (f < 80) a.fx.boss = { key: 'knightfront', x: cx, y: cy - 20, scale: 1.1 };
+      else if (f < 398) a.fx.boss = { key: 'knightfront', x: cx, y: cy, scale: 1.15 };
+      else a.fx.boss = { key: 'knightflourish' + (Math.floor(f / 4) % 7), x: cx, y: cy, scale: 1.15 };
 
       // Inward star spawning (attack_timer loop)
       this._attackTimer++;
@@ -1288,8 +1288,8 @@ PATTERNS.knight_roar = {
 
       // Roar Trigger at rt == 9
       if (rt === 9) {
-        Snd.play('knightroar', 0.8);
-        a.fx.shake = 10;
+        Snd.play('knightlaugh', 0.9);   // The real roaring audio!
+        a.fx.shake = 18;               // Heavy screenshake + motion blur
         this._suck = -6.0;
         a.fx.pull = { x: cx, y: cy, force: -0.6 }; // Repulsion push
         // Initial 8-star radial burst at 45-deg offsets
@@ -1305,12 +1305,13 @@ PATTERNS.knight_roar = {
 
       if (rt >= 9 && rt < 181) {
         a.fx.pull = { x: cx, y: cy, force: -0.4 };
-        a.fx.boss = { key: 'knightroar' + (Math.floor(rt / 6) % 2), x: cx, y: cy, scale: 2.2 };
+        a.fx.shake = Math.max(a.fx.shake || 0, 10);
+        a.fx.boss = { key: 'knightroar' + (Math.floor(rt / 6) % 2), x: cx, y: cy, scale: 1.15 };
       }
 
       // Torrent 3-star fans every 5 frames
       if (rt > 15 && rt < 168 && rt % 5 === 0) {
-        Snd.play('boardsummon', 0.14);
+        Snd.play('boardsummon', 0.15);
         this._randAngle += 60 + Math.floor(rng() * 10);
         const baseAng = this._randAngle * D2R;
         const angles = [baseAng, baseAng + 20 * D2R, baseAng - 20 * D2R];
@@ -1326,7 +1327,7 @@ PATTERNS.knight_roar = {
       // Phase 3: Flourish & Sequential Detonation (rt == 181..274)
       if (rt === 181) {
         a.fx.pull = null;
-        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 2.2 };
+        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 1.15 };
         for (const st of this._detQueue) {
           st.fric = 0.5;
           st._armTimer = 0;
@@ -1334,32 +1335,36 @@ PATTERNS.knight_roar = {
       }
 
       if (rt >= 182 && rt < 275) {
-        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 2.2 };
-        if (this._detQueue.length > 0) {
-          const st = this._detQueue.shift();
-          st._armed = true;
-          st.emit = function(b, out) {
-            if (!b._armed) return;
-            b._armTimer = (b._armTimer || 0) + 1;
-            if (b._armTimer === 1) { b.fric = 0.5; }
-            if (b._armTimer > 6 && b._armTimer < 40) { b.ax = -b.vx * 0.01; b.ay = -b.vy * 0.01; }
-            if (b._armTimer === 40) {
-              b.dead = true;
-              Snd.play('explosionmmx', 0.28);
-              const angles = [90, 156, 213, 279, 345, 42];
-              for (let i = 0; i < 6; i++) {
-                const aa = angles[i] * D2R;
-                out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(aa) * 2.6, vy: Math.sin(aa) * 2.6,
-                  rot: aa, r: 5, scale: 0.8, fric: 0.06, life: 60, fade: true, fadeDelay: 30 });
+        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 1.15 };
+        // Arm 2 stars per tick so all queued stars explode rhythmically before slash
+        for (let k = 0; k < 2; k++) {
+          if (this._detQueue.length > 0) {
+            const st = this._detQueue.shift();
+            st._armed = true;
+            st.emit = function(b, out) {
+              if (!b._armed) return;
+              b._armTimer = (b._armTimer || 0) + 1;
+              if (b._armTimer === 1) { b.fric = 0.5; }
+              if (b._armTimer > 4 && b._armTimer < 16) { b.ax = -b.vx * 0.02; b.ay = -b.vy * 0.02; }
+              if (b._armTimer === 16) {
+                b.dead = true;
+                Snd.play('explosionmmx', 0.35);
+                const angles = [90, 156, 213, 279, 345, 42];
+                for (let i = 0; i < 6; i++) {
+                  const aa = angles[i] * D2R;
+                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(aa) * 2.8, vy: Math.sin(aa) * 2.8,
+                    rot: aa, r: 5, scale: 0.8, fric: 0.06, life: 60, fade: true, fadeDelay: 30 });
+                }
               }
-            }
-          };
+            };
+          }
         }
       }
 
       // Phase 4: Slash Windup & Screen Cleave (rt >= 275)
       if (rt >= 275 && rt < 299) {
-        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy, scale: 3.5 };
+        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy, scale: 1.15 };
+        if (rt === 275) Snd.play('knightsword', 0.6);
         const ramp = Math.min(1, (rt - 275) / 16);
         const col = `rgb(${Math.round(128 + ramp * 127)},${Math.round(128 - ramp * 128)},${Math.round(128 - ramp * 128)})`;
         add({ shape: 'line', color: col, len: 1200, thick: 4, x: cx, y: cy, rot: 117 * D2R, vx: 0, vy: 0,
@@ -1367,15 +1372,15 @@ PATTERNS.knight_roar = {
       }
 
       if (rt === 299) {
-        Snd.play('ultraswing', 0.6);
-        Snd.play('knightsword', 0.7);
-        a.fx.shake = 12;
+        Snd.play('ultraswing', 0.7);
+        Snd.play('knightsword', 0.9);
+        a.fx.shake = 22;
         add({ shape: 'line', color: '#fff', len: 1400, thick: 18, x: cx, y: cy, rot: 117 * D2R, vx: 0, vy: 0,
           tellT: 1, armWindow: 8, cutSnd: 'knightsword', shakeOnCut: true });
       }
 
       if (rt >= 299 && rt < 375) {
-        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy + (rt < 315 ? (rt - 299) * 2.5 : 40 - (rt - 315) * 15), scale: 3.5 };
+        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy + (rt < 315 ? (rt - 299) * 2.5 : 40 - (rt - 315) * 15), scale: 1.15 };
         a.fx.screenCleave = { progress: rt - 299 };
       }
 

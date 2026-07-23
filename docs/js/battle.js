@@ -1479,12 +1479,20 @@ Battle.render = function (ctx) {
   if (B.flash > 0) { ctx.fillStyle = 'rgba(255,0,0,' + (B.flash / 40) + ')'; ctx.fillRect(0, 0, 640, 480); }
   if (B.fx && B.fx.crt) {
     ctx.save();
+    const wobble = Math.sin(B.anim.f * 0.35) * 2.5 + ((B.anim.f % 11 < 3) ? (Math.sin(B.anim.f * 1.7) * 4) : 0);
+    ctx.translate(wobble, 0);
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     for (let y = 0; y < 480; y += 3) ctx.fillRect(0, y, 640, 1.2);
-    if ((B.anim.f % 8) < 2) {
-      ctx.fillStyle = 'rgba(255,255,255,0.05)';
-      ctx.fillRect(0, (B.anim.f * 23) % 476, 640, 4);
+    if ((B.anim.f % 7) < 2) {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(0, (B.anim.f * 29) % 476, 640, 5);
     }
+    ctx.restore();
+  }
+  if (B.fx && B.fx.shake > 8) {
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.drawImage(ctx.canvas, (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14);
     ctx.restore();
   }
   if (B.fx && B.fx.screenCleave) {
