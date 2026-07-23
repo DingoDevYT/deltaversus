@@ -1459,9 +1459,16 @@ function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha, scale) {
   const done = !LOOP_POSES[pose] && ms >= an.total;
   let im = A.animFrame(an, ms, !!LOOP_POSES[pose]);
   if (im && im.width) {
-    if (def.hue) im = A.hued(im, def.hue);
     const fl = ENEMY_FACING[def.base] ? !flip : flip;
-    drawSpr(ctx, im, x, groundY - im.height / 2 * (scale || 1) + (def.yoff || 0), { scale: scale || 1, flip: fl, alpha });
+    const cy0 = groundY - im.height / 2 * (scale || 1) + (def.yoff || 0);
+    // flowing HAIR (Gerson: spr_gerson_hair) — looping frames drawn BEHIND the body (furthest-back layer)
+    if (def.hair && typeof bulletProps === 'function') {
+      const H = def.hair, hf = bulletProps(H.key + (Math.floor(tFrames / (H.rate || 6)) % (H.n || 5))).img;
+      if (hf && hf.width) { const back = fl ? 1 : -1;
+        drawSpr(ctx, hf, x + back * (H.dx || 20), cy0 + (H.dy || 0) + Math.sin(tFrames * 0.1) * 2, { scale: (scale || 1) * (H.scale || 1), flip: fl, alpha }); }
+    }
+    if (def.hue) im = A.hued(im, def.hue);
+    drawSpr(ctx, im, x, cy0, { scale: scale || 1, flip: fl, alpha });
   }
   return done;
 }

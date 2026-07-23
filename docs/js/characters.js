@@ -177,6 +177,7 @@ const CHARS = {
   gerson: {
     name: 'GERSON', color: '#5bb84a', hp: 1400, cost: 3, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
     dscale: 1.15, yoff: 4,
+    hair: { key: 'ghair', n: 5, rate: 6, dx: 24, dy: -12, scale: 1 },   // spr_gerson_hair — flowing hair behind the body
     desc: 'GERSON BOOM - the HAMMER OF JUSTICE.\nGREEN SOUL spells: BLOCK, don\'t dodge!',
     // ALL 21 real Hammer-of-Justice attacks (wiki order). GREEN = BLOCK by facing the spear's side (0 dmg
     // on a clean block); RED = free-move dodge. Attack 14 is a repeat of 8, 21 is the final.

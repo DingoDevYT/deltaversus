@@ -1454,11 +1454,15 @@ PATTERNS.gn_atk5 = gGreen([['f','u'],['f','r'],['f','u'],['f','l'],['s','u'],['f
 PATTERNS.gn_atk6 = {
   dur: 360, box: { w: 150, h: 150 }, hz30: 1,
   _seq: gBuild([['s','d'],['s','ul'],['s','d'],['s','ur'],['s','d'],['s','r'],['s','d'],['s','l']]),
-  tick(a) { const { f, box } = a; const RED = 232;
-    if (f < RED) a.fx.greenSoul = { oct: true };
+  tick(a) { const { f, box, add } = a; const cx = box.x + box.w / 2, RED = 232;
+    a.fx.greenSoul = f < RED ? { oct: true } : false;   // GREEN until the hammer lands, then RED (must clear explicitly)
     gRun(a, this._seq);
-    if (f === RED) { Battle.shake = 14; Battle.flash = 6; Snd.play('bosshit', 0.55); }   // hammer lands -> RED
-    if (f === RED + 8) gBladeSlash(a, box.x + box.w / 2, box.y - 96, 0, 0, 42, 70, box.h + 90, 12);   // centre slash
+    // a big hammer SLOWLY falls from the top the whole time — watch it; when it lands the SOUL turns RED.
+    if (f === 12) add({ ...bulletProps('ghammer40'), x: cx, y: box.y - 150, vx: 0, vy: 0, ay: 0.006, spin: 0.05,
+                        noHit: true, scale: GSC(14, 46), life: RED - 6, _fallHammer: 1 });
+    if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }   // hammer lands -> RED
+    // the centre slash straight down (undodgeable in green — that's the point; you get clipped as it flips red).
+    if (f === RED + 8) gBladeSlash(a, cx, box.y - 96, 0, 0, 42, 70, box.h + 90, 10);
   },
 };
 // 7: shell PINBALL + star fountain (red) — defined above. (8/13/14 red aliases are set after their patterns.)
@@ -1481,7 +1485,7 @@ PATTERNS.gn_atk12 = {
   dur: 460, box: { w: 150, h: 150 }, hz30: 1,
   _seq: gBuild([['H','u',2],['H','l',2],['H','d',2]]),
   tick(a) { const { f, box } = a; const cx = box.x + box.w / 2, RED = 210;
-    if (f < RED) a.fx.greenSoul = { oct: true };
+    a.fx.greenSoul = f < RED ? { oct: true } : false;
     gRun(a, this._seq);
     if (f === RED) { Battle.shake = 14; Battle.flash = 6; Snd.play('bosshit', 0.55); }
     const L = cx - 40, M = cx, R = cx + 40, COLS = [M, R, L, M, L, R, L];
@@ -1520,15 +1524,15 @@ PATTERNS.gn_atk21 = {
   dur: 620, box: { w: 150, h: 150 }, hz30: 1,
   _seq: gBuild([['Hs','u',3],['H','l',2],['Hs','ur',3],['H','r',5],['w',20],['H','u',2]]),
   tick(a) { const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, RED = 300;
-    if (f < RED) a.fx.greenSoul = { oct: true };
+    a.fx.greenSoul = f < RED ? { oct: true } : false;
     gRun(a, this._seq);
     if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }
-    // circular slashes from the top-right, going CCW — a rotating blade you orbit near the centre.
-    const START = RED + 16, CIRC = [-45, -90, -135, 180, 135, 90, 45, 0];   // GML angles, from top-right CCW
-    CIRC.forEach((deg, i) => { if (f === START + i * 26) {
-      const va = deg * Math.PI / 180, D = 150;
-      gBladeSlash(a, cx - Math.cos(va) * D, cy + Math.sin(va) * D, va, Math.cos(va) * 40, -Math.sin(va) * 40, 58, 58, 12);
-    } });
+    // 18 slashes spiralling CCW from the top-right, 45deg step, ACCELERATING (beat 16 -> 6) — orbit the centre.
+    if (!this._spiral) { const s = []; let t = RED + 16; for (let i = 0; i < 18; i++) { s.push({ t, deg: -45 - i * 45 }); t += Math.round(Math.max(6, 16 - i * 0.6)); } this._spiral = s; }
+    for (const e of this._spiral) if (f === e.t) {
+      const va = ((e.deg % 360) + 360) % 360 * Math.PI / 180, D = 150;
+      gBladeSlash(a, cx - Math.cos(va) * D, cy + Math.sin(va) * D, va, Math.cos(va) * 42, -Math.sin(va) * 42, 54, 54, 10);
+    }
   },
 };
 
@@ -1553,33 +1557,24 @@ PATTERNS.gerson_boxthrow = {
     if (f === 305) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - cx) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 120), r: 16, hitW: 60, hitH: 60, dmg: 40, life: 140 }); Snd.play('smallswing', 0.5); }
   },
 };
-// #B SQUISH-BOX STAR BARRAGE (obj_gerson_box_hit, RED, wiki Attack 13) — Gerson SQUISHES the box: it snaps
-// WIDE, then rows of STARS (spr_gerson_star7) pop in (scale 0->1.5, spinning) and streak HORIZONTALLY across
-// it from alternating edges, decelerating (GML: speed 5.6+rnd(2), friction 0.14; slow "gap" stars speed 2).
-// 10 stars per burst at box.y-70 + 15*i. The box also SHOVES side to side (box_rumble). Weave between the rows.
+// #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES the board THIN + WIDE
+// (GML xscale 9 / yscale 0.2), then a wall of SWING-DOWN blades marches L->R (stopping before the edge), then
+// R->L, then a big spread keeping only a small safe strip. Ride AHEAD of the advancing slashes.
 PATTERNS.gerson_squish = {
-  dur: 460, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 520, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    const shove = f > 40 ? Math.sin((f - 40) / 32 * Math.PI) * 44 : 0;
-    if (f === 30) { Battle.shake = 16; Snd.play('bosshit', 0.55); }              // the squish slam
-    if (f > 28) a.fx.boxTarget = { x: cx - 214 + shove, y: cy - 74, w: 430, h: 148 };
-    const BURSTS = [54, 116, 178, 240, 302, 364];
-    for (let bi = 0; bi < BURSTS.length; bi++) {
-      if (f !== BURSTS[bi]) continue;
-      const fromLeft = bi % 2 === 0, dir = fromLeft ? 1 : -1;
-      const top = (cy - 74) + 10, edge = cx - 214 + shove;
-      const slow1 = 2 + Math.floor(rng() * 3), slow2 = 6 + Math.floor(rng() * 3);  // two "gap" rows are slow
-      for (let i = 0; i < 10; i++) {
-        const y = top + 15 * i;
-        const gap = (i === slow1 || i === slow2);
-        const sp = gap ? (2 + rng() * 1.5) : (5.6 + rng() * 2);                    // GML speeds
-        add({ ...bulletProps('gstar7'), x: fromLeft ? edge - 14 : edge + 430 + 14, y,
-              vx: dir * sp, vy: 0, ax: -dir * (gap ? 0.08 : 0.14), r: 6, grazeR: 11,
-              scale: 0.05, grow: 0.28, growMax: 1.5, rot: rng() * 6.28, spin: 0.16, dmg: 26, life: 220 });
-      }
-      Snd.play('smallswing', 0.32);
-    }
+    const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f === 26) { Battle.shake = 16; Snd.play('bosshit', 0.6); }               // the squish slam
+    if (f > 24) a.fx.boxTarget = { x: cx - 232, y: cy - 22, w: 464, h: 44 };      // THIN + WIDE
+    const L = cx - 210, R = cx + 210, span = R - L, N = 9, W = 58;
+    const slash = colX => gBladeSlash(a, colX, cy - 96, 0, 0, 46, W, box.h + 130, 9);
+    // PHASE 1: sweep LEFT -> RIGHT, stopping ~92% across (safe strip at the far right)
+    for (let i = 0; i < N; i++) if (f === 56 + i * 16) slash(L + span * 0.92 * (i / (N - 1)));
+    // PHASE 2: sweep RIGHT -> LEFT
+    for (let i = 0; i < N; i++) if (f === 240 + i * 16) slash(R - span * 0.92 * (i / (N - 1)));
+    // PHASE 3: a broad spread leaving ONE small safe gap (near the right — the "likely unintended" safe spot)
+    const FRAC = [0.0, 0.13, 0.26, 0.39, 0.52, 0.65, 1.0];                        // gap around 0.82
+    FRAC.forEach((fr, i) => { if (f === 424 + i * 8) slash(L + span * fr); });
   },
 };
 // #C RUDE BUSTER (RED, obj_gerson_rudebuster) — Gerson hurls an ACCELERATING homing orb (GML speed 9,
