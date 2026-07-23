@@ -1257,6 +1257,8 @@ PATTERNS.knight_roar = {
 
       // GML star spawning: attack_timer increments each frame; fires when attack_timer == 4
       // Then resets to floor(-1 + intensity), so effective interval shrinks as intensity grows
+      // GML star spawning: attack_timer increments each frame; fires when attack_timer == 4
+      // Then resets to floor(-1 + intensity), so effective interval shrinks as intensity grows
       if (f > 128) {
         this._attackTimer++;
         if (this._attackTimer >= 4) {
@@ -1269,26 +1271,25 @@ PATTERNS.knight_roar = {
               this._randAngle += 9;
               for (const offset of [0, 180]) {
                 const ang = (this._randAngle + offset) * D2R;
-                const sx = cx + Math.cos(ang) * 600, sy = mouthY + Math.sin(ang) * 600;
+                // Spawn at rand_dist = 600 from fakeY (88)
+                const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
                 const moveAng = Math.atan2(mouthY - sy, cx - sx);
                 // GML: speed 16, friction -0.1 (accelerating), image_xscale = 2 (initial)
-                // Our initial scale: GML 64*2 = 128px → 128/(22*1.6) = 3.64
                 add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * 16, vy: Math.sin(moveAng) * 16,
                   fric: -0.1, r: 7, scale: 3.64, _spin: 1, life: 200,
                   emit(b) {
-                    // GML lines 614-629: dynamic scale = distance / 170, clamped to min 0.2
-                    // Mapped to our engine: b.scale = 64 * (dist/170) / (22 * 1.6) = dist * 0.0107
                     const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
                     b.scale = Math.max(0.364, d * 0.0107);
-                    // GML lines 623-625: re-aim toward mouth, then add tangential spiral
-                    // direction = point_direction(star, mouth)
-                    // x += lengthdir_x(speed * 0.625 / intensity, direction + 90*spinspeed)
+                    // Re-steer velocity toward mouth (matching GML direction = point_direction(x, y, mouth))
                     const dir = Math.atan2(mouthY - b.y, cx - b.x);
-                    const tang = dir + (Math.PI / 2) * b._spin;
                     const spd = Math.hypot(b.vx, b.vy);
+                    b.vx = Math.cos(dir) * spd;
+                    b.vy = Math.sin(dir) * spd;
+                    // Add tangential spiral offset (matching GML lengthdir_x/y(speed * 0.625 / intensity, direction + 90*spinspeed))
+                    const tang = dir + (Math.PI / 2) * b._spin;
                     b.x += Math.cos(tang) * spd * 0.625 * (1 / curIntensity);
                     b.y += Math.sin(tang) * spd * 0.625 * (1 / curIntensity);
-                    // GML line 628: destroy when within 12px of mouth
+                    // Destroy when inside throat
                     if (d < 12) b.dead = true;
                   } });
               }
@@ -1298,7 +1299,7 @@ PATTERNS.knight_roar = {
               for (let i = 0; i < 6; i++) {
                 this._randAngle += 60;
                 const ang = this._randAngle * D2R;
-                const sx = cx + Math.cos(ang) * 600, sy = mouthY + Math.sin(ang) * 600;
+                const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
                 const moveAng = Math.atan2(mouthY - sy, cx - sx);
                 const spd = 8 + curIntensity;  // GML: speed = 8 + other.intensity
                 add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * spd, vy: Math.sin(moveAng) * spd,
@@ -1307,8 +1308,10 @@ PATTERNS.knight_roar = {
                     const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
                     b.scale = Math.max(0.364, d * 0.0107);
                     const dir = Math.atan2(mouthY - b.y, cx - b.x);
-                    const tang = dir + (Math.PI / 2) * b._spin;
                     const sp = Math.hypot(b.vx, b.vy);
+                    b.vx = Math.cos(dir) * sp;
+                    b.vy = Math.sin(dir) * sp;
+                    const tang = dir + (Math.PI / 2) * b._spin;
                     b.x += Math.cos(tang) * sp * 0.625 * (1 / curIntensity);
                     b.y += Math.sin(tang) * sp * 0.625 * (1 / curIntensity);
                     if (d < 12) b.dead = true;
@@ -1334,14 +1337,11 @@ PATTERNS.knight_roar = {
         this._suck = -6.0;              // GML: player_suck = min(player_suck, -6)
         a.fx.pull = { x: cx, y: mouthY, force: -0.6 };
         // GML: 8-star radial burst, direction = a * 45, speed = 8.5 + random(2)
-        // Initial scale: image_xscale = 0.1, lerps to 1.2 over 32 frames
         for (let aIdx = 0; aIdx < 8; aIdx++) {
           const ang = aIdx * 45 * D2R;   // GML uses degrees: a * 45
           const spd = 8.5 + rng() * 2;
-          // GML initial scale 0.1, lerps to 1.2 → our scale: 64*0.1/(22*1.6) = 0.18
           const st = { ...bulletProps('knightstar'), x: cx, y: mouthY, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
             r: 8, scale: 0.18, grow: 0.035, growMax: 2.18, life: 400 };
-            // growMax: 64*1.2/(22*1.6) = 2.18
           add(st);
           this._detQueue.push(st);
         }
@@ -1351,75 +1351,62 @@ PATTERNS.knight_roar = {
       if (rt >= 9 && rt < 181) {
         a.fx.pull = { x: cx, y: mouthY, force: -0.4 };
         a.fx.shake = Math.max(a.fx.shake || 0, 10);
-        // GML line 416-422: roaring_timer == 15 → switch to roar sprite
         a.fx.boss = { key: 'knightroar' + (Math.floor(rt / 6) % 2), x: cx, y: bossy, scale: 1.46 };
       }
 
       // GML line 439-493: torrent 3-star fans every 5 ticks (roaring_timer > 15 && roaring_timer % 5 == 0)
       if (rt > 15 && rt < 168 && rt % 5 === 0) {
         Snd.play('boardsummon', 0.15);  // GML: snd_play_pitch(snd_stardrop, 0.5) at volume 0.5
-        // GML: rand_angle += 60 + irandom(10)
         this._randAngle += 60 + Math.floor(rng() * 10);
-        // GML: star_angle1 = rand_angle, star_angle2 = rand_angle + 20, star_angle3 = rand_angle - 20
         const a1 = this._randAngle * D2R;
         const a2 = (this._randAngle + 20) * D2R;
         const a3 = (this._randAngle - 20) * D2R;
         const angles = [a1, a2, a3];
-        // GML: star_angle1 speed = 6.5 + random(2), star_angle2/3 = 8.5 + random(2)
         const speeds = [6.5 + rng() * 2, 8.5 + rng() * 2, 8.5 + rng() * 2];
         for (let i = 0; i < 3; i++) {
-          // GML: initial scale 0.1, lerps to 1.6 over 32 frames
           const st = { ...bulletProps('knightstar'), x: cx, y: mouthY,
             vx: Math.cos(angles[i]) * speeds[i], vy: Math.sin(angles[i]) * speeds[i],
             r: 8, scale: 0.18, grow: 0.045, growMax: 2.91, life: 400 };
-            // growMax: 64*1.6/(22*1.6) = 2.91
           add(st);
           this._detQueue.push(st);
         }
       }
 
       // Phase 3: Flourish & Sequential Detonation (rt == 181..274)
-      // GML line 497-528
       if (rt === 181) {
         a.fx.pull = null;
         a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: bossy, scale: 1.46 };
-        // GML: all live stars get friction = 0.5
         for (const st of this._detQueue) {
           st.fric = 0.5;
           st._armTimer = 0;
         }
       }
 
-      // GML: each tick, pop 1 bullet from list, set con = 1 (which triggers brake → drift → explode)
+      // Pop 2 stars per frame so all live stars detonate rhythmically before slash windup (rt = 275)
       if (rt >= 182 && rt < 275) {
         a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: bossy, scale: 1.46 };
-        // Arm 1 star per tick (matches GML: ds_list_delete(bullet_list, 0) once per frame)
-        if (this._detQueue.length > 0) {
-          const st = this._detQueue.shift();
-          st._armed = true;
-          st.emit = function(b, out) {
-            if (!b._armed) return;
-            b._armTimer = (b._armTimer || 0) + 1;
-            // GML star con==1: friction = 0.5 (one frame), then con++
-            if (b._armTimer === 1) { b.fric = 0.5; }
-            // GML star con==2: when speed==0, gravity = 0.1 in direction-180 (backward drift)
-            // Then at timer >= 40 (if !split): con++ → explode
-            if (b._armTimer > 6 && b._armTimer < 40) { b.ax = -b.vx * 0.01; b.ay = -b.vy * 0.01; }
-            if (b._armTimer === 40) {
-              b.dead = true;
-              Snd.play('explosionmmx', 0.35);   // GML: snd_play(snd_explosion_firework)
-              // GML star con==3: 6 starchild bullets at angles 90, +57, +66, +66, +57, +66
-              // = 90, 156 (90+66), 213 (156+57), 279 (213+66), 345 (279+66), 42 (345+57 mod 360)
-              const angles = [90, 156, 213, 279, 345, 42];
-              for (let i = 0; i < 6; i++) {
-                const aa = angles[i] * D2R;
-                // GML: speed = 1, friction = -0.1 (accelerating), deceleration = 0.15
-                // scale = parent_xscale * 0.5
-                out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(aa) * 2.6, vy: Math.sin(aa) * 2.6,
-                  rot: aa, r: 5, scale: 0.8, fric: 0.06, life: 60, fade: true, fadeDelay: 30 });
+        for (let k = 0; k < 2; k++) {
+          if (this._detQueue.length > 0) {
+            const st = this._detQueue.shift();
+            st._armed = true;
+            st.emit = function(b, out) {
+              if (!b._armed) return;
+              b._armTimer = (b._armTimer || 0) + 1;
+              if (b._armTimer === 1) { b.fric = 0.5; }
+              // GML: decelerate to 0, then gravity -0.1 backward drift for 18 ticks before shattering
+              if (b._armTimer > 4 && b._armTimer < 18) { b.ax = -b.vx * 0.02; b.ay = -b.vy * 0.02; }
+              if (b._armTimer === 18) {
+                b.dead = true;
+                Snd.play('explosionmmx', 0.35);
+                const angles = [90, 156, 213, 279, 345, 42];
+                for (let i = 0; i < 6; i++) {
+                  const aa = angles[i] * D2R;
+                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(aa) * 1.5, vy: Math.sin(aa) * 1.5,
+                    rot: aa, r: 5, scale: 0.8, fric: -0.08, life: 60, fade: true, fadeDelay: 30 });
+                }
               }
-            }
-          };
+            };
+          }
         }
       }
 
