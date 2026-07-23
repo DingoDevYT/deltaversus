@@ -7,7 +7,8 @@ const SOUL_R = 5;
 const GRAZE_R = 15;
 // GREEN SOUL (Hammer/Sound of Justice): shield-block mode. Shell colour = hp (blocks still needed),
 // per the real Ch4 mapping: 1 cyan, 2 green, 3 yellow, 4 purple, 5 blue, 6-8 pink.
-const SHELL_COLORS = { 1: '#00ffff', 2: '#00ff00', 3: '#ffff00', 4: '#800080', 5: '#0000ff', 6: '#ff7fb8', 7: '#ffb2d4', 8: '#ffcce2' };
+// EXACT obj_spearshot Draw_0 hp->colour (BGR ints -> RGB): 1 yellow, 2 green, 3 cyan, 4 purple, 5 red, 6-8 pink.
+const SHELL_COLORS = { 1: '#ffff00', 2: '#00ff00', 3: '#00ffff', 4: '#800080', 5: '#ff0000', 6: '#ff7fb8', 7: '#ffb2d4', 8: '#ffcce2' };
 // resolve a bullet against the green shield — EXACT port of obj_spearshot Other_10 (event_user0).
 // `len` = distance from the shield centre; blockable at len < shieldRadius (36 for 4-dir, 46 for 8-dir/diag)
 // AND the shield facing within the angle tolerance (50 deg for 4-dir, 30 deg for 8-dir). Checked EVERY frame
