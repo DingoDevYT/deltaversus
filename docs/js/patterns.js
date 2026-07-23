@@ -1222,23 +1222,19 @@ PATTERNS.knight_roar = {
       this._fakeY = 24;   // GML Create_0: fake_y = 24
     }
 
-    // GML: at timer 80, fake_y lerps 24 → 88 over 48 frames (eased out)
-    if (f >= 80 && f < 128) {
-      const t = Math.min(1, (f - 80) / 48);
+    // GML: fake_y lerps 24 → 88 over 48 frames starting at init
+    if (f < 48) {
+      const t = Math.min(1, f / 48);
       this._fakeY = 24 + (88 - 24) * t;
-    } else if (f >= 128) {
+    } else {
       this._fakeY = 88;
     }
     // Current mouth Y from fake_y + 55
     const mouthY = this._fakeY + 55;
 
-    // Phase 1: Inflow Charge Phase (timer > 128, intensity 1.5 -> 4.0)
-    // GML: intensity starts approaching at timer 128, from 1.5 toward 4.0 at +0.008/tick
-    if (f > 128 && this._intensity < 4.0) {
-      this._intensity = Math.min(4.0, this._intensity + 0.008);
-    }
-
+    // Phase 1: Inflow Charge Phase (intensity 1.5 -> 4.0)
     if (this._intensity < 4.0) {
+      this._intensity = Math.min(4.0, this._intensity + 0.008);
       a.fx.bgHue = (128 + Math.sin(f * 0.04) * 80 + f) % 360;
 
       // GML: player_suck approach 1 at +0.1625 (when intensity < 3.75), then approach 0 at -0.15
@@ -1246,64 +1242,91 @@ PATTERNS.knight_roar = {
       this._suck = Math.max(0, this._suck - 0.15);
       a.fx.pull = { x: cx, y: mouthY, force: this._suck * 0.45 };
 
-      // GML: timer 132 → snd_knight_stretch at pitch 0.1
-      if (f === 132) Snd.play('sneocharge', 0.12);
+      if (f === 16) Snd.play('sneocharge', 0.14);
 
-      // Boss sprite: GML draws at (fake_x, fake_y + bobble - 10 + 55), scale 2.0 (Dark World)
-      // Our scale: 1.46 matches 70px * 2.0 = 140px ≈ 96px * 1.46
-      if (f < 80) a.fx.boss = { key: 'knightfront', x: cx, y: bossy - 20, scale: 1.46 };
+      // Inward particle stream (white streaks flying into throat)
+      if (f >= 16 && (f % 2) === 0) {
+        const pAng = rng() * Math.PI * 2;
+        const pDist = 320 + rng() * 100;
+        const px = cx + Math.cos(pAng) * pDist, py = mouthY + Math.sin(pAng) * pDist;
+        const pDir = Math.atan2(mouthY - py, cx - px);
+        add({ shape: 'line', color: 'rgba(255,255,255,0.7)', len: 14, thick: 2, x: px, y: py,
+          vx: Math.cos(pDir) * 16, vy: Math.sin(pDir) * 16, noHit: true, life: 18 });
+      }
+
+      // Boss sprite: GML scale 2.0 (Dark World) → 1.46 matches 70px * 2.0 = 140px ≈ 96px * 1.46
+      if (f < 20) a.fx.boss = { key: 'knightfront', x: cx, y: bossy - 20, scale: 1.46 };
       else if (f < 398) a.fx.boss = { key: 'knightfront', x: cx, y: bossy, scale: 1.46 };
       else a.fx.boss = { key: 'knightflourish' + (Math.floor(f / 4) % 7), x: cx, y: bossy, scale: 1.46 };
 
-      // GML star spawning: attack_timer increments each frame; fires when attack_timer == 4
-      // Then resets to floor(-1 + intensity), so effective interval shrinks as intensity grows
-      // GML star spawning: attack_timer increments each frame; fires when attack_timer == 4
-      // Then resets to floor(-1 + intensity), so effective interval shrinks as intensity grows
-      if (f > 128) {
+      // GML star spawning loop: attack_timer increments each frame; fires when attack_timer == 4
+      // Then resets to floor(-1 + intensity), shrinking the delay as intensity grows
+      if (f >= 24) {
         this._attackTimer++;
         if (this._attackTimer >= 4) {
           this._attackTimer = Math.floor(-1 + this._intensity);
           this._starCount1++;
-          if (this._starCount1 === 1 && this._intensity < 3.7) {
-            const curIntensity = this._intensity;
-            if (curIntensity >= 2.7) {
-              // GML: 2-star opposing pair, speed 16, rand_angle += 9
-              this._randAngle += 9;
-              for (const offset of [0, 180]) {
-                const ang = (this._randAngle + offset) * D2R;
-                // Spawn at rand_dist = 600 from fakeY (88)
-                const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
-                const moveAng = Math.atan2(mouthY - sy, cx - sx);
-                // GML: speed 16, friction -0.1 (accelerating), image_xscale = 2 (initial)
-                add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * 16, vy: Math.sin(moveAng) * 16,
-                  fric: -0.1, r: 7, scale: 3.64, _spin: 1, life: 200,
-                  emit(b) {
-                    const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
-                    b.scale = Math.max(0.364, d * 0.0107);
-                    // Re-steer velocity toward mouth (matching GML direction = point_direction(x, y, mouth))
-                    const dir = Math.atan2(mouthY - b.y, cx - b.x);
-                    const spd = Math.hypot(b.vx, b.vy);
-                    b.vx = Math.cos(dir) * spd;
-                    b.vy = Math.sin(dir) * spd;
-                    // Add tangential spiral offset (matching GML lengthdir_x/y(speed * 0.625 / intensity, direction + 90*spinspeed))
-                    const tang = dir + (Math.PI / 2) * b._spin;
-                    b.x += Math.cos(tang) * spd * 0.625 * (1 / curIntensity);
-                    b.y += Math.sin(tang) * spd * 0.625 * (1 / curIntensity);
-                    // Destroy when inside throat
-                    if (d < 12) b.dead = true;
-                  } });
-              }
-            } else {
-              // GML: 6-star ring, rand_angle += 32, then each star += 60
+          const curIntensity = this._intensity;
+          const spinspeed = (this._starCount1 % 2 === 0) ? -1 : 1;
+
+          if (curIntensity >= 2.7) {
+            // GML lines 185-211: 2-star opposing pair on EVERY trigger, rand_angle += 9
+            this._randAngle += 9;
+            for (const offset of [0, 180]) {
+              const ang = (this._randAngle + offset) * D2R;
+              const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
+              const moveAng = Math.atan2(mouthY - sy, cx - sx);
+              add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * 16, vy: Math.sin(moveAng) * 16,
+                fric: -0.1, r: 7, scale: 3.64, _spin: spinspeed, life: 200,
+                emit(b) {
+                  const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
+                  b.scale = Math.max(0.364, d * 0.0107);
+                  const dir = Math.atan2(mouthY - b.y, cx - b.x);
+                  const spd = Math.hypot(b.vx, b.vy);
+                  b.vx = Math.cos(dir) * spd;
+                  b.vy = Math.sin(dir) * spd;
+                  const tang = dir + (Math.PI / 2) * b._spin;
+                  b.x += Math.cos(tang) * spd * 0.625 * (1 / curIntensity);
+                  b.y += Math.sin(tang) * spd * 0.625 * (1 / curIntensity);
+                  if (d < 12) b.dead = true;
+                } });
+            }
+          } else {
+            // GML lines 212-350: 6-star ring on count 1 + random side stars on counts 2 & 3
+            if (this._starCount1 === 1) {
               this._randAngle += 32;
+              this._savedBaseAngle = this._randAngle;
               for (let i = 0; i < 6; i++) {
                 this._randAngle += 60;
                 const ang = this._randAngle * D2R;
                 const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
                 const moveAng = Math.atan2(mouthY - sy, cx - sx);
-                const spd = 8 + curIntensity;  // GML: speed = 8 + other.intensity
+                const spd = 8 + curIntensity;
                 add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * spd, vy: Math.sin(moveAng) * spd,
-                  fric: -0.1, r: 7, scale: 3.64, _spin: 1, life: 200,
+                  fric: -0.1, r: 7, scale: 3.64, _spin: spinspeed, life: 200,
+                  emit(b) {
+                    const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
+                    b.scale = Math.max(0.364, d * 0.0107);
+                    const dir = Math.atan2(mouthY - b.y, cx - b.x);
+                    const sp = Math.hypot(b.vx, b.vy);
+                    b.vx = Math.cos(dir) * sp;
+                    b.vy = Math.sin(dir) * sp;
+                    const tang = dir + (Math.PI / 2) * b._spin;
+                    b.x += Math.cos(tang) * sp * 0.625 * (1 / curIntensity);
+                    b.y += Math.sin(tang) * sp * 0.625 * (1 / curIntensity);
+                    if (d < 12) b.dead = true;
+                  } });
+              }
+            } else if (this._savedBaseAngle != null) {
+              // GML lines 315-350: side stars on counts 2 and 3 so bullets flow continuously
+              const baseA = this._savedBaseAngle;
+              const sideOffset = (rng() * 120);
+              for (const off of [45 + sideOffset, -45 - sideOffset]) {
+                const ang = (baseA + off) * D2R;
+                const sx = cx + Math.cos(ang) * 600, sy = this._fakeY + Math.sin(ang) * 600;
+                const moveAng = Math.atan2(mouthY - sy, cx - sx);
+                add({ ...bulletProps('knightstar'), x: sx, y: sy, vx: Math.cos(moveAng) * 9, vy: Math.sin(moveAng) * 9,
+                  fric: -0.1, r: 7, scale: 3.64, _spin: spinspeed, life: 200,
                   emit(b) {
                     const d = Math.hypot(cx - b.x, mouthY - b.y) || 1;
                     b.scale = Math.max(0.364, d * 0.0107);
@@ -1319,8 +1342,7 @@ PATTERNS.knight_roar = {
               }
             }
           }
-          // GML: starcount resets at 3, or immediately if intensity >= 2.7
-          if (this._starCount1 >= 3 || this._intensity >= 2.7) this._starCount1 = 0;
+          if (this._starCount1 >= 3 || curIntensity >= 2.7) this._starCount1 = 0;
         }
       }
     }
