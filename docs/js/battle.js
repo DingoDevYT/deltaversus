@@ -33,7 +33,11 @@ function resolveGreen(b) {
   if (len < shieldRadius && aligned) {                          // BLOCKED
     const parry = (B.anim.f - (B.shieldFreshF == null ? -999 : B.shieldFreshF)) < 4;   // justlength = 4
     const gain = parry ? 2.5 : 1.25;
-    B.shieldFlash = 4; if (parry) B.shieldParry = 7;                     // axe block-flash frame / parry white-flash
+    B.shieldFlash = 4;
+    if (parry) { B.shieldParry = 7;                                       // parry: white-flash + 3 light sparks off the axe (obj_shield_just_particle)
+      B.blockParts = B.blockParts || [];
+      for (let k = 0; k < 3; k++) { const pa = inAng - 0.52 + Math.random() * 1.04;
+        B.blockParts.push({ x: cx + Math.cos(pa) * 36, y: cy + Math.sin(pa) * 36, vx: Math.cos(B.shieldAng) * 1.4, vy: Math.sin(B.shieldAng) * 1.4, t: 0 }); } }
     B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
     B.blockFx.push({ x: cx + Math.cos(inAng) * shieldRadius, y: cy + Math.sin(inAng) * shieldRadius, t: 0, perfect: parry });
     Snd.play(parry ? 'criticalswing' : 'bell', parry ? 0.5 : 0.4);   // GML: snd_bell block / snd_parry_fast parry
@@ -750,7 +754,7 @@ Battle.startDodge = function () {
   // GREEN SOUL: locked at centre, aim Susie's axe to BLOCK incoming bullets (no movement, no graze).
   B._defGreen = oppAtkers.some(a => a.def.soulGreen);   // whole-attack green; patterns can also toggle it live
   B.soulGreen = false; B._greenLatch = false; B._greenOctLatch = false; B.greenOct = false;
-  B.shieldAng = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = [];
+  B.shieldAng = Math.PI / 2; B.shieldTarget = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = []; B.blockParts = [];
   // PURPLE SOUL (Pink): heart rides a virtual grid inside the box (obj_purplecontrols).
   B.soulPurple = false; B._pmode = -1; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0;
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
@@ -910,10 +914,15 @@ Battle.updDodge = function () {
     if (rawx || rawy) {
       const step = Math.PI * 2 / (B.greenOct ? 8 : 4);
       const ang = Math.round(Math.atan2(rawy, rawx) / step) * step;
-      const diff = Math.abs(Math.atan2(Math.sin(ang - B.shieldAng), Math.cos(ang - B.shieldAng)));
-      if (diff > 0.01) { B.shieldAng = ang; B.shieldDiag = !!(rawx && rawy); }
+      const diff = Math.abs(Math.atan2(Math.sin(ang - (B.shieldTarget == null ? B.shieldAng : B.shieldTarget)), Math.cos(ang - (B.shieldTarget == null ? B.shieldAng : B.shieldTarget))));
+      if (diff > 0.01) { B.shieldTarget = ang; B.shieldDiag = !!(rawx && rawy); }
       if (freshPress) B.shieldFreshF = B.anim.f;   // parry window (justlength 4) on any fresh press or re-press
     }
+    // EASE the axe toward its target (GML: rep = ceil(|angdiff|*0.666) deg/frame). The BLOCK uses this LIVE
+    // shieldAng, so you can rotate INTO a block mid-turn = frame-perfect skilled play. Never snaps instantly.
+    if (B.shieldTarget == null) B.shieldTarget = B.shieldAng;
+    const d = Math.atan2(Math.sin(B.shieldTarget - B.shieldAng), Math.cos(B.shieldTarget - B.shieldAng));
+    B.shieldAng = Math.abs(d) < 0.02 ? B.shieldTarget : B.shieldAng + d * 0.666;
     // NEXT-TO-HIT spear turns red (spr_spear_arrow_highlight): the soonest-arriving spear gets its hiImg.
     const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2; let soon = null, st = Infinity;
     for (const b of B.bullets) { if (!b.isSpear) continue; const sp = Math.hypot(b.vx, b.vy) || 0.01;
@@ -1227,6 +1236,7 @@ Battle.updDodge = function () {
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
   if (B.blockFx && B.blockFx.length) { for (const fx of B.blockFx) fx.t++; B.blockFx = B.blockFx.filter(fx => fx.t < 8); }
+  if (B.blockParts && B.blockParts.length) { for (const p of B.blockParts) { p.x += p.vx; p.y += p.vy; p.vx *= 0.9; p.vy *= 0.9; p.t++; } B.blockParts = B.blockParts.filter(p => p.t < 14); }
   if (B.shieldFlash > 0) B.shieldFlash--;
   if (B.shieldParry > 0) B.shieldParry--;
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
@@ -2071,17 +2081,22 @@ Battle.renderBoxAndBullets = function (ctx) {
   // GREEN SOUL: the shield ring (at the real block radius) + Susie's AXE (spr_spearblocker) pivoting to the
   // guarded side. frame 0 = idle, frame 1 = block-flash (a few frames after a block), frame 2 (white) = parry.
   if (B.soulGreen) {
-    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2, GR = B.greenOct ? 46 : 36;   // GML shieldradius
+    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2;
+    const RING = B.greenOct ? 33 : 30, GR = B.greenOct ? 46 : 36;   // visible ring (GML sidelength ~28-33) vs block radius (axe sits here)
     ctx.strokeStyle = '#33d13a'; ctx.lineWidth = 2;
     if (B.greenOct) { ctx.beginPath();
-      for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, px = gcx + Math.cos(a) * GR * 1.0824, py = gcy + Math.sin(a) * GR * 1.0824; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, px = gcx + Math.cos(a) * RING * 1.0824, py = gcy + Math.sin(a) * RING * 1.0824; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
       ctx.closePath(); ctx.stroke();
-    } else ctx.strokeRect(gcx - GR, gcy - GR, GR * 2, GR * 2);
+    } else ctx.strokeRect(gcx - RING, gcy - RING, RING * 2, RING * 2);
     const sa = B.shieldAng == null ? Math.PI / 2 : B.shieldAng;
     const parryF = (B.shieldParry || 0) > 0, blockF = (B.shieldFlash || 0) > 0;
     const axe = bulletProps(parryF ? 'gaxe2' : blockF ? 'gaxe1' : 'gaxe0').img;
-    // spr_spearblocker default (image_index 0) faces RIGHT; rotate by sa. Pivot near centre, blade extends out.
-    if (axe && axe.width) drawSpr(ctx, axe, gcx + Math.cos(sa) * 8, gcy + Math.sin(sa) * 8, { scale: 1, rot: sa, tint: parryF ? '#ffffff' : null });
+    // spr_spearblocker faces RIGHT by default. Push the axe OUT to the block radius so its blade sits ON the ring edge.
+    if (axe && axe.width) drawSpr(ctx, axe, gcx + Math.cos(sa) * (GR - 6), gcy + Math.sin(sa) * (GR - 6), { scale: 1.05, rot: sa, tint: parryF ? '#ffffff' : null });
+  }
+  for (const p of (B.blockParts || [])) {   // parry sparks off the axe (obj_shield_just_particle): 3 light bits
+    const a = Math.max(0, 1 - p.t / 14); ctx.globalAlpha = a; ctx.fillStyle = p.t < 6 ? '#ffffff' : '#9dff9d';
+    ctx.beginPath(); ctx.arc(p.x, p.y, 2.4 * a + 0.6, 0, 6.283); ctx.fill(); ctx.globalAlpha = 1;
   }
   for (const fx of (B.blockFx || [])) {   // block spark: bright ring, brighter/yellow on a perfect (well-timed) block
     const r = 4 + fx.t * 1.6; ctx.strokeStyle = fx.perfect ? '#fff36b' : '#8affa0'; ctx.globalAlpha = Math.max(0, 1 - fx.t / 8); ctx.lineWidth = 2;
