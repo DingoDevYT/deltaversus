@@ -1252,11 +1252,11 @@ function gSpear(a, gd, spd, opt) {
 // opt.big = larger + slower shell. Normal shells come from ONE direction (no spin) per the GML/wiki.
 function gShell(a, gd, hp, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  const va = -gd * Math.PI / 180, posAng = va + Math.PI, spd = opt.big ? 2.6 : 4, D = 260;
+  const va = -gd * Math.PI / 180, posAng = va + Math.PI, spd = opt.big ? 2.6 : 4, D = 300;
   add({ shape: 'shell', shell: true, shellRadial: true, blocksLeft: hp, shellSpin: !!opt.spin,
         shellLen: D, shellPosAng: posAng, shellSpeed: spd, shellBaseSpeed: spd, shellGrav: 0, shellState: 0,
         x: cx + Math.cos(posAng) * D, y: cy + Math.sin(posAng) * D, vx: 0, vy: 0,
-        r: opt.big ? 15 : 10, scale: opt.big ? 1.5 : 1, dmg: 20 });
+        r: opt.big ? 11 : 8, scale: opt.big ? 0.8 : 0.55, dmg: 20 });   // HALF size (GML scr_darksize baseline is 2x)
 }
 // play a fixed spear sequence (each entry [gmlTick, gmlDirString-or-number, speed]); auto green.
 // GREEN sequence system (wiki-exact). Tokens: ['s',dir]=slow spear, ['f',dir]=fast spear,
@@ -1371,6 +1371,80 @@ PATTERNS.gerson_shellkick = {
     add(shell);
   },
 };
+// ============================================================================
+// SHELL PINBALL (obj_gerson_shell_pinball, wiki Attack 7) — FULL GML port.
+// Gerson swings -> launches a green shell aimed at the SOUL (speed 12). It bounces off the box TOP/BOTTOM only
+// (squash-stretch + sfx), PASSES THROUGH the sides; when it exits a side Gerson teleports there, swings, and
+// knocks it back at the SOUL (counter++ up to 7, speed ramps to 15, 50% bank shots). After the 7th kick it
+// flies to the top-right, Gerson slams it DOWN the middle, and it SHATTERS into a 28-star gravity fountain
+// (4 fans, random dir/speed jitter, normal+small variants). Trailing ~6 stars fade by scaling to 0.
+// ============================================================================
+function gPinTrailStar(x, y) {   // spr_thrash_star: full size 22f, then scale->0 over 4f (~6 alive)
+  return { ...bulletProps('gtstar0'), x, y, vx: 0, vy: 0, r: 6, grazeR: 10, scale: 0.72,
+           rot: Math.random() * 6.28, spin: 0.25, dmg: 40, life: 26, shrinkAfter: 22, shrinkStep: 0.2 };
+}
+function gPinSwing(x, y, flipLeft) {   // transient Gerson SWING pose (spr_gerson_swing frames 3..6) at the exit side
+  return { img: bulletProps('gswing3').img, animKeys: ['gswing3', 'gswing4', 'gswing5', 'gswing6'], animRate: 2,
+           x, y, vx: 0, vy: 0, noHit: true, scale: 0.8, flip: !!flipLeft, life: 10 };
+}
+function gPinBurst(b, out) {   // 4 fans of spr_gerson_star7 firing UP with gravity DOWN (fountain), jittered
+  const FANS = [[-2, 2, 4, 12, 0.535, 0], [-5, 5, 7, 13.25, 0.5, 24], [-4, 4, 6, 14.5, 0.465, 0], [-3, 3, 5, 15.75, 0.43, -24]];
+  for (const [a0, a1, step, spd0, grav, xo] of FANS) {
+    for (let a = a0; a < a1; a++) {
+      const gml = 90 + step * a + (Math.random() * 2 - 1);           // GML direction (90 = UP)
+      const sp = spd0 + (Math.random() * 2 - 1), sc = Math.random() < 0.5 ? 1.0 : 0.66;   // normal + SMALL variant
+      let vx = Math.cos(gml * Math.PI / 180) * sp * 0.5, vy = -Math.sin(gml * Math.PI / 180) * sp;   // hspeed *= 0.5
+      out.push({ ...bulletProps('gstar7'), x: b.x + xo, y: b.y, vx, vy, ay: grav, r: 6, grazeR: 11,
+                 scale: sc, rot: Math.random() * 6.28, spin: 0.22, dmg: 44, life: 170 });
+    }
+  }
+}
+function gPinKnock(b, s, bx) {   // Gerson knocks the shell back (counter<7 -> aim at soul, ramp to 15; else top-smash)
+  const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
+  b._cnt++; Snd.play('heavyswing', 0.4); Battle.shake = Math.max(Battle.shake, 6);
+  if (b._cnt < 7) {
+    const ang = Math.atan2(s.y - b.y, s.x - b.x), sp = Math.min(15, Math.hypot(b.vx, b.vy) + 1.5);
+    b.vx = Math.cos(ang) * sp; b.vy = Math.sin(ang) * sp;
+  } else {   // aim to just inside the top-right (x within the break's +-72 range) so the slam lands in the board
+    const tx = cx + 55, ty = cy - bx.h / 2 - 80, dist = Math.hypot(tx - b.x, ty - b.y), ang = Math.atan2(ty - b.y, tx - b.x);
+    b.vx = Math.cos(ang) * (dist / 30); b.vy = Math.sin(ang) * (dist / 30); b._tt = 0;
+  }
+}
+function gPinballShell(box, x, y, ang, spd) {
+  return {
+    ...bulletProps('gshellspr0'), x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+    r: 13, grazeR: 16, scale: 0.72, spin: 0.42, tint: '#33ff33', dmg: 44,
+    _cnt: Math.random() < 0.5 ? 0 : -1, _lt: -1, _rt: -1, _tt: -1, _tmr: 0, _sqT: 0,
+    emit(b, out, s, bx) {
+      const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2, T = cy - bx.h / 2, B = cy + bx.h / 2;
+      b._tmr++;
+      if (b._sqT > 0 && --b._sqT === 0) { b.sx = 1; b.sy = 1; }        // squash decays back
+      if (b._tmr % 4 === 0 && b._tt < 0) out.push(gPinTrailStar(b.x, b.y));
+      if (b.x > cx - 72 && b.x < cx + 72) {                            // vertical bounce (top/bottom only)
+        if (b.y > B - 14 && b._cnt < 7 && b.vy > 0) { b.y = B - 14; b.vy = -b.vy; b.sx = 1.5; b.sy = 0.5; b._sqT = 6; Snd.play('criticalswing', 0.35); }
+        else if (b.y < T + 14 && b._cnt < 7 && b.vy < 0) { b.y = T + 14; b.vy = -b.vy; b.sx = 1.5; b.sy = 0.5; b._sqT = 6; Snd.play('criticalswing', 0.35); }
+        if (b.y > B - 14 && b._tt >= 20) { gPinBurst(b, out); b.dead = true; Battle.shake = 18; Battle.flash = 6; Snd.play('explosionmmx', 0.5); return; }
+      }
+      if (b.x < cx - 73 && b.vx < 0 && b._lt === -1) b._lt = 0;        // exits left/right (through the walls)
+      if (b.x > cx + 92 && b.vx > 0 && b._rt === -1) b._rt = 0;
+      if (b._lt > -1) b._lt++; if (b._rt > -1) b._rt++; if (b._tt > -1) b._tt++;
+      if (b._lt === 1) out.push(gPinSwing(b.x - 30, b.y, true));
+      if (b._lt === 7) { gPinKnock(b, s, bx); b._lt = -1; }
+      if (b._rt === 1) out.push(gPinSwing(b.x + 30, b.y, false));
+      if (b._rt === 7) { gPinKnock(b, s, bx); b._rt = -1; }
+      if (b._tt === 0) { out.push({ img: bulletProps('gblade0').img, animKeys: ['gblade0', 'gblade1'], animRate: 3, x: cx + bx.w / 2, y: T - 40, vx: 0, vy: -1.5, noHit: true, scale: 1, life: 34 }); Snd.play('smallswing', 0.4); }
+      if (b._tt === 30) { b.vx = 0; b.vy = 30; Battle.shake = 14; Snd.play('bosshit', 0.5); }
+    },
+  };
+}
+PATTERNS.gerson_pinball = {
+  dur: 720, box: { w: 150, h: 150 }, hz30: 1,
+  tick(a) {
+    const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 54, gy = cy;
+    if (f === 10) { add(gPinSwing(gx, gy, false)); Snd.play('heavyswing', 0.4); Battle.shake = 8; }   // Gerson wind-up swing
+    if (f === 32) { Snd.play('rudebuster', 0.4); add(gPinballShell(box, gx, gy, Math.atan2(cy - gy, cx - gx), 12)); }   // LAUNCH aimed at the soul
+  },
+};
 // --- RED (free move): SWING DOWN (obj_gerson_swing_down_new, wiki Attack 12) — Gerson lunges his BLADE
 // (spr_gerson_swing_down_new) down through a side of the board: middle, right, left, middle, left, right,
 // left; then a fakeout, then a horizontal slash right->left at the SOUL. Blade telegraphs (poised) then
@@ -1466,7 +1540,7 @@ PATTERNS.gn_atk6 = {
   },
 };
 // 7: shell PINBALL + star fountain (red) — defined above. (8/13/14 red aliases are set after their patterns.)
-PATTERNS.gn_atk7 = PATTERNS.gerson_shellkick;
+PATTERNS.gn_atk7 = PATTERNS.gerson_pinball;   // wiki Attack 7 = the SHELL PINBALL (not the old shell-kick)
 // 9: slow ul ul u u ur ur | fast ul u ur u u ul u ur | slow d dl d dr.
 PATTERNS.gn_atk9 = gGreen([['s','ul'],['s','ul'],['s','u'],['s','u'],['s','ur'],['s','ur'],['w',10],
   ['f','ul'],['f','u'],['f','ur'],['f','u'],['f','u'],['f','ul'],['f','u'],['f','ur'],['w',12],

@@ -5915,6 +5915,78 @@
       "oh": 21,
       "ox": 0,
       "oy": 0
+    },
+    "gtstar0": {
+      "f": "gtstar0.png",
+      "w": 26,
+      "h": 24,
+      "ow": 26,
+      "oh": 24,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing0": {
+      "f": "gswing0.png",
+      "w": 67,
+      "h": 60,
+      "ow": 67,
+      "oh": 60,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing1": {
+      "f": "gswing1.png",
+      "w": 62,
+      "h": 65,
+      "ow": 62,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing2": {
+      "f": "gswing2.png",
+      "w": 62,
+      "h": 65,
+      "ow": 62,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing3": {
+      "f": "gswing3.png",
+      "w": 62,
+      "h": 65,
+      "ow": 62,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing4": {
+      "f": "gswing4.png",
+      "w": 93,
+      "h": 94,
+      "ow": 93,
+      "oh": 94,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing5": {
+      "f": "gswing5.png",
+      "w": 68,
+      "h": 72,
+      "ow": 68,
+      "oh": 72,
+      "ox": 0,
+      "oy": 0
+    },
+    "gswing6": {
+      "f": "gswing6.png",
+      "w": 79,
+      "h": 65,
+      "ow": 79,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {

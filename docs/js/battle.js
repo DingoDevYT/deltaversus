@@ -36,11 +36,11 @@ function resolveGreen(b) {
     B.shieldFlash = 4; if (parry) B.shieldParry = 7;                     // axe block-flash frame / parry white-flash
     B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
     B.blockFx.push({ x: cx + Math.cos(inAng) * shieldRadius, y: cy + Math.sin(inAng) * shieldRadius, t: 0, perfect: parry });
-    Snd.play('graze', parry ? 0.5 : 0.3);
+    Snd.play(parry ? 'criticalswing' : 'bell', parry ? 0.5 : 0.4);   // GML: snd_bell block / snd_parry_fast parry
     if (b.shell) {
       b.blocksLeft = (b.blocksLeft || 1) - 1;
       if (b.blocksLeft <= 0) b.dead = true;                     // yellow (hp1) = final: one block finishes, NO bounce
-      else if (b.shellRadial) { b.shellState = 1; b.shellSquish = 5; if (b.shellSpin) b.shellPosAng -= Math.PI / 2; }   // squish -> bounce arc; spinning returns 90 CCW
+      else if (b.shellRadial) { b.shellState = 1; b.shellSquish = 5; b.sx = 1.5; b.sy = 0.55; if (b.shellSpin) b.shellPosAng -= Math.PI / 2; }   // SQUASH; squish -> bounce arc; spinning returns 90 CCW
       else {                                                    // legacy cartesian shell bounce
         const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = shieldRadius + 150;
         b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
@@ -1091,7 +1091,7 @@ Battle.updDodge = function () {
     b.x += b.vx; b.y += b.vy;
     if (b.shellRadial) {   // obj_spearshot bouncespear: shell rides a radial `len` inward; on block it SQUISHES
       // then BOUNCES out in an arc (fakespeed -13 + gravity) and falls back in for the next block.
-      if (b.shellState === 1) { if (--b.shellSquish <= 0) { b.shellState = 2; b.shellSpeed = -13; b.shellGrav = 1; } }
+      if (b.shellState === 1) { if (--b.shellSquish <= 0) { b.shellState = 2; b.shellSpeed = -13; b.shellGrav = 1; b.sx = 1; b.sy = 1; } }
       else if (b.shellState === 2) { b.shellSpeed += b.shellGrav; b.shellLen -= b.shellSpeed; if (b.shellSpeed >= 0) { b.shellState = 0; b.shellSpeed = b.shellBaseSpeed; } }
       else b.shellLen -= b.shellSpeed;
       const scx = B.dodgeBox.x + B.dodgeBox.w / 2, scy = B.dodgeBox.y + B.dodgeBox.h / 2;
@@ -1113,6 +1113,7 @@ Battle.updDodge = function () {
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
     if (b.grow) { b.scale = Math.min(b.growMax != null ? b.growMax : 1.5, (b.scale || 0) + b.grow); if (b.scale >= (b.growMax != null ? b.growMax : 1.5)) b.grow = 0; }   // scale-in (Gerson box-hit stars pop from 0)
+    if (b.shrinkAfter != null && b.t > b.shrinkAfter) { b.scale = Math.max(0, (b.scale || 1) - (b.shrinkStep || 0.3)); }   // delayed scale-to-0 (pinball star trail)
     if (b.fade && b.life) {   // roar shards: hold full for fadeDelay, then fade OPACITY only; stop hurting once faint
       const fd = b.fadeDelay || 0;
       b.alpha = b.t <= fd ? 1 : Math.max(0, 1 - (b.t - fd) / Math.max(1, b.life - fd));
