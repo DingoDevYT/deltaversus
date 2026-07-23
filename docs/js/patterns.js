@@ -841,6 +841,56 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton
     add(boss);
   },
 };
+// A CALL FOR YOU (rr8 / obj_sneo_phonecall -> FootballPipis): Spamton fires blue, BOUNCING Pipis
+// toward the SOUL; when one reaches the board it SPRAYS a fast fan of tiny Spamton heads at you.
+// Shoot the Pipis to pop them (they give extra TP). Later in the attack he fires two at once.
+PATTERNS.sneo_pipis = {
+  dur: 460, box: { w: 280, h: 170 },
+  tick(a) {
+    const { f, box, add, rng, tier } = a;
+    const CAD = rate(64, tier);
+    if (f < 400 && f % CAD === 0) {
+      const n = f > 200 ? 2 : 1;   // "the second time and on, fires two Pipis at once"
+      for (let k = 0; k < n; k++) {
+        const y0 = box.y + 22 + rng() * (box.h - 64);
+        add({ ...bulletProps('sneopipis0'), animKeys: ['sneopipis0', 'sneopipis1', 'sneopipis2', 'sneopipis3'], animRate: 6,
+          x: box.x + box.w + 18 + k * 24, y: y0, vx: -(2.4 + rng() * 0.8), vy: -1.5, ay: 0.12, r: 8, grazeR: 13, scale: 1.2,
+          shootable: true, hp: 1, _sprayed: 0, life: 260,
+          emit(b, out, soul, bx) {
+            if (b.y > bx.y + bx.h - 8 && b.vy > 0) { b.vy = -Math.abs(b.vy) * 0.86; b.y = bx.y + bx.h - 8; Snd.play('pipis', 0.22); }   // bounce off the floor
+            if (b.y < bx.y + 8 && b.vy < 0) { b.vy = Math.abs(b.vy) * 0.86; b.y = bx.y + 8; }
+            if (!b._sprayed && b.x < bx.x + 40) {   // reached the board -> SPRAY tiny heads at the soul, fast
+              b._sprayed = 1; b.dead = true; Snd.play('sneofire', 0.35);
+              const base = Math.atan2(soul.y - b.y, soul.x - b.x);
+              for (let i = 0; i < 7; i++) { const ang = base + (i - 3) * 0.14;
+                out.push({ ...bulletProps('sneocrew'), x: b.x, y: b.y, vx: Math.cos(ang) * 6, vy: Math.sin(ang) * 6, r: 5, scale: 0.7, spin: 0.3, life: 80 }); }
+            }
+          } });
+      }
+    }
+  },
+};
+// PIPIS EXPLOSION (Weird-Route attack): three Pipis appear on the right and EXPLODE into a ring of
+// small, destroyable Spamton heads. (Exclusive to that route in canon; included as a Pipis attack.)
+PATTERNS.sneo_pipisx = {
+  dur: 300, box: { w: 260, h: 170 },
+  tick(a) {
+    const { f, box, add } = a;
+    if (f % 96 === 20 && f < 250) {
+      for (let p = 0; p < 3; p++) {
+        add({ ...bulletProps('sneopipis0'), animKeys: ['sneopipis0', 'sneopipis1', 'sneopipis2', 'sneopipis3'], animRate: 6,
+          x: box.x + box.w - 22, y: box.y + 30 + p * ((box.h - 60) / 2), vx: -1.1, vy: 0, r: 8, scale: 1.3,
+          shootable: true, hp: 1, _boom: 42 + p * 6, life: 130,
+          emit(b, out) {
+            if (--b._boom <= 0) { b.dead = true; Snd.play('sneofire', 0.35);
+              for (let i = 0; i < 10; i++) { const ang = i * Math.PI / 5;
+                out.push({ ...bulletProps('sneocrew'), x: b.x, y: b.y, vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5, r: 5, scale: 0.65, spin: 0.3, shootable: true, hp: 1, life: 90 }); }
+            }
+          } });
+      }
+    }
+  },
+};
 
 // ---------- THE ROARING KNIGHT (Ch3 secret boss) ----------
 // Rebuilt frame-by-frame from the attack-guide footage (ref/knight/attack_guide.mp4,

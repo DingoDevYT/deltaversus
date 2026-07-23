@@ -184,7 +184,7 @@ const MOVE_SFX = {
   jevil_carousel: 'jokerlaugh', jevil_ult: 'jokerchaos',
   // Spamton NEO - his real Ch2 sounds (laser / pipis / overpower voice)
   sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_columns: 'pipis', sneo_phones: 'laz',
-  sneo_face: 'spamtonlaugh', sneo_bigshot: 'sneoover',
+  sneo_pipis: 'pipis', sneo_pipisx: 'pipis', sneo_face: 'spamtonlaugh', sneo_bigshot: 'sneoover',
   // The Roaring Knight - the Ch3 board-battle sounds (each attack + its phase variants)
   knight_stars: 'boardsummon', knight_stars2: 'boardsummon', knight_stars3: 'boardsummon',
   knight_tracking: 'knightsword', knight_tracking2: 'knightsword', knight_tracking3: 'knightsword',
