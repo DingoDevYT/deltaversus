@@ -23,6 +23,7 @@ function resolveGreen(b) {
   if (b.shell) { heartLen = diag ? 30 : 16 + 14; if (b.blocksLeft === 1 && !diag) shieldRadius -= 30; }   // bouncespear==1 & hp==1
   const shieldTol = (b.blockArc != null ? b.blockArc : (diag ? 30 : 50)) * Math.PI / 180;
   const inAng = Math.atan2(b.y - cy, b.x - cx);                 // the side the bullet is on / coming from
+  if (b.shellRadial && b.shellState) return;                   // mid-bounce (squish/out-arc): no block or hit
   // TRANSFORM bullet (Hammer flips SOUL red<->green): resolves at the ring regardless of aim.
   if (b.transform) {
     if (len < shieldRadius) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.shake = 10; B.flash = 6; Snd.play('hurt', 0.4); }
@@ -38,8 +39,9 @@ function resolveGreen(b) {
     Snd.play('graze', parry ? 0.5 : 0.3);
     if (b.shell) {
       b.blocksLeft = (b.blocksLeft || 1) - 1;
-      if (b.blocksLeft <= 0) b.dead = true;
-      else {                                                    // bounce back out; spinning shells return 90 deg CCW
+      if (b.blocksLeft <= 0) b.dead = true;                     // yellow (hp1) = final: one block finishes, NO bounce
+      else if (b.shellRadial) { b.shellState = 1; b.shellSquish = 5; if (b.shellSpin) b.shellPosAng -= Math.PI / 2; }   // squish -> bounce arc; spinning returns 90 CCW
+      else {                                                    // legacy cartesian shell bounce
         const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = shieldRadius + 150;
         b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
         b.vx = -Math.cos(outAng) * sp; b.vy = -Math.sin(outAng) * sp; b.rot = outAng + Math.PI;
@@ -1078,6 +1080,15 @@ Battle.updDodge = function () {
     if (b.fric) { const v = Math.hypot(b.vx, b.vy); if (v > 0) { const nv = Math.max(0, v - b.fric); b.vx *= nv / v; b.vy *= nv / v; } }   // GML friction (neg = accelerate)
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
+    if (b.shellRadial) {   // obj_spearshot bouncespear: shell rides a radial `len` inward; on block it SQUISHES
+      // then BOUNCES out in an arc (fakespeed -13 + gravity) and falls back in for the next block.
+      if (b.shellState === 1) { if (--b.shellSquish <= 0) { b.shellState = 2; b.shellSpeed = -13; b.shellGrav = 1; } }
+      else if (b.shellState === 2) { b.shellSpeed += b.shellGrav; b.shellLen -= b.shellSpeed; if (b.shellSpeed >= 0) { b.shellState = 0; b.shellSpeed = b.shellBaseSpeed; } }
+      else b.shellLen -= b.shellSpeed;
+      const scx = B.dodgeBox.x + B.dodgeBox.w / 2, scy = B.dodgeBox.y + B.dodgeBox.h / 2;
+      b.x = scx + Math.cos(b.shellPosAng) * b.shellLen; b.y = scy + Math.sin(b.shellPosAng) * b.shellLen;
+      b.rot = (b.rot || 0) + (b.shellSpin ? 0.18 : 0.07);
+    }
     if (b.orbit) { const o = b.orbit; o.ang += o.w;
       if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;                                   // the orbit centre can drift
       if (o.center) { o.cx = o.center.cx0 + o.center.ax * Math.sin(b.t * o.center.f); o.cy = o.center.cy0 + o.center.ay * Math.cos(b.t * o.center.f); }   // ...or wander so the centre isn't safe
@@ -2245,8 +2256,14 @@ function drawBullet(ctx, b, px, py, s) {
     return;
   }
   ctx.fillStyle = b.color || '#fff';
-  if (b.shape === 'shell') {   // green-soul turtle shell: colour = blocks still needed (yellow1..purple5)
-    const r = (b.r || 10) * s, col = SHELL_COLORS[b.blocksLeft] || b.color || '#ffe100';
+  if (b.shape === 'shell') {   // green-soul turtle shell (spr_bounce_shell) tinted by hp: 1 yellow..5 red
+    const col = SHELL_COLORS[b.blocksLeft] || b.color || '#ffe100';
+    const shImg = (typeof bulletProps === 'function') && bulletProps('gshellspr0').img;
+    if (shImg && shImg.width) {   // real shell sprite, multiply-tinted to the block colour, spinning
+      drawSpr(ctx, tintImg(shImg, col, true), px, py, { scale: (b.scale || 1) * 1.6 * s, rot: b.rot || 0 });
+      return;
+    }
+    const r = (b.r || 10) * s;    // fallback procedural shell
     ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
     ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = Math.max(1.5, 2 * s);

@@ -1251,10 +1251,11 @@ function gSpear(a, gd, spd, opt) {
 // (2 green, 3 blue/cyan, 4 purple, 5 red). opt.spin = spinning/cyan shell (returns 90 deg CCW on block);
 // opt.big = larger + slower shell. Normal shells come from ONE direction (no spin) per the GML/wiki.
 function gShell(a, gd, hp, opt) {
-  opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, va = -gd * Math.PI / 180;
-  const spd = opt.big ? 2.6 : 4, D = 220;
-  add({ shape: 'shell', shell: true, blocksLeft: hp, shellSpin: !!opt.spin, shellSpeed: opt.big ? 3 : 4,
-        x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D, vx: Math.cos(va) * spd, vy: Math.sin(va) * spd,
+  opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+  const va = -gd * Math.PI / 180, posAng = va + Math.PI, spd = opt.big ? 2.6 : 4, D = 260;
+  add({ shape: 'shell', shell: true, shellRadial: true, blocksLeft: hp, shellSpin: !!opt.spin,
+        shellLen: D, shellPosAng: posAng, shellSpeed: spd, shellBaseSpeed: spd, shellGrav: 0, shellState: 0,
+        x: cx + Math.cos(posAng) * D, y: cy + Math.sin(posAng) * D, vx: 0, vy: 0,
         r: opt.big ? 15 : 10, scale: opt.big ? 1.5 : 1, dmg: 20 });
 }
 // play a fixed spear sequence (each entry [gmlTick, gmlDirString-or-number, speed]); auto green.
