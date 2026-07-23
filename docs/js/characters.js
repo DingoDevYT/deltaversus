@@ -145,8 +145,8 @@ const CHARS = {
     spells: [
       { id: 'sneo_heart', name: 'Heart Attack', tp: 40, dmg: 44, dur: 520, kind: 'attack',
         text: 'SPAMTON NEO swings his [[HEART]]!' },
-      { id: 'sneo_mail', name: 'Spam Mail', tp: 48, dmg: 46, dur: 980, kind: 'attack',
-        text: 'SPAMTON NEO delivers SPAM MAIL!' },
+      { id: 'sneo_columns', name: 'RECREW', tp: 48, dmg: 46, dur: 560, kind: 'attack',
+        text: 'SPAMTON NEO calls the [[RECREW]]!' },
       { id: 'sneo_phones', name: 'Gripping Phones', tp: 56, dmg: 50, dur: 500, kind: 'attack',
         text: 'SPAMTON NEO GRIPS the PHONES!' },
       { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 58, dur: 520, kind: 'attack',
