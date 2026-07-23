@@ -5987,6 +5987,105 @@
       "oh": 65,
       "ox": 0,
       "oy": 0
+    },
+    "knightdiamondl0": {
+      "f": "knightdiamondl0.png",
+      "w": 99,
+      "h": 27,
+      "ow": 99,
+      "oh": 27,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightdiamondl1": {
+      "f": "knightdiamondl1.png",
+      "w": 99,
+      "h": 27,
+      "ow": 99,
+      "oh": 27,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightdiamondl2": {
+      "f": "knightdiamondl2.png",
+      "w": 99,
+      "h": 27,
+      "ow": 99,
+      "oh": 27,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightdsword0": {
+      "f": "knightdsword0.png",
+      "w": 33,
+      "h": 19,
+      "ow": 33,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightdsword1": {
+      "f": "knightdsword1.png",
+      "w": 33,
+      "h": 19,
+      "ow": 33,
+      "oh": 19,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack0": {
+      "f": "knightattack0.png",
+      "w": 68,
+      "h": 65,
+      "ow": 68,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack1": {
+      "f": "knightattack1.png",
+      "w": 71,
+      "h": 70,
+      "ow": 71,
+      "oh": 70,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack2": {
+      "f": "knightattack2.png",
+      "w": 71,
+      "h": 67,
+      "ow": 71,
+      "oh": 67,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack3": {
+      "f": "knightattack3.png",
+      "w": 117,
+      "h": 115,
+      "ow": 117,
+      "oh": 115,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack4": {
+      "f": "knightattack4.png",
+      "w": 69,
+      "h": 105,
+      "ow": 69,
+      "oh": 105,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightattack5": {
+      "f": "knightattack5.png",
+      "w": 72,
+      "h": 94,
+      "ow": 72,
+      "oh": 94,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {
