@@ -68,13 +68,13 @@
 
 <!-- real game code (no net.js / main.js / creator.js: this drives the dodge itself) -->
 <script>window.Net = { send(){}, on(fn){ this.handlers.push(fn); }, handlers:[], isHost:true }; window.G = { myItems:[], oppItems:[] };</script>
-<script src="js/rng.js?v=178"></script>
-<script src="js/assets.js?v=178"></script>
-<script src="js/audio.js?v=178"></script>
-<script src="js/input.js?v=178"></script>
-<script src="js/characters.js?v=178"></script>
-<script src="js/patterns.js?v=178"></script>
-<script src="js/battle.js?v=178"></script>
+<script src="js/rng.js?v=179"></script>
+<script src="js/assets.js?v=179"></script>
+<script src="js/audio.js?v=179"></script>
+<script src="js/input.js?v=179"></script>
+<script src="js/characters.js?v=179"></script>
+<script src="js/patterns.js?v=179"></script>
+<script src="js/battle.js?v=179"></script>
 <script>
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;   // crisp pixel art (main.js does this in the real game)
@@ -86,35 +86,8 @@ function fitCanvas() {
 }
 addEventListener('resize', fitCanvas); fitCanvas();
 const el = id => document.getElementById(id);
-// TESTER-ONLY: GREEN SOUL bench (Hammer/Sound of Justice mechanic). Lock + block with Susie's axe.
-CHARS.greentest = {
-  name: 'GREEN SOUL — TEST', shortName: 'GREEN', base: 'knight', color: '#33d13a', hp: 900,
-  secretBoss: true, level: 3, spare: {}, cost: 3, desc: 'GREEN SOUL MECHANIC TEST',
-  fight: { id: 'green_test', name: 'Hammer of Justice (block!)', dmg: 18, dur: 1300, kind: 'attack', text: '' },
-  spells: [], ult: { id: 'green_test', name: 'Hammer of Justice (block!)', tp: 100, dmg: 18, dur: 1300, kind: 'attack', text: '' },
-};
-// TESTER-ONLY: PINK variant/scene bench — the extra test entries (scene, dates, hard variants)
-// that aren't exposed on the real PINK roster kit. Same canonical pink_* patterns as the game.
-CHARS.pinkbench = {
-  name: 'PINK — TEST BENCH', shortName: 'PINK·T', base: 'pink', color: '#ff5ca8', hp: 1300,
-  secretBoss: true, level: 3, spare: {}, cost: 3, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
-  desc: 'PINK scene/date/hard-variant test entries',
-  spells: [
-    { id: 'pink_scene', name: 'STAGE SCENE (scenery test)', tp: 44, dmg: 1, dur: 900, kind: 'attack', text: '' },
-    { id: 'pink_finalmaze', name: 'FINAL Ghost/Body Maze', tp: 44, dmg: 24, dur: 900, kind: 'attack', text: '' },
-    { id: 'pink_date1', name: 'DATE 1 (portraits)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pink_date2', name: 'DATE 2 (split+ghost)', tp: 44, dmg: 40, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pink_date4', name: 'DATE 4 (CONFESSION finale)', tp: 44, dmg: 1, dur: 100000, kind: 'attack', text: '' },
-    { id: 'pink_cats2', name: 'Cats — hard (conga+finale)', tp: 44, dmg: 46, dur: 360, kind: 'attack', text: '' },
-    { id: 'pink_bombs2', name: 'Bombs (P1 T4, fast)', tp: 44, dmg: 50, dur: 480, kind: 'attack', text: '' },
-    { id: 'pink_bombsg', name: 'Bombs + Giant ender (P2 T3)', tp: 44, dmg: 50, dur: 620, kind: 'attack', text: '' },
-    { id: 'pink_bombsfin', name: 'Giant volleys + FINALE (P3 T2)', tp: 44, dmg: 50, dur: 560, kind: 'attack', text: '' },
-    { id: 'pink_plusgrid2', name: 'Plus-Grid (P2 T5, fast)', tp: 44, dmg: 48, dur: 420, kind: 'attack', text: '' },
-    { id: 'pink_rotbox', name: 'Rotating 90° Grid (running Pink)', tp: 44, dmg: 48, dur: 480, kind: 'attack', text: '' },
-    { id: 'pink_concert2', name: 'IDOL CONCERT — hard (haters)', tp: 100, dmg: 52, dur: 560, kind: 'attack', text: '' },
-  ],
-  ult: { id: 'pink_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack', text: '' },
-};
+// (Tester test-benches removed — the real PINK roster now exposes its full arsenal, and the
+//  GREEN SOUL mechanic is exercised by the real GERSON kit.)
 const CHAR_IDS = Object.keys(CHARS);   // (main.js isn't loaded here) same order as the game
 let running = false, current = null, rafId = 0, last = 0, acc = 0;
 

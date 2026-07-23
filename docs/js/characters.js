@@ -223,12 +223,21 @@ const CHARS = {
     spare: {}, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
     dscale: 1.0, yoff: 4,
     desc: 'PINK - the mew magical-girl idol (Ch5).\nFill her DOKI to trigger the DATES; clear them to SPARE.',
-    // PINK: GML-faithful STAGE-SCENE kit (pink_*). (This was the pinkn3_* rebuild — the sole Pink set now.)
+    // PINK (Ch5): the GML-faithful STAGE-SCENE kit (pink_*) — the sole Pink set, full arsenal
+    // incl. every phase variant (cats/conga, bomb volleys + giant ender, plus-grids, 3-D tunnel,
+    // rotating ring, idol concert + hard). Old duplicate/test-bench sets removed.
     fight: { id: 'pink_cats', name: 'Cats', dmg: 46, dur: 340, text: 'PINK sends in the CATS!' },
     spells: [
+      { id: 'pink_cats2', name: 'Cat Conga', tp: 46, dmg: 46, dur: 360, kind: 'attack', text: 'PINK forms a CAT CONGA line!' },
       { id: 'pink_bombs', name: 'Pinata Bombs', tp: 42, dmg: 50, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
+      { id: 'pink_bombs2', name: 'Bomb Volley', tp: 46, dmg: 50, dur: 480, kind: 'attack', text: 'PINK rains BOMBS faster!' },
+      { id: 'pink_bombsg', name: 'Giant Bomb', tp: 52, dmg: 50, dur: 620, kind: 'attack', text: 'PINK winds up a GIANT BOMB!' },
+      { id: 'pink_bombsfin', name: 'Bomb Finale', tp: 56, dmg: 52, dur: 560, kind: 'attack', text: 'PINK unleashes a BOMB FINALE!' },
       { id: 'pink_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 48, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
+      { id: 'pink_plusgrid2', name: 'Plus-Grid+', tp: 46, dmg: 48, dur: 420, kind: 'attack', text: 'PINK snaps the GRID tighter!' },
       { id: 'pink_tunnel', name: '3-D Tunnel', tp: 46, dmg: 50, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
+      { id: 'pink_rotbox', name: 'Rotating Ring', tp: 48, dmg: 48, dur: 480, kind: 'attack', text: 'PINK spins the RING around you!' },
+      { id: 'pink_concert2', name: 'Concert (Haters)', tp: 60, dmg: 52, dur: 560, kind: 'attack', text: 'PINK plays for the HATERS!' },
     ],
     ult: { id: 'pink_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack',
            text: 'PINK starts the CONCERT!! DOKI DOKI!' },
