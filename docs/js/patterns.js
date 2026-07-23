@@ -1539,22 +1539,31 @@ PATTERNS.gn_atk21 = {
 // #A BOX THROW (AP70, RED free-move) — despite the name it LOBS arcing hammers into the box: 16 fan-throws,
 // then 25 fast singles tracking a sine-swept x, then one giant hammer finisher.
 PATTERNS.gerson_boxthrow = {
-  dur: 403, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 430, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, gx = box.x + box.w + 40, gy = box.y - 18;
-    if (f >= 36 && f < 196 && (f - 36) % 10 === 0) {                 // PHASE 0: 16 fan-throws of 3-4 hammers
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 40, gy = box.y - 18;
+    // GERSON HITS THE BOX first: it TILTS ~45deg to the left and shifts left, so the giant hammer lands in a corner.
+    if (f === 12) { Battle.shake = 12; Snd.play('bosshit', 0.5); }
+    const tilt = f > 12 ? Math.min(1, (f - 12) / 12) : 0;
+    a.fx.boxRot = -0.785 * tilt;                                     // -45deg (to the LEFT)
+    a.fx.boxTarget = { x: box.x - 40 * tilt, y: box.y, w: box.w, h: box.h, boxLerp: 0.3 };
+    if (f >= 40 && f < 200 && (f - 40) % 10 === 0) {                 // 16 fan-throws of 3-4 hammers
       const n = 3 + Math.floor(rng() * 2);
       for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
         const vx = -Math.abs(gx - (cx + off)) / 45 + (-2 + (4 / (n - 1)) * i) + (rng() - 0.5), vy = -14 + (-1 + (2 / (n - 1)) * i) + (rng() * 2 - 1);
-        add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
+        add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(14, 30), spin: 0.24, dmg: 28, life: 130 }); }
       Snd.play('smallswing', 0.3);
     }
-    const p1 = f - 196;                                              // PHASE 1: 25 bigger fast singles at a sine-swept x (GML sin*80, x3 size)
+    const p1 = f - 200;                                              // 25 bigger fast singles at a sine-swept x
     if (p1 >= 0 && p1 < 100 && p1 % 4 === 0) {
       const tx = cx + Math.sin(f * 0.325) * 80;
-      add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(23, 44) * 1.5, spin: 0.24, dmg: 28, life: 130 });
+      add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(14, 44), spin: 0.24, dmg: 28, life: 130 });
     }
-    if (f === 305) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - cx) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 120), r: 16, hitW: 60, hitH: 60, dmg: 40, life: 140 }); Snd.play('smallswing', 0.5); }
+    // FINAL: the GIANT hammer = the SAME hammer sprite, just LARGE (GML scale 8). Drops into the bottom corner.
+    // GIANT hammer (rendered via the pre-large ggiant sprite at small scale — the engine culls big-scale bullets).
+    if (f === 312) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - (cx - 30)) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 150, _giant: 1 }); Snd.play('smallswing', 0.5); }
+    // when the giant lands, thump the box DOWN a touch for weight + sound.
+    if (f === 344) { Battle.shake = 18; Snd.play('bosshit', 0.6); a.fx.boxTarget = { x: box.x - 40, y: box.y + 16, w: box.w, h: box.h, boxLerp: 0.5 }; }
   },
 };
 // #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES the board THIN + WIDE

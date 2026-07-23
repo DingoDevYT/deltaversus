@@ -882,8 +882,17 @@ Battle.updDodge = function () {
     const t = Math.max(0, Math.min(1, (B.soul.x - bx.x) / bx.w)), inset = CF.pinch * bx.h / 2 * t;
     y0 += inset; y1 -= inset;
   }
-  B.soul.x = Math.max(x0, Math.min(x1, B.soul.x));
-  B.soul.y = Math.max(y0, Math.min(y1, B.soul.y));
+  if (CF.boxRot) {   // TILTED box (Gerson hammer-throw): clamp the soul inside the rotated rectangle
+    const bcx = bx.x + bx.w / 2, bcy = bx.y + bx.h / 2, ca = Math.cos(-CF.boxRot), sa = Math.sin(-CF.boxRot);
+    const dx = B.soul.x - bcx, dy = B.soul.y - bcy;
+    let lx = dx * ca - dy * sa, ly = dx * sa + dy * ca;
+    lx = Math.max(-bx.w / 2 + 4, Math.min(bx.w / 2 - 4, lx)); ly = Math.max(-bx.h / 2 + 4, Math.min(bx.h / 2 - 4, ly));
+    const cb = Math.cos(CF.boxRot), sb = Math.sin(CF.boxRot);
+    B.soul.x = bcx + lx * cb - ly * sb; B.soul.y = bcy + lx * sb + ly * cb;
+  } else {
+    B.soul.x = Math.max(x0, Math.min(x1, B.soul.x));
+    B.soul.y = Math.max(y0, Math.min(y1, B.soul.y));
+  }
   for (const h of B.hearts) { h.x += h.vx; h.y += h.vy; if (h.x < bx.x || h.x > bx.x + bx.w) h.vx *= -1; if (h.y < bx.y || h.y > bx.y + bx.h) h.vy *= -1; }
 
   // GREEN SOUL: lock the soul dead-centre and aim Susie's axe with the direction keys (it snaps to the
