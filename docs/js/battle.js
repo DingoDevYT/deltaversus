@@ -2062,10 +2062,10 @@ Battle.renderBoxAndBullets = function (ctx) {
     ctx.fillRect(-4, -3, 3, 3); ctx.fillRect(1, -3, 3, 3); ctx.fillRect(-4, 0, 8, 3); ctx.fillRect(-2, 3, 4, 2);
     ctx.restore();
   }
-  for (const b of B.bullets) if (b.shape !== 'line' && !(b.carousel && b._back)) drawBullet(ctx, b, b.x, b.y, 1);   // (back carousel horses already drawn behind the box)
-  // red tell-lines are MASKED to the inside of the battle box (they stretch edge to edge)
+  for (const b of B.bullets) if (b.shape !== 'line' && !b.boxClip && !(b.carousel && b._back)) drawBullet(ctx, b, b.x, b.y, 1);   // (back carousel horses already drawn behind the box)
+  // red tell-lines AND slash blades are MASKED to the inside of the battle box (they stretch edge to edge)
   ctx.save(); ctx.beginPath(); ctx.rect(bx.x, bx.y, bx.w, bx.h); ctx.clip();
-  for (const b of B.bullets) if (b.shape === 'line') drawBullet(ctx, b, b.x, b.y, 1);
+  for (const b of B.bullets) if (b.shape === 'line' || b.boxClip) drawBullet(ctx, b, b.x, b.y, 1);
   ctx.restore();
   // yellow-soul player shots (real sprites: yshot / ybig + trail) + charge indicator
   if (B.soulYellow) {
