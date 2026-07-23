@@ -700,29 +700,33 @@ PATTERNS.sneo_heart = {
 // RECREW COLUMNS (rr6 / obj_sneo_wall_controller_new): 7-tile-tall walls of mailbox / crew /
 // bomb bricks slide in from the RIGHT and race LEFT toward the SOUL. You thread the moving gap
 // and SHOOT the crew tiles open. GML wallsize 7, walltype accelerates, turntimer 330.
+// RECREW (rr6 / obj_sneo_wall_controller): 7-tile mailbox/crew/bomb WALLS enter from the right FAST
+// and DECELERATE inside the box (GML walltype1: -21 -> brake to -5 -> re-accel). SOLID mail is an
+// indestructible wall; the ONLY passable lane is a deliberate 2-row GAP (wanders); shoot crew tiles
+// open, shoot bombs for a cross-laser. (This is the EASY first-time variant.) See recrew_v2.md.
+function recrewSpeed(t) { return t < 14 ? -9 + 5 * (t / 14) : -4 - Math.min(3.5, (t - 14) * 0.05); }   // fast in, brake, re-accel
 PATTERNS.sneo_columns = {
-  dur: 560, box: { w: 280, h: 168 },
+  dur: 520, box: { w: 280, h: 168 },
   tick(a) {
-    const { f, rng, box, add, tier } = a;
-    const ROWS = 7, rh = box.h / ROWS, CAD = rate(28, tier);
+    const { f, rng, box, add } = a;
+    const ROWS = 7, rh = box.h / ROWS, CAD = 34, x0 = box.x + box.w + 16;
     if (f === 0) this._gap = 3;
-    if (f < 470 && f % CAD === 0) {
-      this._gap += (rng() < 0.5 ? -1 : 1);                       // walk the passable gap
-      this._gap = Math.max(1, Math.min(5, this._gap));
-      const g = this._gap, x0 = box.x + box.w + 18, base = { vx: -4.6, ax: -0.05, maxv: 10 };
-      add({ ...bulletProps('sneobox'), ...base, x: x0, y: box.y - rh * 0.4, r: 0, noHit: true, scale: rh / 30 });   // top cap
+    const cap = (y) => add({ ...bulletProps('sneobox'), x: x0, y, r: 0, noHit: true, scale: rh / 30, vx: -9, vy: 0, life: 96, emit(t) { t.vx = recrewSpeed(t.t); } });
+    if (f < 440 && f % CAD === 0) {
+      this._gap += (rng() < 0.5 ? -1 : 1); this._gap = Math.max(0, Math.min(5, this._gap));   // 2-row gap lane
+      const g = this._gap;
+      cap(box.y - rh * 0.4);
       for (let r = 0; r < ROWS; r++) {
-        if (Math.abs(r - g) <= 1) continue;                      // 3-row gap window (threadable, shifts each column)
+        if (r === g || r === g + 1) continue;                    // the ONLY passable rows
         const y = box.y + (r + 0.5) * rh, roll = rng();
-        if (roll < 0.2)                                          // CREW tile: shoot it to punch a hole
-          add({ ...bulletProps('sneocrew'), ...base, x: x0, y, r: rh * 0.44, scale: rh / 22 * 1.2, shootable: true, hp: 1, tint: '#00a2e8' });
-        else if (roll < 0.27)                                    // BOMB tile: shoot -> cross laser
-          add({ ...bulletProps('sneobomb'), ...base, x: x0, y, r: rh * 0.44, scale: rh / 22, shootable: true, hp: 1, bomb: true });
-        else                                                     // SOLID mailbox brick
-          add({ ...bulletProps('sneomail'), ...base, x: x0, y, r: rh * 0.42, scale: rh / (20 * 1.6) });
+        const kind = roll < 0.16 ? 'crew' : roll < 0.2 ? 'bomb' : 'mail';
+        add({ ...bulletProps(kind === 'mail' ? 'sneomail' : kind === 'crew' ? 'sneocrew' : 'sneobomb'),
+          x: x0, y, vx: -9, vy: 0, life: 96, r: rh * 0.44, scale: kind === 'mail' ? rh / (20 * 1.6) : rh / 22 * 1.15,
+          shootable: kind !== 'mail', hp: 1, bomb: kind === 'bomb', tint: kind === 'crew' ? '#00a2e8' : (kind === 'bomb' ? '#ffcc00' : null),
+          emit(t) { t.vx = recrewSpeed(t.t); } });
       }
-      add({ ...bulletProps('sneobox'), ...base, x: x0, y: box.y + box.h + rh * 0.4, r: 0, noHit: true, scale: rh / 30 });   // bottom cap
-      if (f % (CAD * 2) === 0) Snd.play('sneofire', 0.12);
+      cap(box.y + box.h + rh * 0.4);
+      Snd.play('pipis', 0.14);
     }
   },
 };
@@ -748,11 +752,16 @@ PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phon
       out.push(topPh, botPh);
       // DIAGONAL green arms: the head sits behind its phone-hands
       if (fx) fx.arms = [{ x1: b.x, y1: b.y - 6, x2: topPh.x, y2: topPh.y + 3 }, { x1: b.x, y1: b.y + 6, x2: botPh.x, y2: botPh.y - 3 }];
-      // GML Phonehands: fires a leftward SPREADSHOT every ~20f (dir 180 +/- ~14deg, spd ~8)
+      // GML Phonehands (phones_v2): the head fires ONE yellow EMITTER bullet that flies left and PARKS
+      // (marking the emitter point); ~25f later it releases 3 SOUNDWAVES at FIXED angles (up-left / left /
+      // down-left, 120/180/240) that accelerate — NOT an aimed spread. Fire rate every 20f.
       if (--b._ball <= 0) {
-        b._ball = 22; Snd.play('sneofire', 0.3);
-        for (let k = -2; k <= 2; k++) { const ang = Math.PI + k * 0.12;
-          out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: Math.cos(ang) * 4.4, vy: Math.sin(ang) * 4.4, r: 6, scale: 0.6, spin: 0.2 }); }
+        b._ball = 20; Snd.play('sneofire', 0.3);
+        out.push({ ...bulletProps('sneoball'), x: b.x - 12, y: b.y, vx: -9, vy: 0, fric: 0.5, r: 6, scale: 0.7, tint: '#ffe000', spin: 0.1, _em: 25,
+          emit(e, o2) { if (e._em != null && --e._em <= 0) { e._em = null; e.dead = true; Snd.play('sneofire', 0.25);
+            for (const deg of [120, 180, 240]) { const ang = deg * Math.PI / 180;
+              o2.push({ ...bulletProps('sneosound'), x: e.x, y: e.y, vx: Math.cos(ang) * 2, vy: -Math.sin(ang) * 2, fric: -0.14, maxv: 6, r: 6, scale: 0.9, spin: 0.15, life: 130 }); }
+          } } });
       }
     };
     add(head);
@@ -820,7 +829,7 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton
     const SUCK = 460;                          // the suck lasts noticeably longer now
     const MOUTHDX = 150, MOUTHDY = 34;         // sprite-centre offset from the mouth -> mouth lands on the box centre
     // the boss is an INVISIBLE shootable controller (drawn via fx.boss); big shots shove him RIGHT for room
-    const boss = { x: far, y: cy, vx: 0, vy: 0, r: 60, noHit: true, noDraw: true, shootable: true, hp: 9999999, pushOnShot: 9,
+    const boss = { x: far, y: cy, vx: 0, vy: 0, r: 60, noHit: true, noDraw: true, shootable: true, hp: 9999999, pushOnShot: 4.5,
                    _d: 0, _shotN: 0, _boom: 0 };
     boss.emit = function (b, out, soul, bx, fx) {
       fx.blackout = true;
@@ -836,13 +845,13 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton
         fx.pinch = 0.55 * approach;                                     // the box's right side warps toward his mouth
         fx.pull = { x: b.x, y: cy, force: 0.32 + approach * 0.14 };
         b._d++;                                                         // pulls in MORE $ over time (ramps difficulty)
-        const rateD = Math.max(6, 18 - Math.floor(b.t / 70) * 3);
-        if (b._d % rateD === 0)
-          out.push({ ...bulletProps('sneodollar'), x: B.x + 8, y: B.y + 14 + Math.random() * (B.h - 28),
-                     vx: 2.1 + Math.random() * 0.6, vy: 0, lerpY: cy, lerpRate: 0.016, spin: 0.06, r: 7, shrink: 0.988 });
+        const rateD = Math.max(5, 16 - Math.floor(b.t / 70) * 3);
+        if (b._d % rateD === 0)                                          // $ fly toward the mouth across the FULL box height (no safe top/bottom lane)
+          out.push({ ...bulletProps('sneodollar'), x: B.x + 8, y: B.y + 12 + Math.random() * (B.h - 24),
+                     vx: 2.3 + Math.random() * 0.8, vy: (cy - (B.y + 12 + Math.random() * (B.h - 24))) * 0.004, spin: 0.06, r: 7, shrink: 0.99 });
       } else {
-        // FIRE phase: normal face, still advancing (less room per shot); your big shots keep him back
-        b.x -= 0.5;
+        // FIRE phase: normal face, advancing FASTER (harder to keep away); your big shots keep him back
+        b.x -= 0.9;
         const bob = Math.sin(b.t * 0.05) * 24;
         fx.boss = { key: 'sneofinal', x: b.x + MOUTHDX, y: cy + MOUTHDY + bob, scale: 1.9, flip: false };
         fx.pinch = Math.max(0, 0.55 * (1 - (b.t - SUCK) / 40));
@@ -852,9 +861,11 @@ PATTERNS.sneo_bigshot = {   // POWER OF NEO (ult): blackout. A ~2x GIANT Spamton
           if (n < 5) {   // BIG SHOTs from his MOUTH; hitbox is tight to the sprite (hitDX shifts it to the front)
             const bottom = (n % 2) === 0, hitH = B.h * 0.6, cyy = bottom ? B.y + B.h - hitH / 2 : B.y + hitH / 2;
             out.push({ ...bulletProps('sneobig'), x: b.x - 20, y: cyy + bob * 0.4, vx: -3.4, vy: 0, hitW: 82, hitDX: -14, hitH, scale: hitH / 58, rot: 0 });
-          } else if (n === 5) {   // FINALE: a full-height shot you MUST push back - else it reaches the left and hits
-            out.push({ ...bulletProps('sneobig'), x: b.x - 10, y: cy, vx: -0.9, vy: 0, hitW: 96, hitDX: -18, hitH: B.h, scale: B.h / 54, rot: 0,
-                       shootable: true, hp: 999999, pushOnShot: 6, life: 320 });
+          } else if (n === 5) {   // FINALE: a full-height BIG SHOT that steadily advances LEFT — you must fire big
+            // shot after big shot to shove it back; done fast enough it just leaves a gap at the left edge. A hit
+            // does HEAVY damage. (Its dmg is set here, on the emit path.)
+            out.push({ ...bulletProps('sneobig'), x: b.x - 10, y: cy, vx: -1.3, vy: 0, hitW: 108, hitDX: -20, hitH: B.h, scale: B.h / 54, rot: 0,
+                       shootable: true, hp: 999999999, pushOnShot: 3, life: 360, dmg: 120, _final: 1 });
           }
         }
       }
