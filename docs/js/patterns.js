@@ -1240,11 +1240,12 @@ const G_STR2GML = { l: 0, d: 90, r: 180, u: 270, dr: 135, dl: 45, ur: 225, ul: 3
 // that swap is done live in updDodge (soonest-arriving spear gets b.hiImg). Arrow points along travel.
 function gSpear(a, gd, spd, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  const va = -gd * Math.PI / 180, D = opt.dist || 230;
+  // GML: len = speed * frames -> spawn well OFFSCREEN and travel at `spd`. Arrow drawn at HALF size (~17px).
+  const va = -gd * Math.PI / 180, D = opt.dist || 360;
   const lo = bulletProps('gspear0').img, hi = bulletProps('gspearhi0').img;
   add({ img: lo, loImg: lo, hiImg: hi, isSpear: true, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 7, scale: GSC(21, 34), rot: va, dmg: opt.dmg || 18, life: opt.life || 240 });
-  Snd.play('smallswing', 0.35);
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 6, scale: GSC(21, 17), rot: va, dmg: opt.dmg || 18, life: opt.life || 260 });
+  Snd.play('smallswing', 0.3);
 }
 // GREEN multi-block turtle shell (obj_spearshot bouncespear) from side `gd`. `hp` = blocks needed
 // (2 green, 3 blue/cyan, 4 purple, 5 red). opt.spin = spinning/cyan shell (returns 90 deg CCW on block);
@@ -1260,7 +1261,7 @@ function gShell(a, gd, hp, opt) {
 // GREEN sequence system (wiki-exact). Tokens: ['s',dir]=slow spear, ['f',dir]=fast spear,
 // ['H',dir,hp]=shell (2=green,3=blue,4=purple,5=red), ['w',frames]=extra pause. dir = a G_STR2GML key
 // (the direction the SHIELD must FACE to block, per the wiki). Cadence: slow 26f, fast 13f, shell 44f.
-const G_SLOW = 6.2, G_FAST = 9.6;
+const G_SLOW = 9, G_FAST = 13;   // spears come in FAST from offscreen (GML fakespeed); pre-aim via the red highlight
 // tokens: ['s',dir]/['f',dir] slow/fast spear; ['H',dir,hp] normal shell; ['Hs',dir,hp] SPINNING (cyan)
 // shell (returns 90 CCW); ['Hb',dir,hp] big+slow shell; ['w',frames] pause.
 function gBuild(tokens, t0) {

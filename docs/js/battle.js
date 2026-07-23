@@ -32,6 +32,7 @@ function resolveGreen(b) {
   if (len < shieldRadius && aligned) {                          // BLOCKED
     const parry = (B.anim.f - (B.shieldFreshF == null ? -999 : B.shieldFreshF)) < 4;   // justlength = 4
     const gain = parry ? 2.5 : 1.25;
+    B.shieldFlash = 4; if (parry) B.shieldParry = 7;                     // axe block-flash frame / parry white-flash
     B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
     B.blockFx.push({ x: cx + Math.cos(inAng) * shieldRadius, y: cy + Math.sin(inAng) * shieldRadius, t: 0, perfect: parry });
     Snd.play('graze', parry ? 0.5 : 0.3);
@@ -1205,6 +1206,8 @@ Battle.updDodge = function () {
   }
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
   if (B.blockFx && B.blockFx.length) { for (const fx of B.blockFx) fx.t++; B.blockFx = B.blockFx.filter(fx => fx.t < 8); }
+  if (B.shieldFlash > 0) B.shieldFlash--;
+  if (B.shieldParry > 0) B.shieldParry--;
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
   B.bullets = B.bullets.filter(b => !b.dead && b.x > -130 && b.x < 790 && b.y > -130 && b.y < 610 && (!b.life || b.t < b.life));   // wide bounds so far-spawned bullets (Pink cats at box_center±416) survive until they enter view
 
@@ -2037,16 +2040,20 @@ Battle.renderBoxAndBullets = function (ctx) {
         if (ch) drawSpr(ctx, ch, B.soul.x + Math.cos(a) * R, B.soul.y + Math.sin(a) * R, { scale: ready ? 1.3 : 1 }); }
     }
   }
-  // GREEN SOUL: the shield box (square, or octagon later) + Susie's axe on the guarded side + block sparks
+  // GREEN SOUL: the shield ring (at the real block radius) + Susie's AXE (spr_spearblocker) pivoting to the
+  // guarded side. frame 0 = idle, frame 1 = block-flash (a few frames after a block), frame 2 (white) = parry.
   if (B.soulGreen) {
-    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2, GR = Math.min(bx.w, bx.h) * 0.29;
+    const gcx = bx.x + bx.w / 2, gcy = bx.y + bx.h / 2, GR = B.greenOct ? 46 : 36;   // GML shieldradius
     ctx.strokeStyle = '#33d13a'; ctx.lineWidth = 2;
     if (B.greenOct) { ctx.beginPath();
       for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, px = gcx + Math.cos(a) * GR * 1.0824, py = gcy + Math.sin(a) * GR * 1.0824; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
       ctx.closePath(); ctx.stroke();
     } else ctx.strokeRect(gcx - GR, gcy - GR, GR * 2, GR * 2);
-    const axe = bulletProps('axe').img, sa = B.shieldAng == null ? Math.PI / 2 : B.shieldAng;
-    if (axe && axe.width) drawSpr(ctx, axe, gcx + Math.cos(sa) * GR, gcy + Math.sin(sa) * GR, { scale: 1.5, rot: sa });
+    const sa = B.shieldAng == null ? Math.PI / 2 : B.shieldAng;
+    const parryF = (B.shieldParry || 0) > 0, blockF = (B.shieldFlash || 0) > 0;
+    const axe = bulletProps(parryF ? 'gaxe2' : blockF ? 'gaxe1' : 'gaxe0').img;
+    // spr_spearblocker default (image_index 0) faces RIGHT; rotate by sa. Pivot near centre, blade extends out.
+    if (axe && axe.width) drawSpr(ctx, axe, gcx + Math.cos(sa) * 8, gcy + Math.sin(sa) * 8, { scale: 1, rot: sa, tint: parryF ? '#ffffff' : null });
   }
   for (const fx of (B.blockFx || [])) {   // block spark: bright ring, brighter/yellow on a perfect (well-timed) block
     const r = 4 + fx.t * 1.6; ctx.strokeStyle = fx.perfect ? '#fff36b' : '#8affa0'; ctx.globalAlpha = Math.max(0, 1 - fx.t / 8); ctx.lineWidth = 2;
@@ -2370,14 +2377,18 @@ Battle.renderHud = function (ctx) {
   if (B.phase === 'select') { const secs = Math.ceil(B.timer / 60); drawText(ctx, 'big', '' + secs, 320, 16, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 }); }
   drawText(ctx, 'main', 'TURN ' + B.turn, 26, 16, { color: '#666' });
 
-  // bottom dialogue box + state-driven content (full-size font, no shrinking)
-  const d = DBOX;
-  ctx.fillStyle = '#000'; ctx.fillRect(d.x, d.y, d.w, d.h);
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, d.y + 1, d.w - 2, d.h - 2);
-  if (B.phase === 'timing') { /* renderTiming draws the bars over this box */ }
-  else if (B.targeting) Battle.renderTargetList(ctx, d);
-  else if (B.submenu) Battle.renderOptionGrid(ctx, d);
-  else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 16, d.y + 12 + i * 20, { color: '#fff' }));
+  // bottom dialogue box + state-driven content (full-size font, no shrinking). HIDDEN during the dodge itself
+  // (boxin/dodge/boxout) — DELTARUNE shows no textbox mid-attack, just the party HP panels.
+  const dodging = B.phase === 'dodge' || B.phase === 'boxin' || B.phase === 'boxout';
+  if (!dodging) {
+    const d = DBOX;
+    ctx.fillStyle = '#000'; ctx.fillRect(d.x, d.y, d.w, d.h);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, d.y + 1, d.w - 2, d.h - 2);
+    if (B.phase === 'timing') { /* renderTiming draws the bars over this box */ }
+    else if (B.targeting) Battle.renderTargetList(ctx, d);
+    else if (B.submenu) Battle.renderOptionGrid(ctx, d);
+    else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 16, d.y + 12 + i * 20, { color: '#fff' }));
+  }
 };
 Battle.renderMsg = function () {};   // text now lives inside the dialogue box
 
