@@ -163,21 +163,26 @@ const CHARS = {
     name: 'KNIGHT', color: '#e8e8ff', hp: 1500, cost: 3, secretBoss: true, level: 3, spare: { never: true },
     dscale: 0.82, bob: true, afterimage: 12,   // hovers + trails ghost afterimages
     desc: 'THE ROARING KNIGHT.\nFINAL SECRET BOSS - 1500 HP.',
-    // REBUILT 1:1 from the Ch3 obj_knight_enemy GML (see knight_specs/). Canonical rotation:
-    // Stars -> Tracking Swords -> Flurry(box-split) -> Sword Tunnel -> Rotating Slash -> Vortex -> THE ROARING.
-    fight: { id: 'knight_stars', name: 'Stars', dmg: 48, dur: 205,
+    // REBUILT 1:1 from the Ch3 obj_knight_enemy GML (see knight_specs/). 5 core attacks, each with
+    // its 3 phase variants (per the wiki attack table), + THE ROARING ult. (Sword Vortex removed —
+    // it's not a standalone attack; it's the Tracking Swords P2 "you feel surrounded" circle.)
+    fight: { id: 'knight_stars', name: 'Stars I', dmg: 48, dur: 205,
              text: 'THE KNIGHT calls down STARS!' },
     spells: [
-      { id: 'knight_tracking', name: 'Tracking Swords', tp: 36, dmg: 52, dur: 230, kind: 'attack',
-        text: 'THE KNIGHT aims TRACKING SWORDS!' },
-      { id: 'knight_tunnel', name: 'Sword Tunnel', tp: 42, dmg: 54, dur: 252, kind: 'attack',
-        text: 'THE KNIGHT opens a SWORD TUNNEL!' },
-      { id: 'knight_flurry', name: 'Flurry', tp: 48, dmg: 58, dur: 300, kind: 'attack',
-        text: 'THE KNIGHT CLEAVES THE BOARD!' },
-      { id: 'knight_rotslash', name: 'Rotating Slash', tp: 54, dmg: 56, dur: 326, kind: 'attack',
-        text: 'THE KNIGHT carves ROTATING SLASHES!' },
-      { id: 'knight_vortex', name: 'Sword Vortex', tp: 60, dmg: 52, dur: 240, kind: 'attack',
-        text: 'THE KNIGHT summons a SWORD VORTEX!' },
+      { id: 'knight_stars2', name: 'Stars II', tp: 30, dmg: 50, dur: 205, kind: 'attack', text: 'STARS burst SIXFOLD!' },
+      { id: 'knight_stars3', name: 'Stars III', tp: 34, dmg: 52, dur: 205, kind: 'attack', text: 'The STARS turn RED and HUNT you!' },
+      { id: 'knight_tracking', name: 'Tracking Swords I', tp: 36, dmg: 52, dur: 230, kind: 'attack', text: 'THE KNIGHT aims TRACKING SWORDS!' },
+      { id: 'knight_tracking2', name: 'Tracking Swords II', tp: 40, dmg: 54, dur: 250, kind: 'attack', text: 'You feel SURROUNDED!' },
+      { id: 'knight_tracking3', name: 'Tracking Swords III', tp: 44, dmg: 54, dur: 210, kind: 'attack', text: 'The world REVOLVES around you!' },
+      { id: 'knight_flurry', name: 'Box Splitter I', tp: 46, dmg: 58, dur: 300, kind: 'attack', text: 'THE KNIGHT CLEAVES THE BOARD!' },
+      { id: 'knight_flurry2', name: 'Box Splitter II', tp: 50, dmg: 60, dur: 300, kind: 'attack', text: 'The winds blow from EVERY side!' },
+      { id: 'knight_flurry3', name: 'Box Splitter III', tp: 54, dmg: 62, dur: 300, kind: 'attack', text: 'Suddenly — a TEMPEST!' },
+      { id: 'knight_tunnel', name: 'Sword Tunnel I', tp: 42, dmg: 54, dur: 252, kind: 'attack', text: 'THE KNIGHT opens a SWORD TUNNEL!' },
+      { id: 'knight_tunnel2', name: 'Sword Tunnel II', tp: 46, dmg: 54, dur: 252, kind: 'attack', text: 'Your head is SPINNING!' },
+      { id: 'knight_tunnel3', name: 'Sword Tunnel III', tp: 50, dmg: 56, dur: 252, kind: 'attack', text: 'You feel CORNERED!' },
+      { id: 'knight_rotslash', name: 'Rotating Slash I', tp: 52, dmg: 56, dur: 250, kind: 'attack', text: 'THE KNIGHT carves ROTATING SLASHES!' },
+      { id: 'knight_rotslash2', name: 'Rotating Slash II', tp: 56, dmg: 56, dur: 250, kind: 'attack', text: 'Your chest TWISTS!' },
+      { id: 'knight_rotslash3', name: 'Rotating Slash III', tp: 60, dmg: 58, dur: 326, kind: 'attack', text: 'Your heartbeat becomes TWISTED!' },
     ],
     ult: { id: 'knight_roar', name: 'THE ROARING', tp: 100, dmg: 72, dur: 430, kind: 'attack',
            text: 'THE KNIGHT lets out THE ROARING!!' },

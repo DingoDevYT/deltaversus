@@ -185,9 +185,12 @@ const MOVE_SFX = {
   // Spamton NEO - his real Ch2 sounds (laser / pipis / overpower voice)
   sneo_heads: 'sneogun', sneo_heart: 'laz', sneo_columns: 'pipis', sneo_phones: 'laz',
   sneo_face: 'spamtonlaugh', sneo_bigshot: 'sneoover',
-  // The Roaring Knight - the Ch3 board-battle sounds
-  knight_stars: 'boardsummon', knight_tracking: 'knightsword', knight_tunnel: 'knightsword',
-  knight_flurry: 'boardbomb', knight_rotslash: 'boarddmg', knight_vortex: 'knightsword', knight_roar: 'knightlaugh',
+  // The Roaring Knight - the Ch3 board-battle sounds (each attack + its phase variants)
+  knight_stars: 'boardsummon', knight_stars2: 'boardsummon', knight_stars3: 'boardsummon',
+  knight_tracking: 'knightsword', knight_tracking2: 'knightsword', knight_tracking3: 'knightsword',
+  knight_tunnel: 'knightsword', knight_tunnel2: 'knightsword', knight_tunnel3: 'knightsword',
+  knight_flurry: 'boardbomb', knight_flurry2: 'boardbomb', knight_flurry3: 'boardbomb',
+  knight_rotslash: 'boarddmg', knight_rotslash2: 'boarddmg', knight_rotslash3: 'boarddmg', knight_roar: 'knightlaugh',
 };
 
 // ---------- init ----------
