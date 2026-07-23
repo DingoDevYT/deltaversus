@@ -1069,7 +1069,7 @@ Battle.updDodge = function () {
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
   B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null; B.fx.knightCone = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
-  B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.crt = false; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
+  B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.crt = false; B.fx.screenCleave = null; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
   B.fx.pinkScene = false;   // PINK stage scenery (set truthy by pink_* patterns each tick)
   B.fx.pinkRoll = null;     // rotating-grid scrolling parallax backdrop
@@ -1485,6 +1485,14 @@ Battle.render = function (ctx) {
       ctx.fillStyle = 'rgba(255,255,255,0.05)';
       ctx.fillRect(0, (B.anim.f * 23) % 476, 640, 4);
     }
+    ctx.restore();
+  }
+  if (B.fx && B.fx.screenCleave) {
+    const p = B.fx.screenCleave.progress || 0;
+    const shift = Math.min(280, p * 4 + Math.pow(p * 0.14, 2));
+    ctx.save();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(320 - shift, 0, shift * 2, 480);
     ctx.restore();
   }
   if (B.fx && B.fx.whiteout > 0) { ctx.fillStyle = 'rgba(255,255,255,' + Math.min(1, B.fx.whiteout) + ')'; ctx.fillRect(0, 0, 640, 480); }
