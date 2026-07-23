@@ -1243,25 +1243,33 @@ function gSpear(a, gd, spd, opt) {
   const va = -gd * Math.PI / 180, D = opt.dist || 230;
   const lo = bulletProps('gspear0').img, hi = bulletProps('gspearhi0').img;
   add({ img: lo, loImg: lo, hiImg: hi, isSpear: true, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 7, scale: GSC(21, 34), rot: va, blockArc: 48, dmg: opt.dmg || 18, life: opt.life || 240 });
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 7, scale: GSC(21, 34), rot: va, dmg: opt.dmg || 18, life: opt.life || 240 });
   Snd.play('smallswing', 0.35);
 }
-// GREEN multi-block turtle shell from side `gd` (needs `hp` blocks; spinning -> returns 90 CCW).
-function gShell(a, gd, hp) {
-  const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, va = -gd * Math.PI / 180, D = 220, spd = 4;
-  add({ shape: 'shell', shell: true, blocksLeft: hp, shellSpin: true, shellSpeed: 4, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 10, blockArc: 50, dmg: 20 });
+// GREEN multi-block turtle shell (obj_spearshot bouncespear) from side `gd`. `hp` = blocks needed
+// (2 green, 3 blue/cyan, 4 purple, 5 red). opt.spin = spinning/cyan shell (returns 90 deg CCW on block);
+// opt.big = larger + slower shell. Normal shells come from ONE direction (no spin) per the GML/wiki.
+function gShell(a, gd, hp, opt) {
+  opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, va = -gd * Math.PI / 180;
+  const spd = opt.big ? 2.6 : 4, D = 220;
+  add({ shape: 'shell', shell: true, blocksLeft: hp, shellSpin: !!opt.spin, shellSpeed: opt.big ? 3 : 4,
+        x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D, vx: Math.cos(va) * spd, vy: Math.sin(va) * spd,
+        r: opt.big ? 15 : 10, scale: opt.big ? 1.5 : 1, dmg: 20 });
 }
 // play a fixed spear sequence (each entry [gmlTick, gmlDirString-or-number, speed]); auto green.
 // GREEN sequence system (wiki-exact). Tokens: ['s',dir]=slow spear, ['f',dir]=fast spear,
 // ['H',dir,hp]=shell (2=green,3=blue,4=purple,5=red), ['w',frames]=extra pause. dir = a G_STR2GML key
 // (the direction the SHIELD must FACE to block, per the wiki). Cadence: slow 26f, fast 13f, shell 44f.
 const G_SLOW = 6.2, G_FAST = 9.6;
+// tokens: ['s',dir]/['f',dir] slow/fast spear; ['H',dir,hp] normal shell; ['Hs',dir,hp] SPINNING (cyan)
+// shell (returns 90 CCW); ['Hb',dir,hp] big+slow shell; ['w',frames] pause.
 function gBuild(tokens, t0) {
   let t = (t0 == null ? 20 : t0); const seq = [];
   for (const [ty, a1, a2] of tokens) {
     if (ty === 'w') { t += a1; continue; }
-    if (ty === 'H') { seq.push({ t, dir: a1, kind: 'shell', hp: a2 || 2 }); t += 44; continue; }
+    if (ty === 'H' || ty === 'Hs' || ty === 'Hb') {
+      seq.push({ t, dir: a1, kind: 'shell', hp: a2 || 2, spin: ty === 'Hs', big: ty === 'Hb' }); t += 44; continue;
+    }
     seq.push({ t, dir: a1, spd: ty === 'f' ? G_FAST : G_SLOW }); t += (ty === 'f' ? 13 : 26);
   }
   return seq;
@@ -1269,7 +1277,7 @@ function gBuild(tokens, t0) {
 function gRun(a, seq) {
   for (const e of seq) if (a.f === e.t) {
     const d = typeof e.dir === 'string' ? G_STR2GML[e.dir] : (((e.dir % 360) + 360) % 360);
-    if (e.kind === 'shell') gShell(a, d, e.hp); else gSpear(a, d, e.spd);
+    if (e.kind === 'shell') gShell(a, d, e.hp, { spin: e.spin, big: e.big }); else gSpear(a, d, e.spd);
   }
 }
 // --- GREEN: SPEAR VOLLEY (fight) = wiki Attack 1 + Attack 3, exact. ---
@@ -1410,12 +1418,118 @@ PATTERNS.gerson_finale = {
       if (f === 362 || f === 402) {                                              // the "holy hammer": a huge 4-block shell
         const gd = f === 362 ? 270 : 90, va = -gd * Math.PI / 180, D = 230, spd = 3.4;
         add({ shape: 'shell', shell: true, blocksLeft: 4, shellSpin: true, shellSpeed: 3.4, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-              vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 20, blockArc: 55, dmg: 44 });
+              vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 20, scale: 1.5, dmg: 44 });
         Snd.play('heavyswing', 0.5);
       }
     }
   },
 };
+
+// ============================================================================
+// GERSON — ALL 21 ATTACKS (gn_atk1..gn_atk21), wiki-EXACT (deltarune.wiki/w/Hammer_of_Justice).
+// Directions are the way the SHIELD must FACE to block (= the side the spear is on). Green attacks use the
+// gBuild/gRun sequence compiler; red/transition attacks reuse the verified red patterns. The block mechanic
+// itself (ring 36/46, tol 50/30, parry 2.5 vs 1.25, len<16 heart hit) lives in battle.js resolveGreen.
+// ============================================================================
+const gAtkDur = seq => Math.max(...seq.map(e => e.t)) + 90;   // enough time for the last spear to arrive
+function gGreen(tokens, oct) { const seq = gBuild(tokens); return { dur: gAtkDur(seq), _seq: seq, _oct: oct,
+  box: { w: 150, h: 150 }, hz30: 1, tick(a) { a.fx.greenSoul = this._oct ? { oct: true } : true; gRun(a, this._seq); } }; }
+
+// 1: slow u u u l d r.
+PATTERNS.gn_atk1 = gGreen([['s','u'],['s','u'],['s','u'],['s','l'],['s','d'],['s','r']], false);
+// 2: replay of 1 (only if you were hit on 1), a touch quicker.
+PATTERNS.gn_atk2 = gGreen([['f','u'],['f','u'],['f','u'],['f','l'],['f','d'],['f','r']], false);
+// 3: slow u u u l d, then fast r r l l r l u u u.
+PATTERNS.gn_atk3 = gGreen([['s','u'],['s','u'],['s','u'],['s','l'],['s','d'],['w',12],
+  ['f','r'],['f','r'],['f','l'],['f','l'],['f','r'],['f','l'],['f','u'],['f','u'],['f','u']], false);
+// 4: fast r u d r d u, slow l, fast r u d l d u l l, slow r.
+PATTERNS.gn_atk4 = gGreen([['f','r'],['f','u'],['f','d'],['f','r'],['f','d'],['f','u'],['w',8],['s','l'],['w',10],
+  ['f','r'],['f','u'],['f','d'],['f','l'],['f','d'],['f','u'],['f','l'],['f','l'],['w',8],['s','r']], false);
+// 5: (u r u l) x3 varying, then becomes 8-directional -> ul, ur.
+PATTERNS.gn_atk5 = gGreen([['f','u'],['f','r'],['f','u'],['f','l'],['s','u'],['f','r'],['s','u'],['f','l'],
+  ['f','u'],['f','r'],['f','u'],['f','l'],['w',8],['s','ul'],['w',6],['s','ur']], true);
+// 6: GREEN arrows d ul d ur d r d l while a hammer falls -> turns SOUL RED -> Gerson slashes down CENTRE.
+PATTERNS.gn_atk6 = {
+  dur: 360, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: gBuild([['s','d'],['s','ul'],['s','d'],['s','ur'],['s','d'],['s','r'],['s','d'],['s','l']]),
+  tick(a) { const { f, box } = a; const RED = 232;
+    if (f < RED) a.fx.greenSoul = { oct: true };
+    gRun(a, this._seq);
+    if (f === RED) { Battle.shake = 14; Battle.flash = 6; Snd.play('bosshit', 0.55); }   // hammer lands -> RED
+    if (f === RED + 8) gBladeSlash(a, box.x + box.w / 2, box.y - 96, 0, 0, 42, 70, box.h + 90, 12);   // centre slash
+  },
+};
+// 7: shell PINBALL + star fountain (red) — defined above. (8/13/14 red aliases are set after their patterns.)
+PATTERNS.gn_atk7 = PATTERNS.gerson_shellkick;
+// 9: slow ul ul u u ur ur | fast ul u ur u u ul u ur | slow d dl d dr.
+PATTERNS.gn_atk9 = gGreen([['s','ul'],['s','ul'],['s','u'],['s','u'],['s','ur'],['s','ur'],['w',10],
+  ['f','ul'],['f','u'],['f','ur'],['f','u'],['f','u'],['f','ul'],['f','u'],['f','ur'],['w',12],
+  ['s','d'],['s','dl'],['s','d'],['s','dr']], true);
+// 10: 3l 3r u ul d dr 3r 3l d dr u, then a green shell from top + two shells left then right.
+PATTERNS.gn_atk10 = gGreen([['s','l'],['s','l'],['s','l'],['f','r'],['f','r'],['f','r'],['s','u'],['s','ul'],
+  ['s','d'],['s','dr'],['f','r'],['f','r'],['f','r'],['f','l'],['f','l'],['f','l'],['s','d'],['s','dr'],['s','u'],
+  ['w',10],['H','u',2],['w',20],['H','l',2],['H','r',2]], true);
+// 11: 4 fast shells u l r d | shell(top)+5 arrows | reflected shell(bottom)+5 | arrows r l d ul dl.
+PATTERNS.gn_atk11 = gGreen([['H','u',2],['w',-30],['H','l',2],['w',-30],['H','r',2],['w',-30],['H','d',2],['w',24],
+  ['H','u',2],['f','l'],['f','dl'],['f','d'],['f','dr'],['f','r'],['w',20],
+  ['H','d',2],['f','l'],['f','ul'],['f','u'],['f','ur'],['f','r'],['w',20],
+  ['s','r'],['s','l'],['s','d'],['s','ul'],['s','dl']], true);
+// 12: GREEN shells u l d, then a hammer from the RIGHT -> RED -> the column slash sequence + fakeout.
+PATTERNS.gn_atk12 = {
+  dur: 460, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: gBuild([['H','u',2],['H','l',2],['H','d',2]]),
+  tick(a) { const { f, box } = a; const cx = box.x + box.w / 2, RED = 210;
+    if (f < RED) a.fx.greenSoul = { oct: true };
+    gRun(a, this._seq);
+    if (f === RED) { Battle.shake = 14; Battle.flash = 6; Snd.play('bosshit', 0.55); }
+    const L = cx - 40, M = cx, R = cx + 40, COLS = [M, R, L, M, L, R, L];
+    COLS.forEach((colX, i) => { if (f === RED + 14 + i * 40) gBladeSlash(a, colX, box.y - 96, 0, 0, 42, 62, box.h + 90, 12); });
+    if (f === RED + 14 + 7 * 40 + 20) gBladeSlash(a, box.x + box.w + 60, box.y + box.h / 2, Math.PI / 2, -46, 0, box.w + 140, 60, 14);
+  },
+};
+// 8/14: the hammer throw (14 is a repeat of 8) — aliases set after gerson_boxthrow is defined (below).
+// 15: cyan SPINNING shells (bounce 90 CCW) + fast arrows. Hs(u,3) Hs(ur,3) then l r dr r ul l ur dl u (last 3 fast).
+PATTERNS.gn_atk15 = gGreen([['Hs','u',3],['w',6],['Hs','ur',3],['w',20],
+  ['s','l'],['s','r'],['s','dr'],['s','r'],['s','ul'],['s','l'],['f','ur'],['f','dl'],['f','u']], true);
+// 16: green shell l, arrows d dr, shell r; arrows u d; d u; 3 cyan shells r ur u; ul; cyan dr r ur; then arrows + top hammer.
+PATTERNS.gn_atk16 = gGreen([['H','l',2],['s','d'],['s','dr'],['H','r',2],['w',10],['s','u'],['s','d'],['w',20],
+  ['s','d'],['s','u'],['w',10],['Hs','r',3],['Hs','ur',3],['Hs','u',3],['w',10],['s','ul'],
+  ['Hs','dr',3],['Hs','r',3],['Hs','ur',3],['w',12],['f','u'],['f','u'],['H','u',2]], true);
+// 17: rotating spear SWEEP (5 CW, 5 CCW, 11 CW, 30 CCW accelerating) — the verified sweep.
+PATTERNS.gn_atk17 = PATTERNS.gerson_spearsweep;
+// 18: 32 arrows from all directions, starting slow and speeding up.
+PATTERNS.gn_atk18 = { dur: 560, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 20; const s = [];
+    for (let i = 0; i < 32; i++) { s.push({ t, dir: D[(i * 5 + 3) % 8], spd: 6 + i * 0.16 }); t += Math.round(Math.max(9, 20 - i * 0.35)); } return s; })(),
+  tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
+// 19: 48 arrows from all directions, all slow but very densely packed.
+PATTERNS.gn_atk19 = { dur: 640, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 20; const s = [];
+    for (let i = 0; i < 48; i++) { s.push({ t, dir: D[(i * 3 + 5) % 8], spd: 5.4 }); t += 9; } return s; })(),
+  tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
+// 20: cyan shell + interleaved arrows sequence, then 4 cyan shells, then 3 cyan shells.
+PATTERNS.gn_atk20 = gGreen([['Hs','u',3],['s','r'],['s','dr'],['s','d'],['w',6],['s','ur'],['s','r'],['s','ur'],['w',6],['s','ul'],
+  ['Hs','r',3],['s','r'],['s','ur'],['s','u'],['s','ur'],['w',6],['s','u'],['s','l'],['s','dl'],['w',10],
+  ['Hs','u',3],['w',-30],['Hs','l',3],['w',-30],['Hs','r',3],['w',-30],['Hs','d',3],['s','ul'],['w',18],
+  ['Hs','ur',3],['w',-30],['Hs','ul',3],['w',-30],['Hs','dr',3],['s','u'],['s','r']], true);
+// 21 (FINAL): cyan u, green l, cyan ur, fast RED shell(5) from right; green u; hammer from LEFT -> RED;
+// then Gerson slashes in a circle from the top-right corner CCW (move in a circle near centre).
+PATTERNS.gn_atk21 = {
+  dur: 620, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: gBuild([['Hs','u',3],['H','l',2],['Hs','ur',3],['H','r',5],['w',20],['H','u',2]]),
+  tick(a) { const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, RED = 300;
+    if (f < RED) a.fx.greenSoul = { oct: true };
+    gRun(a, this._seq);
+    if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }
+    // circular slashes from the top-right, going CCW — a rotating blade you orbit near the centre.
+    const START = RED + 16, CIRC = [-45, -90, -135, 180, 135, 90, 45, 0];   // GML angles, from top-right CCW
+    CIRC.forEach((deg, i) => { if (f === START + i * 26) {
+      const va = deg * Math.PI / 180, D = 150;
+      gBladeSlash(a, cx - Math.cos(va) * D, cy + Math.sin(va) * D, va, Math.cos(va) * 40, -Math.sin(va) * 40, 58, 58, 12);
+    } });
+  },
+};
+
 // #A BOX THROW (AP70, RED free-move) — despite the name it LOBS arcing hammers into the box: 16 fan-throws,
 // then 25 fast singles tracking a sine-swept x, then one giant hammer finisher.
 PATTERNS.gerson_boxthrow = {
@@ -1487,6 +1601,10 @@ PATTERNS.gerson_rudebuster = {
     Snd.play('smallswing', 0.4);
   },
 };
+// Red-attack aliases for the 21-attack set (defined here so their target patterns already exist).
+PATTERNS.gn_atk8 = PATTERNS.gerson_boxthrow;    // hammer throw + giant finisher
+PATTERNS.gn_atk13 = PATTERNS.gerson_squish;     // squish star barrage
+PATTERNS.gn_atk14 = PATTERNS.gerson_boxthrow;   // a repeat of attack 8
 
 // ============================================================================
 // PINK — Ch5 idol boss (mew magical-girl). Rebuilt from real GML (30fps -> hz30). Real ripped

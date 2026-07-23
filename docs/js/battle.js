@@ -8,44 +8,53 @@ const GRAZE_R = 15;
 // GREEN SOUL (Hammer/Sound of Justice): shield-block mode. Shell colour = hp (blocks still needed),
 // per the real Ch4 mapping: 1 cyan, 2 green, 3 yellow, 4 purple, 5 blue, 6-8 pink.
 const SHELL_COLORS = { 1: '#00ffff', 2: '#00ff00', 3: '#ffff00', 4: '#800080', 5: '#0000ff', 6: '#ff7fb8', 7: '#ffb2d4', 8: '#ffcce2' };
-// resolve a bullet against the green shield ring: block it if the axe covers its side, else take the hit.
+// resolve a bullet against the green shield — EXACT port of obj_spearshot Other_10 (event_user0).
+// `len` = distance from the shield centre; blockable at len < shieldRadius (36 for 4-dir, 46 for 8-dir/diag)
+// AND the shield facing within the angle tolerance (50 deg for 4-dir, 30 deg for 8-dir). Checked EVERY frame
+// while approaching (so aligning late still blocks). Unblocked -> hits the SOUL at len < 16. Parry (axe moved
+// within justlength=4 frames) heals 2.5 TP vs 1.25 for a normal block. (GML: shieldlength/shieldradius,
+// scr_tensionheal 2.5/1.25, heartcollisionlen 16.)
 function resolveGreen(b) {
   const B = Battle, bx = B.dodgeBox, cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2;
-  const GR = Math.min(bx.w, bx.h) * 0.29;                       // shield radius (green box half-size)
-  const inside = Math.hypot(b.x - cx, b.y - cy) < GR + (b.r || 6);
-  if (inside && !b._inRing) {
-    const inAng = Math.atan2(b.y - cy, b.x - cx);              // the side the bullet is coming from
-    if (b.transform) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.shake = 10; B.flash = 6; Snd.play('hurt', 0.4); b._inRing = inside; return; }
-    const coverHalf = b.blockArc != null ? b.blockArc * Math.PI / 180 : Math.PI / (B.greenOct ? 8 : 4) + 0.02;
-    const diff = Math.abs(Math.atan2(Math.sin(inAng - B.shieldAng), Math.cos(inAng - B.shieldAng)));
-    if (diff <= coverHalf) {                                   // BLOCKED
-      const perfect = (B.anim.f - (B.shieldFreshF || -999)) <= (B.shieldDiag ? 6 : 4);
-      const gain = perfect ? 1 : 0.5;
-      B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
-      B.blockFx.push({ x: cx + Math.cos(inAng) * GR, y: cy + Math.sin(inAng) * GR, t: 0, perfect });
-      Snd.play('graze', perfect ? 0.5 : 0.3);
-      if (b.shell) {
-        b.blocksLeft = (b.blocksLeft || 1) - 1;
-        if (b.blocksLeft <= 0) b.dead = true;
-        else {                                                 // bounce back out: spinning shells return 90 deg CCW
-          const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = GR + 150;
-          b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
-          b.vx = -Math.cos(outAng) * sp; b.vy = -Math.sin(outAng) * sp; b.rot = outAng + Math.PI;
-          b._inRing = false; return;
-        }
-      } else b.dead = true;                                    // regular bullets shatter on the shield
-    } else {                                                   // NOT covered -> it does you in
-      if (B.iframes <= 0) {
-        const dmg = Math.max(1, Math.round((b.dmg || 10) * (b.dmgMult || 1) * (0.9 + Math.random() * 0.2)));
-        B.dmgTaken += dmg; const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
-        B.iframes = IFRAMES; B.shake = 14; B.flash = 8; Snd.play('hurt');
-        B.dmgPops.push({ x: cx, y: cy - 14, txt: '' + dmg, t: 0, color: '#f22' });
-        if (hit) { hit.pose = 'hurt'; hit.poseT = 0; }
-      }
-      b.dead = true;
-    }
+  const len = Math.hypot(b.x - cx, b.y - cy);
+  const diag = !!B.greenOct;
+  let shieldRadius = diag ? 46 : 36, heartLen = 16;             // GML shieldradius / heartcollisionlen
+  if (b.shell) { heartLen = diag ? 30 : 16 + 14; if (b.blocksLeft === 1 && !diag) shieldRadius -= 30; }   // bouncespear==1 & hp==1
+  const shieldTol = (b.blockArc != null ? b.blockArc : (diag ? 30 : 50)) * Math.PI / 180;
+  const inAng = Math.atan2(b.y - cy, b.x - cx);                 // the side the bullet is on / coming from
+  // TRANSFORM bullet (Hammer flips SOUL red<->green): resolves at the ring regardless of aim.
+  if (b.transform) {
+    if (len < shieldRadius) { B._greenLatch = b.transform === 'green'; if (b.transform === 'red') B._greenOctLatch = false; b.dead = true; B.shake = 10; B.flash = 6; Snd.play('hurt', 0.4); }
+    return;
   }
-  b._inRing = inside;
+  const aligned = Math.abs(Math.atan2(Math.sin(inAng - B.shieldAng), Math.cos(inAng - B.shieldAng))) < shieldTol;
+  if (len < shieldRadius && aligned) {                          // BLOCKED
+    const parry = (B.anim.f - (B.shieldFreshF == null ? -999 : B.shieldFreshF)) < 4;   // justlength = 4
+    const gain = parry ? 2.5 : 1.25;
+    B.myTP = Math.min(100, B.myTP + gain); B.tpGained += gain;
+    B.blockFx.push({ x: cx + Math.cos(inAng) * shieldRadius, y: cy + Math.sin(inAng) * shieldRadius, t: 0, perfect: parry });
+    Snd.play('graze', parry ? 0.5 : 0.3);
+    if (b.shell) {
+      b.blocksLeft = (b.blocksLeft || 1) - 1;
+      if (b.blocksLeft <= 0) b.dead = true;
+      else {                                                    // bounce back out; spinning shells return 90 deg CCW
+        const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = shieldRadius + 150;
+        b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
+        b.vx = -Math.cos(outAng) * sp; b.vy = -Math.sin(outAng) * sp; b.rot = outAng + Math.PI;
+      }
+    } else b.dead = true;                                       // regular spears shatter on the shield
+    return;
+  }
+  if (len < heartLen) {                                         // reached the SOUL unblocked -> take the hit
+    if (B.iframes <= 0) {
+      const dmg = Math.max(1, Math.round((b.dmg || 10) * (b.dmgMult || 1) * (0.9 + Math.random() * 0.2)));
+      B.dmgTaken += dmg; const hit = applyTargetedDamage(B.myTeam, dmg, b.target);
+      B.iframes = IFRAMES; B.shake = 14; B.flash = 8; Snd.play('hurt');
+      B.dmgPops.push({ x: cx, y: cy - 14, txt: '' + dmg, t: 0, color: '#f22' });
+      if (hit) { hit.pose = 'hurt'; hit.poseT = 0; }
+    }
+    b.dead = true;
+  }
 }
 const BOX_ANIM = 16;   // frames for the box open/close spin-in animation
 const SELECT_FRAMES = 60 * 60;   // 60s to pick your move
@@ -742,7 +751,7 @@ Battle.startDodge = function () {
   B.soulPurple = false; B._pmode = -1; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0;
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
   // are correct as-written; we render at 60Hz (bullets step every 2nd frame = authentic choppy motion).
-  B.hz30 = oppAtkers.length === 1 && (PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30 !== false && (/^(gerson|jevil|pink|pinkn)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
+  B.hz30 = oppAtkers.length === 1 && (PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30 !== false && (/^(gerson|gn|jevil|pink|pinkn)_/.test(oppAtkers[0].moveDef.id) || !!(PATTERNS[oppAtkers[0].moveDef.id] || {}).hz30);
   B._hzTick = false;
   // fx = pattern-driven engine control channel (blackout / box warp / soul pull / arena / split / arms)
   B.fx = {}; B.baseBox = { ...B.dodgeBox }; B.boardSplit = null;
@@ -880,11 +889,17 @@ Battle.updDodge = function () {
   if (B.soulGreen) {
     B.soul.x = bx.x + bx.w / 2; B.soul.y = bx.y + bx.h / 2;
     const rawx = (Input.down.right ? 1 : 0) - (Input.down.left ? 1 : 0), rawy = (Input.down.down ? 1 : 0) - (Input.down.up ? 1 : 0);
+    // Detect the PRESS EDGE from held state (survives 30 Hz). A fresh press = the direction vector changed
+    // to a non-zero value — including re-pressing the SAME direction after releasing (GML: re-press parries).
+    const wd = B._gWasDir || { x: 0, y: 0 };
+    const freshPress = (rawx || rawy) && (rawx !== wd.x || rawy !== wd.y);
+    B._gWasDir = { x: rawx, y: rawy };
     if (rawx || rawy) {
       const step = Math.PI * 2 / (B.greenOct ? 8 : 4);
       const ang = Math.round(Math.atan2(rawy, rawx) / step) * step;
       const diff = Math.abs(Math.atan2(Math.sin(ang - B.shieldAng), Math.cos(ang - B.shieldAng)));
-      if (diff > 0.01) { B.shieldAng = ang; B.shieldFreshF = B.anim.f; B.shieldDiag = !!(rawx && rawy); }
+      if (diff > 0.01) { B.shieldAng = ang; B.shieldDiag = !!(rawx && rawy); }
+      if (freshPress) B.shieldFreshF = B.anim.f;   // parry window (justlength 4) on any fresh press or re-press
     }
     // NEXT-TO-HIT spear turns red (spr_spear_arrow_highlight): the soonest-arriving spear gets its hiImg.
     const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2; let soon = null, st = Infinity;
