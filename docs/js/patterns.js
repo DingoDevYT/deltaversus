@@ -1616,11 +1616,15 @@ PATTERNS.gerson_boxthrow = {
   dur: 430, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
     const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 40, gy = box.y - 18;
-    // GERSON HITS THE BOX first: it TILTS ~45deg to the left and shifts left, so the giant hammer lands in a corner.
-    if (f === 12) { Battle.shake = 12; Snd.play('bosshit', 0.5); }
-    const tilt = f > 12 ? Math.min(1, (f - 12) / 12) : 0;
-    a.fx.boxRot = -0.785 * tilt;                                     // -45deg (to the LEFT)
-    a.fx.boxTarget = { x: box.x - 40 * tilt, y: box.y, w: box.w, h: box.h, boxLerp: 0.3 };
+    // GERSON HITS THE BOX first: it TILTS ~45deg left + shifts left ONCE, then STAYS put. Anchor captured at the
+    // hit frame so the target is FIXED (using the live box.x here caused it to chase itself left forever).
+    if (f <= 1) { this._ax = null; this._settled = 0; }             // reset (object reused by atk8 & atk14)
+    if (f === 12) { this._ax = box.x; this._ay = box.y; Battle.shake = 12; Snd.play('bosshit', 0.5); }
+    if (this._ax != null) {
+      const tilt = Math.min(1, (f - 12) / 12);
+      a.fx.boxRot = -0.785 * tilt;                                   // -45deg (to the LEFT)
+      a.fx.boxTarget = { x: this._ax - 40, y: (this._settled ? this._ay + 16 : this._ay), w: box.w, h: box.h, boxLerp: 0.25 };
+    }
     if (f >= 40 && f < 200 && (f - 40) % 10 === 0) {                 // 16 fan-throws of 3-4 hammers
       const n = 3 + Math.floor(rng() * 2);
       for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
@@ -1637,7 +1641,7 @@ PATTERNS.gerson_boxthrow = {
     // GIANT hammer (rendered via the pre-large ggiant sprite at small scale — the engine culls big-scale bullets).
     if (f === 312) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - (cx - 30)) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 150, _giant: 1 }); Snd.play('smallswing', 0.5); }
     // when the giant lands, thump the box DOWN a touch for weight + sound.
-    if (f === 344) { Battle.shake = 18; Snd.play('bosshit', 0.6); a.fx.boxTarget = { x: box.x - 40, y: box.y + 16, w: box.w, h: box.h, boxLerp: 0.5 }; }
+    if (f === 344) { Battle.shake = 18; Snd.play('bosshit', 0.6); this._settled = 1; }   // giant lands: thump the box DOWN (via fixed anchor)
   },
 };
 // #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES the board THIN + WIDE

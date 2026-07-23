@@ -2401,6 +2401,12 @@ function wrapText(ctx, text, x, y, maxW, lineH, color, scale) {
 
 Battle.renderHud = function (ctx) {
   const B = Battle;
+  // When an attack starts the dialogue box SLIDES DOWN off-screen and the HP panels slide down WITH it to sit
+  // FLUSH at the bottom (DELTARUNE). dboxSlide eases 0 (menu) -> 1 (dodge). SLIDE moves panels 366 -> 446.
+  const dodging = B.phase === 'dodge' || B.phase === 'boxin' || B.phase === 'boxout';
+  B.dboxSlide = (B.dboxSlide || 0) + ((dodging ? 1 : 0) - (B.dboxSlide || 0)) * 0.3;
+  if (B.dboxSlide < 0.002) B.dboxSlide = 0;
+  const SLIDE = B.dboxSlide * (446 - PANEL_BASE);
   // party info panels
   const n = B.myTeam.length;
   const pw = Math.min(196, (600 - (n - 1) * 8) / n);
@@ -2412,7 +2418,7 @@ Battle.renderHud = function (ctx) {
   B.myTeam.forEach((m, i) => {
     if (m.raise == null) m.raise = 0;
     m.raise += ((i === activeMi ? 1 : 0) - m.raise) * 0.4;
-    const px = startX + i * (pw + 8), py = PANEL_BASE - RAISE * m.raise;
+    const px = startX + i * (pw + 8), py = PANEL_BASE - RAISE * m.raise + SLIDE;
     if (m.raise > 0.05 && B.phase === 'select') Battle.renderCommandButtons(ctx, m, px, py + PANEL_H, pw, Math.min(1, m.raise * 1.5));
     drawPartyPanel(ctx, m, px, py, pw, i === activeMi);
   });
@@ -2431,17 +2437,18 @@ Battle.renderHud = function (ctx) {
   if (B.phase === 'select') { const secs = Math.ceil(B.timer / 60); drawText(ctx, 'big', '' + secs, 320, 16, { color: secs <= 5 ? '#f44' : '#fff', align: 'center', scale: 0.5 }); }
   drawText(ctx, 'main', 'TURN ' + B.turn, 26, 16, { color: '#666' });
 
-  // bottom dialogue box + state-driven content (full-size font, no shrinking). HIDDEN during the dodge itself
-  // (boxin/dodge/boxout) — DELTARUNE shows no textbox mid-attack, just the party HP panels.
-  const dodging = B.phase === 'dodge' || B.phase === 'boxin' || B.phase === 'boxout';
-  if (!dodging) {
-    const d = DBOX;
-    ctx.fillStyle = '#000'; ctx.fillRect(d.x, d.y, d.w, d.h);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, d.y + 1, d.w - 2, d.h - 2);
-    if (B.phase === 'timing') { /* renderTiming draws the bars over this box */ }
-    else if (B.targeting) Battle.renderTargetList(ctx, d);
-    else if (B.submenu) Battle.renderOptionGrid(ctx, d);
-    else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 16, d.y + 12 + i * 20, { color: '#fff' }));
+  // bottom dialogue box: SLIDES DOWN off-screen during the dodge (the panels ride it down to sit flush at the
+  // bottom). Its text content only shows when it's up (not sliding).
+  if (B.dboxSlide < 0.98) {
+    const d = DBOX, dy = d.y + B.dboxSlide * 130;
+    ctx.fillStyle = '#000'; ctx.fillRect(d.x, dy, d.w, d.h);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(d.x + 1, dy + 1, d.w - 2, d.h - 2);
+    if (B.dboxSlide < 0.2) {
+      if (B.phase === 'timing') { /* renderTiming draws the bars over this box */ }
+      else if (B.targeting) Battle.renderTargetList(ctx, d);
+      else if (B.submenu) Battle.renderOptionGrid(ctx, d);
+      else (B.msg || []).slice(0, 3).forEach((m, i) => drawText(ctx, 'main', m, d.x + 16, dy + 12 + i * 20, { color: '#fff' }));
+    }
   }
 };
 Battle.renderMsg = function () {};   // text now lives inside the dialogue box
