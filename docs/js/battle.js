@@ -1531,6 +1531,7 @@ Battle.renderChars = function (ctx) {
     const n = team.length;
     team.forEach((m, i) => {
       if (m.spared) return;   // SPARED members vanish from the field entirely (gone for the rest of the battle)
+      if (team === B.oppTeam && B.fx && B.fx.boss) return;   // setpiece boss active: hide normal side-standing boss
       // (poseT is advanced in Battle.update at a fixed 60Hz - do NOT increment it here in render)
       const hurtFlash = m.pose === 'hurt' && (m.poseT % 8 < 4);
       const alpha = m.downed ? 0.35 : (hurtFlash ? 0.4 : 1);

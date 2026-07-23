@@ -1195,16 +1195,13 @@ PATTERNS.knight_rotslash2 = knightRotslash(2);
 PATTERNS.knight_rotslash3 = knightRotslash(3);
 
 // THE ROARING (ULT, type 107 / obj_knight_roaring2) — REBUILT 1:1 FROM DECOMPILED GML (60Hz timeline, 815 frames)
-// Phase 1 (f 0..439): Inflow charge (stars SPIRAL inward to mouth, SOUL pulled inward, pitch-bending strain sound)
-// Phase 2 (f 440..620): ROAR OUTBURST (SOUL blown back, 8-star radial burst, rotating 3-star fans every 5f)
-// Phase 3 (f 621..714): Sequential Detonation (stars brake, arm 1/f, detonate to 6 starchild sparks)
-// Phase 4 (f 715..815): Slash guide (grey->red @ -63deg) -> THE CUT (giant slash, screen cleaves left/right, whiteout)
+// Center focus origin: (320, 79) — top-center of screen above battlebox
 PATTERNS.knight_roar = {
   dur: 820, box: KN_BOX,
   tick(a) {
     const { f, rng, box, add } = a;
     a.fx.blackout = true; a.fx.hideBox = true; a.fx.arena = true; a.fx.bgStars = true; a.fx.crt = true;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const cx = 320, cy = 79;   // exact GML camera center (camerax + 320, cameray + 79)
 
     if (f === 0) {
       this._intensity = 1.5;
@@ -1227,9 +1224,10 @@ PATTERNS.knight_roar = {
 
       if (f === 132) Snd.play('knightstretch', 0.1);
 
-      if (f < 80) a.fx.boss = { key: 'knightfilled', x: cx, y: cy - 20, scale: 2.1 };
-      else if (f < 398) a.fx.boss = { key: 'knightfilled', x: cx, y: cy, scale: 2.2 };
-      else a.fx.boss = { key: 'knightflourish', x: cx, y: cy, scale: 2.2 };
+      // knightfront = spr_roaringknight_front_filled in manifest.json
+      if (f < 80) a.fx.boss = { key: 'knightfront', x: cx, y: cy - 20, scale: 2.1 };
+      else if (f < 398) a.fx.boss = { key: 'knightfront', x: cx, y: cy, scale: 2.2 };
+      else a.fx.boss = { key: 'knightflourish' + (Math.floor(f / 4) % 7), x: cx, y: cy, scale: 2.2 };
 
       // Inward star spawning
       this._attackTimer++;
@@ -1307,7 +1305,7 @@ PATTERNS.knight_roar = {
 
       if (rt >= 9 && rt < 181) {
         a.fx.pull = { x: cx, y: cy, force: -0.4 };
-        a.fx.boss = { key: 'knightroar', x: cx, y: cy, scale: 2.2 };
+        a.fx.boss = { key: 'knightroar' + (Math.floor(rt / 6) % 2), x: cx, y: cy, scale: 2.2 };
       }
 
       // Torrent 3-star fans every 5 frames
@@ -1328,7 +1326,7 @@ PATTERNS.knight_roar = {
       // Phase 3: Flourish & Sequential Detonation (rt == 181..274)
       if (rt === 181) {
         a.fx.pull = null;
-        a.fx.boss = { key: 'knightflourish', x: cx, y: cy, scale: 2.2 };
+        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 2.2 };
         for (const st of this._detQueue) {
           st.fric = 0.5;
           st._armTimer = 0;
@@ -1336,7 +1334,7 @@ PATTERNS.knight_roar = {
       }
 
       if (rt >= 182 && rt < 275) {
-        a.fx.boss = { key: 'knightflourish', x: cx, y: cy, scale: 2.2 };
+        a.fx.boss = { key: 'knightflourish' + (Math.floor(rt / 4) % 7), x: cx, y: cy, scale: 2.2 };
         if (this._detQueue.length > 0) {
           const st = this._detQueue.shift();
           st._armed = true;
@@ -1361,7 +1359,7 @@ PATTERNS.knight_roar = {
 
       // Phase 4: Slash Windup & Screen Cleave (rt >= 275)
       if (rt >= 275 && rt < 299) {
-        a.fx.boss = { key: 'knightslashf', x: cx, y: cy, scale: 3.5 };
+        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy, scale: 3.5 };
         const ramp = Math.min(1, (rt - 275) / 16);
         const col = `rgb(${Math.round(128 + ramp * 127)},${Math.round(128 - ramp * 128)},${Math.round(128 - ramp * 128)})`;
         add({ shape: 'line', color: col, len: 1200, thick: 4, x: cx, y: cy, rot: 117 * D2R, vx: 0, vy: 0,
@@ -1377,7 +1375,7 @@ PATTERNS.knight_roar = {
       }
 
       if (rt >= 299 && rt < 375) {
-        a.fx.boss = { key: 'knightslashf', x: cx, y: cy + (rt < 315 ? (rt - 299) * 2.5 : 40 - (rt - 315) * 15), scale: 3.5 };
+        a.fx.boss = { key: 'knightslashf' + (Math.floor(rt / 6) % 6), x: cx, y: cy + (rt < 315 ? (rt - 299) * 2.5 : 40 - (rt - 315) * 15), scale: 3.5 };
         a.fx.screenCleave = { progress: rt - 299 };
       }
 
@@ -1387,9 +1385,6 @@ PATTERNS.knight_roar = {
     }
   },
 };
-
-
-
 
 // ============================================================================
 // GERSON BOOM — Hammer / Sound of Justice (Ch4). Rebuilt from the REAL GML roster.
