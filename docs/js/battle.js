@@ -755,6 +755,7 @@ Battle.startDodge = function () {
   B._defGreen = oppAtkers.some(a => a.def.soulGreen);   // whole-attack green; patterns can also toggle it live
   B.soulGreen = false; B._greenLatch = false; B._greenOctLatch = false; B.greenOct = false;
   B.shieldAng = Math.PI / 2; B.shieldTarget = Math.PI / 2; B.shieldDiag = false; B.shieldFreshF = -999; B.blockFx = []; B.blockParts = [];
+  if (B.fx) B.fx.bossSprite = null;
   // PURPLE SOUL (Pink): heart rides a virtual grid inside the box (obj_purplecontrols).
   B.soulPurple = false; B._pmode = -1; B.pLaneX = 1; B.pLaneY = 1; B.pOnX = 0; B.pOnY = 0;
   // 30 FPS ATTACKS: DELTARUNE-authored patterns (Gerson) run their sim at 30Hz so raw GML tick values
@@ -1239,6 +1240,7 @@ Battle.updDodge = function () {
   if (B.grazeFx && --B.grazeFx.t <= 0) B.grazeFx = null;
   if (B.blockFx && B.blockFx.length) { for (const fx of B.blockFx) fx.t++; B.blockFx = B.blockFx.filter(fx => fx.t < 8); }
   if (B.blockParts && B.blockParts.length) { for (const p of B.blockParts) { p.x += p.vx; p.y += p.vy; p.vx *= 0.9; p.vy *= 0.9; p.t++; } B.blockParts = B.blockParts.filter(p => p.t < 14); }
+  if (B.fx && B.fx.bossSprite && B.fx.bossSprite.ttl != null && --B.fx.bossSprite.ttl <= 0) B.fx.bossSprite = null;   // Gerson attack-pose auto-expires back to idle
   if (B.shieldFlash > 0) B.shieldFlash--;
   if (B.shieldParry > 0) B.shieldParry--;
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
@@ -1519,8 +1521,16 @@ Battle.renderChars = function (ctx) {
         for (let k = m.trail.length - 1; k >= 1; k--)
           drawCharAnim(ctx, m.def, 'idle', m.poseT, x + back * k * 3, m.trail[k], flip, 0.06 + 0.14 * (1 - k / m.trail.length), sc);
       }
-      const done = drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, gy, flip, alpha, sc);
-      if (done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
+      // BOSS ATTACK POSE: a pattern can drive the boss's on-field sprite (Gerson swing/throw/spin) via
+      // B.fx.bossSprite = {key,n,rate,flip,f}. Used only while fresh (set this frame). Falls back to the anim.
+      const bs = (team === B.oppTeam && !isOut(m) && B.fx && B.fx.bossSprite) ? B.fx.bossSprite : null;
+      if (bs && typeof bulletProps === 'function') {
+        const frm = bulletProps(bs.key + (Math.floor(m.poseT / (bs.rate || 3)) % bs.n)).img;
+        if (frm && frm.width) { const fl = (ENEMY_FACING[m.def.base] ? !flip : flip) !== !!bs.flip;
+          drawSpr(ctx, frm, x, gy - frm.height / 2 * sc + (m.def.yoff || 0), { scale: sc, flip: fl, alpha }); }
+      }
+      const done = bs ? true : drawCharAnim(ctx, m.def, m.downed ? 'downed' : m.pose, m.poseT, x, gy, flip, alpha, sc);
+      if (!bs && done && !LOOP_POSES[m.pose] && !HOLD_POSES[m.pose]) { m.pose = 'idle'; m.poseT = 0; }
       else if (done && m.pose === 'hurt' && m.poseT > 50) { m.pose = 'idle'; m.poseT = 0; }
       // small MERCY readout, only on YOUR OWN party, only once MERCY has started building,
       // tucked below the character (no HP - that's already on the panel)

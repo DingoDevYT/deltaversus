@@ -1454,6 +1454,8 @@ PATTERNS.gerson_pinball = {
 // slams (GML speed 50). Dodge to the UNslashed side. ---
 function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel) {
   const { add, box } = a;
+  a.fx.bossSprite = { key: 'gswing', n: 7, rate: 3, ttl: 16 };   // Gerson visibly SWINGS when a slash fires
+  a.fx.shake = Math.max(a.fx.shake || 0, 3);
   add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 110), boxClip: true,
         noHit: true, fireAt: tel, fireVX: fvx, fireVY: fvy, hitW, hitH, dmg: 26, life: tel + 16 });
   // telegraph zone: RED then FADES TO WHITE as the slash lands (GML gerson telegraph colour ramp)
@@ -1632,6 +1634,7 @@ PATTERNS.gerson_boxthrow = {
       a.fx.boxRot = -0.785 * tilt;                                   // -45deg (to the LEFT)
       a.fx.boxTarget = { x: this._ax - 40, y: (this._settled ? this._ay + 16 : this._ay), w: box.w, h: box.h, boxLerp: 0.25 };
     }
+    if (f >= 34 && f < 320) a.fx.bossSprite = { key: 'gswing', n: 7, rate: 4, ttl: 4 };   // Gerson visibly THROWS
     if (f >= 40 && f < 200 && (f - 40) % 10 === 0) {                 // 16 fan-throws of 3-4 hammers
       const n = 3 + Math.floor(rng() * 2);
       for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
