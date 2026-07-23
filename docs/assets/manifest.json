@@ -6122,6 +6122,51 @@
       "oh": 12,
       "ox": 0,
       "oy": 0
+    },
+    "knightpoint0": {
+      "f": "knightpoint0.png",
+      "w": 68,
+      "h": 65,
+      "ow": 68,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightpoint1": {
+      "f": "knightpoint1.png",
+      "w": 67,
+      "h": 65,
+      "ow": 67,
+      "oh": 65,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightpoint2": {
+      "f": "knightpoint2.png",
+      "w": 75,
+      "h": 67,
+      "ow": 75,
+      "oh": 67,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightpoint3": {
+      "f": "knightpoint3.png",
+      "w": 79,
+      "h": 67,
+      "ow": 79,
+      "oh": 67,
+      "ox": 0,
+      "oy": 0
+    },
+    "knightpoint4": {
+      "f": "knightpoint4.png",
+      "w": 78,
+      "h": 67,
+      "ow": 78,
+      "oh": 67,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {
