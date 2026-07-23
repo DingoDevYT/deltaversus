@@ -1481,11 +1481,13 @@ function drawCharAnim(ctx, def, pose, tFrames, x, groundY, flip, alpha, scale) {
   if (im && im.width) {
     const fl = ENEMY_FACING[def.base] ? !flip : flip;
     const cy0 = groundY - im.height / 2 * (scale || 1) + (def.yoff || 0);
-    // flowing HAIR (Gerson: spr_gerson_hair) — looping frames drawn BEHIND the body (furthest-back layer)
+    // flowing HAIR (Gerson: spr_gerson_hair) — drawn behind his head, same layer, PIVOTING at the sprite's
+    // LEFT EDGE (origin 0,18) which sits on the back of his head; it flows backward.
     if (def.hair && typeof bulletProps === 'function') {
-      const H = def.hair, hf = bulletProps(H.key + (Math.floor(tFrames / (H.rate || 6)) % (H.n || 5))).img;
-      if (hf && hf.width) { const back = fl ? 1 : -1;
-        drawSpr(ctx, hf, x + back * (H.dx || 20), cy0 + (H.dy || 0) + Math.sin(tFrames * 0.1) * 2, { scale: (scale || 1) * (H.scale || 1), flip: fl, alpha }); }
+      const H = def.hair, hsc = (scale || 1) * (H.scale || 1), hf = bulletProps(H.key + (Math.floor(tFrames / (H.rate || 6)) % (H.n || 5))).img;
+      if (hf && hf.width) { const back = fl ? 1 : -1, hw = hf.width * hsc * 1.6 / 2;
+        // shift the (centred) sprite by +halfWidth along the flow so its LEFT EDGE lands on the head anchor
+        drawSpr(ctx, hf, x + back * ((H.dx || 0) + hw), cy0 + (H.dy || 0) + Math.sin(tFrames * 0.1) * 1.5, { scale: hsc, flip: fl, alpha }); }
     }
     if (def.hue) im = A.hued(im, def.hue);
     drawSpr(ctx, im, x, cy0, { scale: scale || 1, flip: fl, alpha });

@@ -1405,15 +1405,15 @@ function gPinKnock(b, s, bx) {   // Gerson knocks the shell back (counter<7 -> a
   if (b._cnt < 7) {
     const ang = Math.atan2(s.y - b.y, s.x - b.x), sp = Math.min(15, Math.hypot(b.vx, b.vy) + 1.5);
     b.vx = Math.cos(ang) * sp; b.vy = Math.sin(ang) * sp;
-  } else {   // aim to just inside the top-right (x within the break's +-72 range) so the slam lands in the board
-    const tx = cx + 55, ty = cy - bx.h / 2 - 80, dist = Math.hypot(tx - b.x, ty - b.y), ang = Math.atan2(ty - b.y, tx - b.x);
+  } else {   // aim ABOVE CENTRE, then Gerson slams it down the MIDDLE (it shatters at the centre, not the side)
+    const tx = cx, ty = cy - bx.h / 2 - 80, dist = Math.hypot(tx - b.x, ty - b.y), ang = Math.atan2(ty - b.y, tx - b.x);
     b.vx = Math.cos(ang) * (dist / 30); b.vy = Math.sin(ang) * (dist / 30); b._tt = 0;
   }
 }
 function gPinballShell(box, x, y, ang, spd) {
   return {
     ...bulletProps('gshellspr0'), x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
-    r: 13, grazeR: 16, scale: 0.72, spin: 0.42, tint: '#33ff33', dmg: 44,
+    r: 12, grazeR: 15, scale: 0.65, spin: 0.42, tint: '#33ff33', dmg: 44,   // ~10% smaller, normal green shell sprite
     _cnt: Math.random() < 0.5 ? 0 : -1, _lt: -1, _rt: -1, _tt: -1, _tmr: 0, _sqT: 0,
     emit(b, out, s, bx) {
       const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2, T = cy - bx.h / 2, B = cy + bx.h / 2;
@@ -1432,7 +1432,7 @@ function gPinballShell(box, x, y, ang, spd) {
       if (b._lt === 7) { gPinKnock(b, s, bx); b._lt = -1; }
       if (b._rt === 1) out.push(gPinSwing(b.x + 30, b.y, false));
       if (b._rt === 7) { gPinKnock(b, s, bx); b._rt = -1; }
-      if (b._tt === 0) { out.push({ img: bulletProps('gblade0').img, animKeys: ['gblade0', 'gblade1'], animRate: 3, x: cx + bx.w / 2, y: T - 40, vx: 0, vy: -1.5, noHit: true, scale: 1, life: 34 }); Snd.play('smallswing', 0.4); }
+      if (b._tt === 0) { out.push({ img: bulletProps('gblade0').img, animKeys: ['gblade0', 'gblade1'], animRate: 3, x: cx, y: T - 40, vx: 0, vy: -1.5, noHit: true, scale: 1, life: 34 }); Snd.play('smallswing', 0.4); }
       if (b._tt === 30) { b.vx = 0; b.vy = 30; Battle.shake = 14; Snd.play('bosshit', 0.5); }
     },
   };
