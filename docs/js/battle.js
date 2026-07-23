@@ -1067,7 +1067,7 @@ Battle.updDodge = function () {
   }
 
   // transient fx are re-requested by the pattern each frame; box target persists so the box can ease back
-  B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null;
+  B.fx.blackout = false; B.fx.pull = null; B.fx.faceBox = null; B.fx.arms = null; B.fx.bgHue = null; B.fx.knightCone = null;
   B.fx.split = null; B.fx.boss = null; B.fx.hideBox = false; B.fx.pinch = 0; B.fx.arena = false;
   B.fx.bgStars = false; B.fx.shake = 0; B.fx.whiteout = 0; B.fx.bombWarn = []; B.fx.pinkGhost = null;   // per-frame telegraphs
   B.fx.audience = null; B.fx.audienceFront = null; B.fx.pinkSing = null; B.fx.pinkFinale = null; B.fx.pinkSplit = null; B.fx.maze = null;
@@ -1151,7 +1151,7 @@ Battle.updDodge = function () {
       }
     }
     if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }   // parked teeth launch
-    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play('boarddmg', 0.5); if (b.shakeOnCut) B.shake = Math.max(B.shake, 7); }   // tell -> live cut (+screenshake)
+    if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; Snd.play(b.cutSnd || 'boarddmg', b.cutVol != null ? b.cutVol : 0.5); if (b.shakeOnCut) B.shake = Math.max(B.shake, 7); }   // tell -> live cut (+screenshake; cutSnd overrides)
     if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
     // controller bullets (climbing head, face parts, giant Spamton) emit projectiles from their LIVE
     // position; emitted children INHERIT the controller's per-hit damage + target (else they'd be 10)
@@ -2046,6 +2046,16 @@ Battle.renderBoxAndBullets = function (ctx) {
   if (B.fx) {
     if (B.fx.arms) { ctx.strokeStyle = '#49d049'; ctx.lineWidth = 3; ctx.lineCap = 'round';
       for (const a of B.fx.arms) { ctx.beginPath(); ctx.moveTo(a.x1, a.y1); ctx.lineTo(a.x2, a.y2); ctx.stroke(); } }
+    // Knight STARS aim-cone (obj_knight_pointing_cone): a purple wedge from the apex showing the
+    // spread the stars fire into. c = {x,y,dir(rad),spread(rad),len}.
+    if (B.fx.knightCone) { const c = B.fx.knightCone, hs = c.spread / 2;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.dir);
+      const g = ctx.createLinearGradient(0, 0, c.len, 0); g.addColorStop(0, 'rgba(150,60,220,0.55)'); g.addColorStop(1, 'rgba(150,60,220,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(hs) * c.len, Math.sin(hs) * c.len); ctx.lineTo(Math.cos(-hs) * c.len, Math.sin(-hs) * c.len);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#c060ff'; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-6, -7); ctx.lineTo(-2, 0); ctx.lineTo(-6, 7); ctx.closePath(); ctx.fill();   // the purple rhombus at the apex
+      ctx.restore(); }
     if (B.fx.faceBox) { const fb = B.fx.faceBox; drawBoxRect(ctx, fb.x + fb.w / 2, fb.y + fb.h / 2, fb.w, fb.h, 0, 1); }
   }
   ctx.save();

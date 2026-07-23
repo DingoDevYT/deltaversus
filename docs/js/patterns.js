@@ -931,88 +931,88 @@ const D2R = Math.PI / 180;
 // the Knight's on-field attack pose (spr_roaringknight_attack_ol), auto-expiring
 function knightAtk(a) { a.fx.bossSprite = { key: 'knightattack', n: 6, rate: 4, ttl: 4 }; }
 
-// STARS (type 98) — 3 phase variants (wiki attack table):
-//   P1 explode into 3 shards · P2 into 6 · P3 into 2 that turn RED and home at the SOUL.
+// STARS (type 98 / obj_knight_pointing_cone + star) — corrected from stars_v2.md:
+// wide/short box 168x132; the cone draws a PURPLE aim-wedge (fx.knightCone) whose spread grows
+// 0->60deg; stars fly LEFT into the fan, GROW (0.02/f, no spin), then ALL brake+reverse and detonate
+// TOGETHER. P1=3(+3 weak) shards, P2=6, P3=2 RED shards that HOME with a stagger + gentle speed ramp.
 function knightStars(v) {
-  const shardN = v === 2 ? 6 : v === 1 ? 3 : 2;
   return {
-    dur: 205, hz30: 1, box: KN_BOX,
+    dur: 300, hz30: 1, box: { w: 168, h: 132 },
     tick(a) {
       const { f, box, add, rng } = a;
-      const cx0 = box.x + box.w - 6, cy0 = box.y + box.h * 0.5, END = 150, EXPLODE = 172;
-      const ca = 60 * (1 - Math.pow(1 - Math.min(1, f / 40), 3));
+      const cx0 = box.x + box.w - 4, cy0 = box.y + box.h * 0.5, END = 150, EXPLODE = 196;
+      const openT = Math.min(1, f / 45);
+      const spread = f < END ? 60 * (1 - Math.pow(1 - openT, 3)) : 60 * Math.max(0, 1 - (f - END) / 30);
+      a.fx.knightCone = { x: cx0, y: cy0, dir: Math.PI, spread: spread * D2R, len: box.w * 0.92 };
       if (f >= 45 && f <= END && (f - 45) % 4 === 0) {
         this._sz = (this._sz == null) ? 0.5 + rng() * 0.5 : (this._sz + 0.5 + Math.sin(f) * 0.5) % 1;
         this._sp = (this._sp == null) ? (rng() - 0.5) : (((this._sp + 1 + (0.5 + Math.sin(rng()) * 0.3)) % 1) - 0.5);
-        const size = this._sz, dir = 180 + this._sp * ca, rad = dir * D2R, spd = 5 + (1 - size) * 5;
-        const st = { ...bulletProps('knightstar'), x: cx0, y: cy0, vx: Math.cos(rad) * spd, vy: -Math.sin(rad) * spd,
-          r: 7, grazeR: 12, scale: 0.15, grow: 0.04 + size * 0.05, growMax: 0.7 + size * 0.5, spin: 0.14, fric: 0.11,
-          life: 230, redAt: Math.max(18, EXPLODE - f) - 12 };
-        if (v === 3) {   // P3: detonate into 2 RED shards that HOME at the soul (one leads)
-          st._bt = Math.max(18, EXPLODE - f);
-          st.emit = function (b, out, soul) {
-            if (!b._done && b.t >= b._bt) { b._done = 1; b.dead = true;
-              for (let i = 0; i < 2; i++) { const ang = Math.atan2(soul.y - b.y, soul.x - b.x) + (i ? 0.5 : -0.5);
-                out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 1.1, vy: Math.sin(ang) * 1.1,
-                  rot: ang, tint: '#f33', r: 5, scale: 0.7, homing: 0.07 + i * 0.02, maxv: 5, life: 95 }); }
+        const size = this._sz, dir = (180 + this._sp * spread) * D2R, spd = 4 + (1 - size) * 3;
+        add({ ...bulletProps('knightstar'), x: cx0, y: cy0, vx: Math.cos(dir) * spd, vy: -Math.sin(dir) * spd,
+          r: 6, grazeR: 12, scale: 0.2, grow: 0.02, growMax: 0.55 + size * 0.35, life: 320, _te: Math.max(24, EXPLODE - f), _var: v,
+          emit(b, out, sl) {
+            const te = b._te;
+            if (b.t === te - 40) b.fric = 0.35;                                   // brake to a stop
+            if (b.t > te - 40 && b.t < te) { b.ax = -b.vx * 0.02; b.ay = -b.vy * 0.02; }   // creep back
+            if (b.t === te) { b.dead = true; Snd.play('explosionmmx', 0.22);
+              if (b._var === 3) {
+                for (let i = 0; i < 2; i++) { const ang = Math.atan2(sl.y - b.y, sl.x - b.x) + (i ? 0.4 : -0.4);
+                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 0.4, vy: Math.sin(ang) * 0.4,
+                    tint: '#f33', r: 5, scale: 0.7, _hd: i * 16, homing: 0, maxv: 5, life: 130,
+                    emit(p) { if (p.t >= p._hd) { p.homing = 0.05; const s = Math.hypot(p.vx, p.vy); if (s < 4.6) { p.vx *= 1.045; p.vy *= 1.045; } } } }); }
+              } else {
+                const N = b._var === 2 ? 6 : 3;
+                for (let i = 0; i < N; i++) { const ang = i / N * 6.28 + rng() * 0.3;
+                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 3.4, vy: Math.sin(ang) * 3.4, rot: ang, r: 5, scale: 0.7, fric: 0.05, life: 92 }); }
+                if (b._var === 1) for (let i = 0; i < 3; i++) { const ang = i / 3 * 6.28 + 1;   // 3 weak short shards
+                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 1.2, vy: Math.sin(ang) * 1.2, rot: ang, r: 4, scale: 0.5, life: 34 }); }
+              }
             }
-          };
-        } else {
-          st.burst = Math.max(18, EXPLODE - f); st.burstN = shardN; st.burstImg = 'knighttri';
-          st.burstSpeed = 3.2; st.burstScale = 0.7; st.burstLife = 90;
-        }
-        add(st); Snd.play('boardsummon', 0.2);
+          } });
+        Snd.play('boardsummon', 0.2);
       }
-      if (f === EXPLODE + 2) Snd.play('explosionmmx', 0.28);
       if (f > 40 && f < END) knightAtk(a);
     },
   };
 }
 
-// TRACKING SWORDS (type 151) — 3 phase variants:
-//   P1 a single blade tracks the SOUL then slashes (10x, speeding up) · P2 "you feel surrounded":
-//   a circle of swords contracts/expands + orbits the box · P3 like P1 but appears + fires much faster.
+// TRACKING SWORDS (type 151) — corrected from user review: bigger blades; after locking, the sword
+// FREEZES and shows a RED telegraph line at the locked spot for a beat BEFORE the slash (so diagonals
+// are dodgeable in ANY direction, not just perpendicular). P2 = base tracking PLUS a fixed-radius
+// rotating sword-RING (no zoom); P3 = same as P1 but faster.
 function knightTracking(v) {
-  if (v === 2) {   // P2 — the surrounding, breathing sword-ring (was the standalone "vortex")
-    return {
-      dur: 250, hz30: 1, box: KN_BOX,
-      tick(a) {
-        const { f, box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, N = 8;
-        const idx = (f >= 6 && (f - 6) % 3 === 0) ? (f - 6) / 3 : -1;
-        if (idx >= 0 && idx < N) {
-          add({ img: bulletProps('knightswordol').img, scale: 0.66, r: 13, alpha: 0.9,
-            orbit: { cx, cy, R: 54, ang: idx * (Math.PI * 2 / N), w: -4.2 * D2R,
-              pulse: { base: 54, amp: 28, freq: 0.05 },                 // contracts + expands
-              center: { cx0: cx, cy0: cy, ax: 20, ay: 20, f: 0.016 } }, life: 300 });
-        }
-        knightAtk(a);
-      },
-    };
-  }
-  const CAD = v === 3 ? 14 : 22;   // P3 fires much faster
+  const CAD = v === 3 ? 15 : 22, track = v === 3 ? 18 : 28, freeze = 12;
   return {
-    dur: v === 3 ? 210 : 230, hz30: 1, box: KN_BOX,
+    dur: v === 3 ? 220 : 240, hz30: 1, box: KN_BOX,
     tick(a) {
-      const { f, add } = a, LEN = 60, START = 16;
+      const { f, box, add } = a, LEN = 62, START = 16;
+      if (v === 2 && f === 6) {   // the surrounding RING (constant radius, just rotates — no pulse/zoom)
+        const cx = box.x + box.w / 2, cy = box.y + box.h / 2, N = 8, R = Math.min(box.w, box.h) * 0.48;
+        for (let i = 0; i < N; i++)
+          add({ img: bulletProps('knightswordol').img, scale: 1.0, r: 12, alpha: 0.95,
+            orbit: { cx, cy, R, ang: i * (Math.PI * 2 / N), w: -3.2 * D2R }, life: 300 });
+      }
       if (f >= START && (f - START) % CAD === 0) {
         this._used = this._used || [];
         let dir; do { dir = (Math.floor(a.rng() * 8) * 45); } while (this._used.indexOf(dir) >= 0);
         this._used.push(dir); if (this._used.length > 3) this._used.shift();
-        const track = v === 3 ? 22 : 32, fireT = track + 1;   // faster lock in P3
-        const sw = { img: bulletProps('knightswordol').img, scale: 0.66, r: 0, noHit: true, life: fireT + 12,
-          tint: '#f44', alpha: 0.5, _dir: dir, _len: LEN, rot: 0, _tk: track, _ft: fireT };
+        const fireT = track + freeze;
+        const sw = { img: bulletProps('knightswordol').img, scale: 1.05, r: 0, noHit: true, life: fireT + 10,
+          tint: '#f44', alpha: 0.5, _dir: dir, _len: LEN, rot: 0, _tk: track, _ft: fireT, _line: 0 };
         sw.emit = function (b, out, soulNow) {
           const rad = b._dir * D2R, dx = Math.cos(rad), dy = -Math.sin(rad);
-          if (b.t <= b._tk) {
-            b.x = soulNow.x + dx * b._len; b.y = soulNow.y + dy * b._len;
-            b.rot = Math.atan2(-dy, -dx);
-            b.alpha = Math.min(0.9, b.t / 8) * (b.t < b._tk - 5 ? 0.6 : 1.0);
-            if (b.t >= b._tk - 5) b.tint = '#ff3030';
-            b._lx = b.x; b._ly = b.y; b._lr = Math.atan2(-dy, -dx);
-          } else if (b.t === b._ft) {
+          if (b.t <= b._tk) {                     // TRACK the soul
+            b.x = soulNow.x + dx * b._len; b.y = soulNow.y + dy * b._len; b.rot = Math.atan2(-dy, -dx);
+            b.alpha = Math.min(0.85, b.t / 8) * 0.6; b._lx = b.x; b._ly = b.y; b._lr = Math.atan2(-dy, -dx);
+          } else if (b.t <= b._ft) {              // FREEZE + red telegraph line (reaction window)
+            b.tint = '#ff2020'; b.alpha = 1;
+            if (!b._line) { b._line = 1;
+              out.push({ shape: 'line', color: '#f88', len: 520, thick: 3, x: b._lx, y: b._ly, rot: b._lr, vx: 0, vy: 0,
+                tellFade: 0.5, _follow: b, noHit: true, life: freeze + 2 }); }
+          } else if (b.t === b._ft + 1) {          // SLASH
             Snd.play('knightsword', 0.5);
-            out.push({ shape: 'line', color: '#fff', len: 460, thick: 6, x: b._lx, y: b._ly,
-              rot: b._lr, vx: 0, vy: 0, tellT: 1, armWindow: 4, dmg: b.dmg, shakeOnCut: true });
+            out.push({ shape: 'line', color: '#fff', len: 520, thick: 5, x: b._lx, y: b._ly, rot: b._lr, vx: 0, vy: 0,
+              tellT: 1, armWindow: 4, cutSnd: 'knightsword', dmg: b.dmg, shakeOnCut: true });
             b.dead = true;
           }
         };
@@ -1023,32 +1023,36 @@ function knightTracking(v) {
   };
 }
 
-// BOX SPLITTER (type 99) — 3 phase variants:
-//   P1 cleaves ONE fixed orthogonal direction · P2 switches V/H each cleave · P3 also DIAGONAL
-//   (diagonal cleave radiates teeth from the centre instead of splitting the box).
+// BOX SPLITTER (type 99) — rebuilt from boxsplitter_v2: the cut emits 13 DIAMONDS spread ALONG the cut,
+// each travelling PERPENDICULAR to it in two opposite groups, at two alternating speeds (fast/slow, no
+// more than 2 adjacent the same) that accelerate — the speed difference makes them separate in time.
 function knightFlurry(v) {
+  // speed pattern with no >2 adjacent equal (GML weight rule), 0=slow 1=fast
+  function speedPattern(rng, n) {
+    const out = []; let run = 0, cur = rng() < 0.5 ? 0 : 1;
+    for (let i = 0; i < n; i++) { out.push(cur); run++;
+      if (run >= 2 || rng() < 0.5) { cur = 1 - cur; run = 0; } }
+    return out;
+  }
   return {
     dur: 300, hz30: 1, box: KN_BOX,
     tick(a) {
       const { f, box, add, rng } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = 46;
       if (f >= 276) return;
       const ev = f % GAP;
-      if (ev === 0) {   // choose this cleave's axis
-        if (v === 1) this._axis = this._axis || (rng() < 0.5 ? 'h' : 'v');           // fixed all attack
-        else if (v === 2) this._axis = rng() < 0.5 ? 'h' : 'v';                       // switch each time
-        else { const r = rng(); this._axis = r < 0.4 ? 'h' : r < 0.8 ? 'v' : 'd'; }   // + diagonal
+      if (ev === 0) {
+        if (v === 1) this._axis = this._axis || (rng() < 0.5 ? 'h' : 'v');
+        else if (v === 2) this._axis = rng() < 0.5 ? 'h' : 'v';
+        else { const r = rng(); this._axis = r < 0.4 ? 'h' : r < 0.8 ? 'v' : 'd'; }
         if (this._axis === 'd') this._drot = (rng() < 0.5 ? 1 : -1) * Math.PI / 4;
       }
       const horiz = this._axis === 'h', diag = this._axis === 'd';
       if (ev === 0) {
-        if (diag) add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.1, thick: 5, x: cx, y: cy,
-          rot: this._drot, vx: 0, vy: 0, tellT: 30, armWindow: 5, tellRamp: true, tellMax: 30 });
-        else add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.06, thick: 5, x: cx, y: cy,
-          rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 30, armWindow: 5, tellRamp: true, tellMax: 30 });
+        if (diag) add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.1, thick: 5, x: cx, y: cy, rot: this._drot, vx: 0, vy: 0, tellT: 30, armWindow: 5, tellRamp: true, tellMax: 30, cutSnd: 'heavyswing' });
+        else add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.06, thick: 5, x: cx, y: cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 30, armWindow: 5, tellRamp: true, tellMax: 30, cutSnd: 'heavyswing' });
         knightAtk(a);
       }
-      if (!diag) {   // box physically splits (h/v only)
-        let off = 0;
+      if (!diag) { let off = 0;
         if (ev >= 30 && ev < 44) off = (ev - 30) / 14 * 35;
         else if (ev >= 44 && ev < 60) off = 35;
         else if (ev >= 60 && ev < 74) off = 35 * (1 - (ev - 60) / 14);
@@ -1056,22 +1060,20 @@ function knightFlurry(v) {
       }
       if (ev === 30) {
         Snd.play('explosionmmx', 0.3); a.fx.shake = 6;
-        if (diag) {   // radiate teeth outward from the centre
-          const M = 14;
-          for (let i = 0; i < M; i++) { const ang = i * Math.PI * 2 / M;
-            add({ ...bulletProps('knighttooth'), x: cx, y: cy, rot: ang + Math.PI / 2, scale: 0.9, r: 6, noHit: true,
-              fireAt: 6, fireVX: Math.cos(ang) * 3.4, fireVY: Math.sin(ang) * 3.4, ax: Math.cos(ang) * 0.1, ay: Math.sin(ang) * 0.1, life: 52 }); }
-        } else {   // 13 teeth erupt along the cut, accelerating outward
-          const N = 13, span = horiz ? box.w : box.h, base = horiz ? box.x : box.y;
+        if (diag) {   // P3 diagonal -> diamonds radiate from centre
+          const M = 13, sp = speedPattern(rng, M);
+          for (let i = 0; i < M; i++) { const ang = i * Math.PI * 2 / M, top = sp[i] ? 4 : 2;
+            add({ ...bulletProps('knighttooth'), x: cx, y: cy, rot: Math.PI / 4, scale: 1.0, r: 7,
+              vx: Math.cos(ang) * 0.4, vy: Math.sin(ang) * 0.4, ax: Math.cos(ang) * (top / 22), ay: Math.sin(ang) * (top / 22), maxv: top, fric: -0.02, life: 60 }); }
+        } else {   // 13 diamonds along the cut, perpendicular, two groups, two speeds
+          const N = 13, span = horiz ? box.w : box.h, base = horiz ? box.x : box.y, sp = speedPattern(rng, N);
           for (let i = 0; i < N; i++) {
-            const t = (i + 0.5) / N, pos = base + t * span;
-            if (horiz) {
-              add({ ...bulletProps('knighttooth'), x: pos, y: cy - 6, rot: 0, scale: 1.0, r: 7, noHit: true, ridesSplit: 1, fireAt: 6, fireVY: -3.6, ay: -0.16, life: 40 });
-              add({ ...bulletProps('knighttooth'), x: pos, y: cy + 6, rot: Math.PI, scale: 1.0, r: 7, noHit: true, ridesSplit: -1, fireAt: 6, fireVY: 3.6, ay: 0.16, life: 40 });
-            } else {
-              add({ ...bulletProps('knighttooth'), x: cx - 6, y: pos, rot: -Math.PI / 2, scale: 1.0, r: 7, noHit: true, ridesSplit: 1, fireAt: 6, fireVX: -3.6, ax: -0.16, life: 40 });
-              add({ ...bulletProps('knighttooth'), x: cx + 6, y: pos, rot: Math.PI / 2, scale: 1.0, r: 7, noHit: true, ridesSplit: -1, fireAt: 6, fireVX: 3.6, ax: 0.16, life: 40 });
-            }
+            const t = (i + 0.5) / N, pos = base + t * span, side = (i % 2 === 0) ? 1 : -1, top = sp[i] ? 4 : 2;
+            // perpendicular direction: H-cut -> up/down ; V-cut -> left/right
+            const vpx = horiz ? 0 : side, vpy = horiz ? side : 0;
+            const x = horiz ? pos : cx + side * 4, y = horiz ? cy + side * 4 : pos;
+            add({ ...bulletProps('knighttooth'), x, y, rot: Math.PI / 4, scale: 1.0, r: 7,
+              vx: vpx * 0.5, vy: vpy * 0.5, ax: vpx * (top / 22), ay: vpy * (top / 22), maxv: top, life: 54 });
           }
         }
       }
@@ -1079,35 +1081,42 @@ function knightFlurry(v) {
   };
 }
 
-// SWORD TUNNEL (type 153) — 3 phase variants:
-//   P1 straight walls, wandering gap · P2 the incoming angle rotates (blades slant + sweep) ·
-//   P3 straight but the gap is NARROWER.
+// SWORD TUNNEL (type 153) — rebuilt from tunnel_v2: TWO long diamond-swords per tick (top+bottom) with a
+// clearly-visible gap band between them; the gap wanders. P2 the whole tunnel axis ROTATES (CCW 360deg).
+// Finale: EVERY live sword telegraphs a red line (MANY lines strung across the box), then they fly across.
 function knightTunnel(v) {
-  const gapH = v === 3 ? 34 : 46, FIN = 210;
+  const gapH = v === 3 ? 40 : 46, FIN = 210, rotStep = v === 2 ? 1.2 * D2R : 0;   // P2 rotates ~1.2deg/frame
   return {
-    dur: 252, hz30: 1, box: KN_BOX,
+    dur: 260, hz30: 1, box: KN_BOX,
     tick(a) {
-      const { f, box, add, soul } = a, cyC = box.y + box.h / 2;
-      if (f === 0) { this._gap = cyC; this._dir = 1; this._sw = 0; }
+      const { f, box, add, soul } = a, cx = box.x + box.w / 2, cyC = box.y + box.h / 2;
+      if (f === 0) { this._gap = 0; this._dir = 1; this._sw = 0; this._theta = 0; this._swords = []; }
       if (f < FIN && f % 4 === 0) {
-        if (this._sw <= 0) { this._sw = 2 + Math.floor(a.rng() * 3); this._dir = (this._gap > cyC + 12) ? -1 : (this._gap < cyC - 12) ? 1 : (a.rng() < 0.5 ? 1 : -1); }
-        this._gap += this._dir * 5; this._sw--;
-        this._gap = Math.max(cyC - 20, Math.min(cyC + 20, this._gap));
-        const x0 = box.x + box.w + 16;
-        const slant = v === 2 ? Math.sin(f * 0.05) * 2.2 : 0;    // P2: blades drift -> the corridor slants/rotates
-        const blade = (yy, hh, rot) => add({ ...bulletProps('knightdiamondl2'), x: x0, y: yy, vx: -6, vy: slant, ax: -0.9, maxv: 20,
-          rot, scale: 0.62, sx: 1.1, sy: Math.min(1.6, hh / 28), hitW: 12, hitH: hh + 4, life: 60 });
-        const wall = (yStart, yEnd, rot) => { const h = yEnd - yStart; if (h < 10) return;
-          const nb = Math.max(1, Math.round(h / 30)); for (let i = 0; i < nb; i++) blade(yStart + (i + 0.5) * h / nb, h / nb, rot); };
-        wall(box.y + 3, this._gap - gapH / 2, Math.PI / 2);
-        wall(this._gap + gapH / 2, box.y + box.h - 3, -Math.PI / 2);
+        if (this._sw <= 0) { this._sw = 2 + Math.floor(a.rng() * 3); this._dir = (this._gap > 20) ? -1 : (this._gap < -20) ? 1 : (a.rng() < 0.5 ? 1 : -1); }
+        this._gap += this._dir * 10; this._sw--; this._gap = Math.max(-20, Math.min(20, this._gap));   // gap centre offset +/-20
+        this._theta += rotStep;
+        const th = this._theta, nx = -Math.cos(th), ny = -Math.sin(th);     // travel dir: th=0 -> LEFT (from the right edge)
+        const px = -Math.sin(th), py = Math.cos(th);                        // perpendicular (row axis)
+        const gapc = this._gap, D = Math.max(box.w, box.h) * 0.75, reach = Math.max(box.w, box.h) * 0.62, STEP = 22;
+        const bladeRot = Math.atan2(ny, nx);                                // swords point along travel
+        const blade = (perpOff) => {
+          const ox = cx - nx * D + px * perpOff, oy = cyC - ny * D + py * perpOff;
+          add({ ...bulletProps('knightdiamondl2'), x: ox, y: oy, vx: nx * 6, vy: ny * 6, ax: nx * 0.9, ay: ny * 0.9, maxv: 20,
+            rot: bladeRot, scale: 0.72, sx: 1.35, sy: 0.55, r: 12, life: 70, _tun: 1 });
+        };
+        for (let p = gapc - gapH / 2; p > -reach; p -= STEP) blade(p);       // TOP wall (edge -> gap)
+        for (let p = gapc + gapH / 2; p < reach; p += STEP) blade(p);        // BOTTOM wall (gap -> edge)
         if (f % 12 === 0) Snd.play('heavyswing', 0.16);
       }
-      if (f === FIN) {
-        Snd.play('knightsword', 0.5);
-        const ang = Math.atan2(soul.y - cyC, -1);
-        add({ shape: 'line', color: '#fff', len: 520, thick: 10, x: box.x + box.w / 2, y: cyC, rot: ang,
-          vx: 0, vy: 0, tellT: 24, armWindow: 7, tellRamp: true, tellMax: 24, shakeOnCut: true });
+      // FINALE: many red telegraph lines strung across the box, then they fire (swords fly across)
+      if (f === FIN) Snd.play('knightsword', 0.5);
+      if (f >= FIN && f < FIN + 2) {
+        // draw ~14 red telegraph lines strung across the box at random angles, then they arm
+        for (let i = 0; i < 14; i++) {
+          const rx = box.x + a.rng() * box.w, ry = box.y + a.rng() * box.h, rr = a.rng() * Math.PI;
+          add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.3, thick: 5, x: rx, y: ry, rot: rr, vx: 0, vy: 0,
+            tellT: 30, armWindow: 6, tellRamp: true, tellMax: 30, cutSnd: 'knightsword', shakeOnCut: true });
+        }
         knightAtk(a);
       }
       if (f > 4 && f < FIN) knightAtk(a);
@@ -1115,30 +1124,34 @@ function knightTunnel(v) {
   };
 }
 
-// ROTATING SLASH (type 104) — 3 phase variants (wiki cut counts):
-//   P1 1-2-2-3-3-4 · P2 3-3-4-4-4-4 · P3 3-4-4-4-4-4 then a fast SPIRAL finale.
+// ROTATING SLASH (type 104) — corrected from rotslash_v2: beam lines span the FULL box every time
+// (fixed 1400px), correct SFX (rotatingslash-line loop / knight_cut+firework / puff+teleport). P1
+// 1-2-2-3-3-4, P2 3-3-4-4-4-4, P3 3-4-4-4-4-4 + a 28-cut spiral finale (only the first cut telegraphed).
 function knightRotslash(v) {
   const SEQ = v === 1 ? [1, 2, 2, 3, 3, 4] : v === 2 ? [3, 3, 4, 4, 4, 4] : [3, 4, 4, 4, 4, 4];
-  const finale = v === 3;
+  const finale = v === 3, LINE = 1400;
   return {
-    dur: finale ? 326 : 250, hz30: 1, box: KN_BOX,
+    dur: finale ? 360 : 250, hz30: 1, box: KN_BOX,
     tick(a) {
-      const { f, box, add, soul, rng } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = 36, INTRO = 16;
+      const { f, box, add, soul, rng } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2, GAP = 36, INTRO = 17;
       for (let e = 0; e < SEQ.length; e++) {
         if (f !== INTRO + e * GAP) continue;
         const n = SEQ[e], base = rng() * Math.PI, spin = (rng() < 0.5 ? 1 : -1) * (0.14 + rng() * 0.08);
+        if (e === 0) Snd.play('boardsummon', 0.18);   // rotating-slash aim whir
         for (let i = 0; i < n; i++)
-          add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.2, thick: 7, x: soul.x, y: soul.y,
-            rot: base + i * Math.PI / n, vx: 0, vy: 0, spin, spinDecay: 0.9, tellT: 24, armWindow: 6, tellRamp: true, tellMax: 24 });
+          add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: soul.x, y: soul.y, rot: base + i * Math.PI / n,
+            vx: 0, vy: 0, spin, spinDecay: 0.9, tellT: 24, armWindow: 6, tellRamp: true, tellMax: 24, cutSnd: 'knightsword', cutVol: 0.5 });
         knightAtk(a);
       }
-      if (finale) {   // the spiral: 28 rapid box-centre lines sweeping around
-        const FIN = INTRO + SEQ.length * GAP + 30;
-        if (f >= FIN && f < FIN + 56 && (f - FIN) % 2 === 0) {
-          const kk = (f - FIN) / 2;
-          add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.2, thick: 6, x: cx, y: cy,
-            rot: kk * (Math.PI * 2 / 28), vx: 0, vy: 0, tellT: 14, armWindow: 6, shakeOnCut: true });
+      if (finale) {   // spiral: 28 centre cuts; only the FIRST telegraphed (long windup), rest short tell
+        const FSTART = INTRO + SEQ.length * GAP + 20;
+        if (f === FSTART) { Snd.play('smallswing', 0.5);   // snd_knight_puff / teleport
+          add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: cx, y: cy, rot: rng() * Math.PI, vx: 0, vy: 0, tellT: 30, armWindow: 6, tellRamp: true, tellMax: 30, cutSnd: 'knightsword', shakeOnCut: true }); this._sp0 = rng() * Math.PI; }
+        if (f > FSTART && f < FSTART + 108 && (f - FSTART) % 4 === 0) {
+          const kk = (f - FSTART) / 4;
+          add({ shape: 'line', color: '#f33', len: LINE, thick: 6, x: cx, y: cy, rot: (this._sp0 || 0) + kk * (Math.PI / 5), vx: 0, vy: 0, tellT: 12, armWindow: 5, cutSnd: 'knightsword', cutVol: 0.35, shakeOnCut: true });
         }
+        if (f >= FSTART) a.fx.bossSprite = { key: 'knightflourish', n: 7, rate: 3, ttl: 4 };   // the crazy slashing animation
       }
     },
   };
@@ -1160,54 +1173,50 @@ PATTERNS.knight_rotslash = knightRotslash(1);
 PATTERNS.knight_rotslash2 = knightRotslash(2);
 PATTERNS.knight_rotslash3 = knightRotslash(3);
 
-// FINAL ROAR (ULT, type 107 / obj_knight_roaring2 + roaring_star): blackout arena. The
-// Knight charges (stars pulled IN), lets out THE ROAR (stars blast out + 3-fans), then
-// every star DETONATES in sequence into shard-children, ending in a screen-splitting cut.
-const ROAR_ROAR = 130, ROAR_EXPLODE = 300, ROAR_CUT = 372;
+// THE ROARING (ULT, type 107 / obj_knight_roaring2) — rebuilt from roar_v2.md. Charge (stars SPIRAL in,
+// soul sucked to centre) -> ROAR (soul blown out, 8-star burst then 3-fans) -> sequential DETONATION
+// (1 star/frame -> firework -> 6 starchildren) -> SLASH windup -> screen-splitting cut -> whiteout.
+const RR_ROAR = 140, RR_DET = 300, RR_SLASH = 372, RR_CUT = 402;
 PATTERNS.knight_roar = {
-  dur: 430, hz30: 1, box: KN_BOX,
+  dur: 460, hz30: 1, box: KN_BOX,
   tick(a) {
     const { f, rng, box, add } = a;
-    a.fx.blackout = true;
-    a.fx.bgHue = (f >= ROAR_ROAR && f < ROAR_EXPLODE) ? 0 : (f * 2) % 360;
-    a.fx.hideBox = true; a.fx.arena = true; a.fx.bgStars = true;
+    a.fx.blackout = true; a.fx.hideBox = true; a.fx.arena = true; a.fx.bgStars = true;
+    a.fx.bgHue = (f >= RR_ROAR && f < RR_DET) ? 0 : (128 + Math.sin(f * 0.04) * 80 + f) % 360;
     const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // THE KNIGHT centre-screen: charge (flourish 0->6) -> roar loop -> slash finale
-    let key = 'knightflourish0', scale = 2.1, n = 1, rate = 6, kf = 0;
-    if (f < ROAR_ROAR) { const s = Math.min(6, Math.floor(f / 20)); key = 'knightflourish'; n = 7; rate = 20; kf = s; }
-    else if (f < ROAR_EXPLODE) { key = 'knightroar'; n = 2; rate = 10; a.fx.shake = 5; }
-    else if (f < ROAR_CUT) { key = 'knightroar'; n = 2; rate = 6; }
-    else { key = 'knightslashf'; n = 6; rate = 8; kf = Math.min(5, Math.floor((f - ROAR_CUT) / 8)); scale = 4.0; }
-    a.fx.boss = { key: (n > 1 ? key + (n === 7 ? kf : (Math.floor(f / rate) % n)) : key), x: cx, y: cy, scale };
-    // CHARGE: stars pull IN (random, then two swirling arms)
-    if (f < ROAR_ROAR) a.fx.pull = { x: cx, y: cy, force: 0.4 };
-    if (f >= 20 && f < 80 && f % 6 === 0) {
-      const th = rng() * 6.28, R = 340, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R, toC = Math.atan2(cy - y, cx - x);
-      add({ ...bulletProps('knightstar'), x, y, vx: Math.cos(toC) * 2.7, vy: Math.sin(toC) * 2.7, spin: 0, r: 8, life: 160 });
+    // Knight centre-screen sprite sequence
+    let key = 'knightflourish', n = 7, rate = 20, kf = 0, scale = 2.1;
+    if (f < RR_ROAR) { kf = Math.min(6, Math.floor(f / 20)); a.fx.pull = { x: cx, y: cy, force: 0.42 }; }
+    else if (f < RR_DET) { key = 'knightroar'; n = 2; rate = 8; a.fx.shake = 5; }
+    else if (f < RR_SLASH) { key = 'knightroar'; n = 2; rate = 12; }
+    else { key = 'knightslashf'; n = 6; rate = 6; kf = Math.min(5, Math.floor((f - RR_SLASH) / 6)); scale = 4.0; }
+    a.fx.boss = { key: (n === 7 ? key + kf : (key === 'knightslashf' ? key + kf : key + (Math.floor(f / rate) % n))), x: cx, y: cy, scale };
+    // CHARGE: stars spawn far and SPIRAL inward, growing with distance; destroyed near centre
+    if (f >= 20 && f < RR_ROAR && f % 5 === 0) {
+      const arms = f < 80 ? 1 : 2;
+      for (let k = 0; k < arms; k++) { const th = f * 0.06 + k * Math.PI, R = 330;
+        add({ ...bulletProps('knightstar'), x: cx + Math.cos(th) * R, y: cy + Math.sin(th) * R, r: 7, life: 150, scale: 0.9,
+          _sp: 1, emit(b) { const dx = cx - b.x, dy = cy - b.y, d = Math.hypot(dx, dy) || 1;
+            b.vx = dx / d * 3.0 - dy / d * 2.2; b.vy = dy / d * 3.0 + dx / d * 2.2; b.scale = Math.max(0.2, d / 220);
+            if (d < 14) b.dead = true; } }); }
     }
-    if (f >= 80 && f < ROAR_ROAR && f % 5 === 0) {
-      const bse = f * 0.05, R = 350, vr = 2.8, vt = 2.0;
-      for (const off of [0, Math.PI]) { const th = bse + off, x = cx + Math.cos(th) * R, y = cy + Math.sin(th) * R;
-        add({ ...bulletProps('knightstar'), x, y, spin: 0, r: 8, life: 160, vx: -Math.cos(th) * vr - Math.sin(th) * vt, vy: -Math.sin(th) * vr + Math.cos(th) * vt }); }
-    }
-    if (f === ROAR_ROAR) Snd.play('knightlaugh', 0.6);
-    // ROAR: spew stars OUT; they decelerate near the edges and can't detonate until EXPLODE,
-    // when they ALL shatter (in sequence) into slow fading shard-children.
-    const outStar = (th, sp) => {
-      const burstIn = Math.max(20, ROAR_EXPLODE - f);
-      add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp,
-        ax: -Math.cos(th) * sp * 0.02, ay: -Math.sin(th) * sp * 0.02, spin: 0, r: 8,
-        redAt: burstIn - 16, burst: burstIn, burstN: 6, burstImg: 'knighttri', burstSpeed: 1.0,
-        burstScale: 1.0, burstLife: 200, burstFade: true, burstFadeDelay: 60 });
-    };
-    if (f === ROAR_ROAR) { for (let i = 0; i < 8; i++) outStar(i * Math.PI / 4, 3.1); a.fx.shake = 9; }
-    if (f > ROAR_ROAR + 15 && f < ROAR_EXPLODE - 40 && f % 5 === 0) {
-      const base = rng() * 6.28; for (let i = 0; i < 3; i++) outStar(base + (i - 1) * 0.35, 2.4 + rng() * 1.2);
-    }
-    if (f === ROAR_EXPLODE + 2) Snd.play('explosionmmx', 0.4);
-    // FINAL screen-splitting diagonal cut
-    if (f === ROAR_CUT) { Snd.play('ultraswing', 0.6);
-      add({ shape: 'line', color: '#fff', len: 960, thick: 14, x: cx, y: cy, rot: Math.atan2(1, 1.6), vx: 0, vy: 0, tellT: 26, armWindow: 8, shakeOnCut: true }); }
+    if (f === RR_ROAR) Snd.play('knightlaugh', 0.6);
+    // ROAR: 8-star opening burst, then 3-star fans until detonation
+    const outStar = (th, sp) => add({ ...bulletProps('knightstar'), x: cx, y: cy, vx: Math.cos(th) * sp, vy: Math.sin(th) * sp,
+      ax: -Math.cos(th) * sp * 0.018, ay: -Math.sin(th) * sp * 0.018, r: 8, scale: 0.3, grow: 0.03, growMax: 1.1,
+      _det: Math.max(20, RR_DET - f), redAt: Math.max(20, RR_DET - f) - 14,
+      emit(b, out) { if (b.t === b._det) { b.dead = true; Snd.play('explosionmmx', 0.28);
+        for (let i = 0; i < 6; i++) { const aa = [90, 156, 213, 279, 345, 42][i] * D2R;
+          out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(aa) * 2.6, vy: Math.sin(aa) * 2.6, rot: aa, r: 5, scale: 0.8, fric: 0.06, life: 150, fade: true, fadeDelay: 70 }); } } } });
+    if (f === RR_ROAR) { for (let i = 0; i < 8; i++) outStar(i * Math.PI / 4, 3.2); a.fx.shake = 9; a.fx.pull = { x: cx, y: cy, force: -0.5 }; }
+    if (f > RR_ROAR + 12 && f < RR_DET - 30 && f % 5 === 0) { const base = rng() * 6.28;
+      for (let i = 0; i < 3; i++) { Snd.play('boardsummon', 0.14); outStar(base + (i - 1) * 0.35, 2.4 + rng() * 1.4); } }
+    if (f === RR_DET + 2) Snd.play('explosionmmx', 0.4);
+    // SLASH windup (grey->red guide) then THE CUT
+    if (f === RR_SLASH) add({ shape: 'line', color: '#f33', len: 980, thick: 4, x: cx, y: cy, rot: Math.atan2(1, 1.6), vx: 0, vy: 0, tellT: RR_CUT - RR_SLASH, armWindow: 3, tellRamp: true, tellMax: RR_CUT - RR_SLASH, noHit: true, _guide: 1 });
+    if (f === RR_CUT) { Snd.play('ultraswing', 0.6); a.fx.shake = 12;
+      add({ shape: 'line', color: '#fff', len: 980, thick: 16, x: cx, y: cy, rot: Math.atan2(1, 1.6), vx: 0, vy: 0, tellT: 1, armWindow: 8, cutSnd: 'knightsword', shakeOnCut: true }); }
+    if (f > RR_CUT + 20) a.fx.whiteout = Math.min(1, (f - RR_CUT - 20) / 28);
   },
 };
 
