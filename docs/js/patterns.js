@@ -1453,8 +1453,8 @@ function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel) {
   const { add, box } = a;
   add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 92),
         noHit: true, fireAt: tel, fireVX: fvx, fireVY: fvy, hitW, hitH, dmg: 26, life: tel + 16 });
-  // faint red telegraph zone so the slash is readable before it lands
-  add({ shape: 'line', color: '#ff3b3b', len: (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
+  // telegraph zone: RED then FADES TO WHITE as the slash lands (GML gerson telegraph colour ramp)
+  add({ shape: 'line', color: '#ff3b3b', tellRamp: true, tellMax: tel, len: (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
         x: x + (fvx ? Math.sign(fvx) * 30 : 0), y: y + (fvy ? Math.sign(fvy) * 30 : 0), rot: rotAng + Math.PI / 2,
         vx: 0, vy: 0, tellT: tel, armWindow: 5, dmg: 26, noHit: false, shakeOnCut: true });
   Snd.play('heavyswing', 0.4);

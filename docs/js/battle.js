@@ -2307,11 +2307,16 @@ function drawBullet(ctx, b, px, py, s) {
   } else if (b.shape === 'note') {
     ctx.fillRect(px - 2 * s, py - 6 * s, 3 * s, 10 * s);
     ctx.beginPath(); ctx.arc(px - 3 * s, py + 4 * s, 4 * s, 0, 7); ctx.fill();
-  } else if (b.shape === 'line') {   // full-length line (Knight red-slash TELL, then the cut)
+  } else if (b.shape === 'line') {   // full-length line (Knight/Gerson red-slash TELL, then the cut)
     const L = (b.len || 400) * s, th = (b.thick || 4) * s;
     ctx.save(); ctx.translate(px, py); ctx.rotate(b.rot || 0);
     ctx.globalAlpha = b.armed ? 1 : (b.tellFade != null ? b.tellFade : 0.5);
-    ctx.fillStyle = b.color || '#f33'; ctx.fillRect(-L / 2, -th / 2, L, th);
+    let col = b.color || '#f33';
+    if (b.tellRamp) {   // GML Gerson telegraph: RED then FADE TO WHITE as the slash lands (white on the cut)
+      const prog = b.armed ? 1 : Math.max(0, Math.min(1, 1 - (b.tellT || 0) / (b.tellMax || 12)));
+      const gb = Math.round(59 + prog * 196); col = 'rgb(255,' + gb + ',' + gb + ')';   // (255,59,59) -> white
+    }
+    ctx.fillStyle = col; ctx.fillRect(-L / 2, -th / 2, L, th);
     ctx.restore(); ctx.globalAlpha = 1;
   } else if (b.shape === 'ring') {   // landing-target telegraph (Pink fusebombs): flashing outline + growing filled core
     ctx.save(); ctx.strokeStyle = b.color || '#ffbb00'; ctx.lineWidth = 2.5 * s;
