@@ -1245,7 +1245,7 @@ function gSpear(a, gd, spd, opt) {
   const va = -gd * Math.PI / 180, D = spd * (opt.frames || 50);
   const lo = bulletProps('gspear0').img, hi = bulletProps('gspearhi0').img;
   add({ img: lo, loImg: lo, hiImg: hi, isSpear: true, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 6, scale: GSC(21, 17), rot: va, dmg: opt.dmg || 18, life: opt.life || 400 });
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 6, scale: GSC(21, 17), rot: va, dmg: opt.dmg || 18, life: opt.life || 110 });
   Snd.play('smallswing', 0.3);
 }
 // GREEN multi-block turtle shell (obj_spearshot bouncespear) from side `gd`. `hp` = blocks needed
@@ -1426,7 +1426,7 @@ function gPinballShell(box, x, y, ang, spd) {
       if (b.x > cx - 72 && b.x < cx + 72) {                            // vertical bounce (top/bottom only)
         if (b.y > B - 14 && b._cnt < 7 && b.vy > 0) { b.y = B - 14; b.vy = -b.vy; b.sx = 1.5; b.sy = 0.5; b._sqT = 6; Snd.play('criticalswing', 0.35); }
         else if (b.y < T + 14 && b._cnt < 7 && b.vy < 0) { b.y = T + 14; b.vy = -b.vy; b.sx = 1.5; b.sy = 0.5; b._sqT = 6; Snd.play('criticalswing', 0.35); }
-        if (b.y > B - 14 && b._tt >= 20) { gPinBurst(b, out); b.dead = true; Battle.shake = 18; Battle.flash = 6; Snd.play('explosionmmx', 0.5); return; }
+        if (b.y > B - 14 && b._tt >= 20) { gPinBurst(b, out); b.dead = true; Battle.shake = 18; Battle.flash = 6; Snd.play('explosionmmx', 0.5); Battle._pinBurstF = Battle.anim.f; return; }
       }
       if (b.x < cx - 73 && b.vx < 0 && b._lt === -1) b._lt = 0;        // exits left/right (through the walls)
       if (b.x > cx + 92 && b.vx > 0 && b._rt === -1) b._rt = 0;
@@ -1441,11 +1441,13 @@ function gPinballShell(box, x, y, ang, spd) {
   };
 }
 PATTERNS.gerson_pinball = {
-  dur: 720, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 700, box: { w: 150, h: 150 }, hz30: 1,   // dur is a backstop; it really ends ~90f after the shell SHATTERS
   tick(a) {
     const { f, box, add } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 54, gy = cy;
+    if (f <= 1) Battle._pinBurstF = 0;
     if (f === 10) { add(gPinSwing(gx, gy, false)); Snd.play('heavyswing', 0.4); Battle.shake = 8; }   // Gerson wind-up swing
     if (f === 32) { Snd.play('rudebuster', 0.4); add(gPinballShell(box, gx, gy, Math.atan2(cy - gy, cx - gx), 12)); }   // LAUNCH aimed at the soul
+    if (Battle._pinBurstF && Battle.anim.f - Battle._pinBurstF > 90) a.fx.attackDone = true;   // end once the star fountain has rained down
   },
 };
 // --- RED (free move): SWING DOWN (obj_gerson_swing_down_new, wiki Attack 12) — Gerson lunges his BLADE
@@ -1456,7 +1458,7 @@ function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel) {
   const { add, box } = a;
   a.fx.bossSprite = { key: 'gswing', n: 7, rate: 3, ttl: 16 };   // Gerson visibly SWINGS when a slash fires
   a.fx.shake = Math.max(a.fx.shake || 0, 3);
-  add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 110), boxClip: true,
+  add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 110),
         noHit: true, fireAt: tel, fireVX: fvx, fireVY: fvy, hitW, hitH, dmg: 26, life: tel + 16 });
   // telegraph zone: RED then FADES TO WHITE as the slash lands (GML gerson telegraph colour ramp)
   add({ shape: 'line', color: '#ff3b3b', tellRamp: true, tellMax: tel, len: (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
@@ -1512,7 +1514,7 @@ PATTERNS.gerson_finale = {
 // gBuild/gRun sequence compiler; red/transition attacks reuse the verified red patterns. The block mechanic
 // itself (ring 36/46, tol 50/30, parry 2.5 vs 1.25, len<16 heart hit) lives in battle.js resolveGreen.
 // ============================================================================
-const gAtkDur = seq => Math.max(...seq.map(e => e.t)) + 90;   // enough time for the last spear to arrive
+const gAtkDur = seq => Math.max(...seq.map(e => e.t)) + 62;   // last spawn + ~48f arrival + small tail (no dead time)
 function gGreen(tokens, oct) { const seq = gBuild(tokens); return { dur: gAtkDur(seq), _seq: seq, _oct: oct,
   box: { w: 150, h: 150 }, hz30: 1, tick(a) { a.fx.greenSoul = this._oct ? { oct: true } : true; gRun(a, this._seq); } }; }
 
@@ -1531,7 +1533,7 @@ PATTERNS.gn_atk5 = gGreen([['f','u'],['f','r'],['f','u'],['f','l'],['s','u'],['f
   ['f','u'],['f','r'],['f','u'],['f','l'],['w',8],['s','ul'],['w',6],['s','ur']], true);
 // 6: GREEN arrows d ul d ur d r d l while a hammer falls -> turns SOUL RED -> Gerson slashes down CENTRE.
 PATTERNS.gn_atk6 = {
-  dur: 360, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 300, box: { w: 150, h: 150 }, hz30: 1,
   _seq: gBuild([['s','d'],['s','ul'],['s','d'],['s','ur'],['s','d'],['s','r'],['s','d'],['s','l']]),
   tick(a) { const { f, box, add } = a; const cx = box.x + box.w / 2, RED = 232;
     a.fx.greenSoul = f < RED ? { oct: true } : false;   // GREEN until the hammer lands, then RED (must clear explicitly)
@@ -1539,9 +1541,9 @@ PATTERNS.gn_atk6 = {
     // a big hammer SLOWLY falls from the top the whole time — watch it; when it lands the SOUL turns RED.
     if (f === 12) add({ ...bulletProps('ghammer40'), x: cx, y: box.y - 150, vx: 0, vy: 0, ay: 0.006, spin: 0.05,
                         noHit: true, scale: GSC(14, 46), life: RED - 6, _fallHammer: 1 });
-    if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }   // hammer lands -> RED
-    // the centre slash straight down (undodgeable in green — that's the point; you get clipped as it flips red).
-    if (f === RED + 8) gBladeSlash(a, cx, box.y - 96, 0, 0, 42, 70, box.h + 90, 10);
+    if (f === RED) { Battle.shake = 16; Battle.flash = 8; Snd.play('bosshit', 0.6); }   // hammer lands -> RED (soul frees up)
+    // the centre slash: a LONG telegraph after the flip so you have time to move to a side before it lands.
+    if (f === RED + 26) gBladeSlash(a, cx, box.y - 96, 0, 0, 42, 70, box.h + 90, 20);
   },
 };
 // 7: shell PINBALL + star fountain (red) — defined above. (8/13/14 red aliases are set after their patterns.)
@@ -1567,9 +1569,9 @@ PATTERNS.gn_atk12 = {
     a.fx.greenSoul = f < RED ? { oct: true } : false;
     gRun(a, this._seq);
     if (f === RED) { Battle.shake = 14; Battle.flash = 6; Snd.play('bosshit', 0.55); }
-    const L = cx - 40, M = cx, R = cx + 40, COLS = [M, R, L, M, L, R, L];
-    COLS.forEach((colX, i) => { if (f === RED + 14 + i * 40) gBladeSlash(a, colX, box.y - 96, 0, 0, 42, 62, box.h + 90, 12); });
-    if (f === RED + 14 + 7 * 40 + 20) gBladeSlash(a, box.x + box.w + 60, box.y + box.h / 2, Math.PI / 2, -46, 0, box.w + 140, 60, 14);
+    const L = cx - 40, M = cx, R = cx + 40, COLS = [M, R, L, M, L, R, L];   // longer lead-in after the flip + a big telegraph
+    COLS.forEach((colX, i) => { if (f === RED + 30 + i * 40) gBladeSlash(a, colX, box.y - 96, 0, 0, 42, 62, box.h + 90, 18); });
+    if (f === RED + 30 + 7 * 40 + 22) gBladeSlash(a, box.x + box.w + 60, box.y + box.h / 2, Math.PI / 2, -46, 0, box.w + 140, 60, 18);
   },
 };
 // 8/14: the hammer throw (14 is a repeat of 8) — aliases set after gerson_boxthrow is defined (below).
@@ -1583,14 +1585,14 @@ PATTERNS.gn_atk16 = gGreen([['H','l',2],['s','d'],['s','dr'],['H','r',2],['w',10
 // 17: rotating spear SWEEP (5 CW, 5 CCW, 11 CW, 30 CCW accelerating) — the verified sweep.
 PATTERNS.gn_atk17 = PATTERNS.gerson_spearsweep;
 // 18: 32 arrows from all directions, starting slow and speeding up.
-PATTERNS.gn_atk18 = { dur: 560, box: { w: 150, h: 150 }, hz30: 1,
+PATTERNS.gn_atk18 = { dur: 470, box: { w: 150, h: 150 }, hz30: 1,
   _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 20; const s = [];
     for (let i = 0; i < 32; i++) { s.push({ t, dir: D[(i * 5 + 3) % 8], spd: 6 + i * 0.16 }); t += Math.round(Math.max(9, 20 - i * 0.35)); } return s; })(),
   tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
 // 19: 48 arrows from all directions, all slow but very densely packed.
 // 19: 48 arrows from all directions, all SLOW but EXTREMELY CONSOLIDATED (tight 5f gaps -> a dense wall you
 // must block continuously). Pseudo-random directions (deterministic so it's a fixed pattern).
-PATTERNS.gn_atk19 = { dur: 680, box: { w: 150, h: 150 }, hz30: 1,
+PATTERNS.gn_atk19 = { dur: 320, box: { w: 150, h: 150 }, hz30: 1,
   _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 16; const s = [];
     for (let i = 0; i < 48; i++) { s.push({ t, dir: D[(i * 3 + i * i + 5) % 8], spd: 6 }); t += 5; } return s; })(),
   tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
@@ -1622,7 +1624,7 @@ PATTERNS.gn_atk21 = {
 // #A BOX THROW (AP70, RED free-move) — despite the name it LOBS arcing hammers into the box: 16 fan-throws,
 // then 25 fast singles tracking a sine-swept x, then one giant hammer finisher.
 PATTERNS.gerson_boxthrow = {
-  dur: 430, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 420, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
     const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 40, gy = box.y - 18;
     // GERSON HITS THE BOX first: it TILTS ~45deg left + shifts left ONCE, then STAYS put. Anchor captured at the
@@ -1658,7 +1660,7 @@ PATTERNS.gerson_boxthrow = {
 // (GML xscale 9 / yscale 0.2), then a wall of SWING-DOWN blades marches L->R (stopping before the edge), then
 // R->L, then a big spread keeping only a small safe strip. Ride AHEAD of the advancing slashes.
 PATTERNS.gerson_squish = {
-  dur: 520, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 490, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
     const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 26) { Battle.shake = 16; Snd.play('bosshit', 0.6); }               // the squish slam

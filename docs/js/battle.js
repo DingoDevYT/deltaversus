@@ -1244,7 +1244,9 @@ Battle.updDodge = function () {
   if (B.shieldFlash > 0) B.shieldFlash--;
   if (B.shieldParry > 0) B.shieldParry--;
   for (const nb of spawned) { nb.t = nb.t || 0; if (nb.vx == null) nb.vx = 0; if (nb.vy == null) nb.vy = 0; if (nb.phase0 == null) nb.phase0 = Math.random() * 6.28; B.bullets.push(nb); }
-  B.bullets = B.bullets.filter(b => !b.dead && b.x > -130 && b.x < 790 && b.y > -130 && b.y < 610 && (!b.life || b.t < b.life));   // wide bounds so far-spawned bullets (Pink cats at box_center±416) survive until they enter view
+  // Green spears/shells spawn FAR offscreen (len = speed*frames, up to ~900px) and fly in — exempt them from the
+  // position cull (they self-expire via `life`). Everything else is culled at wide bounds (Pink cats at box±416).
+  B.bullets = B.bullets.filter(b => !b.dead && (!b.life || b.t < b.life) && (b.isSpear || b.shellRadial || (b.x > -130 && b.x < 790 && b.y > -130 && b.y < 610)));
 
   if (B.anim.f % 4 === 0)
     Battle.send({ t: 'soul', x: (B.soul.x - bx.x) / bx.w, y: (B.soul.y - bx.y) / bx.h, f: B.sim ? B.sim.f : 0, done: false });
