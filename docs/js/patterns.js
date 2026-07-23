@@ -1361,27 +1361,32 @@ PATTERNS.gerson_shellkick = {
     add(shell);
   },
 };
-// --- RED (free move): SWING DOWN + RED HAMMER (AP 4/9) — swing_down_new telegraphs a slice zone then
-// slashes through it fast; red-hammer spears sweep a fixed compass line across the box. ---
+// --- RED (free move): SWING DOWN (obj_gerson_swing_down_new, wiki Attack 12) — Gerson lunges his BLADE
+// (spr_gerson_swing_down_new) down through a side of the board: middle, right, left, middle, left, right,
+// left; then a fakeout, then a horizontal slash right->left at the SOUL. Blade telegraphs (poised) then
+// slams (GML speed 50). Dodge to the UNslashed side. ---
+function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel) {
+  const { add, box } = a;
+  add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 92),
+        noHit: true, fireAt: tel, fireVX: fvx, fireVY: fvy, hitW, hitH, dmg: 26, life: tel + 16 });
+  // faint red telegraph zone so the slash is readable before it lands
+  add({ shape: 'line', color: '#ff3b3b', len: (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
+        x: x + (fvx ? Math.sign(fvx) * 30 : 0), y: y + (fvy ? Math.sign(fvy) * 30 : 0), rot: rotAng + Math.PI / 2,
+        vx: 0, vy: 0, tellT: tel, armWindow: 5, dmg: 26, noHit: false, shakeOnCut: true });
+  Snd.play('heavyswing', 0.4);
+}
 PATTERNS.gerson_swingdown = {
-  dur: 320, box: { w: 150, h: 150 }, hz30: 1,
+  dur: 400, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add } = a;
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // swing_down_new: telegraph (image_alpha ramp) then a fast slash. Half/diagonal zones.
-    const SEQ = [[30, 0], [78, 1], [126, 2], [174, 3], [222, 4]];
-    for (const [t, kind] of SEQ) { if (f !== t) continue;
-      if (kind < 4) { const horiz = kind >= 2, off = (kind % 2 === 0) ? -38 : 38;
-        add({ shape: 'line', color: '#f33', len: (horiz ? box.w : box.h) * 1.6, thick: 72,
-              x: horiz ? cx : cx + off, y: horiz ? cy + off : cy, rot: horiz ? 0 : Math.PI / 2, vx: 0, vy: 0, tellT: 12, armWindow: 4, dmg: 26 });
-      } else add({ shape: 'line', color: '#f33', len: Math.hypot(box.w, box.h) * 1.6, thick: 52, x: cx, y: cy, rot: Math.PI / 4, vx: 0, vy: 0, tellT: 12, armWindow: 4, dmg: 26, shakeOnCut: true });
-    }
-    // red-hammer spears: big fast spears sweeping fixed compass lines across the box (grav 0.3 in GML)
-    if ([54, 102, 150, 198, 258].includes(f)) {
-      const side = [0, 90, 180, 270][Math.floor((f / 48) % 4)], va = -side * Math.PI / 180, D = 200;
-      add({ ...bulletProps('ghammerd'), x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D, vx: Math.cos(va) * 6, vy: Math.sin(va) * 6, ay: 0.075,
-            r: 10, grazeR: 15, scale: GSC(23, 44), rot: va, dmg: 28, life: 120 });
-    }
+    const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    const L = cx - 40, M = cx, R = cx + 40;
+    const COLS = [M, R, L, M, L, R, L];                                   // wiki Attack 12 slash order
+    COLS.forEach((colX, i) => { if (f === 26 + i * 42)
+      gBladeSlash(a, colX, box.y - 96, 0, 0, 42, 62, box.h + 90, 12);     // vertical blade slams DOWN a column
+    });
+    // FAKEOUT finish: a horizontal blade sweeps right -> left across the whole board at the SOUL.
+    if (f === 26 + 7 * 42 + 20)
+      gBladeSlash(a, box.x + box.w + 60, cy, Math.PI / 2, -46, 0, box.w + 140, 60, 14);
   },
 };
 // --- GREEN (ult): TRIAL OF THE HOLY HAMMER — Gerson's climax, true to his "BLOCK, don't dodge" identity.

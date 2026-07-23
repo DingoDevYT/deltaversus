@@ -5798,6 +5798,51 @@
       "oh": 36,
       "ox": 0,
       "oy": 0
+    },
+    "gblade0": {
+      "f": "gblade0.png",
+      "w": 40,
+      "h": 96,
+      "ow": 40,
+      "oh": 96,
+      "ox": 0,
+      "oy": 0
+    },
+    "gblade1": {
+      "f": "gblade1.png",
+      "w": 40,
+      "h": 79,
+      "ow": 40,
+      "oh": 79,
+      "ox": 0,
+      "oy": 0
+    },
+    "gblade2": {
+      "f": "gblade2.png",
+      "w": 39,
+      "h": 84,
+      "ow": 39,
+      "oh": 84,
+      "ox": 0,
+      "oy": 0
+    },
+    "gblade3": {
+      "f": "gblade3.png",
+      "w": 49,
+      "h": 110,
+      "ow": 49,
+      "oh": 110,
+      "ox": 0,
+      "oy": 0
+    },
+    "gblade4": {
+      "f": "gblade4.png",
+      "w": 42,
+      "h": 85,
+      "ow": 42,
+      "oh": 85,
+      "ox": 0,
+      "oy": 0
     }
   },
   "bullet_cost": {
