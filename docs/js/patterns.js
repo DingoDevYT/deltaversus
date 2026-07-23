@@ -1421,39 +1421,41 @@ PATTERNS.gerson_boxthrow = {
       const n = 3 + Math.floor(rng() * 2);
       for (let i = 0; i < n; i++) { const off = rng() * 60 - 30;
         const vx = -Math.abs(gx - (cx + off)) / 45 + (-2 + (4 / (n - 1)) * i) + (rng() - 0.5), vy = -14 + (-1 + (2 / (n - 1)) * i) + (rng() * 2 - 1);
-        add({ ...bulletProps('ghammer'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
+        add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx, vy, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(23, 44), spin: 0.24, dmg: 28, life: 130 }); }
       Snd.play('smallswing', 0.3);
     }
     const p1 = f - 196;                                              // PHASE 1: 25 bigger fast singles at a sine-swept x (GML sin*80, x3 size)
     if (p1 >= 0 && p1 < 100 && p1 % 4 === 0) {
       const tx = cx + Math.sin(f * 0.325) * 80;
-      add({ ...bulletProps('ghammer'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(23, 44) * 1.5, spin: 0.24, dmg: 28, life: 130 });
+      add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(23, 44) * 1.5, spin: 0.24, dmg: 28, life: 130 });
     }
     if (f === 305) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - cx) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 120), r: 16, hitW: 60, hitH: 60, dmg: 40, life: 140 }); Snd.play('smallswing', 0.5); }
   },
 };
-// #B SQUISH-BOX DIAMOND BARRAGE (AP47/code13, RED) — Gerson SQUISHES the box: it snaps WIDE, then rows of
-// white diamonds fire HORIZONTALLY across it from alternating edges, decelerating (GML friction 0.14). The
-// box also SHOVES side to side (box_rumble). Weave up/down between the rows and ride the shove.
+// #B SQUISH-BOX STAR BARRAGE (obj_gerson_box_hit, RED, wiki Attack 13) — Gerson SQUISHES the box: it snaps
+// WIDE, then rows of STARS (spr_gerson_star7) pop in (scale 0->1.5, spinning) and streak HORIZONTALLY across
+// it from alternating edges, decelerating (GML: speed 5.6+rnd(2), friction 0.14; slow "gap" stars speed 2).
+// 10 stars per burst at box.y-70 + 15*i. The box also SHOVES side to side (box_rumble). Weave between the rows.
 PATTERNS.gerson_squish = {
   dur: 460, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
     const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    // squish: the box widens (GML xscale settles ~6, yscale ~1) and shoves L/R every ~32 frames.
     const shove = f > 40 ? Math.sin((f - 40) / 32 * Math.PI) * 44 : 0;
     if (f === 30) { Battle.shake = 16; Snd.play('bosshit', 0.55); }              // the squish slam
     if (f > 28) a.fx.boxTarget = { x: cx - 214 + shove, y: cy - 74, w: 430, h: 148 };
-    // barrage: 10-diamond horizontal bursts, staggered rows 15px apart, GML friction 0.14 (ax opposes vx).
-    const BURSTS = [54, 116, 178, 240, 302, 364], SPEEDS = [7.6, 4.4, 6.8, 5.2, 7.2, 4.8];
+    const BURSTS = [54, 116, 178, 240, 302, 364];
     for (let bi = 0; bi < BURSTS.length; bi++) {
       if (f !== BURSTS[bi]) continue;
-      const fromLeft = bi % 2 === 0, dir = fromLeft ? 1 : -1, sp0 = SPEEDS[bi % SPEEDS.length];
-      const top = (cy - 74) + 12, edge = cx - 214 + shove;
+      const fromLeft = bi % 2 === 0, dir = fromLeft ? 1 : -1;
+      const top = (cy - 74) + 10, edge = cx - 214 + shove;
+      const slow1 = 2 + Math.floor(rng() * 3), slow2 = 6 + Math.floor(rng() * 3);  // two "gap" rows are slow
       for (let i = 0; i < 10; i++) {
-        const y = top + 15 * i + (rng() * 4 - 2);
-        const sp = sp0 - (i % 3) * 1.1;                                          // some slow "gap" diamonds (2-3.5)
-        add({ shape: 'diamond', color: '#fff', x: fromLeft ? edge - 12 : edge + 430 + 12, y,
-              vx: dir * sp, vy: 0, ax: -dir * 0.14, r: 6, grazeR: 11, spin: 0.14, dmg: 26, life: 200 });
+        const y = top + 15 * i;
+        const gap = (i === slow1 || i === slow2);
+        const sp = gap ? (2 + rng() * 1.5) : (5.6 + rng() * 2);                    // GML speeds
+        add({ ...bulletProps('gstar7'), x: fromLeft ? edge - 14 : edge + 430 + 14, y,
+              vx: dir * sp, vy: 0, ax: -dir * (gap ? 0.08 : 0.14), r: 6, grazeR: 11,
+              scale: 0.05, grow: 0.28, growMax: 1.5, rot: rng() * 6.28, spin: 0.16, dmg: 26, life: 220 });
       }
       Snd.play('smallswing', 0.32);
     }

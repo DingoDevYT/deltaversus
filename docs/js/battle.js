@@ -1075,6 +1075,7 @@ Battle.updDodge = function () {
     if (b.spin) b.rot = (b.rot || 0) + b.spin;
     if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }   // rotation eases to a stop (Knight red-slash tell)
     if (b.shrink) b.scale = (b.scale || 1) * b.shrink;   // bullet shrinks over time (eaten dollars)
+    if (b.grow) { b.scale = Math.min(b.growMax != null ? b.growMax : 1.5, (b.scale || 0) + b.grow); if (b.scale >= (b.growMax != null ? b.growMax : 1.5)) b.grow = 0; }   // scale-in (Gerson box-hit stars pop from 0)
     if (b.fade && b.life) {   // roar shards: hold full for fadeDelay, then fade OPACITY only; stop hurting once faint
       const fd = b.fadeDelay || 0;
       b.alpha = b.t <= fd ? 1 : Math.max(0, 1 - (b.t - fd) / Math.max(1, b.life - fd));
