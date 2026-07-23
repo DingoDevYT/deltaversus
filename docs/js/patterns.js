@@ -1626,15 +1626,17 @@ PATTERNS.gn_atk21 = {
 PATTERNS.gerson_boxthrow = {
   dur: 420, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 40, gy = box.y - 18;
-    // GERSON HITS THE BOX first: it TILTS ~45deg left + shifts left ONCE, then STAYS put. Anchor captured at the
-    // hit frame so the target is FIXED (using the live box.x here caused it to chase itself left forever).
-    if (f <= 1) { this._ax = null; this._settled = 0; }             // reset (object reused by atk8 & atk14)
-    if (f === 12) { this._ax = box.x; this._ay = box.y; Battle.shake = 12; Snd.play('bosshit', 0.5); }
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 70, gy = box.y - 18;
+    // GERSON HITS THE BOX first (visible SWING): it TILTS ~45deg left + shifts left ONCE, then STAYS put. Anchor
+    // captured at the hit frame so the target is FIXED (using the live box.x caused it to chase itself left forever).
+    if (f <= 1) { this._ax = null; this._settled = 0; Battle._giantLand = 0; }   // reset (object reused by atk8 & atk14)
+    if (f >= 6 && f < 20) a.fx.bossSprite = { key: 'gswing', n: 7, rate: 2, ttl: 3 };   // Gerson visibly HITS the box
+    if (f === 12) { this._ax = box.x; this._ay = box.y; Battle.shake = 14; Battle.flash = 5; Snd.play('bosshit', 0.6); }
+    if (Battle._giantLand) this._settled = 1;                        // giant landed -> box knocked DOWN
     if (this._ax != null) {
       const tilt = Math.min(1, (f - 12) / 12);
       a.fx.boxRot = -0.785 * tilt;                                   // -45deg (to the LEFT)
-      a.fx.boxTarget = { x: this._ax - 40, y: (this._settled ? this._ay + 16 : this._ay), w: box.w, h: box.h, boxLerp: 0.25 };
+      a.fx.boxTarget = { x: this._ax - 40, y: (this._settled ? this._ay + 34 : this._ay), w: box.w, h: box.h, boxLerp: this._settled ? 0.5 : 0.25 };
     }
     if (f >= 34 && f < 320) a.fx.bossSprite = { key: 'gswing', n: 7, rate: 4, ttl: 4 };   // Gerson visibly THROWS
     if (f >= 40 && f < 200 && (f - 40) % 10 === 0) {                 // 16 fan-throws of 3-4 hammers
@@ -1649,11 +1651,19 @@ PATTERNS.gerson_boxthrow = {
       const tx = cx + Math.sin(f * 0.325) * 80;
       add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 45), vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(14, 44), spin: 0.24, dmg: 28, life: 130 });
     }
-    // FINAL: the GIANT hammer = the SAME hammer sprite, just LARGE (GML scale 8). Drops into the bottom corner.
-    // GIANT hammer (rendered via the pre-large ggiant sprite at small scale — the engine culls big-scale bullets).
-    if (f === 312) { add({ ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - (cx - 30)) / 25.5), vy: -16, ay: 0.6, maxv: 20, spin: 0.1, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 150, _giant: 1 }); Snd.play('smallswing', 0.5); }
-    // when the giant lands, thump the box DOWN a touch for weight + sound.
-    if (f === 344) { Battle.shake = 18; Snd.play('bosshit', 0.6); this._settled = 1; }   // giant lands: thump the box DOWN (via fixed anchor)
+    // FINAL: the GIANT hammer rises, then DROPS straight INTO the box; on landing it KNOCKS the box down + shakes.
+    if (f === 306) {
+      const tx = cx - 20, giant = { ...bulletProps('ggiant'), x: gx, y: gy, vx: -Math.abs((gx - tx) / 20), vy: -18, ay: 0.75,
+        maxv: 24, spin: 0.08, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 200, _giant: 1, _land: 0, _sit: 0 };
+      giant.emit = function (b, out, s, bx) {
+        if (!b._land && b.vy > 2 && b.y > bx.y + bx.h * 0.62) {      // falling + reached the lower box -> LAND
+          b._land = 1; b.vy = 0; b.vx = 0; b.ay = 0; b.y = bx.y + bx.h * 0.7; b._sit = 22;
+          Battle.shake = 22; Battle.flash = 8; Snd.play('bosshit', 0.7); Battle._giantLand = 1;   // knock the box DOWN
+        }
+        if (b._land && --b._sit <= 0) b.dead = true;
+      };
+      add(giant); Snd.play('smallswing', 0.5);
+    }
   },
 };
 // #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES the board THIN + WIDE
