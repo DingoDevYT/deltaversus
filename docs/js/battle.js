@@ -886,6 +886,11 @@ Battle.updDodge = function () {
       const diff = Math.abs(Math.atan2(Math.sin(ang - B.shieldAng), Math.cos(ang - B.shieldAng)));
       if (diff > 0.01) { B.shieldAng = ang; B.shieldFreshF = B.anim.f; B.shieldDiag = !!(rawx && rawy); }
     }
+    // NEXT-TO-HIT spear turns red (spr_spear_arrow_highlight): the soonest-arriving spear gets its hiImg.
+    const cx = bx.x + bx.w / 2, cy = bx.y + bx.h / 2; let soon = null, st = Infinity;
+    for (const b of B.bullets) { if (!b.isSpear) continue; const sp = Math.hypot(b.vx, b.vy) || 0.01;
+      const tt = (Math.hypot(b.x - cx, b.y - cy)) / sp; if (tt < st) { st = tt; soon = b; } }
+    for (const b of B.bullets) if (b.isSpear) b.img = (b === soon) ? b.hiImg : b.loImg;
   }
 
   // PURPLE SOUL (Pink): the heart rides a virtual GRID inside the box. Buffered direction presses hop
@@ -1965,7 +1970,8 @@ Battle.renderBoxAndBullets = function (ctx) {
     if (B.fx.faceBox) { const fb = B.fx.faceBox; drawBoxRect(ctx, fb.x + fb.w / 2, fb.y + fb.h / 2, fb.w, fb.h, 0, 1); }
   }
   ctx.save();
-  const wide = B.fx && (B.fx.hideBox || bx.w > 500);   // full-screen arena: no bullet clipping
+  // GREEN SOUL: NO bullet clipping — you MUST see spears/shells approaching from off-box to aim your block.
+  const wide = B.fx && (B.fx.hideBox || bx.w > 500) || B.soulGreen;   // full-screen arena: no bullet clipping
   if (wide) { ctx.beginPath(); ctx.rect(0, 0, 640, 480); ctx.clip(); }
   else if (B.fx && B.fx.faceBox) {   // Spamton face attack keeps its own tight two-box clip
     const l = Math.min(bx.x, B.fx.faceBox.x) - 40, r = Math.max(bx.x + bx.w, B.fx.faceBox.x + B.fx.faceBox.w) + 40;

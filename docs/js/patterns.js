@@ -1235,12 +1235,15 @@ PATTERNS.green_test = {
 // ============================================================================
 const GSC = (nat, disp) => disp / (nat * 1.6);
 const G_STR2GML = { l: 0, d: 90, r: 180, u: 270, dr: 135, dl: 45, ur: 225, ul: 315 };
-// one GREEN spear from GML direction `gd`, inward speed `spd`; block by facing its side.
+// one GREEN spear (obj_spearshot) from GML direction `gd`, inward speed `spd`; block by facing its side.
+// Real sprite = spr_spear_arrow (YELLOW arrow); the NEXT-to-hit spear turns red (spr_spear_arrow_highlight) —
+// that swap is done live in updDodge (soonest-arriving spear gets b.hiImg). Arrow points along travel.
 function gSpear(a, gd, spd, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  const va = -gd * Math.PI / 180, D = opt.dist || 210;
-  add({ ...bulletProps('gchevron'), x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 8, scale: GSC(22, 20), rot: va, tint: '#00e600', blockArc: 50, dmg: opt.dmg || 18, life: opt.life || 200 });
+  const va = -gd * Math.PI / 180, D = opt.dist || 230;
+  const lo = bulletProps('gspear0').img, hi = bulletProps('gspearhi0').img;
+  add({ img: lo, loImg: lo, hiImg: hi, isSpear: true, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 7, scale: GSC(21, 34), rot: va, blockArc: 48, dmg: opt.dmg || 18, life: opt.life || 240 });
   Snd.play('smallswing', 0.35);
 }
 // GREEN multi-block turtle shell from side `gd` (needs `hp` blocks; spinning -> returns 90 CCW).
