@@ -704,30 +704,69 @@ PATTERNS.sneo_heart = {
 // and DECELERATE inside the box (GML walltype1: -21 -> brake to -5 -> re-accel). SOLID mail is an
 // indestructible wall; the ONLY passable lane is a deliberate 2-row GAP (wanders); shoot crew tiles
 // open, shoot bombs for a cross-laser. (This is the EASY first-time variant.) See recrew_v2.md.
-function recrewSpeed(t) { return t < 14 ? -9 + 5 * (t / 14) : -4 - Math.min(3.5, (t - 14) * 0.05); }   // fast in, brake, re-accel
-PATTERNS.sneo_columns = {
+function recrewSpeed(t, startSpd, minSpd, maxSpd) {
+  if (t < 16) return startSpd + (minSpd - startSpd) * (t / 16); // decelerate
+  return minSpd - Math.min(maxSpd - minSpd, (t - 16) * 0.1); // re-accelerate (more negative)
+}
+
+function spawnRecrewWall(a, startSpd, minSpd, maxSpd, headDens, bombDens, emptyDens, redDens) {
+  const { f, rng, box, add } = a;
+  const ROWS = 7, rh = box.h / ROWS, x0 = box.x + box.w + 16;
+  const cap = (y) => add({ ...bulletProps('sneobox'), x: x0, y, r: 0, noHit: true, scale: rh / 30, vx: startSpd, vy: 0, life: 96, emit(t) { t.vx = recrewSpeed(t.t, startSpd, minSpd, maxSpd); } });
+  
+  cap(box.y - rh * 0.4);
+  
+  // Decide what each of the 5 gameplay rows is
+  let rowKinds = [];
+  for (let r = 0; r < 5; r++) {
+    const roll = rng();
+    if (roll < headDens) rowKinds.push('crew');
+    else if (roll < headDens + bombDens) rowKinds.push('bomb');
+    else if (roll < headDens + bombDens + emptyDens) rowKinds.push('empty');
+    else if (roll < headDens + bombDens + emptyDens + redDens) rowKinds.push('red');
+    else rowKinds.push('mail');
+  }
+  
+  // Guarantee at least one path (crew or empty)
+  if (!rowKinds.some(k => k === 'crew' || k === 'empty')) {
+    rowKinds[Math.floor(rng() * 5)] = 'crew';
+  }
+
+  for (let r = 0; r < 5; r++) {
+    const kind = rowKinds[r];
+    if (kind === 'empty') continue;
+    
+    const y = box.y + (r + 1 + 0.5) * rh;
+    const props = kind === 'mail' ? 'sneomail' : kind === 'crew' ? 'sneocrew' : kind === 'red' ? 'sneohead' : 'sneobomb';
+    add({ ...bulletProps(props),
+      x: x0, y, vx: startSpd, vy: 0, life: 96, r: rh * 0.44, scale: kind === 'mail' ? rh / (20 * 1.6) : rh / 22 * 1.15,
+      shootable: kind !== 'mail' && kind !== 'bomb', hp: 1, bomb: kind === 'bomb', tint: kind === 'crew' ? '#00a2e8' : (kind === 'bomb' ? '#ffcc00' : (kind === 'red' ? '#ff3b3b' : null)),
+      emit(t) { t.vx = recrewSpeed(t.t, startSpd, minSpd, maxSpd); }
+    });
+  }
+  
+  cap(box.y + box.h + rh * 0.4);
+  Snd.play('pipis', 0.14);
+}
+
+PATTERNS.sneo_columns = { // Easy (v1)
   dur: 520, box: { w: 280, h: 168 },
   tick(a) {
-    const { f, rng, box, add } = a;
-    const ROWS = 7, rh = box.h / ROWS, CAD = 34, x0 = box.x + box.w + 16;
-    if (f === 0) this._gap = 3;
-    const cap = (y) => add({ ...bulletProps('sneobox'), x: x0, y, r: 0, noHit: true, scale: rh / 30, vx: -9, vy: 0, life: 96, emit(t) { t.vx = recrewSpeed(t.t); } });
-    if (f < 440 && f % CAD === 0) {
-      this._gap += (rng() < 0.5 ? -1 : 1); this._gap = Math.max(0, Math.min(5, this._gap));   // 2-row gap lane
-      const g = this._gap;
-      cap(box.y - rh * 0.4);
-      for (let r = 0; r < ROWS; r++) {
-        if (r === g || r === g + 1) continue;                    // the ONLY passable rows
-        const y = box.y + (r + 0.5) * rh, roll = rng();
-        const kind = roll < 0.16 ? 'crew' : roll < 0.2 ? 'bomb' : 'mail';
-        add({ ...bulletProps(kind === 'mail' ? 'sneomail' : kind === 'crew' ? 'sneocrew' : 'sneobomb'),
-          x: x0, y, vx: -9, vy: 0, life: 96, r: rh * 0.44, scale: kind === 'mail' ? rh / (20 * 1.6) : rh / 22 * 1.15,
-          shootable: kind !== 'mail', hp: 1, bomb: kind === 'bomb', tint: kind === 'crew' ? '#00a2e8' : (kind === 'bomb' ? '#ffcc00' : null),
-          emit(t) { t.vx = recrewSpeed(t.t); } });
-      }
-      cap(box.y + box.h + rh * 0.4);
-      Snd.play('pipis', 0.14);
-    }
+    if (a.f < 440 && a.f % 50 === 0) spawnRecrewWall(a, -12, -4, 7, 0.25, 0.0, 0.15, 0.0);
+  },
+};
+
+PATTERNS.sneo_columns2 = { // Medium (v2)
+  dur: 520, box: { w: 280, h: 168 },
+  tick(a) {
+    if (a.f < 440 && a.f % 40 === 0) spawnRecrewWall(a, -16, -5, 10, 0.35, 0.15, 0.05, 0.05);
+  },
+};
+
+PATTERNS.sneo_columns3 = { // Hard (v3)
+  dur: 520, box: { w: 280, h: 168 },
+  tick(a) {
+    if (a.f < 440 && a.f % 30 === 0) spawnRecrewWall(a, -21, -5, 13, 0.2, 0.3, 0.0, 0.15);
   },
 };
 PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones (its hands on the box); shoot to delay
@@ -944,7 +983,7 @@ function knightAtk(a) { a.fx.bossSprite = { key: 'knightattack', n: 6, rate: 4, 
 // the Knight's POINTING pose (spr_roaringknight_point_ol) — used by Stars (plays 0->4 then holds on frame 4)
 function knightPoint(a, f) {
   const pFrame = Math.min(4, Math.floor((f - 30) / 3));
-  a.fx.boss = { key: 'knightpoint' + pFrame, x: (a.box.x + a.box.w / 2) + 115, y: (a.box.y + a.box.h / 2) - 56, scale: 1.46 };
+  a.fx.boss = { key: 'knightpoint' + pFrame, x: (a.box.x + a.box.w / 2) + 137, y: a.box.y + a.box.h / 2, scale: 1.46 };
 }
 
 // STARS (type 98 / obj_knight_pointing_cone + star) — corrected 1:1 from GML:
@@ -955,16 +994,18 @@ function knightStars(v) {
     dur: 300, hz30: 1, box: { w: 168, h: 132 },
     tick(a) {
       const { f, box, add, rng, soul } = a;
-      const cx0 = (box.x + box.w / 2) + 115, cy0 = (box.y + box.h / 2) - 56, END = 150, EXPLODE = 196;
+      const cx0 = (box.x + box.w / 2) + 137, cy0 = box.y + box.h / 2, END = 150, EXPLODE = 196;
       const openT = Math.min(1, f / 45);
       const spread = f < END ? 60 * (1 - Math.pow(1 - openT, 3)) : 60 * Math.max(0, 1 - (f - END) / 30);
-      a.fx.knightCone = { x: cx0, y: cy0, dir: Math.PI, spread: spread * D2R, len: (box.w + 120) * 0.95 };
+      a.fx.knightCone = { x: cx0, y: cy0, dir: Math.PI, spread: spread * D2R, len: 600 };
       if (f >= 45 && f <= END && (f - 45) % 4 === 0) {
         this._sz = (this._sz == null) ? 0.5 + rng() * 0.5 : (this._sz + 0.5 + Math.sin(f) * 0.5) % 1;
         this._sp = (this._sp == null) ? (rng() - 0.5) : (((this._sp + 1 + (0.5 + Math.sin(rng()) * 0.3)) % 1) - 0.5);
+        this._starIdx = (this._starIdx || 0);
+        const te = Math.max(24, EXPLODE - f) + (this._starIdx++);
         const size = this._sz, dir = (180 + this._sp * spread) * D2R, spd = 4 + (1 - size) * 3;
         add({ ...bulletProps('knightstar'), x: cx0, y: cy0, vx: Math.cos(dir) * spd, vy: -Math.sin(dir) * spd,
-          r: 6, grazeR: 12, scale: 0.2, grow: 0.02, growMax: 0.55 + size * 0.35, life: 340, _te: Math.max(24, EXPLODE - f), _var: v,
+          r: 6, grazeR: 12, scale: 0.2, grow: 0.02, growMax: 0.55 + size * 0.35, life: 340, _te: te, _var: v,
           emit(b, out, sl) {
             const te = b._te;
             if (b.t === te - 40) b.fric = 0.5;                                   // brake to a stop
@@ -973,10 +1014,10 @@ function knightStars(v) {
               if (b._var === 3) {   // Stars III: 2 targeted main sparks + 4 trailing sparks
                 const aimAng = Math.atan2(sl.y - b.y, sl.x - b.x);
                 for (let i = 0; i < 2; i++) { const ang = aimAng + (i ? 0.25 : -0.25);
-                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 4, vy: Math.sin(ang) * 4,
+                  out.push({ ...bulletProps('knighttri'), tint: '#ff3333', x: b.x, y: b.y, vx: Math.cos(ang) * 4, vy: Math.sin(ang) * 4,
                     rot: ang, r: 5, scale: 0.8, fric: -0.06, life: 80, fade: true, fadeDelay: 40 }); }
                 for (let i = 0; i < 4; i++) { const ang = aimAng + (i - 1.5) * 0.4;
-                  out.push({ ...bulletProps('knighttri'), x: b.x, y: b.y, vx: Math.cos(ang) * 1.5, vy: Math.sin(ang) * 1.5,
+                  out.push({ ...bulletProps('knighttri'), tint: '#ff3333', x: b.x, y: b.y, vx: Math.cos(ang) * 1.5, vy: Math.sin(ang) * 1.5,
                     rot: ang, r: 4, scale: 0.5, fric: 0.04, life: 30, fade: true, fadeDelay: 10 }); }
               } else {
                 const N = b._var === 2 ? 6 : 3;
@@ -1101,24 +1142,49 @@ function knightTunnel(v) {
       const { f, box, add, rng } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
       if (f === 0) { this._vertPos = 0; }
       if (f < FIN && f % 8 === 0) {
-        // GML lines 236-254: vertical_pos wobbles around center with hole_size 44..52
-        this._vertPos = Math.max(-40, Math.min(40, (this._vertPos || 0) + (rng() - 0.5) * 40));
-        const holeSize = 46 + Math.abs(this._vertPos) * 0.2;
-        const gapTop = cy + this._vertPos - holeSize / 2;
-        const gapBot = cy + this._vertPos + holeSize / 2;
+        let newpos = this._vertPos + 15 + Math.floor(rng() * 91);
+        if (newpos > 60) newpos -= 120;
+        this._lastVert = this._vertPos;
+        this._vertPos = Math.max(this._lastVert - 50, Math.min(this._lastVert + 50, newpos));
+        
+        const holeDiff = Math.abs(this._lastVert - this._vertPos);
+        let holeSize = 60;
+        if (holeDiff < 20) holeSize = 36;
+        else if (holeDiff < 30) holeSize = 44;
+        else if (holeDiff < 40) holeSize = 52;
+        
+        const wave = f / 8;
+        if (wave === 0) holeSize = 100;
+        else if (wave === 1) holeSize = 90;
+        else if (wave === 2) holeSize = 75;
+        else if (wave === 3) holeSize = 60;
+
         const spawnX = box.x + box.w + 40;
+        
+        const gapTop = cy + this._vertPos - holeSize / 2;
+        const topH = Math.max(0, gapTop - box.y);
+        const topSpr = topH > 80 ? 'knightdiamondl2' : (topH > 48 ? 'knightdiamondm' : 'knightdiamond');
+        if (topH > 0) {
+          add({ ...bulletProps(topSpr), x: spawnX, y: gapTop - topH / 2,
+            vx: -0.5, vy: 0.15 + rng() * 0.6 * (rng() < 0.5 ? 1 : -1), ax: -0.4,
+            maxv: 14, scale: topH / (topH > 80 ? 110 : (topH > 48 ? 64 : 32)), rot: Math.PI / 2, r: 12, life: 70 });
+        }
 
-        // TOP blade: extends from top boundary down to gapTop (pointing DOWN)
-        const topH = Math.max(40, gapTop - (box.y - 20));
-        add({ ...bulletProps('knightdiamondl2'), x: spawnX, y: box.y - 20 + topH / 2,
-          vx: -6, vy: 0, fric: -0.1, maxv: 14, scale: topH / 110, rot: Math.PI / 2, r: 12, life: 70 });
-
-        // BOTTOM blade: extends from gapBot down to bottom boundary (pointing UP)
-        const botH = Math.max(40, (box.y + box.h + 20) - gapBot);
-        add({ ...bulletProps('knightdiamondl2'), x: spawnX, y: gapBot + botH / 2,
-          vx: -6, vy: 0, fric: -0.1, maxv: 14, scale: botH / 110, rot: -Math.PI / 2, r: 12, life: 70 });
+        const gapBot = cy + this._vertPos + holeSize / 2;
+        const botH = Math.max(0, (box.y + box.h) - gapBot);
+        const botSpr = botH > 80 ? 'knightdiamondl2' : (botH > 48 ? 'knightdiamondm' : 'knightdiamond');
+        if (botH > 0) {
+          add({ ...bulletProps(botSpr), x: spawnX, y: gapBot + botH / 2,
+            vx: -0.5, vy: 0.15 + rng() * 0.6 * (rng() < 0.5 ? 1 : -1), ax: -0.4,
+            maxv: 14, scale: botH / (botH > 80 ? 110 : (botH > 48 ? 64 : 32)), rot: -Math.PI / 2, r: 12, life: 70 });
+        }
 
         Snd.play('heavyswing', 0.16);
+      }
+      if (f < FIN && f % 4 === 0) {
+        const spawnX = box.x + box.w + 40;
+        add({ ...bulletProps('knightdiamondl2'), tint: '#444', x: spawnX, y: cy,
+          vx: -0.5, vy: 0, ax: -0.4, maxv: 14, scale: (box.h + 80) / 110, rot: Math.PI / 2, r: 0, grazeR: 0, life: 70, z: -10 });
       }
       if (f === FIN) Snd.play('knightsword', 0.5);
       if (f >= FIN && f < FIN + 2) {
@@ -1146,6 +1212,7 @@ function knightRotslash(v) {
       for (let e = 0; e < SEQ.length; e++) {
         if (f !== INTRO + e * GAP) continue;
         const n = SEQ[e], base = rng() * Math.PI, spin = (rng() < 0.5 ? 1 : -1) * (0.14 + rng() * 0.08);
+        if (e === SEQ.length - 1) this._lastBase = base;
         if (e === 0) Snd.play('boardsummon', 0.18);
         for (let i = 0; i < n; i++)
           add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: soul.x, y: soul.y, rot: base + i * Math.PI / n,
@@ -1156,17 +1223,23 @@ function knightRotslash(v) {
         const FSTART = INTRO + SEQ.length * GAP + 20;
         if (f === FSTART) {
           Snd.play('smallswing', 0.5);
-          this._curAngle = rng() * Math.PI;
-          this._speedGain = 1;
+          this._curAngle = this._lastBase || (rng() * Math.PI);
+          this._speedGain = 16;
           this._spinDir = rng() < 0.5 ? 1 : -1;
+          this._telegraphSpin = 0.12 * this._spinDir;
           // Initial telegraph cut
           add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
-            spin: 0.12 * this._spinDir, spinDecay: 0.92, tellT: 28, armWindow: 6, tellRamp: true, tellMax: 28, cutSnd: 'knightsword', shakeOnCut: true });
+            spin: this._telegraphSpin, spinDecay: 0.92, tellT: 28, armWindow: 6, tellRamp: true, tellMax: 28, cutSnd: 'knightsword', shakeOnCut: true });
         }
         const SP_START = FSTART + 28;
-        // GML lines 517-540: 28 rapid cuts every 2 ticks, speed_gain accelerating 1->24
+        if (f === SP_START) {
+          let acc = 0, s = this._telegraphSpin;
+          for (let k = 0; k < 28; k++) { acc += s; s *= 0.92; }
+          this._curAngle += acc;
+        }
+        // GML lines 517-540: 28 rapid cuts every 2 ticks, speed_gain accelerating 16->24
         if (f >= SP_START && f < SP_START + 56 && (f - SP_START) % 2 === 0) {
-          this._speedGain = Math.min(24, (this._speedGain || 1) + 1);
+          this._speedGain = Math.min(24, (this._speedGain || 16) + 1);
           this._curAngle = (this._curAngle || 0) + (this._speedGain * D2R * this._spinDir);
           add({ shape: 'line', color: '#f33', len: LINE, thick: 6, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
             tellT: 2, armWindow: 4, cutSnd: 'knightsword', cutVol: 0.35, shakeOnCut: true });
@@ -1698,14 +1771,14 @@ PATTERNS.gerson_pinball = {
 // (spr_gerson_swing_down_new) down through a side of the board: middle, right, left, middle, left, right,
 // left; then a fakeout, then a horizontal slash right->left at the SOUL. Blade telegraphs (poised) then
 // slams (GML speed 50). Dodge to the UNslashed side. ---
-function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel) {
+function gBladeSlash(a, x, y, rotAng, fvx, fvy, hitW, hitH, tel, customLen) {
   const { add, box } = a;
   a.fx.bossSprite = { key: 'gswing', n: 7, rate: 3, ttl: 16 };   // Gerson visibly SWINGS when a slash fires
   a.fx.shake = Math.max(a.fx.shake || 0, 3);
   add({ ...bulletProps('gblade0'), x, y, vx: 0, vy: 0, rot: rotAng, scale: GSC(52, 110),
         noHit: true, fireAt: tel, fireVX: fvx, fireVY: fvy, hitW, hitH, dmg: 26, life: tel + 16 });
   // telegraph zone: RED then FADES TO WHITE as the slash lands (GML gerson telegraph colour ramp)
-  add({ shape: 'line', color: '#ff3b3b', tellRamp: true, tellMax: tel, len: (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
+  add({ shape: 'line', color: '#ff3b3b', tellRamp: true, tellMax: tel, len: customLen || (Math.abs(fvy) > Math.abs(fvx) ? box.h : box.w) * 1.8, thick: hitW,
         x: x + (fvx ? Math.sign(fvx) * 30 : 0), y: y + (fvy ? Math.sign(fvy) * 30 : 0), rot: rotAng + Math.PI / 2,
         vx: 0, vy: 0, tellT: tel, armWindow: 5, dmg: 26, noHit: false, shakeOnCut: true });
   Snd.play('heavyswing', 0.4);
@@ -1866,8 +1939,8 @@ PATTERNS.gn_atk21 = {
 PATTERNS.gerson_boxthrow = {
   dur: 420, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
-    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2, gx = box.x + box.w + 70, gy = box.y - 18;
-    if (f <= 1) { this._ax = null; this._settled = 0; Battle._giantLand = 0; }
+    const { f, box, add, rng } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    if (f <= 1) { this._ax = null; this._settled = 0; Battle._giantLand = 0; this._gDir = 1; this._gX = box.x + box.w + 70; }
     if (f >= 6 && f < 20) a.fx.bossSprite = { key: 'gswing', n: 7, rate: 2, ttl: 3 };
     if (f === 12) { this._ax = box.x; this._ay = box.y; Battle.shake = 14; Battle.flash = 5; Snd.play('bosshit', 0.6); }
     if (Battle._giantLand) this._settled = 1;
@@ -1878,32 +1951,41 @@ PATTERNS.gerson_boxthrow = {
     }
     const curBoxX = (this._ax != null) ? this._ax - 40 : box.x;
     const curCX = curBoxX + box.w / 2;
+
+    if (f > 40 && f % 36 === 0) this._gDir *= -1;
+    const baseGX = box.x + box.w + 70;
+    const targetGX = baseGX + (this._gDir * 25);
+    this._gX += (targetGX - this._gX) * 0.2;
+    const gx = this._gX, gy = box.y - 18;
+
     if (f >= 34 && f < 320) a.fx.bossSprite = { key: 'gswing', n: 7, rate: 4, ttl: 4 };
+
+    const s = Battle.soul;
+    const getZoneVx = () => {
+      const relX = s.x - curCX;
+      if (relX < -37.5) return -4.8 - rng() * 2;
+      if (relX > 37.5) return -2 - rng() * 1.5;
+      if (relX < 0) return -3.7 - rng() * 1.5;
+      return -2.7 - rng() * 2.2;
+    };
+
     if (f >= 40 && f < 200 && (f - 40) % 10 === 0) {
       const n = 3 + Math.floor(rng() * 2);
-      // Sweep tx across entire battlebox width from curBoxX - 20 to curBoxX + box.w + 20
-      const sweepFrac = (Math.sin(f * 0.1) + 1) / 2;
-      const tx = curBoxX - 20 + sweepFrac * (box.w + 40);
       for (let i = 0; i < n; i++) {
-        const off = (i - (n - 1) / 2) * 28 + (rng() - 0.5) * 12;
-        const targetX = tx + off;
-        const flightT = 46.6;  // 2 * Math.abs(vy0) / ay = 28 / 0.6 = 46.6 frames
-        const vx = -(gx - targetX) / flightT;
-        add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx, vy: -14, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(14, 30), spin: 0.24, dmg: 28, life: 130 });
+        const vx = getZoneVx();
+        add({ ...bulletProps('ghammer40'), x: gx + (rng()-0.5)*20, y: gy, vx, vy: -14, ay: 0.6, maxv: 11, r: 8, grazeR: 13, scale: GSC(14, 30), spin: 0.24, dmg: 28, life: 130 });
       }
       Snd.play('smallswing', 0.3);
     }
     const p1 = f - 200;
     if (p1 >= 0 && p1 < 100 && p1 % 4 === 0) {
-      const tx = curCX + Math.sin(f * 0.25) * 70;
-      const flightT = 46.6;
-      const vx = -(gx - tx) / flightT;
-      add({ ...bulletProps('ghammer40'), x: gx, y: gy, vx, vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(14, 44), spin: 0.24, dmg: 28, life: 130 });
+      const vx = getZoneVx();
+      add({ ...bulletProps('ghammer40'), x: gx + (rng()-0.5)*20, y: gy, vx, vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(14, 44), spin: 0.24, dmg: 28, life: 130 });
     }
-    // FINAL: Giant hammer lands AT curCX (center of battlebox)
+    // FINAL: Giant hammer lands AT the soul's position
     if (f === 306) {
-      const tx = curCX;
       const flightT = 48; // 2 * 18 / 0.75 = 48 frames
+      const tx = s.x;
       const vx = -(gx - tx) / flightT;
       const giant = { ...bulletProps('ggiant'), x: gx, y: gy, vx, vy: -18, ay: 0.75,
         maxv: 24, spin: 0.08, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 200, _giant: 1, _land: 0, _sit: 0 };
@@ -1925,13 +2007,14 @@ PATTERNS.gerson_squish = {
   tick(a) {
     const { f, box } = a; const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
     if (f === 26) { Battle.shake = 16; Snd.play('bosshit', 0.6); }
-    // Spring bounce: squishes to 468x30 then bounces back to 420x40
+    // Spring bounce: squishes to 450x30 then bounces back
     if (f > 24) {
       const bounce = f < 40 ? Math.sin((f - 24) * 0.25) * 48 : 0;
-      a.fx.boxTarget = { x: cx - 210 - bounce / 2, y: cy - 20, w: 420 + bounce, h: 40 };
+      a.fx.boxTarget = { x: cx - 225 - bounce / 2, y: cy - 15, w: 450 + bounce, h: 30 };
     }
     const L = cx - 190, R = cx + 190, span = R - L, N = 9, W = 64;
-    const slash = colX => gBladeSlash(a, colX, cy - 70, 0, 0, 46, W, 40, 10);
+    // Spawn blade at cy-30. fvy is positive, so it moves down. The line telegraph will be centered at cy and have len 30.
+    const slash = colX => gBladeSlash(a, colX, cy - 30, 0, 0, 46, W, 30, 10, 30);
     // PHASE 1: sweep LEFT -> RIGHT
     for (let i = 0; i < N; i++) if (f === 56 + i * 16) slash(L + span * 0.92 * (i / (N - 1)));
     // PHASE 2: sweep RIGHT -> LEFT

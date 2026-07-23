@@ -1482,7 +1482,10 @@ Battle.render = function (ctx) {
     const wobble = Math.sin(B.anim.f * 0.35) * 2.5 + ((B.anim.f % 11 < 3) ? (Math.sin(B.anim.f * 1.7) * 4) : 0);
     ctx.translate(wobble, 0);
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    for (let y = 0; y < 480; y += 3) ctx.fillRect(0, y, 640, 1.2);
+    for (let y = 0; y < 480; y += 3) {
+      const vWave = Math.sin(B.anim.f * 0.08 + y * 0.02) * 1.5;
+      ctx.fillRect(vWave, y, 640, 1.2);
+    }
     if ((B.anim.f % 7) < 2) {
       ctx.fillStyle = 'rgba(255,255,255,0.06)';
       ctx.fillRect(0, (B.anim.f * 29) % 476, 640, 5);
