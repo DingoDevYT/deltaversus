@@ -516,8 +516,9 @@ PATTERNS.jevil_diamond = {
     add({ ...bulletProps('suitdiamondv'), x: jx, y: jy, vx: Math.cos(ang) * 8, vy: Math.sin(ang) * 8, rot: ang + Math.PI / 2, scale: JS(0.7), r: 5, grazeR: 11, dmg: 16, life: 120 });
   },
 };
-// TYPE 73/74 — Vertical Diamonds: a DENSE curtain of diamonds pours down (biased toward the SOUL's
-// column ~40% of the time), fading in + growing 3->1 as it falls; thread the gaps. (obj_dbullet_vert)
+// TYPE 73/74 — Vertical Diamonds: a DENSE column of diamonds spawns from the BOTTOM and flies
+// UPWARD (Rudinn-style, biased toward the SOUL's column ~40% of the time), fading in + growing
+// 3->1 as it rises; thread the gaps. (obj_dbullet_vert — wiki: "diamonds ... fly upwards")
 PATTERNS.jevil_verticals = {
   dur: 320, hz30: 1,
   tick(a) {
@@ -526,7 +527,7 @@ PATTERNS.jevil_verticals = {
     const bias = rng() < 0.4;                                   // GML num==3 biases xx into the soul's lane
     let x = bias ? soul.x + (rng() - 0.5) * 30 : box.x + 10 + rng() * (box.w - 20);
     x = Math.max(box.x + 6, Math.min(box.x + box.w - 6, x));
-    add({ ...bulletProps('suitdiamondv'), x, y: box.y - 8, vx: 0, vy: 2.6 + rng() * 1.2, r: 5, grazeR: 11,
+    add({ ...bulletProps('suitdiamondv'), x, y: box.y + box.h + 8, vx: 0, vy: -(2.6 + rng() * 1.2), r: 5, grazeR: 11,
           scale: 0.18, grow: 0.1, growMax: JS(0.75), spin: 0.12, dmg: 16, life: 150 });
   },
 };
