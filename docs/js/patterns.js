@@ -750,23 +750,23 @@ function spawnRecrewWall(a, startSpd, minSpd, maxSpd, headDens, bombDens, emptyD
 }
 
 PATTERNS.sneo_columns = { // Easy (v1)
-  dur: 520, box: { w: 280, h: 168 },
+  dur: 520, hz30: 1, box: { w: 280, h: 168 },
   tick(a) {
-    if (a.f < 440 && a.f % 50 === 0) spawnRecrewWall(a, -12, -4, 7, 0.25, 0.0, 0.15, 0.0);
+    if (a.f < 440 && a.f % 34 === 0) spawnRecrewWall(a, -9, -3.5, 6, 0.3, 0.0, 0.2, 0.0);
   },
 };
 
 PATTERNS.sneo_columns2 = { // Medium (v2)
-  dur: 520, box: { w: 280, h: 168 },
+  dur: 520, hz30: 1, box: { w: 280, h: 168 },
   tick(a) {
-    if (a.f < 440 && a.f % 40 === 0) spawnRecrewWall(a, -16, -5, 10, 0.35, 0.15, 0.05, 0.05);
+    if (a.f < 440 && a.f % 26 === 0) spawnRecrewWall(a, -13, -4.5, 9, 0.35, 0.15, 0.1, 0.05);
   },
 };
 
 PATTERNS.sneo_columns3 = { // Hard (v3)
-  dur: 520, box: { w: 280, h: 168 },
+  dur: 520, hz30: 1, box: { w: 280, h: 168 },
   tick(a) {
-    if (a.f < 440 && a.f % 30 === 0) spawnRecrewWall(a, -21, -5, 13, 0.2, 0.3, 0.0, 0.15);
+    if (a.f < 440 && a.f % 20 === 0) spawnRecrewWall(a, -17, -5, 12, 0.3, 0.25, 0.05, 0.15);
   },
 };
 PATTERNS.sneo_phones = {   // GRIPPING PHONES: a blue head climbs in on two phones (its hands on the box); shoot to delay
@@ -1181,11 +1181,6 @@ function knightTunnel(v) {
 
         Snd.play('heavyswing', 0.16);
       }
-      if (f < FIN && f % 4 === 0) {
-        const spawnX = box.x + box.w + 40;
-        add({ ...bulletProps('knightdiamondl2'), tint: '#444', x: spawnX, y: cy,
-          vx: -0.5, vy: 0, ax: -0.4, maxv: 14, scale: (box.h + 80) / 110, rot: Math.PI / 2, r: 0, grazeR: 0, life: 70, z: -10 });
-      }
       if (f === FIN) Snd.play('knightsword', 0.5);
       if (f >= FIN && f < FIN + 2) {
         for (let i = 0; i < 16; i++) {
@@ -1200,8 +1195,8 @@ function knightTunnel(v) {
   };
 }
 
-// ROTATING SLASH (type 104) — GML 1:1:
-// Finale in P3: accelerating 28-cut spiral sweep (speed_gain 1->24) advancing aim_direction continuously
+// ROTATING SLASH (type 104) — GML 1:1 (rotation speed slowed by 25% for readability):
+// Finale in P3: accelerating 28-cut spiral sweep (speed_gain 12->18) advancing aim_direction continuously
 function knightRotslash(v) {
   const SEQ = v === 1 ? [1, 2, 2, 3, 3, 4] : v === 2 ? [3, 3, 4, 4, 4, 4] : [3, 4, 4, 4, 4, 4];
   const finale = v === 3, LINE = 1400;
@@ -1224,9 +1219,9 @@ function knightRotslash(v) {
         if (f === FSTART) {
           Snd.play('smallswing', 0.5);
           this._curAngle = this._lastBase || (rng() * Math.PI);
-          this._speedGain = 16;
+          this._speedGain = 12; // 25% slower than 16
           this._spinDir = rng() < 0.5 ? 1 : -1;
-          this._telegraphSpin = 0.12 * this._spinDir;
+          this._telegraphSpin = 0.09 * this._spinDir;
           // Initial telegraph cut
           add({ shape: 'line', color: '#f33', len: LINE, thick: 7, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
             spin: this._telegraphSpin, spinDecay: 0.92, tellT: 28, armWindow: 6, tellRamp: true, tellMax: 28, cutSnd: 'knightsword', shakeOnCut: true });
@@ -1237,9 +1232,9 @@ function knightRotslash(v) {
           for (let k = 0; k < 28; k++) { acc += s; s *= 0.92; }
           this._curAngle += acc;
         }
-        // GML lines 517-540: 28 rapid cuts every 2 ticks, speed_gain accelerating 16->24
+        // 28 rapid cuts every 2 ticks, speed_gain accelerating 12->18 (25% slower)
         if (f >= SP_START && f < SP_START + 56 && (f - SP_START) % 2 === 0) {
-          this._speedGain = Math.min(24, (this._speedGain || 16) + 1);
+          this._speedGain = Math.min(18, (this._speedGain || 12) + 0.75);
           this._curAngle = (this._curAngle || 0) + (this._speedGain * D2R * this._spinDir);
           add({ shape: 'line', color: '#f33', len: LINE, thick: 6, x: cx, y: cy, rot: this._curAngle, vx: 0, vy: 0,
             tellT: 2, armWindow: 4, cutSnd: 'knightsword', cutVol: 0.35, shakeOnCut: true });
@@ -1982,10 +1977,10 @@ PATTERNS.gerson_boxthrow = {
       const vx = getZoneVx();
       add({ ...bulletProps('ghammer40'), x: gx + (rng()-0.5)*20, y: gy, vx, vy: -14, ay: 0.6, maxv: 11, r: 11, grazeR: 15, scale: GSC(14, 44), spin: 0.24, dmg: 28, life: 130 });
     }
-    // FINAL: Giant hammer lands AT the soul's position
+    // FINAL: Giant hammer lands AT center of battlebox (dodge in left/right corners)
     if (f === 306) {
       const flightT = 48; // 2 * 18 / 0.75 = 48 frames
-      const tx = s.x;
+      const tx = curCX;
       const vx = -(gx - tx) / flightT;
       const giant = { ...bulletProps('ggiant'), x: gx, y: gy, vx, vy: -18, ay: 0.75,
         maxv: 24, spin: 0.08, scale: GSC(92, 150), r: 22, grazeR: 26, dmg: 44, life: 200, _giant: 1, _land: 0, _sit: 0 };
@@ -2002,6 +1997,7 @@ PATTERNS.gerson_boxthrow = {
 };
 
 // #B SQUISH-BOX SLASHES (obj_gerson_squishes_box, RED, wiki Attack 13) — Gerson SQUISHES board THIN + WIDE
+// The whole row of Gersons appears simultaneously showing the visual gap, then they slam down together.
 PATTERNS.gerson_squish = {
   dur: 490, box: { w: 150, h: 150 }, hz30: 1,
   tick(a) {
@@ -2012,16 +2008,30 @@ PATTERNS.gerson_squish = {
       const bounce = f < 40 ? Math.sin((f - 24) * 0.25) * 48 : 0;
       a.fx.boxTarget = { x: cx - 225 - bounce / 2, y: cy - 15, w: 450 + bounce, h: 30 };
     }
-    const L = cx - 190, R = cx + 190, span = R - L, N = 9, W = 64;
-    // Spawn blade at cy-30. fvy is positive, so it moves down. The line telegraph will be centered at cy and have len 30.
-    const slash = colX => gBladeSlash(a, colX, cy - 30, 0, 0, 46, W, 30, 10, 30);
-    // PHASE 1: sweep LEFT -> RIGHT
-    for (let i = 0; i < N; i++) if (f === 56 + i * 16) slash(L + span * 0.92 * (i / (N - 1)));
-    // PHASE 2: sweep RIGHT -> LEFT
-    for (let i = 0; i < N; i++) if (f === 240 + i * 16) slash(R - span * 0.92 * (i / (N - 1)));
-    // PHASE 3: broad spread
-    const FRAC = [0.0, 0.13, 0.26, 0.39, 0.52, 0.65, 1.0];
-    FRAC.forEach((fr, i) => { if (f === 424 + i * 8) slash(L + span * fr); });
+    const L = cx - 190, R = cx + 190, span = R - L, N = 9, W = 46;
+    const slash = colX => gBladeSlash(a, colX, cy - 30, 0, 0, 46, W, 30, 14, 30);
+    
+    // WAVE 1 (frame 56): whole row appears together leaving gap on the right (index 7 skipped)
+    if (f === 56) {
+      for (let i = 0; i < N; i++) {
+        if (i === 7) continue; // the visual GAP
+        slash(L + span * (i / (N - 1)));
+      }
+    }
+    // WAVE 2 (frame 200): whole row appears together leaving gap on the left (index 1 skipped)
+    if (f === 200) {
+      for (let i = 0; i < N; i++) {
+        if (i === 1) continue; // the visual GAP
+        slash(L + span * (i / (N - 1)));
+      }
+    }
+    // WAVE 3 (frame 340): whole row appears together leaving gap in center (index 4 skipped)
+    if (f === 340) {
+      for (let i = 0; i < N; i++) {
+        if (i === 4) continue; // the visual GAP
+        slash(L + span * (i / (N - 1)));
+      }
+    }
   },
 };
 // #C RUDE BUSTER (RED, obj_gerson_rudebuster) — Gerson hurls an ACCELERATING homing orb (GML speed 9,
