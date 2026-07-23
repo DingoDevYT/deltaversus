@@ -1240,11 +1240,12 @@ const G_STR2GML = { l: 0, d: 90, r: 180, u: 270, dr: 135, dl: 45, ur: 225, ul: 3
 // that swap is done live in updDodge (soonest-arriving spear gets b.hiImg). Arrow points along travel.
 function gSpear(a, gd, spd, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  // GML: len = speed * frames -> spawn well OFFSCREEN and travel at `spd`. Arrow drawn at HALF size (~17px).
-  const va = -gd * Math.PI / 180, D = opt.dist || 360;
+  // EXACT GML: spawn at len = speed * frames (frames=heartframes~50), travel at `spd`. So FASTER spears spawn
+  // FARTHER offscreen and arrive at ~the same time (arrival = frames - 36/spd). Arrow drawn at HALF size (~17px).
+  const va = -gd * Math.PI / 180, D = spd * (opt.frames || 50);
   const lo = bulletProps('gspear0').img, hi = bulletProps('gspearhi0').img;
   add({ img: lo, loImg: lo, hiImg: hi, isSpear: true, x: cx - Math.cos(va) * D, y: cy - Math.sin(va) * D,
-        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 6, scale: GSC(21, 17), rot: va, dmg: opt.dmg || 18, life: opt.life || 260 });
+        vx: Math.cos(va) * spd, vy: Math.sin(va) * spd, r: 6, scale: GSC(21, 17), rot: va, dmg: opt.dmg || 18, life: opt.life || 400 });
   Snd.play('smallswing', 0.3);
 }
 // GREEN multi-block turtle shell (obj_spearshot bouncespear) from side `gd`. `hp` = blocks needed
@@ -1252,9 +1253,11 @@ function gSpear(a, gd, spd, opt) {
 // opt.big = larger + slower shell. Normal shells come from ONE direction (no spin) per the GML/wiki.
 function gShell(a, gd, hp, opt) {
   opt = opt || {}; const { box, add } = a, cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  const va = -gd * Math.PI / 180, posAng = va + Math.PI, spd = opt.big ? 2.6 : 4, D = 300;
+  // GML: shell = obj_spearshot bouncespear, SAME speed model as spears (fakespeed = speed, len = speed*frames).
+  // Falls toward the SOUL at spear speed; opt.big = slower/larger. Spawn well offscreen at speed*frames.
+  const va = -gd * Math.PI / 180, posAng = va + Math.PI, spd = opt.spd || (opt.big ? 4 : G_SLOW), D = spd * (opt.frames || 46);
   add({ shape: 'shell', shell: true, shellRadial: true, blocksLeft: hp, shellSpin: !!opt.spin,
-        shellLen: D, shellPosAng: posAng, shellSpeed: spd, shellBaseSpeed: spd, shellGrav: 0, shellState: 0,
+        shellLen: D, shellPosAng: posAng, shellPosTarget: posAng, shellSpeed: spd, shellBaseSpeed: spd, shellGrav: 0, shellState: 0,
         x: cx + Math.cos(posAng) * D, y: cy + Math.sin(posAng) * D, vx: 0, vy: 0,
         r: opt.big ? 11 : 8, scale: opt.big ? 0.8 : 0.55, dmg: 20 });   // HALF size (GML scr_darksize baseline is 2x)
 }
@@ -1262,7 +1265,7 @@ function gShell(a, gd, hp, opt) {
 // GREEN sequence system (wiki-exact). Tokens: ['s',dir]=slow spear, ['f',dir]=fast spear,
 // ['H',dir,hp]=shell (2=green,3=blue,4=purple,5=red), ['w',frames]=extra pause. dir = a G_STR2GML key
 // (the direction the SHIELD must FACE to block, per the wiki). Cadence: slow 26f, fast 13f, shell 44f.
-const G_SLOW = 9, G_FAST = 13;   // spears come in FAST from offscreen (GML fakespeed); pre-aim via the red highlight
+const G_SLOW = 6.4, G_FAST = 12;   // GML fakespeed (attack 0 spearspeed 8 -> 6.4 slow / 8; fast volleys ramp to 18)
 // tokens: ['s',dir]/['f',dir] slow/fast spear; ['H',dir,hp] normal shell; ['Hs',dir,hp] SPINNING (cyan)
 // shell (returns 90 CCW); ['Hb',dir,hp] big+slow shell; ['w',frames] pause.
 function gBuild(tokens, t0) {
@@ -1583,15 +1586,19 @@ PATTERNS.gn_atk18 = { dur: 560, box: { w: 150, h: 150 }, hz30: 1,
     for (let i = 0; i < 32; i++) { s.push({ t, dir: D[(i * 5 + 3) % 8], spd: 6 + i * 0.16 }); t += Math.round(Math.max(9, 20 - i * 0.35)); } return s; })(),
   tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
 // 19: 48 arrows from all directions, all slow but very densely packed.
-PATTERNS.gn_atk19 = { dur: 640, box: { w: 150, h: 150 }, hz30: 1,
-  _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 20; const s = [];
-    for (let i = 0; i < 48; i++) { s.push({ t, dir: D[(i * 3 + 5) % 8], spd: 5.4 }); t += 9; } return s; })(),
+// 19: 48 arrows from all directions, all SLOW but EXTREMELY CONSOLIDATED (tight 5f gaps -> a dense wall you
+// must block continuously). Pseudo-random directions (deterministic so it's a fixed pattern).
+PATTERNS.gn_atk19 = { dur: 680, box: { w: 150, h: 150 }, hz30: 1,
+  _seq: (function () { const D = ['r','dr','d','dl','l','ul','u','ur']; let t = 16; const s = [];
+    for (let i = 0; i < 48; i++) { s.push({ t, dir: D[(i * 3 + i * i + 5) % 8], spd: 6 }); t += 5; } return s; })(),
   tick(a) { a.fx.greenSoul = { oct: true }; gRun(a, this._seq); } };
-// 20: cyan shell + interleaved arrows sequence, then 4 cyan shells, then 3 cyan shells.
-PATTERNS.gn_atk20 = gGreen([['Hs','u',3],['s','r'],['s','dr'],['s','d'],['w',6],['s','ur'],['s','r'],['s','ur'],['w',6],['s','ul'],
-  ['Hs','r',3],['s','r'],['s','ur'],['s','u'],['s','ur'],['w',6],['s','u'],['s','l'],['s','dl'],['w',10],
-  ['Hs','u',3],['w',-30],['Hs','l',3],['w',-30],['Hs','r',3],['w',-30],['Hs','d',3],['s','ul'],['w',18],
-  ['Hs','ur',3],['w',-30],['Hs','ul',3],['w',-30],['Hs','dr',3],['s','u'],['s','r']], true);
+// 20 (wiki-exact): cyan shell(top)+arrows r dr d / ur r ur / ul; cyan shell(right)+arrows r ur u ur / u l dl;
+// 4 cyan shells u l r d +arrow ul; 3 cyan shells ur ul dr +arrows u r. Cyan shells (hp3) bounce 90 CCW each hit.
+PATTERNS.gn_atk20 = gGreen([
+  ['Hs','u',3], ['w',24], ['s','r'],['s','dr'],['s','d'], ['w',26], ['s','ur'],['s','r'],['s','ur'], ['w',24], ['s','ul'], ['w',34],
+  ['Hs','r',3], ['w',24], ['s','r'],['s','ur'],['s','u'],['s','ur'], ['w',26], ['s','u'],['s','l'],['s','dl'], ['w',44],
+  ['Hs','u',3],['w',-30],['Hs','l',3],['w',-30],['Hs','r',3],['w',-30],['Hs','d',3], ['w',12],['s','ul'], ['w',40],
+  ['Hs','ur',3],['w',-30],['Hs','ul',3],['w',-30],['Hs','dr',3], ['w',12],['s','u'],['s','r']], true);
 // 21 (FINAL): cyan u, green l, cyan ur, fast RED shell(5) from right; green u; hammer from LEFT -> RED;
 // then Gerson slashes in a circle from the top-right corner CCW (move in a circle near centre).
 PATTERNS.gn_atk21 = {

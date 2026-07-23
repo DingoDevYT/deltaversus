@@ -44,7 +44,7 @@ function resolveGreen(b) {
     if (b.shell) {
       b.blocksLeft = (b.blocksLeft || 1) - 1;
       if (b.blocksLeft <= 0) b.dead = true;                     // yellow (hp1) = final: one block finishes, NO bounce
-      else if (b.shellRadial) { b.shellState = 1; b.shellSquish = 5; b.sx = 1.5; b.sy = 0.55; if (b.shellSpin) b.shellPosAng -= Math.PI / 2; }   // SQUASH; squish -> bounce arc; spinning returns 90 CCW
+      else if (b.shellRadial) { b.shellState = 1; b.shellSquish = 5; b.sx = 1.5; b.sy = 0.55; if (b.shellSpin) b.shellPosTarget = (b.shellPosTarget == null ? b.shellPosAng : b.shellPosTarget) - Math.PI / 2; }   // SQUASH; squish -> bounce arc; spinning turn ANIMATES 90 CCW
       else {                                                    // legacy cartesian shell bounce
         const outAng = b.shellSpin ? inAng - Math.PI / 2 : inAng, sp = b.shellSpeed || 2.4, dist = shieldRadius + 150;
         b.x = cx + Math.cos(outAng) * dist; b.y = cy + Math.sin(outAng) * dist;
@@ -1099,10 +1099,12 @@ Battle.updDodge = function () {
     if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
     b.x += b.vx; b.y += b.vy;
     if (b.shellRadial) {   // obj_spearshot bouncespear: shell rides a radial `len` inward; on block it SQUISHES
-      // then BOUNCES out in an arc (fakespeed -13 + gravity) and falls back in for the next block.
-      if (b.shellState === 1) { if (--b.shellSquish <= 0) { b.shellState = 2; b.shellSpeed = -13; b.shellGrav = 1; b.sx = 1; b.sy = 1; } }
+      // then BOUNCES out HIGH (fakespeed -17 + grav 0.9, GML) and falls back in for the next block.
+      if (b.shellState === 1) { if (--b.shellSquish <= 0) { b.shellState = 2; b.shellSpeed = -17; b.shellGrav = 0.9; b.sx = 1; b.sy = 1; } }
       else if (b.shellState === 2) { b.shellSpeed += b.shellGrav; b.shellLen -= b.shellSpeed; if (b.shellSpeed >= 0) { b.shellState = 0; b.shellSpeed = b.shellBaseSpeed; } }
       else b.shellLen -= b.shellSpeed;
+      // spinning-shell 90deg turn ANIMATES (eases posAng toward target over the bounce, not an instant snap)
+      if (b.shellPosTarget != null) { const dd = Math.atan2(Math.sin(b.shellPosTarget - b.shellPosAng), Math.cos(b.shellPosTarget - b.shellPosAng)); b.shellPosAng = Math.abs(dd) < 0.02 ? b.shellPosTarget : b.shellPosAng + dd * 0.2; }
       const scx = B.dodgeBox.x + B.dodgeBox.w / 2, scy = B.dodgeBox.y + B.dodgeBox.h / 2;
       b.x = scx + Math.cos(b.shellPosAng) * b.shellLen; b.y = scy + Math.sin(b.shellPosAng) * b.shellLen;
       b.rot = (b.rot || 0) + (b.shellSpin ? 0.18 : 0.07);
