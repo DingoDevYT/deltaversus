@@ -310,6 +310,8 @@ Battle.update = function () {
 const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
 const CHARGE_COST = [12, 12, 16, 20, 26, 32, 40, 50, 62, 76];   // %TP to CHARGE into level 1..10 (cheap early, painful late)
 function chargeCost(lvl) { return CHARGE_COST[Math.max(0, Math.min(lvl, CHARGE_COST.length - 1))]; }
+// %TP a CHARGE costs THIS member right now — 100% once maxed (it fires the ULT), else the curve.
+function chargeCostFor(mem) { const lvl = mem.darkLvl || 0, max = mem.def.maxLevel || 10; return lvl >= max ? 100 : chargeCost(lvl); }
 // what unlocks/upgrades at a given darkness level (for the CHARGE announcement in the dialogue box)
 function unlocksAtLevel(def, lvl) {
   const out = [];
@@ -403,6 +405,7 @@ Battle.updSelect = function () {
       const cmd = menu[B.menuIdx], mem = B.curMember();
       if (cmd === 'item' && !B.canUseItems()) { Snd.play('cantselect'); }
       else if (cmd === 'spare' && isDarkner(mem)) { Snd.play('cantselect'); }   // darkners can't SPARE (greyed)
+      else if (cmd === 'charge' && B.tpAvail() < chargeCostFor(mem)) { Snd.play('cantselect'); }   // can't afford to CHARGE
       else {
         Snd.play('select');
         if (cmd === 'fight' && mem.def.basics) { B.submenu = 'fight'; B.subIdx = 0; }   // darkner: choose an ACTIVE
@@ -437,21 +440,37 @@ function gridNav(idx, n) {
 // gains (DEFEND) so you can e.g. Kris-DEFEND to fund Susie's spell.
 Battle.tpAvail = function () { return Math.min(100, Battle.myTP - Battle.tpSpent + Battle.tpSel); };
 
+// family = the attack name minus its tier suffix (Dark Stars I/II/III -> "Dark Stars"). Upgrades REPLACE
+// rather than stack: for each family we show only the CURRENT tier (highest unlocked, or the next locked one).
+function familyOf(name) { return (name || '').replace(/\s+(IV|I{1,3}|V)$/, ''); }
+function currentTierReps(list, lvl) {
+  const fam = new Map();
+  for (const s of list) { const f = familyOf(s.name); if (!fam.has(f)) fam.set(f, []); fam.get(f).push(s); }
+  const out = [];
+  for (const arr of fam.values()) {
+    arr.sort((a, b) => (a.darkLvl || 0) - (b.darkLvl || 0));
+    const unlocked = arr.filter(s => (s.darkLvl || 0) <= lvl);
+    out.push(unlocked.length ? unlocked[unlocked.length - 1] : arr[0]);   // highest unlocked, else the next-to-unlock
+  }
+  return out;
+}
 Battle.subOptions = function () {
-  const B = Battle, mem = B.curMember(), c = mem.def;
-  if (B.submenu === 'fight') {   // darkner FIGHT: pick an unlocked ACTIVE attack (free; unlocks accumulate by level)
-    return (c.basics || []).map(b => {
-      const gated = b.darkLvl != null && (mem.darkLvl || 0) < b.darkLvl;
-      return { id: b.id, label: b.name, cost: gated ? '🌑L' + b.darkLvl : 'FREE', costTP: 0,
-               disabled: gated, info: 'Deals ' + b.dmg + ' damage.' };
+  const B = Battle, mem = B.curMember(), c = mem.def, lvl = mem.darkLvl || 0;
+  if (B.submenu === 'fight') {   // darkner FIGHT: one ACTIVE per family at its CURRENT tier (free)
+    const reps = isDarkner(mem) ? currentTierReps(c.basics || [], lvl) : (c.basics || []);
+    return reps.map(b => {
+      const levelLocked = (b.darkLvl || 0) > lvl;   // not yet CHARGED to this level -> RED
+      return { id: b.id, label: b.name, cost: levelLocked ? '🌑L' + b.darkLvl : 'FREE', costTP: 0,
+               disabled: levelLocked, lockKind: levelLocked ? 'level' : null, info: 'Deals ' + b.dmg + ' damage.' };
     });
   }
   if (B.submenu === 'magic') {
     const facingDoki = !!dokiFoe();
     const opt = (s, ult) => {
       const cost = spellCost(mem, s);
-      const gated = s.darkLvl != null && (mem.darkLvl || 0) < s.darkLvl;   // locked until you CHARGE to this level
+      const levelLocked = s.darkLvl != null && lvl < s.darkLvl;   // locked until you CHARGE to this level -> RED
       const snowLock = s.snowgrave && B.proceedCount < 3;   // SNOWGRAVE needs Proceed x3
+      const tpLocked = !levelLocked && !snowLock && B.tpAvail() < cost;   // unlocked but can't afford -> GREY
       let eff = '';
       if (s.kind === 'attack') eff = 'Deals ' + s.dmg + ' damage.';
       else if (s.kind === 'heal') eff = 'Heals ' + s.heal + ' HP.';
@@ -460,10 +479,13 @@ Battle.subOptions = function () {
       else if (s.kind === 'revive') eff = 'Revives a downed ally.';
       else if (s.kind === 'doki') eff = 'Raises PINK\'s DOKI +' + (s.doki || 1) + '.';
       return { id: s.id, label: s.name, ult,
-               cost: snowLock ? 'NEEDx3' : gated ? '🌑L' + s.darkLvl : cost + '%',
-               costTP: cost, disabled: snowLock || gated || B.tpAvail() < cost, info: eff };
+               cost: snowLock ? 'NEEDx3' : levelLocked ? '🌑L' + s.darkLvl : cost + '%',
+               costTP: cost, disabled: snowLock || levelLocked || tpLocked,
+               lockKind: levelLocked ? 'level' : (tpLocked || snowLock) ? 'tp' : null, info: eff };
     };
-    const list = (c.spells || []).filter(s => !s.pinkOnly || facingDoki).map(s => opt(s, false));   // FLIRT only shows vs PINK
+    let spells = (c.spells || []).filter(s => !s.pinkOnly || facingDoki);   // FLIRT only shows vs PINK
+    if (isDarkner(mem)) spells = currentTierReps(spells, lvl);              // upgrades REPLACE
+    const list = spells.map(s => opt(s, false));
     if (!isDarkner(mem)) list.push(opt(c.ult, true));   // darkners fire their ULT via CHARGE-at-max, not MAGIC
     return list;
   }
@@ -2580,6 +2602,11 @@ Battle.renderCommandButtons = function (ctx, mem, px, py, w, alpha) {
     const cx = px + 4 + step * k + step / 2;
     const greyed = name === 'spare' && isDarkner(mem);   // darkners can't SPARE — show it greyed-out
     if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1, alpha: greyed ? 0.3 : 1 });
+    // CHARGE shows its TP cost under the button (red if you can't afford it right now)
+    if (name === 'charge' && isDarkner(mem)) {
+      const cost = chargeCostFor(mem), afford = B.tpAvail() >= cost;
+      drawText(ctx, 'main', cost + '%', cx, py + 30, { color: afford ? '#a86ede' : '#f44', align: 'center', scale: 0.7 });
+    }
   }
   ctx.restore();
 };
@@ -2595,7 +2622,8 @@ Battle.renderOptionGrid = function (ctx, d) {
     const gi = page * perPage + j; if (gi >= opts.length) break;
     const o = opts[gi], sel = gi === B.subIdx;
     const x = colX[j % 2], y = rowY[Math.floor(j / 2)];
-    const color = o.disabled ? '#666' : o.ult ? '#f6a' : sel ? '#ff0' : '#fff';
+    // RED = locked by DARKNESS level; GREY = can't afford the TP (or otherwise disabled)
+    const color = o.lockKind === 'level' ? '#f44' : o.disabled ? '#666' : o.ult ? '#f6a' : sel ? '#ff0' : '#fff';
     drawText(ctx, 'main', (sel ? '> ' : '  ') + o.label, x, y, { color });
   }
   if (pages > 1) drawText(ctx, 'main', 'PG ' + (page + 1) + '/' + pages, d.x + optW - 56, d.y + d.h - 18, { color: '#888' });
@@ -2606,7 +2634,8 @@ Battle.renderOptionGrid = function (ctx, d) {
     if (cur.ally) { const h = A.ui('head_' + cur.ally); if (h) drawSpr(ctx, h, infoX + 9, d.y + 16, { scale: 0.8 }); drawText(ctx, 'main', '+ ' + cur.ally.toUpperCase(), infoX + 22, d.y + 10, { color: '#8cf' }); ty = d.y + 32; }
     wrapText(ctx, cur.info || '', infoX, ty, infoW, 18, '#cfcfcf', 1);
     const bottom = cur.item ? '' : (cur.cost ? cur.cost : 'FREE');
-    if (bottom) drawText(ctx, 'main', bottom, d.x + d.w - 14, d.y + d.h - 18, { color: '#ff8000', align: 'right' });
+    const costColor = cur.lockKind === 'level' ? '#f44' : cur.lockKind === 'tp' ? '#888' : '#ff8000';
+    if (bottom) drawText(ctx, 'main', bottom, d.x + d.w - 14, d.y + d.h - 18, { color: costColor, align: 'right' });
   }
 };
 
