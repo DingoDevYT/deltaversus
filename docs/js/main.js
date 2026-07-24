@@ -62,6 +62,8 @@ function startTeamSelect(phase) {
   if (phase === 'mine') { G.myTeamSel = []; G.myHelloSent = false; G.oppHello = null; }
   else G.dummyTeamSel = [];
 }
+// REMATCH: instead of replaying the same teams, both players go back to CHARACTER SELECT to re-pick.
+function rematchToSelect(n) { G.matchN = n; startTeamSelect('mine'); }
 function curTeam() { return G.teamPhase === 'mine' ? G.myTeamSel : G.dummyTeamSel; }
 function teamCost(team) { return team.reduce((s, sel) => s + (typeof sel === 'string' ? CHARS[sel].cost : 1), 0); }
 function teamRemaining() { return G.partySize - teamCost(curTeam()); }
@@ -77,7 +79,7 @@ function maybeStartBattle() {
   if (!G.myHelloSent || !G.oppHello) return;
   G.oppItems = G.oppHello.items || [];
   Battle.init({ myTeam: G.myTeamSel, oppTeam: G.oppHello.team || [G.oppHello.char],
-                size: G.partySize, myItems: G.myItems, oppItems: G.oppItems });
+                size: G.partySize, myItems: G.myItems, oppItems: G.oppItems, matchN: G.matchN || 1 });
   G.screen = 'battle';
 }
 

@@ -248,9 +248,7 @@ Battle.send = function (m) { m.n = Battle.matchN; Net.send(m); };
 Battle.onMsg = function (m) {
   const B = Battle;
   if (m.t === 'startMatch') {
-    if (!Net.isHost && m.n !== B.matchN)
-      Battle.init({ myTeam: B.myTeamSel, oppTeam: B.oppTeamSel, size: B.size,
-                    myItems: G.myItems, oppItems: G.oppItems, matchN: m.n });
+    if (!Net.isHost && m.n !== B.matchN) rematchToSelect(m.n);   // rematch -> both go back to CHARACTER SELECT
     return;
   }
   if (m.n != null && m.n !== B.matchN) return;
@@ -306,8 +304,7 @@ Battle.update = function () {
       if (B.rematchMe && B.rematchOpp && Net.isHost) {
         const n = B.matchN + 1;
         Net.send({ t: 'startMatch', n });
-        Battle.init({ myTeam: B.myTeamSel, oppTeam: B.oppTeamSel, size: B.size,
-                      myItems: G.myItems, oppItems: G.oppItems, matchN: n });
+        rematchToSelect(n);   // rematch -> back to CHARACTER SELECT (re-pick teams), not a straight replay
       }
       break;
   }
