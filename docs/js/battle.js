@@ -1673,24 +1673,24 @@ function drawBoxRect(ctx, cx, cy, w, h, rot, alpha) {
 // PINK's DOKI meter (obj_pink_enemy show_doki_bar): a pink heart-meter at the top. Fills as you collect
 // doki-hearts; a full bar means a DATE is due; the pips show phases cleared. When all phases are done,
 // Pink can be SPARED. Only drawn while a dokiSpare foe (Pink) is in the fight.
+// PINK's DOKI meter — a vertical PINK bar on the RIGHT, mirroring the TP bar (x=38) on the left. Its max is
+// the CURRENT stage threshold (10 -> 15 -> 20), so a full bar = a DATE is due.
 function drawDokiBar(ctx) {
   const B = Battle; if (typeof dokiFoe !== 'function') return;
   const foe = dokiFoe(); if (!foe) return;
-  const max = (B.dokiPhase || 0) >= 1 ? (foe.def.dokiMaxLater || 20) : (foe.def.dokiMax || 100);
-  const pct = Math.max(0, Math.min(1, (B.doki || 0) / max)), phases = foe.def.dokiPhases || 3;
-  const w = 160, x = 320 - w / 2, y = 20, h = 10;
-  ctx.save();
-  ctx.font = "12px 'Determination Mono', monospace"; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#ff8fe0'; ctx.fillText('DOKI', 320, y - 3);
-  ctx.fillStyle = '#301028'; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = B.dokiReady ? '#ffe14d' : '#ff5ca8'; ctx.fillRect(x + 1, y + 1, (w - 2) * pct, h - 2);
-  ctx.strokeStyle = '#ff9fd0'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-  for (let i = 0; i < phases; i++) {   // phase pips (dates cleared)
+  const max = (typeof dokiMaxFor === 'function') ? dokiMaxFor() : 20;
+  const cur = Math.max(0, Math.min(max, B.doki || 0)), phases = foe.def.dokiPhases || 3;
+  const x = 586, y = 70, w = 16, hBar = 190, fillH = Math.round(hBar * cur / max);
+  ctx.fillStyle = '#3a0022'; ctx.fillRect(x, y, w, hBar);
+  ctx.fillStyle = B.dokiReady ? '#ffe14d' : '#ff5ca8'; ctx.fillRect(x, y + hBar - fillH, w, fillH);
+  if (fillH > 0 && fillH < hBar) { ctx.fillStyle = '#fff'; ctx.fillRect(x, y + hBar - fillH, w, 3); }
+  drawText(ctx, 'main', 'DOKI', x + w / 2, 52, { color: '#ff5ca8', align: 'center' });
+  drawText(ctx, 'main', cur + '/' + max, x + w / 2, y + hBar + 4, { color: '#ff8fe0', align: 'center' });
+  for (let i = 0; i < phases; i++) {   // phase pips under the bar (DATEs cleared)
     ctx.fillStyle = i < (B.dokiPhase || 0) ? '#ffe14d' : '#5a2a4a';
-    ctx.fillRect(x + w + 8 + i * 12, y, 8, h);
+    ctx.fillRect(x - 3 + i * 8, y + hBar + 18, 6, 6);
   }
-  if ((B.dokiPhase || 0) >= phases) { ctx.fillStyle = '#ffe14d'; ctx.fillText('SPARE READY', 320, y + h + 12); }
-  ctx.restore();
+  if ((B.dokiPhase || 0) >= phases) drawText(ctx, 'main', 'SPARE!', x + w / 2, y + hBar + 34, { color: '#ffe14d', align: 'center', scale: 0.7 });
 }
 // red-tinted copy of a sprite (cached on the image) — used to make concert HATERS read clearly
 function redTintSprite(im) {
