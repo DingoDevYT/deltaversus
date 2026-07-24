@@ -231,7 +231,7 @@ const CHARS = {
     // date. dokiSpare gates canSpare on dokiPhase (obj_pink_enemy datecount). (spare:{} keeps her non-'never'.)
     // SPARE = DOKI route (Flirt acts/spells build DOKI 10->15->20; DATE minigames between; darkness forced to
     // 0 entering the final stretch). Only teams with SPARE can take it — others must KILL her. Hearts = +1 TP.
-    spare: {}, dokiSpare: true, dokiThresholds: [10, 15, 20], dokiPhases: 3, maxLevel: 10,
+    spare: {}, dokiSpare: true, dokiThresholds: [10, 15, 20, 20], dokiPhases: 4, maxLevel: 10,
     act: { id: 'act_flirt', name: 'Flirt', kind: 'doki', doki: 1, text: 'KRIS flirts with PINK! (+DOKI)' },
     dscale: 1.0, yoff: 4,
     desc: 'PINK - the mew magical-girl idol (Ch5).\nFLIRT to fill her DOKI + clear the DATES to SPARE.',

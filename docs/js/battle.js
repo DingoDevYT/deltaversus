@@ -1158,7 +1158,8 @@ Battle.updDodge = function () {
   B.sim.tick(B.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; B.bullets.push(b); }, B.fx);
   if (B.fx.maze) {   // GHOST/BODY MAZE: full-screen takeover; the pattern drives movement/collision itself
     if (B.fx.maze.done) { B._mazeEnd = (B._mazeEnd || 0) + 1;
-      if (B._mazeEnd > 20) { B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
+      if (B._mazeEnd > 20) { if (!B._dokiDatedThisRun) { B._dokiDatedThisRun = 1; dokiAdvancePhase(); }   // the MAZE is a DATE too -> advance Pink's phase (else it re-forces forever)
+        B.bullets = []; B.boxT = 0; B.boxGhosts = []; B.phase = 'boxout'; } }
     else B._mazeEnd = 0;
     return;
   }
