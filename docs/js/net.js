@@ -228,29 +228,58 @@ const PracticeAI = {
     const D = PracticeAI.dodge;
     if (!D) return;
     if (D.f < D.dur) {
+      // some patterns (Gerson hammer 4-zone, etc.) read Battle.soul directly — point it at the DUMMY's soul
+      // for the whole tick so they aim at the dummy, then restore it for the player's real dodge.
+      const _bs = (typeof Battle !== 'undefined') ? Battle.soul : undefined;
+      if (typeof Battle !== 'undefined') Battle.soul = D.soul;
+      try {
       for (const s of D.subs) {
         if (D.f >= s.sim.dur) continue;
         s.sim.tick(D.soul, b => { if (D.N === 1 || s.rng() < D.keep) { b.t = 0; b.phase0 = Math.random() * 6.28; b.dmg = s.perHit; b.target = s.target; D.bullets.push(b); } });
       }
       PracticeAI.moveSoul(D.soul, D.bullets, D.box, D.skill);
+      const soul = D.soul, box = D.box, spawned = [], fx = {};
+      // bullet integration — ports the essentials of Battle.updDodge so boss attacks (emit/burst/fireAt/
+      // orbit/tell-lines/rect hitboxes) actually threaten the dummy, not just simple point bullets.
       for (const b of D.bullets) {
         b.t++;
-        if (b.homing) { const d = Math.hypot(D.soul.x - b.x, D.soul.y - b.y) || 1; b.vx += (D.soul.x - b.x) / d * b.homing; b.vy += (D.soul.y - b.y) / d * b.homing; }
+        if (b.homing) { const d = Math.hypot(soul.x - b.x, soul.y - b.y) || 1; b.vx += (soul.x - b.x) / d * b.homing; b.vy += (soul.y - b.y) / d * b.homing; }
         b.vx += b.ax || 0; b.vy += b.ay || 0;
+        if (b.fric) { const v = Math.hypot(b.vx, b.vy); if (v > 0) { const nv = Math.max(0, v - b.fric); b.vx *= nv / v; b.vy *= nv / v; } }
         if (b.maxv) { const v = Math.hypot(b.vx, b.vy); if (v > b.maxv) { b.vx *= b.maxv / v; b.vy *= b.maxv / v; } }
         b.x += b.vx; b.y += b.vy;
+        if (b.orbit) { const o = b.orbit; o.ang += o.w; if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy; if (o.grow) o.R += o.grow; b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R; }
+        if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
         if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+        if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);
+        if (b.spin) b.rot = (b.rot || 0) + b.spin;
+        if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
+        if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; b.noHit = false; }
+        if (b.tellT != null && --b.tellT <= 0 && !b.armed) { b.armed = true; b.armT = b.armWindow || 10; }
+        if (b.armed && b.armT != null && --b.armT <= 0) b.dead = true;
+        if (b.emit && !b.dead) { const pre = spawned.length; try { b.emit(b, spawned, soul, box, fx); } catch (e) {} for (let i = pre; i < spawned.length; i++) { if (spawned[i].dmg == null) spawned[i].dmg = b.dmg; if (spawned[i].target == null) spawned[i].target = b.target; } }
+        if (b.burst && b.t >= b.burst) { b.dead = true; if (typeof burstChildren === 'function') spawned.push(...burstChildren(b)); }
       }
-      D.bullets = D.bullets.filter(b => b.x > -50 && b.x < D.box.w + 50 && b.y > -50 && b.y < D.box.h + 50 && (!b.life || b.t < b.life));
+      for (const s of spawned) { s.t = s.t || 0; if (s.vx == null) s.vx = 0; if (s.vy == null) s.vy = 0; if (s.phase0 == null) s.phase0 = Math.random() * 6.28; D.bullets.push(s); }
+      D.bullets = D.bullets.filter(b => !b.dead && b.x > -80 && b.x < box.w + 80 && b.y > -80 && b.y < box.h + 80 && (!b.life || b.t < b.life));
       if (D.ifr > 0) D.ifr--;
       if (D.grz > 0) D.grz--;
       for (const b of D.bullets) {
-        const d = Math.hypot(b.x - D.soul.x, b.y - D.soul.y), rr = (b.r || 6) + 5;
-        if (d < rr) { if (D.ifr <= 0) { const dm = b.dmg || 10; D.dmg += dm; PracticeAI.applyDmg(D.T, dm, b.target); D.ifr = 55; } }
-        else if (d < rr + 12 && D.grz <= 0) { D.T.tp = Math.min(100, D.T.tp + 2); D.grz = 10; }
+        if (b.noHit || b.pickup || b.shootable) continue;   // cosmetic / collectible / shoot-to-clear bullets don't damage the dummy
+        let hit = false, grz = false;
+        if (b.hitW) {   // rectangular hitbox (RECREW walls, teeth, Gerson blades)
+          hit = Math.abs(b.x + (b.hitDX || 0) - soul.x) < b.hitW / 2 + 5 && Math.abs(b.y - soul.y) < b.hitH / 2 + 5;
+        } else if (b.shape === 'line') {
+          if (b.armed) { const dx = Math.cos(b.rot || 0), dy = Math.sin(b.rot || 0); const rel = (soul.x - b.x) * -dy + (soul.y - b.y) * dx; hit = Math.abs(rel) < (b.thick || 4) / 2 + 5; }
+        } else {
+          const d = Math.hypot(b.x - soul.x, b.y - soul.y), rr = (b.r || 6) + 5; hit = d < rr; grz = !hit && d < rr + 12;
+        }
+        if (hit) { if (D.ifr <= 0) { const dm = b.dmg || 10; D.dmg += dm; PracticeAI.applyDmg(D.T, dm, b.target); D.ifr = 30; } }
+        else if (grz && D.grz <= 0) { D.T.tp = Math.min(100, D.T.tp + 2); D.grz = 10; }
       }
       D.f++;
       if (D.f % 4 === 0) Net.emitLocal({ t: 'soul', x: D.soul.x / D.box.w, y: D.soul.y / D.box.h, f: D.f, done: false });
+      } finally { if (typeof Battle !== 'undefined') Battle.soul = _bs; }
     } else {
       Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true });
       PracticeAI.report(D.T, Math.round(D.dmg));

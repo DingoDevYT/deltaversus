@@ -1335,6 +1335,7 @@ Battle.tickMirror = function () {
   while (steps-- > 0) {
     M.sim.tick(M.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
     M.f++;
+    const mspawn = [], mfx = {};
     for (const b of M.bullets) {
       b.t++;
       if (b.homing) { const d = Math.hypot(M.soul.x - b.x, M.soul.y - b.y) || 1; b.vx += (M.soul.x - b.x) / d * b.homing; b.vy += (M.soul.y - b.y) / d * b.homing; }
@@ -1345,16 +1346,19 @@ Battle.tickMirror = function () {
       if (b.orbit) { const o = b.orbit; o.ang += o.w; if (o.vx) o.cx += o.vx; if (o.vy) o.cy += o.vy;
         if (o.center) { o.cx = o.center.cx0 + o.center.ax * Math.sin(b.t * o.center.f); o.cy = o.center.cy0 + o.center.ay * Math.cos(b.t * o.center.f); }
         if (o.pulse) o.R = o.pulse.base + o.pulse.amp * Math.sin(b.t * o.pulse.freq);
+        if (o.grow) o.R += o.grow;
         b.x = o.cx + Math.cos(o.ang) * o.R; b.y = o.cy + Math.sin(o.ang) * o.R; }
       if (b.carousel) updCarousel(b);
       if (b.swing) b.x = b.swing.cx + b.swing.amp * Math.sin(b.t * b.swing.spd + (b.swing.ph || 0));
       if (b.sineA) b.y += Math.sin(b.t * (b.sineF || 0.05) * 6.28 + b.phase0) * b.sineA;
+      if (b.lerpY != null) b.y += (b.lerpY - b.y) * (b.lerpRate || 0.12);
       if (b.spin) b.rot = (b.rot || 0) + b.spin;
-      if (b.burst && b.t >= b.burst) {
-        b.dead = true;
-        M.bullets.push(...burstChildren(b));
-      }
+      if (b.spinDecay) { b.spin *= b.spinDecay; if (Math.abs(b.spin) < 0.0008) b.spin = 0; }
+      if (b.fireAt != null && b.t === b.fireAt) { b.vx = b.fireVX || 0; b.vy = b.fireVY || 0; }   // parked blades launch (visual)
+      if (b.emit && !b.dead) { try { b.emit(b, mspawn, M.soul, M.box, mfx); } catch (e) {} }   // controller bullets spawn children
+      if (b.burst && b.t >= b.burst) { b.dead = true; mspawn.push(...burstChildren(b)); }
     }
+    for (const s of mspawn) { s.t = s.t || 0; if (s.vx == null) s.vx = 0; if (s.vy == null) s.vy = 0; if (s.phase0 == null) s.phase0 = Math.random() * 6.28; M.bullets.push(s); }
     M.bullets = M.bullets.filter(b => !b.dead && b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 && (!b.life || b.t < b.life));
   }
 };
