@@ -633,7 +633,12 @@ Battle.commitChoice = function (cmd, move, target) {
   else if (cmd === 'charge') {
     const lvl = mem.darkLvl || 0, max = mem.def.maxLevel || 10;
     if (lvl >= max) { act.chargeUlt = true; B.tpSpent += 100; }   // MAXED: CHARGE fires the 100%-TP ULT
-    else { B.tpSpent += chargeCost(lvl); mem.darkLvl = lvl + 1; act.toLvl = mem.darkLvl; }  // +1 level (curve TP) + basic fires
+    else {
+      B.tpSpent += chargeCost(lvl); mem.darkLvl = lvl + 1; act.toLvl = mem.darkLvl;   // +1 level (curve TP) + basic fires
+      // CHARGE also throws out a basic — pick a RANDOM one from the now-unlocked ACTIVEs (not always the first).
+      const reps = currentTierReps(mem.def.basics || [], mem.darkLvl);
+      if (reps.length) act.move = reps[Math.floor(Math.random() * reps.length)].id;
+    }
   }
   mem.action = act;
   B.submenu = null;
