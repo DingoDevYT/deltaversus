@@ -116,27 +116,24 @@ const CHARS = {
   jevil: {
     name: 'JEVIL', color: '#7a5cff', hp: 1000, cost: 3, darkner: true, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
     desc: 'CHAOS, CHAOS!\nSECRET BOSS - 1000 HP, NO ITEMS.',
-    fight: { id: 'jevil_spade', name: 'Spade Fan', dmg: 18, dur: 380,
-             text: 'JEVIL teleports and flings SPADES!' },
-    spells: [
-      { id: 'jevil_ring', name: 'Ring of Spades', tp: 36, dmg: 18, dur: 360, kind: 'attack', darkReq: 17,
-        text: 'JEVIL rings you with SPADES!' },
-      { id: 'jevil_bombs', name: 'Suit Bombs', tp: 40, dmg: 16, dur: 360, kind: 'attack', darkReq: 17,
-        text: 'JEVIL drops SUIT BOMBS!' },
-      { id: 'jevil_diamond', name: 'Diamond Rain', tp: 40, dmg: 16, dur: 340, kind: 'attack', darkReq: 51,
-        text: 'JEVIL hurls DIAMONDS!' },
-      { id: 'jevil_verticals', name: 'Devilsdiamonds', tp: 44, dmg: 16, dur: 320, kind: 'attack', darkReq: 51,
-        text: 'JEVIL pours down DIAMONDS!' },
-      { id: 'jevil_clubs', name: 'Corner Clubs', tp: 44, dmg: 18, dur: 360, kind: 'attack', darkReq: 51,
-        text: 'JEVIL rockets in CLUBS!' },
-      { id: 'jevil_scythes', name: 'Devilsknives', tp: 48, dmg: 34, dur: 420, kind: 'attack', darkReq: 51,
-        text: 'JEVIL summons DEVILSKNIVES!' },
-      { id: 'jevil_carousel', name: 'Carousel (Ducks)', tp: 48, dmg: 34, dur: 480, kind: 'attack', darkReq: 85,
-        text: 'JEVIL spins the CAROUSEL!' },
-      { id: 'jevil_carousel2', name: 'Carousel (Horses)', tp: 52, dmg: 36, dur: 480, kind: 'attack', darkReq: 85,
-        text: 'JEVIL spins the CAROUSEL — horses and all!' },
+    maxLevel: 10,   // DARKNESS: FIGHT = ACTIVE attacks (free, unlock by level); MAGIC = SPELLs (TP); CHARGE@max = ULT
+    basics: [
+      { id: 'jevil_spade',     name: 'Five of Spades', dmg: 30, dur: 380, darkLvl: 0, text: 'JEVIL teleports and flings SPADES!' },
+      { id: 'jevil_ring',      name: 'Ace Spiral I',   dmg: 30, dur: 360, darkLvl: 0, text: 'JEVIL rings you with SPADES!' },
+      { id: 'jevil_clubs',     name: 'Three of Clubs', dmg: 55, dur: 360, darkLvl: 2, text: 'JEVIL rockets in CLUBS!' },
+      { id: 'jevil_carousel',  name: 'Carousel I',     dmg: 55, dur: 480, darkLvl: 3, text: 'JEVIL spins the CAROUSEL!' },
+      { id: 'jevil_carousel2', name: 'Carousel II',    dmg: 55, dur: 480, darkLvl: 5, text: 'JEVIL spins the CAROUSEL — horses and all!' },
+      { id: 'jevil_ring2',     pattern: 'jevil_ring',     name: 'Ace Spiral II', dmg: 55, dur: 360, darkLvl: 6, text: 'JEVIL winds a WIDER SPIRAL!' },
+      { id: 'jevil_carousel3', pattern: 'jevil_carousel2', name: 'Carousel III', dmg: 60, dur: 480, darkLvl: 7, text: 'The CAROUSEL spins FASTER!' },
     ],
-    ult: { id: 'jevil_ult', name: 'CHAOS, CHAOS!', tp: 100, dmg: 60, dur: 600, kind: 'attack', darkReq: 85,
+    spells: [
+      { id: 'jevil_diamond',   name: 'Ace of Diamonds I',  tp: 32, dmg: 55, dur: 340, kind: 'attack', darkLvl: 1,  text: 'JEVIL hurls DIAMONDS!' },
+      { id: 'jevil_scythes',   name: "Devil's Knife I",    tp: 40, dmg: 55, dur: 420, kind: 'attack', darkLvl: 4,  text: 'JEVIL summons DEVILSKNIVES!' },
+      { id: 'jevil_bombs',     name: 'Suite Bomb',         tp: 48, dmg: 55, dur: 360, kind: 'attack', darkLvl: 8,  text: 'JEVIL drops a SUITE BOMB!' },
+      { id: 'jevil_verticals', name: 'Ace of Diamonds II', tp: 52, dmg: 60, dur: 320, kind: 'attack', darkLvl: 9,  text: 'DIAMONDS pour from EVERYWHERE!' },
+      { id: 'jevil_knife2', pattern: 'jevil_scythes', name: "Devil's Knife II", tp: 52, dmg: 60, dur: 420, kind: 'attack', darkLvl: 10, text: 'DEVILSKNIVES — even FASTER!' },
+    ],
+    ult: { id: 'jevil_ult', name: 'CHAOS, CHAOS!', tp: 100, dmg: 60, dur: 600, kind: 'attack',
            text: 'JEVIL unleashes CHAOS, CHAOS!! Metamorphosis!' },
     act: { id: 'act_play', name: 'Play', kind: 'mercy', mercy: 20, text: 'KRIS plays JEVIL\'s game! CHAOS, CHAOS!' },
   },
@@ -146,21 +143,22 @@ const CHARS = {
     soulYellow: true,   // dodging his attacks uses the yellow SOUL (shoots right)
     act: { id: 'act_deal', name: 'Deal', kind: 'mercy', mercy: 22, text: 'KRIS hears out [[SPAMTON]]\'s deal...' },
     desc: '[[BIG SHOT]] SECRET BOSS.\n1200 HP - NO ITEMS.',
-    fight: { id: 'sneo_heads', name: 'Flying Heads', dmg: 34, dur: 460,
-             text: 'SPAMTON NEO launches his HEADS!' },
+    maxLevel: 10,
+    basics: [
+      { id: 'sneo_heads', name: "1T's m3!!",      dmg: 30, dur: 460, darkLvl: 0,  text: 'SPAMTON NEO launches his HEADS!' },
+      { id: 'sneo_heart', name: 'HEART ATTACK I', dmg: 55, dur: 520, darkLvl: 0,  text: 'SPAMTON NEO swings his [[HEART]]!' },
+      { id: 'sneo_pipis', name: "IT'S F0R Y0U",   dmg: 55, dur: 460, darkLvl: 1,  text: 'SPAMTON NEO has [[A CALL FOR YOU]]!' },
+      { id: 'sneo_pipisx', name: 'PIPIS BOMB I',  dmg: 55, dur: 300, darkLvl: 5,  text: 'SPAMTON NEO drops the [[PIPIS]]!' },
+      { id: 'sneo_pipisbomb2', pattern: 'sneo_pipisx', name: 'PIPIS BOMB II', dmg: 60, dur: 300, darkLvl: 7,  text: 'A BIGGER [[PIPIS BOMB]]!' },
+      { id: 'sneo_heart2',     pattern: 'sneo_heart',  name: 'HEART ATTACK II', dmg: 60, dur: 520, darkLvl: 10, text: 'SPAMTON NEO swings his [[HEART]] — HARDER!' },
+    ],
     spells: [
-      { id: 'sneo_heart', name: 'Heart Attack', tp: 40, dmg: 44, dur: 520, kind: 'attack',
-        text: 'SPAMTON NEO swings his [[HEART]]!' },
-      { id: 'sneo_columns', name: 'RECREW', tp: 48, dmg: 46, dur: 560, kind: 'attack',
-        text: 'SPAMTON NEO calls the [[RECREW]]!' },
-      { id: 'sneo_pipis', name: 'A Call For You', tp: 44, dmg: 44, dur: 460, kind: 'attack',
-        text: 'SPAMTON NEO has [[A CALL FOR YOU]]!' },
-      { id: 'sneo_pipisx', name: 'Pipis Explosion', tp: 50, dmg: 46, dur: 300, kind: 'attack',
-        text: 'SPAMTON NEO detonates the [[PIPIS]]!' },
-      { id: 'sneo_phones', name: 'Gripping Phones', tp: 56, dmg: 50, dur: 500, kind: 'attack',
-        text: 'SPAMTON NEO GRIPS the PHONES!' },
-      { id: 'sneo_face', name: 'Eyes Nose Mouth', tp: 62, dmg: 58, dur: 520, kind: 'attack',
-        text: 'SPAMTON NEO shows his [[FACE]]!' },
+      { id: 'sneo_face',    name: 'BIG FACE I',          tp: 40, dmg: 55, dur: 520, kind: 'attack', darkLvl: 2,  text: 'SPAMTON NEO shows his [[FACE]]!' },
+      { id: 'sneo_columns', name: "YOU've G0t mA1l! I",  tp: 40, dmg: 55, dur: 560, kind: 'attack', darkLvl: 3,  text: 'SPAMTON NEO calls the [[RECREW]]!' },
+      { id: 'sneo_phones',  name: 'GRIPPING PHONES I',   tp: 44, dmg: 55, dur: 500, kind: 'attack', darkLvl: 4,  text: 'SPAMTON NEO GRIPS the PHONES!' },
+      { id: 'sneo_columns2', pattern: 'sneo_columns', name: "YOU've G0t mA1l! II", tp: 48, dmg: 60, dur: 560, kind: 'attack', darkLvl: 6, text: 'MORE of the [[RECREW]]!' },
+      { id: 'sneo_face2',    pattern: 'sneo_face',   name: 'BIG FACE II',        tp: 48, dmg: 60, dur: 520, kind: 'attack', darkLvl: 8, text: 'SPAMTON NEO gets IN YOUR [[FACE]]!' },
+      { id: 'sneo_phones2',  pattern: 'sneo_phones', name: 'GRIPPING PHONES II', tp: 52, dmg: 60, dur: 500, kind: 'attack', darkLvl: 9, text: 'The PHONES GRIP TIGHTER!' },
     ],
     ult: { id: 'sneo_bigshot', name: 'BIG SHOT', tp: 100, dmg: 66, dur: 1000, kind: 'attack',
            text: 'SPAMTON NEO: [[NOW\'S YOUR CHANCE TO BE A]] BIG SHOT!!' },
@@ -172,26 +170,28 @@ const CHARS = {
     // REBUILT 1:1 from the Ch3 obj_knight_enemy GML (see knight_specs/). 5 core attacks, each with
     // its 3 phase variants (per the wiki attack table), + THE ROARING ult. (Sword Vortex removed —
     // it's not a standalone attack; it's the Tracking Swords P2 "you feel surrounded" circle.)
-    fight: { id: 'knight_stars', name: 'Stars I', dmg: 48, dur: 205,
-             text: 'THE KNIGHT calls down STARS!' },
-    spells: [
-      { id: 'knight_stars2', name: 'Stars II', tp: 30, dmg: 50, dur: 205, kind: 'attack', text: 'STARS burst SIXFOLD!' },
-      { id: 'knight_stars3', name: 'Stars III', tp: 34, dmg: 52, dur: 205, kind: 'attack', text: 'The STARS turn RED and HUNT you!' },
-      { id: 'knight_tracking', name: 'Tracking Swords I', tp: 36, dmg: 52, dur: 230, kind: 'attack', text: 'THE KNIGHT aims TRACKING SWORDS!' },
-      { id: 'knight_tracking2', name: 'Tracking Swords II', tp: 40, dmg: 54, dur: 250, kind: 'attack', text: 'You feel SURROUNDED!' },
-      { id: 'knight_tracking3', name: 'Tracking Swords III', tp: 44, dmg: 54, dur: 210, kind: 'attack', text: 'The world REVOLVES around you!' },
-      { id: 'knight_flurry', name: 'Box Splitter I', tp: 46, dmg: 58, dur: 300, kind: 'attack', text: 'THE KNIGHT CLEAVES THE BOARD!' },
-      { id: 'knight_flurry2', name: 'Box Splitter II', tp: 50, dmg: 60, dur: 300, kind: 'attack', text: 'The winds blow from EVERY side!' },
-      { id: 'knight_flurry3', name: 'Box Splitter III', tp: 54, dmg: 62, dur: 300, kind: 'attack', text: 'Suddenly — a TEMPEST!' },
-      { id: 'knight_tunnel', name: 'Sword Tunnel I', tp: 42, dmg: 54, dur: 252, kind: 'attack', text: 'THE KNIGHT opens a SWORD TUNNEL!' },
-      { id: 'knight_tunnel2', name: 'Sword Tunnel II', tp: 46, dmg: 54, dur: 252, kind: 'attack', text: 'Your head is SPINNING!' },
-      { id: 'knight_tunnel3', name: 'Sword Tunnel III', tp: 50, dmg: 56, dur: 252, kind: 'attack', text: 'You feel CORNERED!' },
-      { id: 'knight_rotslash', name: 'Rotating Slash I', tp: 52, dmg: 56, dur: 250, kind: 'attack', text: 'THE KNIGHT carves ROTATING SLASHES!' },
-      { id: 'knight_rotslash2', name: 'Rotating Slash II', tp: 56, dmg: 56, dur: 250, kind: 'attack', text: 'Your chest TWISTS!' },
-      { id: 'knight_rotslash3', name: 'Rotating Slash III', tp: 60, dmg: 58, dur: 326, kind: 'attack', text: 'Your heartbeat becomes TWISTED!' },
+    maxLevel: 10,
+    // FIGHT (ACTIVE): Dark Stars / Black Knives / Omnislash (I/II/III). MAGIC (SPELL): Sword Corridor + Box Split.
+    basics: [
+      { id: 'knight_stars',     name: 'Dark Stars I',   dmg: 30, dur: 205, darkLvl: 0,  text: 'THE KNIGHT calls down DARK STARS!' },
+      { id: 'knight_tracking',  name: 'Black Knives I', dmg: 30, dur: 230, darkLvl: 0,  text: 'THE KNIGHT aims BLACK KNIVES!' },
+      { id: 'knight_rotslash',  name: 'Omnislash I',    dmg: 30, dur: 250, darkLvl: 0,  text: 'THE KNIGHT carves an OMNISLASH!' },
+      { id: 'knight_stars2',    name: 'Dark Stars II',   dmg: 55, dur: 205, darkLvl: 1,  text: 'The DARK STARS burst SIXFOLD!' },
+      { id: 'knight_rotslash2', name: 'Omnislash II',    dmg: 55, dur: 250, darkLvl: 2,  text: 'Your chest TWISTS!' },
+      { id: 'knight_tracking2', name: 'Black Knives II', dmg: 55, dur: 250, darkLvl: 3,  text: 'You feel SURROUNDED!' },
+      { id: 'knight_stars3',    name: 'Dark Stars III',  dmg: 60, dur: 205, darkLvl: 6,  text: 'The STARS turn RED and HUNT you!' },
+      { id: 'knight_tracking3', name: 'Black Knives III',dmg: 60, dur: 210, darkLvl: 9,  text: 'The world REVOLVES around you!' },
+      { id: 'knight_rotslash3', name: 'Omnislash III',   dmg: 60, dur: 326, darkLvl: 10, text: 'Your heartbeat becomes TWISTED!' },
     ],
-    ult: { id: 'knight_roar', name: 'THE ROARING', tp: 100, dmg: 72, dur: 430, kind: 'attack',
-           text: 'THE KNIGHT lets out THE ROARING!!' },
+    spells: [
+      { id: 'knight_tunnel',  name: 'Sword Corridor I',   tp: 32, dmg: 30, dur: 252, kind: 'attack', darkLvl: 0, text: 'THE KNIGHT opens a SWORD CORRIDOR!' },
+      { id: 'knight_flurry',  name: 'Box Split I',        tp: 40, dmg: 55, dur: 300, kind: 'attack', darkLvl: 4, text: 'THE KNIGHT CLEAVES the board!' },
+      { id: 'knight_tunnel2', name: 'Sword Corridor II',  tp: 42, dmg: 55, dur: 252, kind: 'attack', darkLvl: 5, text: 'Your head is SPINNING!' },
+      { id: 'knight_flurry2', name: 'Box Split II',       tp: 46, dmg: 60, dur: 300, kind: 'attack', darkLvl: 7, text: 'The winds blow from EVERY side!' },
+      { id: 'knight_tunnel3', name: 'Sword Corridor III', tp: 48, dmg: 60, dur: 252, kind: 'attack', darkLvl: 8, text: 'You feel CORNERED!' },
+    ],
+    ult: { id: 'knight_roar', name: 'ROAR FROM THE DEPTHS', tp: 100, dmg: 72, dur: 430, kind: 'attack',
+           text: 'THE KNIGHT lets out a ROAR FROM THE DEPTHS!!' },
   },
   gerson: {
     name: 'GERSON', color: '#5bb84a', hp: 1400, cost: 3, secretBoss: true, level: 3, spare: {}, mercyGain: 0.22,
@@ -200,64 +200,64 @@ const CHARS = {
     desc: 'GERSON BOOM - the HAMMER OF JUSTICE.\nGREEN SOUL spells: BLOCK, don\'t dodge!',
     // ALL 21 real Hammer-of-Justice attacks (wiki order). GREEN = BLOCK by facing the spear's side (0 dmg
     // on a clean block); RED = free-move dodge. Attack 14 is a repeat of 8, 21 is the final.
-    fight: { id: 'gn_atk1', name: 'Spear Volley I', dmg: 38, dur: 320,
-             text: 'GREEN SOUL! BLOCK the SPEARS — face each one!' },
-    spells: [
-      { id: 'gn_atk2', name: 'Spear Volley II', tp: 40, dmg: 38, dur: 300, kind: 'attack', text: 'GERSON jabs again — faster!' },
-      { id: 'gn_atk3', name: 'Quick Jabs', tp: 40, dmg: 38, dur: 360, kind: 'attack', text: 'Slow jabs, then a FAST volley!' },
-      { id: 'gn_atk4', name: 'Cross Volley', tp: 42, dmg: 38, dur: 360, kind: 'attack', text: 'Fast crossfire with slow sleepers!' },
-      { id: 'gn_atk5', name: 'Eightfold Turn', tp: 44, dmg: 40, dur: 340, kind: 'attack', text: 'The SOUL goes 8-way — block DIAGONALS!' },
-      { id: 'gn_atk6', name: 'Falling Hammer', tp: 46, dmg: 46, dur: 360, kind: 'attack', text: 'A HAMMER falls — then GERSON slashes!' },
-      { id: 'gn_atk7', name: 'Shell Pinball', tp: 46, dmg: 48, dur: 300, kind: 'attack', text: 'GERSON kicks a SHELL around the board!' },
-      { id: 'gn_atk8', name: 'Hammer Throw', tp: 46, dmg: 48, dur: 403, kind: 'attack', text: 'GERSON hurls HAMMERS + a giant one!' },
-      { id: 'gn_atk9', name: 'Upper Barrage', tp: 44, dmg: 40, dur: 320, kind: 'attack', text: 'Spears rain from the UPPER arc!' },
-      { id: 'gn_atk10', name: 'Shell & Spears', tp: 46, dmg: 42, dur: 420, kind: 'attack', text: 'Spear rows, then bouncing SHELLS!' },
-      { id: 'gn_atk11', name: 'Four Shells', tp: 46, dmg: 42, dur: 480, kind: 'attack', text: 'FOUR shells, then shell-and-arrow arcs!' },
-      { id: 'gn_atk12', name: 'Slash Fakeout', tp: 48, dmg: 48, dur: 460, kind: 'attack', text: 'Shells, a HAMMER, then a slash FAKEOUT!' },
-      { id: 'gn_atk13', name: 'Squish Barrage', tp: 48, dmg: 46, dur: 460, kind: 'attack', text: 'GERSON SQUISHES the box — dodge the STARS!' },
-      { id: 'gn_atk14', name: 'Hammer Throw II', tp: 46, dmg: 48, dur: 403, kind: 'attack', text: 'Another HAMMER barrage!' },
-      { id: 'gn_atk15', name: 'Cyan Spin', tp: 48, dmg: 42, dur: 380, kind: 'attack', text: 'CYAN shells spin 90° — and fast spears!' },
-      { id: 'gn_atk16', name: 'Shell Weave', tp: 48, dmg: 42, dur: 460, kind: 'attack', text: 'Shells and arrows weave together!' },
-      { id: 'gn_atk17', name: 'Spear Sweep', tp: 46, dmg: 42, dur: 460, kind: 'attack', text: 'GERSON sweeps SPEARS in a circle!' },
-      { id: 'gn_atk18', name: 'Storm of 32', tp: 50, dmg: 42, dur: 560, kind: 'attack', text: '32 spears from all sides, speeding up!' },
-      { id: 'gn_atk19', name: 'Deluge of 48', tp: 52, dmg: 42, dur: 640, kind: 'attack', text: '48 spears — slow, but relentless!' },
-      { id: 'gn_atk20', name: 'Cyan Assault', tp: 50, dmg: 44, dur: 560, kind: 'attack', text: 'A full CYAN-shell assault!' },
+    maxLevel: 10,
+    // FIGHT (ACTIVE) = two parallel tracks, Spear Volley I-IV + Shell Volley I-IV (unlock by level).
+    // MAGIC (SPELL) = the hammer/shell specials. GREEN SOUL: block, don't dodge.
+    basics: [
+      { id: 'gn_atk1',  name: 'Spear Volley I',   dmg: 55, dur: 320, darkLvl: 0, text: 'GREEN SOUL! BLOCK the SPEARS — face each one!' },
+      { id: 'gn_atk11', name: 'Shell Volley I',   dmg: 55, dur: 480, darkLvl: 0, text: 'FOUR shells, then shell-and-arrow arcs!' },
+      { id: 'gn_atk4',  name: 'Spear Volley II',  dmg: 55, dur: 360, darkLvl: 1, text: 'Fast crossfire with slow sleepers!' },
+      { id: 'gn_atk10', name: 'Shell Volley II',  dmg: 55, dur: 420, darkLvl: 2, text: 'Spear rows, then bouncing SHELLS!' },
+      { id: 'gn_atk9',  name: 'Spear Volley III', dmg: 55, dur: 320, darkLvl: 3, text: 'Spears rain from the UPPER arc!' },
+      { id: 'gn_atk15', name: 'Shell Volley III', dmg: 60, dur: 380, darkLvl: 5, text: 'CYAN shells spin 90° — and fast spears!' },
+      { id: 'gn_atk18', name: 'Spear Volley IV',  dmg: 60, dur: 560, darkLvl: 7, text: '32 spears from all sides, speeding up!' },
+      { id: 'gn_atk20', name: 'Shell Volley IV',  dmg: 60, dur: 560, darkLvl: 8, text: 'A full CYAN-shell assault!' },
     ],
-    ult: { id: 'gn_atk21', name: 'Final Trial of the Holy Hammer', tp: 100, dmg: 52, dur: 620, kind: 'attack',
-           text: 'GERSON unleashes the FINAL ATTACK!!' },
+    spells: [
+      { id: 'gn_atk6',  name: 'Falling Hammer',      tp: 32, dmg: 55, dur: 360, kind: 'attack', darkLvl: 0,  text: 'A HAMMER falls — then GERSON slashes!' },
+      { id: 'gn_atk7',  name: 'Shell Bounce',        tp: 32, dmg: 55, dur: 300, kind: 'attack', darkLvl: 0,  text: 'GERSON kicks a SHELL around the board!' },
+      { id: 'gn_atk8',  name: 'Hammer Time',         tp: 40, dmg: 55, dur: 403, kind: 'attack', darkLvl: 4,  text: 'GERSON hurls HAMMERS + a giant one!' },
+      { id: 'gn_atk13', name: 'Thorough Walloping',  tp: 44, dmg: 55, dur: 600, kind: 'attack', darkLvl: 6,  text: 'GERSON SQUISHES the box — thread the SLASHES!' },
+      { id: 'gn_atk14', name: 'Hammer Time II',      tp: 52, dmg: 60, dur: 403, kind: 'attack', darkLvl: 9,  text: 'Another HAMMER barrage — RELENTLESS!' },
+      { id: 'gn_atk19', name: 'Deluge of 48',        tp: 52, dmg: 60, dur: 640, kind: 'attack', darkLvl: 10, text: '48 spears — slow, but RELENTLESS!' },
+    ],
+    ult: { id: 'gn_atk21', name: 'Trial of the Holy Hammer', tp: 100, dmg: 60, dur: 620, kind: 'attack',
+           text: 'GERSON unleashes the TRIAL OF THE HOLY HAMMER!!' },
   },
   pink: {
     name: 'PINK', color: '#ff5ca8', hp: 1300, cost: 3, secretBoss: true, level: 3,
     // PINK is spared through her DOKI: you can't build MERCY the normal way — you fill the DOKI meter by
     // collecting doki-hearts during her attacks, which triggers her DATE minigames, and clear the FINAL
     // date. dokiSpare gates canSpare on dokiPhase (obj_pink_enemy datecount). (spare:{} keeps her non-'never'.)
-    spare: {}, dokiSpare: true, dokiMax: 100, dokiMaxLater: 20, dokiPhases: 3,
+    // SPARE = DOKI route (Flirt acts/spells build DOKI 10->15->20; DATE minigames between; darkness forced to
+    // 0 entering the final stretch). Only teams with SPARE can take it — others must KILL her. Hearts = +1 TP.
+    spare: {}, dokiSpare: true, dokiThresholds: [10, 15, 20], dokiPhases: 3, maxLevel: 10,
+    act: { id: 'act_flirt', name: 'Flirt', kind: 'doki', doki: 1, text: 'KRIS flirts with PINK! (+DOKI)' },
     dscale: 1.0, yoff: 4,
-    desc: 'PINK - the mew magical-girl idol (Ch5).\nFill her DOKI to trigger the DATES; clear them to SPARE.',
-    // PINK (Ch5): the GML-faithful STAGE-SCENE kit (pink_*) — the sole Pink set, full arsenal
-    // incl. every phase variant (cats/conga, bomb volleys + giant ender, plus-grids, 3-D tunnel,
-    // rotating ring, idol concert + hard). Old duplicate/test-bench sets removed.
-    fight: { id: 'pink_cats', name: 'Cats', dmg: 46, dur: 340, text: 'PINK sends in the CATS!' },
-    spells: [
-      { id: 'pink_cats2', name: 'Cat Conga', tp: 46, dmg: 46, dur: 360, kind: 'attack', text: 'PINK forms a CAT CONGA line!' },
-      { id: 'pink_bombs', name: 'Pinata Bombs', tp: 42, dmg: 50, dur: 300, kind: 'attack', text: 'PINK drops PINATA BOMBS!' },
-      { id: 'pink_bombs2', name: 'Bomb Volley', tp: 46, dmg: 50, dur: 480, kind: 'attack', text: 'PINK rains BOMBS faster!' },
-      { id: 'pink_bombsg', name: 'Giant Bomb', tp: 52, dmg: 50, dur: 620, kind: 'attack', text: 'PINK winds up a GIANT BOMB!' },
-      { id: 'pink_bombsfin', name: 'Bomb Finale', tp: 56, dmg: 52, dur: 560, kind: 'attack', text: 'PINK unleashes a BOMB FINALE!' },
-      { id: 'pink_plusgrid', name: 'Plus-Grid', tp: 42, dmg: 48, dur: 420, kind: 'attack', text: 'PINK lines up the CATS!' },
-      { id: 'pink_plusgrid2', name: 'Plus-Grid+', tp: 46, dmg: 48, dur: 420, kind: 'attack', text: 'PINK snaps the GRID tighter!' },
-      { id: 'pink_tunnel', name: '3-D Tunnel', tp: 46, dmg: 50, dur: 500, kind: 'attack', text: 'PINK pulls you into the TUNNEL!' },
-      { id: 'pink_rotbox', name: 'Rotating Ring', tp: 48, dmg: 48, dur: 480, kind: 'attack', text: 'PINK spins the RING around you!' },
-      { id: 'pink_concert2', name: 'Concert (Haters)', tp: 60, dmg: 52, dur: 560, kind: 'attack', text: 'PINK plays for the HATERS!' },
+    desc: 'PINK - the mew magical-girl idol (Ch5).\nFLIRT to fill her DOKI + clear the DATES to SPARE.',
+    basics: [
+      { id: 'pink_cats',     name: 'Cats',         dmg: 30, dur: 340, darkLvl: 0, text: 'PINK sends in the CATS!' },
+      { id: 'pink_plusgrid', name: 'Plus-Grid',    dmg: 30, dur: 420, darkLvl: 0, text: 'PINK lines up the CATS!' },
+      { id: 'pink_bombs',    name: 'Pinata Bombs', dmg: 30, dur: 300, darkLvl: 0, text: 'PINK drops PINATA BOMBS!' },
+      { id: 'pink_cats2',    name: 'Cat Conga',    dmg: 55, dur: 360, darkLvl: 2, text: 'PINK forms a CAT CONGA line!' },
+      { id: 'pink_plusgrid2',name: 'Plus-Grid+',   dmg: 55, dur: 420, darkLvl: 4, text: 'PINK snaps the GRID tighter!' },
+      { id: 'pink_bombsfin', name: 'Bomb Finale',  dmg: 60, dur: 560, darkLvl: 7, text: 'PINK unleashes a BOMB FINALE!' },
     ],
-    ult: { id: 'pink_concert', name: 'IDOL CONCERT', tp: 100, dmg: 52, dur: 520, kind: 'attack',
-           text: 'PINK starts the CONCERT!! DOKI DOKI!' },
-    // DATE minigames — played instead of an attack when the DOKI meter fills (obj_pink_enemy datecount++)
+    spells: [
+      { id: 'pink_bombs2',   name: 'Bomb Volley',      tp: 40, dmg: 55, dur: 480, kind: 'attack', darkLvl: 1, text: 'PINK rains BOMBS faster!' },
+      { id: 'pink_tunnel',   name: '3-D Tunnel',       tp: 42, dmg: 55, dur: 500, kind: 'attack', darkLvl: 3, text: 'PINK pulls you into the TUNNEL!' },
+      { id: 'pink_bombsg',   name: 'Giant Bomb',       tp: 44, dmg: 55, dur: 620, kind: 'attack', darkLvl: 5, text: 'PINK winds up a GIANT BOMB!' },
+      { id: 'pink_rotbox',   name: 'Rotating Ring',    tp: 46, dmg: 60, dur: 480, kind: 'attack', darkLvl: 6, text: 'PINK spins the RING around you!' },
+      { id: 'pink_concert2', name: 'Concert (Haters)', tp: 52, dmg: 60, dur: 560, kind: 'attack', darkLvl: 8, text: 'PINK plays for the HATERS!' },
+    ],
+    ult: { id: 'pink_ult', pattern: 'pink_rotbox', name: 'ROTATING BOX', tp: 100, dmg: 60, dur: 520, kind: 'attack',
+           text: 'PINK spins the whole WORLD around you!! DOKI DOKI!' },
+    // DATE minigames — played instead of an attack when the DOKI meter fills. Final DATE hits like a TRUCK.
     dokiDates: [
       { id: 'pink_date1', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
       { id: 'pink_date2', name: 'DATE', dmg: 40, dur: 100000, kind: 'attack', text: 'PINK wants to... DATE!?' },
-      { id: 'pink_date4', name: 'DATE', dmg: 1, dur: 100000, kind: 'attack', text: 'PINK has a... CONFESSION.' },
-      { id: 'pink_finalmaze', name: 'DATE', dmg: 24, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
+      { id: 'pink_date4', name: 'DATE', dmg: 60, dur: 100000, kind: 'attack', text: 'PINK has a... CONFESSION.' },
+      { id: 'pink_finalmaze', name: 'DATE', dmg: 70, dur: 900, kind: 'attack', text: 'PINK has split into GHOST and BODY!' },
     ],
     // scenery-only backdrop test (no bullets) — surfaced in the attack tester, not a combat move
     testMoves: [
@@ -272,8 +272,21 @@ for (const id in CHARS) {
   if (CHARS[id].level == null) CHARS[id].level = 1;
   if (CHARS[id].spare == null) CHARS[id].spare = {};
 }
-CHARS.lancer.cost = 2; CHARS.lancer.darkner = true;
+CHARS.lancer.cost = 2; CHARS.lancer.darkner = true; CHARS.lancer.maxLevel = 5;
 CHARS.spamton.darkner = true; CHARS.knight.darkner = true;   // dark-world bosses: you CHARGE, you can't SPARE them
+CHARS.gerson.darkner = true; CHARS.pink.darkner = true;      // Hammer of Justice + Pink are DARKNERS too
+
+// DARKNESS bosses: FIGHT chooses from `basics` (ACTIVE attacks, gated by darkLvl); `def.fight` = default basic
+// (kept for code paths that still read c.fight). MAGIC lists `spells` gated by darkLvl. maxLevel default 10.
+for (const id in CHARS) {
+  const c = CHARS[id];
+  if (c.basics && c.basics.length) { c.fight = c.fight || c.basics[0]; if (c.maxLevel == null) c.maxLevel = 10; }
+}
+
+// PINK DOKI-spare FLIRT options (Kris ACT via pink.act; Susie/Ralsei spell; Kris multi-act). pinkOnly = hidden unless facing Pink.
+CHARS.kris.acts.push({ id: 'act_megaflirt', name: 'MegaFlirt', tp: 40, kind: 'doki', doki: 5, ally: 'any', pinkOnly: true, text: 'KRIS leads a MEGAFLIRT!' });
+CHARS.susie.spells.push({ id: 'susie_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true, text: 'SUSIE flirts... reluctantly. (+DOKI)' });
+CHARS.ralsei.spells.push({ id: 'ralsei_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true, text: 'RALSEI flirts sweetly! (+DOKI)' });
 
 // ACT effects: statuses applied to the opponent, active during their next dodge
 // (and/or their next select phase). One turn only.
