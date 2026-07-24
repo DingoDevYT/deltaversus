@@ -126,6 +126,11 @@ function dokiAdvancePhase() {   // a DATE minigame was cleared -> advance the ph
   // only FIGHT weak basics during the last DOKI stretch (last chance to KILL) before the final date SPAREs her.
   const f = dokiFoe();
   if (f && Battle.dokiPhase >= ((f.def.dokiPhases || 3) - 1)) f.darkLvl = 0;
+  sendDokiState();
+}
+// MP: the Pink-FACING peer owns the DOKI meter; push it to the Pink player so they know when a DATE is due.
+function sendDokiState() {
+  if (dokiFoe()) Battle.send({ t: 'dokistate', ready: !!Battle.dokiReady, phase: Battle.dokiPhase || 0, doki: Battle.doki || 0 });
 }
 // one-line description of what it takes to SPARE this foe (shown in the target menu)
 function spareHint(def) {
@@ -209,6 +214,7 @@ Battle.init = function (opts) {
   B.matchN = opts.matchN || 1;
   B.size = opts.size || 1;
   B.doki = 0; B.dokiPhase = 0; B.dokiReady = false;   // PINK DOKI meter / phase (reset each battle)
+  B.oppDoki = null;   // when I PLAY as Pink: the opponent's DOKI state (synced from their side over the net)
   B.myTeamSel = opts.myTeam.slice();
   B.oppTeamSel = opts.oppTeam.slice();
   B.myTeam = opts.myTeam.map(mkMember);
@@ -260,6 +266,7 @@ Battle.onMsg = function (m) {
   else if (m.t === 'snowgrave') { applySnowgrave(B.myTeam, m.mi); }
   else if (m.t === 'demercy') { for (const o of B.oppTeam) if (!isOut(o)) o.mercy = Math.max(0, o.mercy - (m.amt || 10)); }   // foe's MOTIVATE lowers our accrued MERCY on them
   else if (m.t === 'mercysync') { if (m.vals) m.vals.forEach((v, i) => { if (B.myTeam[i] && !isOut(B.myTeam[i])) B.myTeam[i].mercy = v; }); }   // how close the FOE is to sparing our members - live
+  else if (m.t === 'dokistate') { B.oppDoki = { ready: !!m.ready, phase: m.phase || 0, doki: m.doki || 0 }; }   // PINK player: the foe's DOKI vs me (forces a DATE when full)
   else if (m.t === 'rematch') B.rematchOpp = true;
 };
 
@@ -392,6 +399,15 @@ function actNeedsTarget(cmd, def, move) { return targetSide(cmd, def, move) != n
 Battle.updSelect = function () {
   const B = Battle;
   if (B.targeting) { B.updTargeting(); return; }
+  // PINK: if I'm playing Pink and the foe's DOKI is FULL, this turn is FORCED into a DATE minigame — the
+  // Pink player can't do anything else. Auto-commit the date for the (solo) Pink member and move on.
+  if (!B.submenu) {
+    const mem = B.curMember(), dd = mem && mem.def.dokiSpare && B.oppDoki && B.oppDoki.ready && (mem.def.dokiDates || []).length
+      ? mem.def.dokiDates[Math.min(B.oppDoki.phase || 0, mem.def.dokiDates.length - 1)] : null;
+    if (dd) { mem.action = { mi: B.cmdOrder[B.cmdPos], cmd: 'magic', move: dd.id, seed: randSeed(), target: 0, tside: null };
+      B.oppDoki.ready = false;   // clear locally so we don't re-force before the foe's phase-advance sync arrives
+      B.say('* PINK is FORCED into a DATE!'); B.advanceCmd(); return; }
+  }
   const scale = (B.fxOnMe && B.fxOnMe.timerScale) || 1;
   B.timer -= 1 / scale;
   if (B.timer <= 0) { while (B.cmdPos < B.cmdOrder.length) B.commitChoice('defend', null, 0); return; }
@@ -1488,6 +1504,7 @@ Battle.applyMyEffects = function () {
   for (const t of spareCmds) doSpare(t, false) || (B.mercyMsg = '* ...it wasn\'t enough to SPARE.');
   // push the fresh enemy MERCY to the foe so their own-party bar updates immediately (both ends stay in sync)
   B.send({ t: 'mercysync', vals: B.oppTeam.map(o => o.mercy) });
+  sendDokiState();   // if I'm facing PINK, tell the Pink player how full their DOKI is (and if a DATE is due)
   // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
   const anyDown = B.myTeam.some(m => m.downed);
   if (B.usedSnowgrave || anyDown) B.proceedCount = 0;
