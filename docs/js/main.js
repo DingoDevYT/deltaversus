@@ -127,7 +127,7 @@ function update() {
       }
       break;
     case 'select': {
-      const nTiles = CHAR_IDS.length + 2;   // + CREATE + DONE
+      const nTiles = CHAR_IDS.length + 1;   // chars + DONE (CREATE temporarily disabled)
       if (Input.hit.left) { G.selIdx = (G.selIdx + nTiles - 1) % nTiles; Snd.play('menumove'); }
       if (Input.hit.right) { G.selIdx = (G.selIdx + 1) % nTiles; Snd.play('menumove'); }
       if (Input.hit.cancel) {
@@ -142,10 +142,7 @@ function update() {
             curTeam().push(id); Snd.play('select');
             if (teamRemaining() <= 0) finishTeam();
           } else Snd.play('cantselect');
-        } else if (G.selIdx === CHAR_IDS.length) {
-          if (teamRemaining() >= 1) { Snd.play('select'); Creator.open(); }
-          else Snd.play('cantselect');
-        } else { finishTeam(); }
+        } else { finishTeam(); }   // DONE tile (CREATE temporarily disabled)
       }
       break;
     }
@@ -284,7 +281,7 @@ function renderSelect() {
   drawText(ctx, 'main', header, 320, 20, { color: G.teamPhase === 'dummy' ? '#f88' : '#fff', align: 'center' });
   if (!solo) drawText(ctx, 'main', 'BUDGET ' + teamCost(curTeam()) + ' / ' + G.partySize, 320, 40, { color: '#ff8000', align: 'center' });
 
-  const nTiles = CHAR_IDS.length + 2;   // chars + CREATE + DONE
+  const nTiles = CHAR_IDS.length + 1;   // chars + DONE (CREATE temporarily disabled)
   const sp = Math.min(84, 600 / nTiles);
   const startX = 320 - (nTiles - 1) * sp / 2, y = 108;
   const hw = Math.min(40, sp * 0.46);
@@ -298,12 +295,7 @@ function renderSelect() {
     drawText(ctx, 'main', c.name, x, y + 54, { color: sel ? c.color : '#777', align: 'center' });
     if (c.cost > 1) drawText(ctx, 'main', 'x' + c.cost, x + hw - 12, y - 46, { color: afford ? '#f80' : '#844', align: 'center' });
   });
-  { const x = startX + CHAR_IDS.length * sp, sel = G.selIdx === CHAR_IDS.length;
-    if (sel) { ctx.strokeStyle = '#ff8000'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 48, hw * 2, 96); }
-    drawText(ctx, 'big', '+', x, y - 20, { color: sel ? '#ff8000' : '#666', align: 'center', scale: 0.7 });
-    drawText(ctx, 'main', 'CREATE', x, y + 54, { color: sel ? '#ff8000' : '#777', align: 'center' });
-  }
-  { const x = startX + (CHAR_IDS.length + 1) * sp, sel = G.selIdx === CHAR_IDS.length + 1;
+  { const x = startX + CHAR_IDS.length * sp, sel = G.selIdx === CHAR_IDS.length;   // DONE (CREATE temporarily disabled)
     if (sel) { ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(x - hw, y - 48, hw * 2, 96); }
     drawSpr(ctx, A.ui('soul'), x, y - 10, { scale: 1 });
     drawText(ctx, 'main', 'DONE', x, y + 54, { color: sel ? '#0f0' : (curTeam().length ? '#8f8' : '#555'), align: 'center' });

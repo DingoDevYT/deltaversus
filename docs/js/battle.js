@@ -66,7 +66,7 @@ function resolveGreen(b) {
 }
 const BOX_ANIM = 16;   // frames for the box open/close spin-in animation
 const SELECT_FRAMES = 60 * 60;   // 60s to pick your move
-const IFRAMES = 55;
+const IFRAMES = 30;   // Deltarune Ch3 i-frames: 30 processed frames = 1s (hz30 attacks process every 2nd 60Hz frame)
 const TIER_TP = [4, 10, 18];   // accuracy -> TP
 
 const Battle = {};
@@ -77,7 +77,7 @@ function mkMember(sel) {
   return { sel, def, hp: def.hp, max: def.hp, downed: false, spared: false, frozen: false,
            mercy: 0, tiredFlag: false,   // mercy = how close YOU are to sparing this foe
            action: null, tier: null, pose: 'idle', poseT: 0,
-           dark: 0 };   // darkness/CHARGE meter (darkners only)
+           dark: 0, darkLvl: 0 };   // darkLvl 0..maxLevel = CHARGE progression (darkners only)
 }
 // a member is "out" if downed OR spared; a team is done when all are out.
 function isOut(m) { return m.downed || m.spared; }
@@ -109,7 +109,11 @@ function canSpare(m) {
 // PINK DOKI meter (obj_pink_enemy doki/datecount + scr_dokiadd). Collecting doki-hearts fills it; a full
 // meter marks a DATE minigame as due (dokiReady); completing a date advances the phase (dokiAdvancePhase).
 function dokiFoe() { return (Battle.oppTeam || []).find(o => o.def && o.def.dokiSpare && !isOut(o)); }
-function dokiMaxFor() { const f = dokiFoe(); return f ? ((Battle.dokiPhase || 0) >= 1 ? (f.def.dokiMaxLater || 20) : (f.def.dokiMax || 100)) : 100; }
+function dokiMaxFor() {   // DOKI needed for the NEXT date, per phase: 10 -> 15 -> 20 (Landon spec)
+  const f = dokiFoe(); if (!f) return 100;
+  const th = f.def.dokiThresholds || [10, 15, 20];
+  return th[Math.min(Battle.dokiPhase || 0, th.length - 1)];
+}
 function dokiCollect(amt) {
   if (!dokiFoe()) return;
   Battle.doki = Math.min(dokiMaxFor(), (Battle.doki || 0) + (amt || 8));
@@ -118,6 +122,10 @@ function dokiCollect(amt) {
 }
 function dokiAdvancePhase() {   // a DATE minigame was cleared -> advance the phase; after the final date she's sparable
   Battle.dokiPhase = (Battle.dokiPhase || 0) + 1; Battle.doki = 0; Battle.dokiReady = false;
+  // HANDICAP: entering the FINAL phase (after the 2nd of 3 dates), Pink's DARKNESS is forced to 0 — she can
+  // only FIGHT weak basics during the last DOKI stretch (last chance to KILL) before the final date SPAREs her.
+  const f = dokiFoe();
+  if (f && Battle.dokiPhase >= ((f.def.dokiPhases || 3) - 1)) f.darkLvl = 0;
 }
 // one-line description of what it takes to SPARE this foe (shown in the target menu)
 function spareHint(def) {
@@ -137,7 +145,9 @@ function findAct(id) {
 }
 function moveDefOf(def, a) {
   if (!a) return null;
-  if (a.cmd === 'fight') return def.fight;
+  if (a.cmd === 'fight') return def.basics ? (def.basics.find(b => b.id === a.move) || def.basics[0]) : def.fight;
+  // CHARGE also fires the current basic (single pattern) — or the ULT once maxed.
+  if (a.cmd === 'charge') return a.chargeUlt ? def.ult : (def.basics ? (def.basics.find(b => b.id === a.move) || def.basics[0]) : null);
   if (a.cmd === 'magic') return a.move === def.ult.id ? def.ult
     : (def.spells || []).find(s => s.id === a.move) || (def.dokiDates || []).find(s => s.id === a.move)   // PINK DATE moves
       || (def.testMoves || []).find(s => s.id === a.move);   // tester-only scenery entries (e.g. pink_scene)
@@ -298,14 +308,22 @@ Battle.update = function () {
 
 // ---------- select (per living member) ----------
 const MENU = ['fight', 'magic', 'act', 'item', 'defend'];
-const CHARGE_GAIN = 17;   // darkness per CHARGE turn (~6 charges to full)
+const CHARGE_COST = [12, 12, 16, 20, 26, 32, 40, 50, 62, 76];   // %TP to CHARGE into level 1..10 (cheap early, painful late)
+function chargeCost(lvl) { return CHARGE_COST[Math.max(0, Math.min(lvl, CHARGE_COST.length - 1))]; }
+// what unlocks/upgrades at a given darkness level (for the CHARGE announcement in the dialogue box)
+function unlocksAtLevel(def, lvl) {
+  const out = [];
+  for (const b of (def.basics || [])) if (b.darkLvl === lvl) out.push(b.name);
+  for (const s of (def.spells || [])) if (s.darkLvl === lvl) out.push(s.name + ' (SPELL)');
+  return out;
+}
 // darkners swap ACT for CHARGE and pay a discounted TP rate on spells
 function isDarkner(mem) { return !!(mem && mem.def && mem.def.darkner); }
 // Every lightner can SPARE. Only KRIS can ACT (his MAGIC slot becomes ACT); the
 // other fun-gang members have no ACT (they only ACT via Kris's dual-acts).
 function menuFor(mem) {
   // CHARGE is a DARKNER-only mechanic (Lancer / Jevil / Spamton / Knight). Everyone else SPAREs.
-  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'item', 'defend'];
+  if (isDarkner(mem)) return ['fight', 'magic', 'charge', 'spare', 'defend'];   // no ITEM; SPARE shows greyed
   if (mem && mem.def && mem.def.base === 'kris') return ['fight', 'act', 'item', 'spare', 'defend'];
   return ['fight', 'magic', 'item', 'spare', 'defend'];
 }
@@ -356,7 +374,7 @@ function targetSide(cmd, def, move) {
   if (cmd === 'act') {
     const ad = findAct(move);
     if (!ad) return null;
-    return (ad.kind === 'attack' || ad.kind === 'mercy') ? 'enemy' : null;   // demercy (MOTIVATE) hits your OWN party -> no target menu
+    return (ad.kind === 'attack' || ad.kind === 'mercy' || ad.kind === 'doki') ? 'enemy' : null;   // demercy (MOTIVATE) hits your OWN party -> no target menu
   }
   if (cmd === 'magic') {
     const d = moveById(def, move);
@@ -382,11 +400,13 @@ Battle.updSelect = function () {
     if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % menu.length; Snd.play('menumove'); }
     if (Input.hit.cancel && B.cmdPos > 0) { B.undoLast(); Snd.play('menumove'); }
     if (Input.hit.ok) {
-      const cmd = menu[B.menuIdx];
+      const cmd = menu[B.menuIdx], mem = B.curMember();
       if (cmd === 'item' && !B.canUseItems()) { Snd.play('cantselect'); }
+      else if (cmd === 'spare' && isDarkner(mem)) { Snd.play('cantselect'); }   // darkners can't SPARE (greyed)
       else {
         Snd.play('select');
-        if (cmd === 'fight' || cmd === 'defend' || cmd === 'charge' || cmd === 'spare') B.choose(cmd, null);
+        if (cmd === 'fight' && mem.def.basics) { B.submenu = 'fight'; B.subIdx = 0; }   // darkner: choose an ACTIVE
+        else if (cmd === 'fight' || cmd === 'defend' || cmd === 'charge' || cmd === 'spare') B.choose(cmd, null);
         else { B.submenu = cmd; B.subIdx = 0; }
       }
     }
@@ -419,10 +439,18 @@ Battle.tpAvail = function () { return Math.min(100, Battle.myTP - Battle.tpSpent
 
 Battle.subOptions = function () {
   const B = Battle, mem = B.curMember(), c = mem.def;
+  if (B.submenu === 'fight') {   // darkner FIGHT: pick an unlocked ACTIVE attack (free; unlocks accumulate by level)
+    return (c.basics || []).map(b => {
+      const gated = b.darkLvl != null && (mem.darkLvl || 0) < b.darkLvl;
+      return { id: b.id, label: b.name, cost: gated ? '🌑L' + b.darkLvl : 'FREE', costTP: 0,
+               disabled: gated, info: 'Deals ' + b.dmg + ' damage.' };
+    });
+  }
   if (B.submenu === 'magic') {
+    const facingDoki = !!dokiFoe();
     const opt = (s, ult) => {
       const cost = spellCost(mem, s);
-      const gated = s.darkReq && mem.dark < s.darkReq;
+      const gated = s.darkLvl != null && (mem.darkLvl || 0) < s.darkLvl;   // locked until you CHARGE to this level
       const snowLock = s.snowgrave && B.proceedCount < 3;   // SNOWGRAVE needs Proceed x3
       let eff = '';
       if (s.kind === 'attack') eff = 'Deals ' + s.dmg + ' damage.';
@@ -430,24 +458,30 @@ Battle.subOptions = function () {
       else if (s.kind === 'mercy') eff = 'Raises the foe\'s MERCY.';
       else if (s.kind === 'spareTired') eff = s.scope === 'all' ? 'Spares all TIRED foes.' : 'Spares a TIRED foe.';
       else if (s.kind === 'revive') eff = 'Revives a downed ally.';
+      else if (s.kind === 'doki') eff = 'Raises PINK\'s DOKI +' + (s.doki || 1) + '.';
       return { id: s.id, label: s.name, ult,
-               cost: snowLock ? 'NEEDx3' : gated ? '🌑x' + Math.ceil(s.darkReq / CHARGE_GAIN) : cost + '%',
+               cost: snowLock ? 'NEEDx3' : gated ? '🌑L' + s.darkLvl : cost + '%',
                costTP: cost, disabled: snowLock || gated || B.tpAvail() < cost, info: eff };
     };
-    const list = c.spells.map(s => opt(s, false));
-    list.push(opt(c.ult, true));
+    const list = (c.spells || []).filter(s => !s.pinkOnly || facingDoki).map(s => opt(s, false));   // FLIRT only shows vs PINK
+    if (!isDarkner(mem)) list.push(opt(c.ult, true));   // darkners fire their ULT via CHARGE-at-max, not MAGIC
     return list;
   }
   if (B.submenu === 'act') {
     const opts = [];
     const remaining = new Set(B.cmdOrder.slice(B.cmdPos + 1));   // allies not yet acted
+    const facingDoki = !!dokiFoe();
     for (const ad of (c.acts || [])) {
-      // dual-acts whose partner ISN'T on the team at all are hidden entirely (don't waste menu space);
+      if (ad.pinkOnly && !facingDoki) continue;   // MegaFlirt only appears when facing PINK
+      // dual-acts whose NAMED partner ISN'T on the team at all are hidden entirely (don't waste menu space);
       // otherwise Kris's team-up acts always show (disabled if the partner has already acted / no TP)
-      if (ad.ally && !B.myTeam.some(m => m.def.base === ad.ally)) continue;
+      if (ad.ally && ad.ally !== 'any' && !B.myTeam.some(m => m.def.base === ad.ally)) continue;
       let disabled = false, cost = ad.tp ? ad.tp + '%' : 'FREE';
       if (ad.tp && B.tpAvail() < ad.tp) disabled = true;
-      if (ad.ally) {
+      if (ad.ally === 'any') {   // MegaFlirt: needs ANY non-Kris ally who hasn't acted yet
+        const ai = B.myTeam.findIndex((m, i) => !isOut(m) && m.def.base !== 'kris' && remaining.has(i) && !m.action);
+        if (ai < 0) { disabled = true; cost = 'need ALLY'; }
+      } else if (ad.ally) {
         const ai = B.myTeam.findIndex((m, i) => !isOut(m) && m.def.base === ad.ally && remaining.has(i) && !m.action);
         if (ai < 0) { disabled = true; cost = 'need ' + ad.ally.toUpperCase(); }
       }
@@ -529,16 +563,21 @@ Battle.commitChoice = function (cmd, move, target) {
   const act = { mi: B.cmdOrder[B.cmdPos], cmd, move, seed: randSeed(), target, tside: targetSide(cmd, c, move) };
   if (cmd === 'magic') { const d = moveById(c, move); if (d) B.tpSpent += spellCost(mem, d); }
   else if (cmd === 'act') {
-    const ad = (c.acts || []).find(s => s.id === move);
+    const ad = findAct(move);
     if (ad && ad.tp) B.tpSpent += ad.tp;
-    if (ad && ad.ally) {   // multi-act: consume a not-yet-acted ally's turn as an assist
-      const ai = B.cmdOrder.slice(B.cmdPos + 1).find(i => !isOut(B.myTeam[i]) && B.myTeam[i].def.base === ad.ally && !B.myTeam[i].action);
+    if (ad && ad.ally) {   // multi-act: consume a not-yet-acted ally's turn as an assist ('any' = any non-Kris ally)
+      const match = i => !isOut(B.myTeam[i]) && !B.myTeam[i].action && (ad.ally === 'any' ? B.myTeam[i].def.base !== 'kris' : B.myTeam[i].def.base === ad.ally);
+      const ai = B.cmdOrder.slice(B.cmdPos + 1).find(match);
       if (ai != null) { B.myTeam[ai].action = { mi: ai, cmd: 'assist', of: act.mi, seed: randSeed() }; act.assistMi = ai; }
     }
   }
   else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
   else if (cmd === 'defend') B.tpSel += 16;   // instant, visible TP gain
-  else if (cmd === 'charge') { mem.dark = Math.min(100, mem.dark + CHARGE_GAIN); B.tpSel += 8; }
+  else if (cmd === 'charge') {
+    const lvl = mem.darkLvl || 0, max = mem.def.maxLevel || 10;
+    if (lvl >= max) { act.chargeUlt = true; B.tpSpent += 100; }   // MAXED: CHARGE fires the 100%-TP ULT
+    else { B.tpSpent += chargeCost(lvl); mem.darkLvl = lvl + 1; act.toLvl = mem.darkLvl; }  // +1 level (curve TP) + basic fires
+  }
   mem.action = act;
   B.submenu = null;
   B.advanceCmd();
@@ -564,12 +603,15 @@ Battle.undoLast = function () {
   if (a) {
     if (a.cmd === 'magic') { const d = moveById(c, a.move); if (d) B.tpSpent -= spellCost(mem, d); }
     else if (a.cmd === 'act') {
-      const ad = (c.acts || []).find(s => s.id === a.move); if (ad && ad.tp) B.tpSpent -= ad.tp;
+      const ad = findAct(a.move); if (ad && ad.tp) B.tpSpent -= ad.tp;
       if (a.assistMi != null && B.myTeam[a.assistMi]) B.myTeam[a.assistMi].action = null;
     }
     else if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
     else if (a.cmd === 'defend') B.tpSel -= 16;
-    else if (a.cmd === 'charge') { mem.dark = Math.max(0, mem.dark - CHARGE_GAIN); B.tpSel -= 8; }
+    else if (a.cmd === 'charge') {
+      if (a.chargeUlt) B.tpSpent -= 100;
+      else { mem.darkLvl = Math.max(0, (mem.darkLvl || 0) - 1); B.tpSpent -= chargeCost(mem.darkLvl); }
+    }
   }
   mem.action = null; B.menuIdx = 0;
   B.say('* ' + mem.def.name + ', your move.');
@@ -592,14 +634,18 @@ Battle.startReveal = function () {
 };
 function actionText(def, a, mine) {
   const c = def;
-  if (a.cmd === 'fight') return c.fight.text;
+  if (a.cmd === 'fight') { const d = moveDefOf(c, a); return d ? d.text : (c.fight ? c.fight.text : c.name + ' attacks!'); }
   if (a.cmd === 'magic') { const d = moveById(c, a.move); return d ? d.text : c.name + ' casts magic!'; }
-  if (a.cmd === 'act') { const d = (c.acts || []).find(s => s.id === a.move); return d ? d.text : c.name + ' ACTs.'; }
+  if (a.cmd === 'act') { const d = findAct(a.move); return d ? d.text : c.name + ' ACTs.'; }
   if (a.cmd === 'spare') return c.name + ' spares the foe!';
   if (a.cmd === 'assist') return c.name + ' joins the ACT!';
   if (a.cmd === 'item') return c.name + ' uses ' + (a.itemId ? ITEMS[a.itemId].name.toUpperCase() : 'an item') + '!';
   if (a.cmd === 'defend') return c.name + ' braces for impact!';
-  if (a.cmd === 'charge') return c.name + ' draws in the DARKNESS!';
+  if (a.cmd === 'charge') {
+    if (a.chargeUlt) return c.ult.text;
+    const un = a.toLvl != null ? unlocksAtLevel(c, a.toLvl) : [];
+    return c.name + ' draws in the DARKNESS! (LV ' + (a.toLvl != null ? a.toLvl : '?') + ')' + (un.length ? '  Unlocked: ' + un.join(', ') + '!' : '');
+  }
   return c.name + ' hesitates!';
 }
 
@@ -1196,11 +1242,10 @@ Battle.updDodge = function () {
       if (dd < 42) { const dir = Math.atan2(B.soul.y - b.y, B.soul.x - b.x), pull = 1 + ((42 - dd) / 42) * 11; b.x += Math.cos(dir) * pull; b.y += Math.sin(dir) * pull; }
       if (dd < 14 + SOUL_R) {
         b.dead = true;
-        const tp = b.tp || 8; B.myTP = Math.min(100, B.myTP + tp); B.tpGained += tp;
+        const tp = 1;   // Pink hearts are a small +1 TP boost; DOKI is built ONLY via FLIRT acts/spells now
+        B.myTP = Math.min(100, B.myTP + tp); B.tpGained += tp;
         B.flash = 4; Snd.play('healspark', 0.5);
         B.dmgPops.push({ x: B.soul.x, y: B.soul.y - 14, txt: '+' + tp, t: 0, color: '#ff8fe0' });
-        for (const m of B.myTeam) if (m && m.hp > 0) m.hp = Math.min(m.max, m.hp + 1);
-        dokiCollect(b.doki != null ? b.doki : tp);   // Pink's DOKI meter: collecting doki-hearts fills it (scr_dokiadd)
       }
       continue;
     }
@@ -1395,9 +1440,11 @@ Battle.applyMyEffects = function () {
       const d = moveById(m.def, a.move); if (!d) continue;
       if (d.kind === 'mercy') grantMercy(a.target, d.mercy || 15);
       else if (d.kind === 'spareTired') spareTireds.push(d.scope === 'all' ? 'all' : a.target);
+      else if (d.kind === 'doki') dokiCollect(d.doki || 1);   // PINK: Susie/Ralsei FLIRT spell fills the DOKI meter
     } else if (a.cmd === 'act') {
       const ad = findAct(a.move); if (!ad) continue;
       if (ad.mercy) grantMercy(a.target, ad.mercy);
+      if (ad.kind === 'doki') dokiCollect(ad.doki || 1);   // PINK: Kris FLIRT / MegaFlirt fills the DOKI meter
       if (ad.kind === 'demercy') {   // MOTIVATE: Kris rallies his OWN party - shave MERCY off each of them
         const amt = ad.mercyDown || 10;                                   // so the foe must rebuild to spare your team
         for (const t of B.myTeam) if (!isOut(t)) t.mercy = Math.max(0, (t.mercy || 0) - amt);
@@ -1467,8 +1514,11 @@ Battle.render = function (ctx) {
   B.renderBoxAndBullets(ctx);
   if (B.fx && B.fx.pinkScene && !blackout) drawPinkSceneFront(ctx);   // fg dancers in front of the box
   B.renderMirror(ctx);
-  if (!(B.fx && (B.fx.date || B.fx.maze))) B.renderHud(ctx);   // DATE/MAZE are full-screen takeovers — no party HUD over them
-  if (!(B.fx && (B.fx.date || B.fx.maze))) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
+  // DATE/MAZE full-screen takeovers hide the HUD only WHILE dodging (boxin/dodge/boxout). Back in select/etc,
+  // always show the menu again even though B.fx (stale from the last attack) may still hold .date/.maze.
+  const dodgeTakeover = (B.phase === 'boxin' || B.phase === 'dodge' || B.phase === 'boxout') && B.fx && (B.fx.date || B.fx.maze);
+  if (!dodgeTakeover) B.renderHud(ctx);
+  if (!dodgeTakeover) drawDokiBar(ctx);   // PINK's DOKI meter (spare progress)
   B.renderMsg(ctx);
   if (B.phase === 'timing') B.renderTiming(ctx);
   if (B.phase === 'gameover') B.renderGameover(ctx);
@@ -2446,8 +2496,10 @@ function drawPartyPanel(ctx, m, px, py, w, active) {
   ctx.fillStyle = m.frozen ? '#12354d' : '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
   if (!m.frozen) { ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6); }
   if (isDarkner(m) && !out) {
+    const maxL = m.def.maxLevel || 10, lvl = m.darkLvl || 0, maxed = lvl >= maxL;
     ctx.fillStyle = '#1a0a2a'; ctx.fillRect(barX, barY + 7, barW, 3);
-    ctx.fillStyle = m.dark >= 100 ? '#d060ff' : '#8a2be2'; ctx.fillRect(barX, barY + 7, Math.round(barW * m.dark / 100), 3);
+    ctx.fillStyle = maxed ? '#d060ff' : '#8a2be2'; ctx.fillRect(barX, barY + 7, Math.round(barW * lvl / maxL), 3);
+    drawText(ctx, 'main', maxed ? '🌑MAX' : '🌑' + lvl, barX + barW - 2, barY - 1, { color: maxed ? '#d060ff' : '#a86ede', align: 'right', scale: 0.7 });
   }
 }
 
@@ -2526,7 +2578,8 @@ Battle.renderCommandButtons = function (ctx, mem, px, py, w, alpha) {
   for (let k = 0; k < names.length; k++) {
     const name = names[k], img = A.ui('btn_' + name + (B.menuIdx === k ? '_sel' : ''));
     const cx = px + 4 + step * k + step / 2;
-    if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1 });   // top-aligned, native size
+    const greyed = name === 'spare' && isDarkner(mem);   // darkners can't SPARE — show it greyed-out
+    if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1, alpha: greyed ? 0.3 : 1 });
   }
   ctx.restore();
 };

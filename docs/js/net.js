@@ -161,7 +161,8 @@ const PracticeAI = {
         let cmd = 'fight', move = null;
         const r = Math.random();
         const dk = !!m.def.darkner;
-        if (m.dark == null) m.dark = 0;
+        if (m.darkLvl == null) m.darkLvl = 0;
+        const maxL = m.def.maxLevel || 10;
         const disc = s => Math.ceil(s.tp * (dk ? 0.6 : 1));
         // PINK: a full DOKI meter forces a DATE minigame this turn (obj_pink_enemy datecount++)
         if (m.def.dokiSpare && typeof Battle !== 'undefined' && Battle.dokiReady && (m.def.dokiDates || []).length) {
@@ -171,12 +172,18 @@ const PracticeAI = {
         if (m.hp < m.max * 0.35 && T.items.length && r < 0.5 && !m.def.secretBoss) {
           cmd = 'item'; move = 0;
           const it = ITEMS[T.items.shift()]; if (it) m.hp = Math.min(m.max, m.hp + (it.heal || 0));
-        } else if (dk && m.dark < 85 && r < 0.4) {   // darkner charges up (need ~5 to unlock ult)
-          cmd = 'charge'; m.dark = Math.min(100, m.dark + 17); T.tp = Math.min(100, T.tp + 8);
+        } else if (dk && m.darkLvl < maxL && r < 0.4) {   // darkner CHARGE = +1 level (curve TP cost)
+          cmd = 'charge';
+          const cost = (typeof chargeCost === 'function') ? chargeCost(m.darkLvl) : 20;
+          m.darkLvl += 1; T.tp = Math.max(0, T.tp - cost);
         } else if (r < 0.12) { cmd = 'defend'; T.tp = Math.min(100, T.tp + 16); }
         else {
-          const afford = m.def.spells.filter(s => disc(s) <= T.tp && (!s.darkReq || m.dark >= s.darkReq));
+          const afford = (m.def.spells || []).filter(s => s.kind === 'attack' && disc(s) <= T.tp && (s.darkLvl == null || m.darkLvl >= s.darkLvl));
           if (afford.length && r < 0.5) { const s = afford[Math.floor(Math.random() * afford.length)]; cmd = 'magic'; move = s.id; T.tp = Math.max(0, T.tp - disc(s)); }
+        }
+        if (cmd === 'fight' && dk && (m.def.basics || []).length) {   // darkner FIGHT picks a random UNLOCKED basic
+          const avail = m.def.basics.filter(b => b.darkLvl == null || m.darkLvl >= b.darkLvl);
+          if (avail.length) move = avail[Math.floor(Math.random() * avail.length)].id;
         }
         acts.push({ mi: i, cmd, move, seed: randSeed() });
       });
