@@ -423,6 +423,14 @@ Battle.updSelect = function () {
     const menu = menuFor(B.curMember());
     if (Input.hit.left) { B.menuIdx = (B.menuIdx + menu.length - 1) % menu.length; Snd.play('menumove'); }
     if (Input.hit.right) { B.menuIdx = (B.menuIdx + 1) % menu.length; Snd.play('menumove'); }
+    if (Input.hit.left || Input.hit.right) {   // hovering CHARGE: spell out the cost/effect in the (readable) dialogue box
+      const cmd = menu[B.menuIdx], mem = B.curMember();
+      if (cmd === 'charge' && isDarkner(mem)) {
+        const lvl = mem.darkLvl || 0, max = mem.def.maxLevel || 10;
+        B.say(lvl >= max ? '* CHARGE: unleash your ULT!  (costs 100% TP)'
+                         : '* CHARGE: +1 DARKNESS  (LV ' + lvl + ' → ' + (lvl + 1) + ', costs ' + chargeCostFor(mem) + '% TP)');
+      } else B.say('* ' + mem.def.name + ', your move.');
+    }
     if (Input.hit.cancel && B.cmdPos > 0) { B.undoLast(); Snd.play('menumove'); }
     if (Input.hit.ok) {
       const cmd = menu[B.menuIdx], mem = B.curMember();
@@ -483,8 +491,9 @@ Battle.subOptions = function () {
     const reps = isDarkner(mem) ? currentTierReps(c.basics || [], lvl) : (c.basics || []);
     return reps.map(b => {
       const levelLocked = (b.darkLvl || 0) > lvl;   // not yet CHARGED to this level -> RED
-      return { id: b.id, label: b.name, cost: levelLocked ? '🌑L' + b.darkLvl : 'FREE', costTP: 0,
-               disabled: levelLocked, lockKind: levelLocked ? 'level' : null, info: 'Deals ' + b.dmg + ' damage.' };
+      return { id: b.id, label: b.name, cost: levelLocked ? 'Lv' + b.darkLvl : 'FREE', costTP: 0,
+               disabled: levelLocked, lockKind: levelLocked ? 'level' : null,
+               info: (b.desc ? b.desc + ' ' : '') + 'Deals ' + b.dmg + ' damage.' };
     });
   }
   if (B.submenu === 'magic') {
@@ -502,9 +511,9 @@ Battle.subOptions = function () {
       else if (s.kind === 'revive') eff = 'Revives a downed ally.';
       else if (s.kind === 'doki') eff = 'Raises PINK\'s DOKI +' + (s.doki || 1) + '.';
       return { id: s.id, label: s.name, ult,
-               cost: snowLock ? 'NEEDx3' : levelLocked ? '🌑L' + s.darkLvl : cost + '%',
+               cost: snowLock ? 'NEEDx3' : levelLocked ? 'Lv' + s.darkLvl : cost + '%',
                costTP: cost, disabled: snowLock || levelLocked || tpLocked,
-               lockKind: levelLocked ? 'level' : (tpLocked || snowLock) ? 'tp' : null, info: eff };
+               lockKind: levelLocked ? 'level' : (tpLocked || snowLock) ? 'tp' : null, info: s.desc || eff };
     };
     let spells = (c.spells || []).filter(s => !s.pinkOnly || facingDoki);   // FLIRT only shows vs PINK
     if (isDarkner(mem)) spells = currentTierReps(spells, lvl);              // upgrades REPLACE
@@ -531,7 +540,7 @@ Battle.subOptions = function () {
         if (ai < 0) { disabled = true; cost = 'need ' + ad.ally.toUpperCase(); }
       }
       if (ad.id === 'act_proceed') cost = B.proceedCount >= 2 ? 'x3->SNOW' : 'x' + (B.proceedCount + 1);
-      opts.push({ id: ad.id, label: ad.name, cost, disabled, ally: ad.ally, info: ad.text });
+      opts.push({ id: ad.id, label: ad.name, cost, disabled, ally: ad.ally, info: ad.desc || ad.text });
     }
     // per-enemy mercy ACTs: each living, sparable foe contributes its own mercy act
     const seen = new Set();
@@ -610,10 +619,13 @@ Battle.commitChoice = function (cmd, move, target) {
   else if (cmd === 'act') {
     const ad = findAct(move);
     if (ad && ad.tp) B.tpSpent += ad.tp;
-    if (ad && ad.ally) {   // multi-act: consume a not-yet-acted ally's turn as an assist ('any' = any non-Kris ally)
+    if (ad && ad.ally) {   // multi-act: consume not-yet-acted ally turns as assists ('any' = any non-Kris ally)
       const match = i => !isOut(B.myTeam[i]) && !B.myTeam[i].action && (ad.ally === 'any' ? B.myTeam[i].def.base !== 'kris' : B.myTeam[i].def.base === ad.ally);
-      const ai = B.cmdOrder.slice(B.cmdPos + 1).find(match);
-      if (ai != null) { B.myTeam[ai].action = { mi: ai, cmd: 'assist', of: act.mi, seed: randSeed() }; act.assistMi = ai; }
+      const cand = B.cmdOrder.slice(B.cmdPos + 1).filter(match);
+      // MegaFlirt (party:true) pulls in the WHOLE party — every remaining ally assists; others grab just one partner.
+      const chosen = ad.party ? cand : cand.slice(0, 1);
+      act.assistMi = [];
+      for (const ai of chosen) { B.myTeam[ai].action = { mi: ai, cmd: 'assist', of: act.mi, seed: randSeed() }; act.assistMi.push(ai); }
     }
   }
   else if (cmd === 'item') { B.itemsUsed.push(move); act.itemId = B.myItems[move]; }
@@ -649,7 +661,8 @@ Battle.undoLast = function () {
     if (a.cmd === 'magic') { const d = moveById(c, a.move); if (d) B.tpSpent -= spellCost(mem, d); }
     else if (a.cmd === 'act') {
       const ad = findAct(a.move); if (ad && ad.tp) B.tpSpent -= ad.tp;
-      if (a.assistMi != null && B.myTeam[a.assistMi]) B.myTeam[a.assistMi].action = null;
+      for (const ai of (Array.isArray(a.assistMi) ? a.assistMi : a.assistMi != null ? [a.assistMi] : []))
+        if (B.myTeam[ai]) B.myTeam[ai].action = null;   // release every assisting ally (MegaFlirt pulls the whole party)
     }
     else if (a.cmd === 'item') { const k = B.itemsUsed.indexOf(a.move); if (k >= 0) B.itemsUsed.splice(k, 1); }
     else if (a.cmd === 'defend') B.tpSel -= 16;
@@ -2556,7 +2569,11 @@ function drawPartyPanel(ctx, m, px, py, w, active) {
     const maxL = m.def.maxLevel || 10, lvl = m.darkLvl || 0, maxed = lvl >= maxL;
     ctx.fillStyle = '#1a0a2a'; ctx.fillRect(barX, barY + 7, barW, 3);
     ctx.fillStyle = maxed ? '#d060ff' : '#8a2be2'; ctx.fillRect(barX, barY + 7, Math.round(barW * lvl / maxL), 3);
-    drawText(ctx, 'main', maxed ? '🌑MAX' : '🌑' + lvl, barX + barW - 2, barY - 1, { color: maxed ? '#d060ff' : '#a86ede', align: 'right', scale: 0.7 });
+    // level readout: full-size (crisp) LV chip over the right end of the darkness bar, on a dark backing.
+    const lbl = maxed ? 'MAX' : 'LV' + lvl, lw = textWidth('main', lbl);
+    const cx = barX + barW, cy = barY - 3;
+    ctx.fillStyle = '#000'; ctx.fillRect(cx - lw - 4, cy - 1, lw + 5, 17);
+    drawText(ctx, 'main', lbl, cx - 2, cy, { color: maxed ? '#e79bff' : '#b98cff', align: 'right', scale: 1 });
   }
 }
 
@@ -2637,10 +2654,11 @@ Battle.renderCommandButtons = function (ctx, mem, px, py, w, alpha) {
     const cx = px + 4 + step * k + step / 2;
     const greyed = name === 'spare' && isDarkner(mem);   // darkners can't SPARE — show it greyed-out
     if (img && img.width) drawSpr(ctx, img, cx, top + img.height / 2, { scale: 1, alpha: greyed ? 0.3 : 1 });
-    // CHARGE shows its TP cost under the button (red if you can't afford it right now)
+    // CHARGE shows its TP cost as a full-size (crisp) chip over the button (red if you can't afford it now)
     if (name === 'charge' && isDarkner(mem)) {
-      const cost = chargeCostFor(mem), afford = B.tpAvail() >= cost;
-      drawText(ctx, 'main', cost + '%', cx, py + 30, { color: afford ? '#a86ede' : '#f44', align: 'center', scale: 0.7 });
+      const cost = chargeCostFor(mem), afford = B.tpAvail() >= cost, lbl = cost + '%', lw = textWidth('main', lbl);
+      ctx.fillStyle = '#000'; ctx.fillRect(cx - lw / 2 - 3, py + 20, lw + 6, 17);
+      drawText(ctx, 'main', lbl, cx, py + 21, { color: afford ? '#c79bff' : '#f66', align: 'center', scale: 1 });
     }
   }
   ctx.restore();

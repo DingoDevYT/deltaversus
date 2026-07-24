@@ -232,7 +232,8 @@ const CHARS = {
     // SPARE = DOKI route (Flirt acts/spells build DOKI 10->15->20; DATE minigames between; darkness forced to
     // 0 entering the final stretch). Only teams with SPARE can take it — others must KILL her. Hearts = +1 TP.
     spare: {}, dokiSpare: true, dokiThresholds: [10, 15, 20, 20], dokiPhases: 4, maxLevel: 10,
-    act: { id: 'act_flirt', name: 'Flirt', kind: 'doki', doki: 1, text: 'KRIS flirts with PINK! (+DOKI)' },
+    act: { id: 'act_flirt', name: 'Flirt', kind: 'doki', doki: 1,
+           desc: 'KRIS shoots PINK a confident wink. Her heart flutters — DOKI +1.', text: 'KRIS flirts with PINK!' },
     dscale: 1.0, yoff: 4,
     desc: 'PINK - the mew magical-girl idol (Ch5).\nFLIRT to fill her DOKI + clear the DATES to SPARE.',
     basics: [
@@ -283,10 +284,19 @@ for (const id in CHARS) {
   if (c.basics && c.basics.length) { c.fight = c.fight || c.basics[0]; if (c.maxLevel == null) c.maxLevel = 10; }
 }
 
-// PINK DOKI-spare FLIRT options (Kris ACT via pink.act; Susie/Ralsei spell; Kris multi-act). pinkOnly = hidden unless facing Pink.
-CHARS.kris.acts.push({ id: 'act_megaflirt', name: 'MegaFlirt', tp: 40, kind: 'doki', doki: 5, ally: 'any', pinkOnly: true, text: 'KRIS leads a MEGAFLIRT!' });
-CHARS.susie.spells.push({ id: 'susie_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true, text: 'SUSIE flirts... reluctantly. (+DOKI)' });
-CHARS.ralsei.spells.push({ id: 'ralsei_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true, text: 'RALSEI flirts sweetly! (+DOKI)' });
+// PINK DOKI-spare FLIRT options (Kris ACT via pink.act; every ally gets a FLIRT spell; Kris leads a full-party MEGAFLIRT).
+// pinkOnly = hidden unless facing Pink.  MegaFlirt: party:true = the WHOLE party joins in (all remaining allies assist).
+CHARS.kris.acts.push({ id: 'act_megaflirt', name: 'MegaFlirt', tp: 40, kind: 'doki', doki: 5, ally: 'any', party: true, pinkOnly: true,
+  desc: 'KRIS rallies the ENTIRE PARTY for one overwhelming group flirt. Everyone still to act joins in. PINK is smitten — DOKI +5.',
+  text: 'The whole party FLIRTS with PINK at once!' });
+CHARS.susie.spells.push({ id: 'susie_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true,
+  desc: 'SUSIE grumbles a rough compliment. It lands anyway. PINK\'s DOKI +1.', text: 'SUSIE flirts... reluctantly.' });
+CHARS.ralsei.spells.push({ id: 'ralsei_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true,
+  desc: 'RALSEI offers a warm, sincere compliment. PINK melts a little. DOKI +1.', text: 'RALSEI flirts sweetly!' });
+CHARS.berdly.spells.push({ id: 'berdly_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true,
+  desc: 'BERDLY brags about himself at length. PINK finds it weirdly charming. DOKI +1.', text: 'BERDLY flirts (mostly about himself)!' });
+CHARS.noelle.spells.push({ id: 'noelle_flirt', name: 'Flirt', tp: 12, kind: 'doki', doki: 1, pinkOnly: true,
+  desc: 'NOELLE stammers out a shy, genuine compliment. PINK\'s DOKI +1.', text: 'NOELLE flirts nervously!' });
 
 // ACT effects: statuses applied to the opponent, active during their next dodge
 // (and/or their next select phase). One turn only.
