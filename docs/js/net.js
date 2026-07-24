@@ -232,6 +232,11 @@ const PracticeAI = {
       // for the whole tick so they aim at the dummy, then restore it for the player's real dodge.
       const _bs = (typeof Battle !== 'undefined') ? Battle.soul : undefined;
       if (typeof Battle !== 'undefined') Battle.soul = D.soul;
+      // The dummy dodges YOUR attack on your machine; its pattern ticks fire Snd.play and
+      // poke Battle.shake/flash directly. Silence audio and snapshot the VFX globals so the
+      // dummy's copy of your attack doesn't play sound / shake your screen a second time.
+      const _sil = Snd.silent, _shk = (typeof Battle !== 'undefined') ? Battle.shake : 0, _fl = (typeof Battle !== 'undefined') ? Battle.flash : 0;
+      Snd.silent = true;
       try {
       for (const s of D.subs) {
         if (D.f >= s.sim.dur) continue;
@@ -279,7 +284,7 @@ const PracticeAI = {
       }
       D.f++;
       if (D.f % 4 === 0) Net.emitLocal({ t: 'soul', x: D.soul.x / D.box.w, y: D.soul.y / D.box.h, f: D.f, done: false });
-      } finally { if (typeof Battle !== 'undefined') Battle.soul = _bs; }
+      } finally { if (typeof Battle !== 'undefined') { Battle.soul = _bs; Battle.shake = _shk; Battle.flash = _fl; } Snd.silent = _sil; }
     } else {
       Net.emitLocal({ t: 'soul', x: 0.5, y: 0.5, done: true });
       PracticeAI.report(D.T, Math.round(D.dmg));

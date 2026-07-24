@@ -4,6 +4,10 @@ const Snd = {
   muted: localStorage.getItem('dv_muted') === '1',
   master: (() => { const v = parseFloat(localStorage.getItem('dv_vol')); return isNaN(v) ? 0.6 : v; })(),
   unlocked: false,
+  // When true, SFX are suppressed. Set while ticking a *preview* sim (the top-right
+  // mirror of your own attack, or the practice dummy dodging you) so those pattern
+  // ticks don't leak sound onto the side that isn't actually fighting them.
+  silent: false,
   music: null, musicKey: null, pendingMusic: null,
   cache: {},
   MVOL: 0.45, SVOL: 0.55,
@@ -34,7 +38,7 @@ Snd.sfxPath = k => 'assets/audio/sfx/' + A.manifest.sfx[k];
 Snd.musPath = k => 'assets/audio/music/' + A.manifest.music[k];
 
 Snd.play = function (k, vol) {
-  if (Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return;
+  if (Snd.silent || Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return;
   let base = Snd.cache[k];
   if (!base) { base = Snd.cache[k] = new Audio(Snd.sfxPath(k)); }
   const a = base.cloneNode();
@@ -44,7 +48,7 @@ Snd.play = function (k, vol) {
 
 // a held/looping sfx you can stop later (returns the Audio, or null). Used for the charge whir.
 Snd.hold = function (k, vol) {
-  if (Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return null;
+  if (Snd.silent || Snd.muted || !Snd.unlocked || !A.manifest || !A.manifest.sfx[k]) return null;
   const a = new Audio(Snd.sfxPath(k));
   a.loop = true; a.volume = (vol != null ? vol : Snd.SVOL) * Snd.master;
   a.play().catch(() => {});

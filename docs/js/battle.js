@@ -206,6 +206,16 @@ const MOVE_SFX = {
   knight_tunnel: 'knightsword', knight_tunnel2: 'knightsword', knight_tunnel3: 'knightsword',
   knight_flurry: 'boardbomb', knight_flurry2: 'boardbomb', knight_flurry3: 'boardbomb',
   knight_rotslash: 'boarddmg', knight_rotslash2: 'boarddmg', knight_rotslash3: 'boarddmg', knight_roar: 'knightlaugh',
+  // Gerson - the HAMMER OF JUSTICE. Heavy hammer smashes; the ult is the big swing.
+  gn_atk1: 'heavyswing', gn_atk4: 'heavyswing', gn_atk6: 'heavyswing', gn_atk7: 'heavyswing',
+  gn_atk8: 'heavyswing', gn_atk9: 'heavyswing', gn_atk10: 'heavyswing', gn_atk11: 'heavyswing',
+  gn_atk13: 'criticalswing', gn_atk14: 'criticalswing', gn_atk15: 'heavyswing', gn_atk18: 'heavyswing',
+  gn_atk19: 'heavyswing', gn_atk20: 'criticalswing', gn_atk21: 'ultraswing',
+  // Pink - reuses other bosses' patterns; give each a start sound that matches its shape.
+  pink_tunnel: 'knightsword', pink_cats: 'boardsummon', pink_cats2: 'boardsummon',
+  pink_bombs: 'boardbomb', pink_bombs2: 'boardbomb', pink_bombsg: 'boardbomb', pink_bombsfin: 'boardbomb',
+  pink_plusgrid: 'sneofire', pink_plusgrid2: 'sneofire', pink_concert2: 'spellcast',
+  pink_scene: 'boardsummon', pink_rotbox: 'ultraswing', pink_ult: 'ultraswing',
 };
 
 // ---------- init ----------
@@ -1346,6 +1356,11 @@ Battle.tickMirror = function () {
   M.target = Math.max(M.target, M.f + 1);
   let steps = Math.min(3, M.target - M.f, M.sim.dur - M.f);
   if (B.oppSoul) { M.soul.x = B.oppSoul.x * M.box.w; M.soul.y = B.oppSoul.y * M.box.h; }
+  // The mirror is a preview of *your own* attack (the opponent dodging it). Patterns fire
+  // Snd.play and poke Battle.shake/flash directly during their tick, so silence audio and
+  // snapshot/restore the real VFX globals — otherwise your side hears/shakes for the wrong box.
+  const _silent0 = Snd.silent, _shk0 = B.shake, _fl0 = B.flash;
+  Snd.silent = true;
   while (steps-- > 0) {
     M.sim.tick(M.soul, b => { b.t = 0; if (b.vx == null) b.vx = 0; if (b.vy == null) b.vy = 0; if (b.phase0 == null) b.phase0 = Math.random() * 6.28; M.bullets.push(b); });
     M.f++;
@@ -1375,6 +1390,7 @@ Battle.tickMirror = function () {
     for (const s of mspawn) { s.t = s.t || 0; if (s.vx == null) s.vx = 0; if (s.vy == null) s.vy = 0; if (s.phase0 == null) s.phase0 = Math.random() * 6.28; M.bullets.push(s); }
     M.bullets = M.bullets.filter(b => !b.dead && b.x > -80 && b.x < M.box.w + 80 && b.y > -80 && b.y < M.box.h + 80 && (!b.life || b.t < b.life));
   }
+  Snd.silent = _silent0; B.shake = _shk0; B.flash = _fl0;
 };
 
 Battle.endDodge = function () {
