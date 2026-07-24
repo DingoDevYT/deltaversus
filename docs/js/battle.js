@@ -32,7 +32,7 @@ function resolveGreen(b) {
   const aligned = Math.abs(Math.atan2(Math.sin(inAng - B.shieldAng), Math.cos(inAng - B.shieldAng))) < shieldTol;
   if (len < shieldRadius && aligned) {                          // BLOCKED
     const parry = (B.anim.f - (B.shieldFreshF == null ? -999 : B.shieldFreshF)) < 4;   // justlength = 4
-    const gain = parry ? 2.5 : 1.25;
+    const gain = parry ? 3 : 1;   // integer TP (parry rewards more than a plain block)
     B.shieldFlash = 4;
     if (parry) { B.shieldParry = 7;                                       // parry: white-flash + 3 light sparks off the axe (obj_shield_just_particle)
       B.blockParts = B.blockParts || [];
@@ -243,7 +243,7 @@ Battle.init = function (opts) {
   B.fxOnMeQueued = null; B.fxOnMe = null;
   B.pacifyOppNext = false; B.pacifyOpp = false;
   B.myPacifiedNext = false; B.myPacified = false;
-  B.proceedCount = 0;                 // Kris+Noelle PROCEED streak (3 -> SNOWGRAVE)
+  B.proceedCount = 0;                 // Kris+Noelle PROCEED streak (5 -> SNOWGRAVE)
   B.myGuardBuff = 0; B.myPowerBuff = 0;   // Northernlight / Lock In turn counters
   B.mirror = null; B.oppSoul = null; B.oppDodging = false;
   Net.handlers = Net.handlers.filter(h => h !== Battle.onMsg);
@@ -501,7 +501,7 @@ Battle.subOptions = function () {
     const opt = (s, ult) => {
       const cost = spellCost(mem, s);
       const levelLocked = s.darkLvl != null && lvl < s.darkLvl;   // locked until you CHARGE to this level -> RED
-      const snowLock = s.snowgrave && B.proceedCount < 3;   // SNOWGRAVE needs Proceed x3
+      const snowLock = s.snowgrave && B.proceedCount < 5;   // SNOWGRAVE needs Proceed x5
       const tpLocked = !levelLocked && !snowLock && B.tpAvail() < cost;   // unlocked but can't afford -> GREY
       let eff = '';
       if (s.kind === 'attack') eff = 'Deals ' + s.dmg + ' damage.';
@@ -539,7 +539,7 @@ Battle.subOptions = function () {
         const ai = B.myTeam.findIndex((m, i) => !isOut(m) && m.def.base === ad.ally && remaining.has(i) && !m.action);
         if (ai < 0) { disabled = true; cost = 'need ' + ad.ally.toUpperCase(); }
       }
-      if (ad.id === 'act_proceed') cost = B.proceedCount >= 2 ? 'x3->SNOW' : 'x' + (B.proceedCount + 1);
+      if (ad.id === 'act_proceed') cost = B.proceedCount >= 4 ? 'x5->SNOW' : 'x' + (B.proceedCount + 1);
       opts.push({ id: ad.id, label: ad.name, cost, disabled, ally: ad.ally, info: ad.desc || ad.text });
     }
     // per-enemy mercy ACTs: each living, sparable foe contributes its own mercy act
@@ -1498,7 +1498,7 @@ Battle.resolve = function () {
 Battle.applyMyEffects = function () {
   const B = Battle;
   // mercy gained scales by the foe's resistance (super bosses build MERCY very slowly ~20 turns)
-  const grantMercy = (i, amt) => { const o = B.oppTeam[i]; if (o && !isOut(o)) o.mercy = Math.min(100, o.mercy + amt * (o.def.mercyGain != null ? o.def.mercyGain : 1)); };
+  const grantMercy = (i, amt) => { const o = B.oppTeam[i]; if (o && !isOut(o)) o.mercy = Math.min(100, Math.round(o.mercy + amt * (o.def.mercyGain != null ? o.def.mercyGain : 1))); };   // keep MERCY an integer
   const doSpare = (i, tiredOnly) => {
     const o = B.oppTeam[i]; if (!o || isOut(o)) return false;
     if ((o.def.spare || {}).never) return false;
@@ -1537,10 +1537,10 @@ Battle.applyMyEffects = function () {
   // push the fresh enemy MERCY to the foe so their own-party bar updates immediately (both ends stay in sync)
   B.send({ t: 'mercysync', vals: B.oppTeam.map(o => o.mercy) });
   sendDokiState();   // if I'm facing PINK, tell the Pink player how full their DOKI is (and if a DATE is due)
-  // PROCEED streak (3 in a row, nobody down) unlocks SNOWGRAVE
+  // PROCEED streak (5 in a row, nobody down) unlocks SNOWGRAVE
   const anyDown = B.myTeam.some(m => m.downed);
   if (B.usedSnowgrave || anyDown) B.proceedCount = 0;
-  else if (usedProceed) B.proceedCount = Math.min(3, B.proceedCount + 1);
+  else if (usedProceed) B.proceedCount = Math.min(5, B.proceedCount + 1);
   else B.proceedCount = 0;
 };
 
@@ -1700,7 +1700,7 @@ Battle.renderChars = function (ctx) {
         const bw = 30, bx0 = x - bw / 2, by0 = gy + 38;
         ctx.fillStyle = '#3a3000'; ctx.fillRect(bx0, by0, bw, 2);
         ctx.fillStyle = canSpare(m) ? '#ffd000' : '#c8a000'; ctx.fillRect(bx0, by0, Math.round(bw * m.mercy / 100), 2);
-        drawText(ctx, 'main', canSpare(m) ? 'SPARE!' : m.mercy + '%', x, by0 + 3, { color: canSpare(m) ? '#ff0' : '#dd0', align: 'center', scale: 0.7 });
+        drawText(ctx, 'main', canSpare(m) ? 'SPARE!' : Math.round(m.mercy) + '%', x, by0 + 3, { color: canSpare(m) ? '#ff0' : '#dd0', align: 'center', scale: 0.7 });
       }
     });
   }
@@ -2567,9 +2567,13 @@ function drawPartyPanel(ctx, m, px, py, w, active) {
   drawText(ctx, 'main', m.def.shortName || m.def.name, px + 32, py + 10, { color: out ? '#666' : '#fff' });
   const barW = 82, barX = px + w - barW - 6, barY = py + 22;
   drawText(ctx, 'main', 'HP', barX - 22, py + 10, { color: out ? '#555' : '#c8c8c8' });
-  drawText(ctx, 'main', m.frozen ? 'FROZEN' : m.spared ? 'SPARED' : (m.hp + '/' + m.max), barX, py + 4, { color: m.frozen ? '#8cf' : out ? '#888' : '#fff' });
-  ctx.fillStyle = m.frozen ? '#12354d' : '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
-  if (!m.frozen) { ctx.fillStyle = out ? '#611' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6); }
+  // FROZEN only replaces the HP readout once the member is actually dead (like SPARED). A member who
+  // SURVIVED SNOWGRAVE is chilled (can't be healed) but still fighting — keep showing their HP.
+  const frostDead = m.frozen && (m.downed || m.hp <= 0);
+  drawText(ctx, 'main', frostDead ? 'FROZEN' : m.spared ? 'SPARED' : (Math.round(m.hp) + '/' + Math.round(m.max)), barX, py + 4,
+           { color: frostDead ? '#8cf' : out ? '#888' : m.frozen ? '#8cf' : '#fff' });
+  ctx.fillStyle = frostDead ? '#12354d' : '#3c0d0d'; ctx.fillRect(barX, barY, barW, 6);
+  if (!frostDead) { ctx.fillStyle = out ? '#611' : m.frozen ? '#5a9cc8' : m.def.color; ctx.fillRect(barX, barY, Math.max(0, Math.round(barW * m.hp / m.max)), 6); }
   if (isDarkner(m) && !out) {
     const maxL = m.def.maxLevel || 10, lvl = m.darkLvl || 0, maxed = lvl >= maxL;
     ctx.fillStyle = '#1a0a2a'; ctx.fillRect(barX, barY + 7, barW, 3);
@@ -2616,7 +2620,7 @@ Battle.renderHud = function (ctx) {
   });
 
   // shared TP bar + buffs + turn/timer
-  const dispTP = B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP;
+  const dispTP = Math.round(B.phase === 'select' ? Math.max(0, Math.min(100, B.myTP - (B.tpSpent || 0) + (B.tpSel || 0))) : B.myTP);
   ctx.fillStyle = '#3f0000'; ctx.fillRect(38, 70, 16, 190);
   const tpH = Math.round(190 * dispTP / 100);
   ctx.fillStyle = '#ff8000'; ctx.fillRect(38, 70 + 190 - tpH, 16, tpH);
@@ -2722,7 +2726,7 @@ Battle.renderTargetList = function (ctx, d) {
       // MERCY bar + exact % (always shown so you can track progress toward a spare)
       ctx.fillStyle = '#3a3000'; ctx.fillRect(infoX, d.y + 50, infoW, 6);
       ctx.fillStyle = canSpare(tm) ? '#ffd000' : '#c8a000'; ctx.fillRect(infoX, d.y + 50, Math.round(infoW * tm.mercy / 100), 6);
-      drawText(ctx, 'main', 'MERCY ' + tm.mercy + '%', infoX, d.y + 40, { color: '#ffd000' });
+      drawText(ctx, 'main', 'MERCY ' + Math.round(tm.mercy) + '%', infoX, d.y + 40, { color: '#ffd000' });
       // status + the exact spare CONDITION so the player knows what's needed
       const ready = canSpare(tm), status = ready ? 'SPARE READY!' : spareHint(tm.def);
       drawText(ctx, 'main', status, infoX, d.y + d.h - 16, { color: ready ? '#ff0' : (tm.def.spare || {}).never ? '#f66' : '#aa8' });
