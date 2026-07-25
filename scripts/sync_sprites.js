@@ -236,17 +236,42 @@ function pngDims(p) {
   return [b.readUInt32BE(16), b.readUInt32BE(20)];
 }
 
-/** A full-frame replacement for one frame, or null. */
-function newripFullFrame(name, frameIdx, declaredW, declaredH) {
+/**
+ * A better-than-the-export replacement for one frame, or null.
+ *
+ * Requiring BOTH dimensions to equal the declared frame threw away art that was
+ * correct on the axis that mattered. `spr_gerson_swing_down_telegraph` is
+ * 80x360 in NEW RIP against a declared 73x360, so the exact test rejected it
+ * and kept the export's 68x315 — leaving Gerson's swing telegraph 45px (12.5%)
+ * short on the axis the player reads to dodge.
+ *
+ * So: an exact match still wins outright. Otherwise take a candidate that is
+ * strictly closer to the declared frame on BOTH axes than the export is, never
+ * further on either. That can only reduce the missing extent, never introduce a
+ * new crop — and a candidate LARGER than declared on an axis is rejected,
+ * because that is a different asset (or padded), not a better crop of this one.
+ */
+function newripFullFrame(name, frameIdx, declaredW, declaredH, exportPath) {
   if (!declaredW || !declaredH) return null;
   const cands = newripIndex.get(`${name}_${frameIdx}.png`.toLowerCase()) || [];
+  let exp = null;
+  if (exportPath) { try { exp = pngDims(exportPath); } catch (e) { /* keep null */ } }
+
+  let best = null, bestMissing = Infinity;
   for (const c of cands) {
-    try {
-      const [w, h] = pngDims(c);
-      if (w === declaredW && h === declaredH) return c;
-    } catch (e) { /* unreadable candidate */ }
+    let w, h;
+    try { [w, h] = pngDims(c); } catch (e) { continue; }
+    if (w === declaredW && h === declaredH) return c;      // exact: done
+    if (!exp) continue;
+    if (w > declaredW || h > declaredH) continue;          // not a crop of this frame
+    const missing = (declaredW - w) + (declaredH - h);
+    const expMissing = (declaredW - exp[0]) + (declaredH - exp[1]);
+    // Strictly better overall and no worse on either axis.
+    if (missing < expMissing && w >= exp[0] && h >= exp[1] && missing < bestMissing) {
+      best = c; bestMissing = missing;
+    }
   }
-  return null;
+  return best;
 }
 
 // ── index the export dirs: chapter -> name -> [frame files] ────────────────
@@ -370,7 +395,7 @@ for (const [name, r] of [...resolved.entries()].sort()) {
       let trimmed = true;
       try { const [w, h] = pngDims(exportPath); trimmed = (w !== declared[0] || h !== declared[1]); } catch (e) {}
       if (trimmed) {
-        const full = newripFullFrame(name, f.idx, declared[0], declared[1]);
+        const full = newripFullFrame(name, f.idx, declared[0], declared[1], exportPath);
         if (full) { src = full; upgraded++; }
       }
     }

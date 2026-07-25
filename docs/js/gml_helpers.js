@@ -2621,6 +2621,35 @@
       const c = SURFACES.get(num(id));
       if (c) { c.width = Math.max(1, Math.ceil(num(w))); c.height = Math.max(1, Math.ceil(num(h))); }
     };
+    // surface_copy(dest, x, y, source) — blit one surface onto another, and
+    // surface_copy_part(dest, x, y, source, xs, ys, w, h) for a sub-rect.
+    // These REPLACE the destination pixels rather than compositing over them
+    // ('copy'), which is what GameMaker does and is the whole reason the call
+    // is used: a copy is how the game snapshots a surface before mutating it.
+    // Unimplemented it returned 0, so every such snapshot was silently empty.
+    const surfBlit = (dest, x, y, src, sx, sy, sw, sh) => {
+      const d = SURFACES.get(num(dest));
+      const s = SURFACES.get(num(src));
+      if (!d || !s) return 0;
+      // A zero-sized source rect makes drawImage throw; GameMaker draws nothing.
+      const w = sw === undefined ? s.width : Math.min(num(sw), s.width - num(sx || 0));
+      const h = sh === undefined ? s.height : Math.min(num(sh), s.height - num(sy || 0));
+      if (!(w > 0) || !(h > 0)) return 0;
+      const ctx = d.getContext('2d');
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'copy';
+      try {
+        ctx.drawImage(s, num(sx || 0), num(sy || 0), w, h, num(x), num(y), w, h);
+      } catch (e) { /* out-of-bounds rect: GameMaker draws nothing */ }
+      ctx.restore();
+      return 0;
+    };
+    global.surface_copy = (dest, x, y, src) => surfBlit(dest, x, y, src);
+    global.surface_copy_part = (dest, x, y, src, sx, sy, sw, sh) =>
+      surfBlit(dest, x, y, src, sx, sy, sw, sh);
+
     global.surface_set_target = id => {
       const c = SURFACES.get(num(id));
       if (!c) return false;
@@ -3535,6 +3564,37 @@
         '2,1': 'copy',              // (one, zero): overwrite
         '5,6': 'source-over',       // (src_alpha, inv_src_alpha): normal alpha
         '2,6': 'source-over',       // (one, inv_src_alpha): premultiplied normal
+
+        // The DEST-ALPHA family. Each is derived from GameMaker's blend
+        // equation, result = src*srcFactor + dst*dstFactor, with Ad = the
+        // destination's alpha:
+        //
+        //   (7,8) dest_alpha, inv_dest_alpha -> src*Ad + dst*(1-Ad)
+        //         Ad=1: src.  Ad=0: dst (transparent).  "Draw only where the
+        //         destination already has alpha" — Deltarune's mask-clipping
+        //         idiom in scr_draw_in_mask / scr_draw_in_box_begin, which
+        //         builds a mask in the alpha channel and then clips to it.
+        //         Left as source-over the mask did nothing at all and content
+        //         drew everywhere.
+        '7,8': 'source-atop',
+        //
+        //   (7,7) dest_alpha, dest_alpha -> (src + dst) * Ad
+        //         Additive, but clipped to the existing alpha. Used by
+        //         obj_roaringknight_boxsplitter_attack: it paints a slash into
+        //         a cleared surface, then tiles spr_knight_bullet_flow through
+        //         it. Canvas cannot express "additive AND clipped" in one op,
+        //         so we keep the CLIP: source-atop loses the additive glow,
+        //         while 'lighter' would flood the whole surface and destroy the
+        //         slash shape that is the effect's entire identity.
+        '7,7': 'source-atop',
+        //
+        //   (8,7) inv_dest_alpha, dest_alpha -> src*(1-Ad) + dst*Ad
+        //         Ad=1: dst is kept.  Ad=0: src shows. That is "draw BEHIND
+        //         what is already there", which Canvas has exactly.
+        //         obj_purplecontrols uses it to lay the darker purple field in
+        //         behind the lane grid it just drew — as source-over the field
+        //         painted OVER the grid and hid it.
+        '8,7': 'destination-over',
       };
       const op = MAP[key];
       if (!op && !MISSING_WARNED.has('bmext:' + key)) {

@@ -74,15 +74,8 @@
     };
   }
 
-  /** Run the engine forward deterministically, capturing at FRAMES. */
-  function stepTo(frame, from) {
-    const rt = global.activeGMLRuntime;
-    const ctx = canvas().getContext('2d');
-    for (let f = from; f < frame; f++) {
-      try { rt.step(); } catch (e) { /* recorded via the error log */ }
-      if (global.GML_STUDIO_TICK_TURN) { try { global.GML_STUDIO_TICK_TURN(); } catch (e) {} }
-    }
-    // Draw exactly as the studio does: clear, then the depth pipeline.
+  /** Clear to black and run the depth pipeline, exactly as the studio does. */
+  function drawFrame(rt, ctx) {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
@@ -90,6 +83,34 @@
     ctx.fillRect(0, 0, canvas().width, canvas().height);
     ctx.restore();
     try { rt.draw(ctx); } catch (e) {}
+  }
+
+  /**
+   * Run the engine forward deterministically, capturing at FRAMES.
+   *
+   * DRAW RUNS EVERY FRAME, and that is not a rendering nicety — it is required
+   * for correctness. GameMaker executes Draw once per step, and Deltarune
+   * CREATES OBJECTS FROM DRAW EVENTS: obj_gerson_green_chevron's Draw is what
+   * spawns obj_spearblocker, the shield every green-soul spear is then aimed at.
+   *
+   * This used to step N times and draw once at the end, which starved every
+   * such object. Measured on Gerson pattern 20: the shield never appeared, so
+   * all 18 `scr_spearshot(..., special 14, ...)` rows found `i_ex(obj_spearblocker)`
+   * false and fired into nothing — 0 spears. Drawing each frame gives 36. The
+   * engine was correct the whole time; the observer was not, and it had been
+   * reporting dozens of green patterns as identical because the only thing it
+   * ever let them draw was the furniture.
+   */
+  function stepTo(frame, from) {
+    const rt = global.activeGMLRuntime;
+    const ctx = canvas().getContext('2d');
+    for (let f = from; f < frame; f++) {
+      try { rt.step(); } catch (e) { /* recorded via the error log */ }
+      if (global.GML_STUDIO_TICK_TURN) { try { global.GML_STUDIO_TICK_TURN(); } catch (e) {} }
+      drawFrame(rt, ctx);
+    }
+    // Redraw the frame being measured so the captured pixels are frame `frame`.
+    drawFrame(rt, ctx);
     return frame;
   }
 

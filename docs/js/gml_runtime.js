@@ -509,7 +509,14 @@
       if (typeof objType === 'object') return objType.destroyed ? [] : [objType];
       const name = String(objType).replace(/^["']|["']$/g, '');
       if (name === 'runtime.soul' || name === 'obj_soul' || name === 'obj_mainchara' || name === 'obj_heart' || name === 'obj_heart_follower') {
-        return [this.soul];
+        // Same rule as obj_growtangle below: REAL instances win, the soul only
+        // backstops. Returning [this.soul] unconditionally masked genuine
+        // objects that share these names — obj_heart_follower is a real object
+        // the Knight's Stars attack spawns, and every query for it was being
+        // answered with the soul instead.
+        const live = this.instances.filter(i => !i.destroyed && i.object_name === name);
+        if (live.length) return live;
+        return (this.soul && !this.soul.destroyed) ? [this.soul] : [];
       }
       if (name === 'runtime.growtangle' || name === 'obj_growtangle') {
         // The box is a REAL obj_growtangle instance now (created by the boss's
@@ -1095,8 +1102,8 @@
   function stringsetloc(str, locId) { return str; }
   function scr_84_get_sprite(key) { return key; } // Return the key as sprite name stub
   function scr_84_get_lang_string(id) { return ''; }
-  function i_ex(obj) { // Shorthand for instance_exists
-    return global.activeGMLRuntime ? global.activeGMLRuntime.instances.some(i => !i.destroyed && i.object_name === String(obj)) : false;
+  function i_ex(obj) { // Shorthand for instance_exists — must answer identically
+    return global.instance_exists ? !!global.instance_exists(obj) : false;
   }
 
   function draw_surface_part_ext(surf, left, top, width, height, x, y, xscale, yscale, color, alpha) {
@@ -1755,8 +1762,26 @@
   global.instance_destroy = function(inst) {
     if (global.activeGMLRuntime) global.activeGMLRuntime.destroyInstance(inst || this);
   };
+  /**
+   * EXISTENCE MUST AGREE WITH WHAT `with` AND PROPERTY READS SEE.
+   *
+   * This scanned `instances` by name directly, while getInstances() resolves
+   * aliases — so the soul, which IS a real obj_heart instance but is kept out
+   * of the stepped instance list (the studio drives its movement itself),
+   * answered `obj_heart.x` correctly and `instance_exists(obj_heart)` FALSE.
+   *
+   * The corpus checks that 392 times (172 `i_ex(obj_heart)` + 220
+   * `instance_exists(obj_heart)`), so every one of those guarded blocks was
+   * being skipped on an engine that could see the heart perfectly well
+   * everywhere else. This is the identical trap Round 8 fixed for
+   * obj_growtangle, where an alias that lied about existence silently skipped
+   * every boss's box creation.
+   */
   global.instance_exists = function(objType) {
-    return global.activeGMLRuntime ? global.activeGMLRuntime.instances.some(i => !i.destroyed && i.object_name === objType) : false;
+    const rt = global.activeGMLRuntime;
+    if (!rt) return false;
+    if (objType && typeof objType === 'object') return !objType.destroyed;
+    return rt.getInstances(objType).length > 0;
   };
 
   // Math library

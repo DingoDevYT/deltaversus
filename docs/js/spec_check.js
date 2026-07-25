@@ -29,8 +29,19 @@
  *   pos       {obj, atFrame, x?, y?, tol?}    position of the first live instance
  *   ivar      {obj, atFrame, name, eq|min|max, tol?}   an instance variable
  *   sprite    {name, byFrame}                 sprite drawn at least once
+ *   draw      {name, atFrame, x?,y?,xscale?,yscale?,angle?,alpha?,
+ *              minCalls?, maxCalls?, tol?}    the DRAW CALL's parameters
  *   box       {x?, y?, w?, h?, tol?}          battle box geometry, best frame
  *   turntimer {eq|min|max, tol?}              turn length the boss sets
+ *
+ * `draw` is the one that makes VISUAL correctness checkable without reference
+ * footage, and it is the point of this file. The source does not merely say
+ * that a sprite gets drawn — it says where, at what scale, at what rotation and
+ * at what alpha. `draw_sprite_ext(spr_x, i, 320, 240, 2, 2, 0, c_white, 1)` is
+ * a complete visual assertion already written down. Checking only "was it
+ * drawn" (the `sprite` kind) throws away almost all of that, and a sprite drawn
+ * at half scale, mirrored, or 40px left is exactly the class of bug that
+ * survives every other oracle here.
  *
  * `pos` and `count` sample the FIRST live instance in creation order, which is
  * stable because the runtime keeps creation ids.
@@ -48,7 +59,34 @@
   // ── sprite draw census ────────────────────────────────────────────────────
   // Same hook the flight recorder uses. Installed once; `active` gates it so
   // it costs nothing between runs.
-  const census = { active: false, drawn: new Set(), spawned: new Set() };
+  const census = { active: false, drawn: new Set(), spawned: new Set(), draws: [] };
+
+  /** One draw call, normalised. `draws` is cleared per sampled frame. */
+  function record(spr, x, y, xs, ys, rot, alpha, via, destSize) {
+    // A sprite reference may be the raw integer the compiler assigned rather
+    // than a name (`knight_sprite = 664`, `pinkportrait = 982`). Resolving is
+    // not optional: dropping non-strings would silently omit the Knight's body
+    // during the roar and every dating-minigame portrait from the census, i.e.
+    // exactly the draws most worth checking.
+    let name = spr;
+    if (typeof name === 'number') {
+      const rt = global.activeGMLRuntime;
+      const tbl = global.GML_SPRITE_INDICES && global.GML_SPRITE_INDICES[(rt && rt.$chapter) || 'ch3'];
+      if (tbl && tbl[name]) name = tbl[name];
+    }
+    if (!name || typeof name !== 'string') return;
+    census.drawn.add(name);
+    // A missing optional argument means the GameMaker default, not NaN. Guard
+    // every field: one NaN silently poisons a group key and reads as a bug.
+    const n = (v, d) => (v === undefined || v === null || !isFinite(+v) ? d : +v);
+    census.draws.push({
+      spr: name, x: n(x, 0), y: n(y, 0),
+      xs: n(xs, 1), ys: n(ys, 1),
+      rot: n(rot, 0), alpha: n(alpha, 1),
+      via, destSize: !!destSize,
+    });
+  }
+
   let hooked = false;
   function hookDraws() {
     if (hooked) return;
@@ -60,6 +98,63 @@
       if (census.active && typeof spr === 'string') census.drawn.add(spr);
       return orig(spr, f);
     };
+
+    // Every sprite draw, with its parameters. Wrapping the natives catches
+    // explicit `draw_sprite_*` calls; wrapping drawSelf catches the automatic
+    // per-instance draw, which is how most bullets get on screen. Both funnel
+    // into one record so an assertion does not have to know which route the
+    // object took.
+    // These do NOT share a signature, and assuming they do is how a recorder
+    // invents bugs: `draw_sprite_part(spr, subimg, left, top, w, h, x, y)`
+    // read as draw_sprite_ext yields the SOURCE RECT as the position and a NaN
+    // rotation. Each is destructured as the manual defines it, and the
+    // stretched family reports its destination size as an effective scale so a
+    // spec can still talk about how big the thing landed.
+    const SIG = {
+      // (spr, sub, x, y)
+      draw_sprite: a => ({ x: a[2], y: a[3], xs: 1, ys: 1, rot: 0, al: 1 }),
+      // (spr, sub, x, y, xscale, yscale, rot, colour, alpha)
+      draw_sprite_ext: a => ({ x: a[2], y: a[3], xs: a[4], ys: a[5], rot: a[6], al: a[8] }),
+      // (spr, sub, left, top, w, h, x, y, xscale, yscale, rot, c1..c4, alpha)
+      draw_sprite_general: a => ({ x: a[6], y: a[7], xs: a[8], ys: a[9], rot: a[10], al: a[15] }),
+      // (spr, sub, left, top, w, h, x, y)
+      draw_sprite_part: a => ({ x: a[6], y: a[7], xs: 1, ys: 1, rot: 0, al: 1 }),
+      // (spr, sub, left, top, w, h, x, y, xscale, yscale, colour, alpha)
+      draw_sprite_part_ext: a => ({ x: a[6], y: a[7], xs: a[8], ys: a[9], rot: 0, al: a[11] }),
+      // (spr, sub, x, y, w, h) — w/h are a DESTINATION SIZE, not a scale
+      draw_sprite_stretched: a => ({ x: a[2], y: a[3], xs: a[4], ys: a[5], rot: 0, al: 1, dest: true }),
+      // (spr, sub, x, y, w, h, colour, alpha)
+      draw_sprite_stretched_ext: a => ({ x: a[2], y: a[3], xs: a[4], ys: a[5], rot: 0, al: a[7], dest: true }),
+      // (spr, sub, x, y)
+      draw_sprite_tiled: a => ({ x: a[2], y: a[3], xs: 1, ys: 1, rot: 0, al: 1 }),
+      // (spr, sub, x, y, xscale, yscale, colour, alpha)
+      draw_sprite_tiled_ext: a => ({ x: a[2], y: a[3], xs: a[4], ys: a[5], rot: 0, al: a[7] }),
+    };
+    for (const fn of Object.keys(SIG)) {
+      const orig = global[fn];
+      if (typeof orig !== 'function') continue;
+      const pick = SIG[fn];
+      global[fn] = function () {
+        if (census.active) {
+          const p = pick(arguments);
+          record(arguments[0], p.x, p.y, p.xs, p.ys, p.rot, p.al, fn, p.dest);
+        }
+        return orig.apply(this, arguments);
+      };
+    }
+    const Hh = global.GML_HELPERS && global.GML_HELPERS.for(global.activeGMLRuntime);
+    if (Hh && typeof Hh.drawSelf === 'function') {
+      const origSelf = Hh.drawSelf.bind(Hh);
+      // Patch on the shared helper namespace so it survives runtime swaps.
+      global.GML_HELPERS.$specDrawSelf = origSelf;
+      Hh.drawSelf = function (inst) {
+        if (census.active && inst) {
+          record(inst.sprite_index, inst.x, inst.y, inst.image_xscale,
+            inst.image_yscale, inst.image_angle, inst.image_alpha, 'drawSelf');
+        }
+        return origSelf.apply(this, arguments);
+      };
+    }
 
     // Spawns MUST be recorded as they happen, not inferred from which
     // instances are alive at the sampled frames. Deltarune's VFX are mostly
@@ -104,7 +199,8 @@
 
   function fmt(a) {
     const p = [];
-    for (const k of ['obj', 'name', 'atFrame', 'byFrame', 'x', 'y', 'w', 'h', 'eq', 'min', 'max', 'tol']) {
+    for (const k of ['obj', 'name', 'atFrame', 'byFrame', 'x', 'y', 'w', 'h',
+      'xscale', 'yscale', 'angle', 'alpha', 'minCalls', 'maxCalls', 'eq', 'min', 'max', 'tol']) {
       if (a[k] != null) p.push(k + '=' + a[k]);
     }
     return a.kind + '(' + p.join(' ') + ')';
@@ -144,6 +240,39 @@
     // placeholder; settle before measuring, or we measure loading.
     await new Promise(r => setTimeout(r, 350));
 
+    /**
+     * Deterministic stepping, mirroring VISUAL_PROBE.stepTo exactly (never
+     * rAF — it throttles to ~2fps off-foreground and every timing check would
+     * read a half-initialised frame). Re-implemented here only so the draw log
+     * can be cleared immediately before draw(), which is what makes the
+     * recorded draw calls belong to exactly one frame.
+     */
+    function stepToCapturing(frame, from) {
+      const rt = global.activeGMLRuntime;
+      const cv = document.getElementById('canvas');
+      const ctx = cv.getContext('2d');
+      const paint = () => {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.restore();
+        try { rt.draw(ctx); } catch (e) {}
+      };
+      for (let f = from; f < frame; f++) {
+        try { rt.step(); } catch (e) { /* surfaced via the error log */ }
+        if (global.GML_STUDIO_TICK_TURN) { try { global.GML_STUDIO_TICK_TURN(); } catch (e) {} }
+        // Draw EVERY frame — Deltarune spawns objects from Draw events (the
+        // green-soul shield is created in a chevron's Draw), so skipping them
+        // silently removes whole attacks. See visual_probe.stepTo.
+        paint();
+      }
+      census.draws = [];                 // record only the sampled frame's draws
+      paint();
+      return frame;
+    }
+
     const marks = framesNeeded(spec);
     // Snapshot state at each frame of interest, then evaluate — assertions at
     // different frames must not each re-run the attack.
@@ -154,9 +283,11 @@
     let boxBest = null, at = 0;
     const turntimerStart = Number(global.turntimer);
 
+    const drawsAt = {};
     for (const f of marks) {
-      at = probe.stepTo(f, at);
+      at = stepToCapturing(f, at);
       const rt = global.activeGMLRuntime;
+      drawsAt[f] = census.draws.slice();
       const alive = rt.instances.filter(i => !i.destroyed);
       for (const i of alive) seenLive.add(i.object_name);
       const byName = {};
@@ -221,6 +352,39 @@
           ok = census.drawn.has(a.name);
           got = ok ? 'drawn' : 'never drawn';
           break;
+        case 'draw': {
+          // Visual fidelity, straight from the source's own draw call.
+          const calls = (drawsAt[frame] || []).filter(d => d.spr === a.name);
+          if (!calls.length) { ok = false; got = 'not drawn on frame ' + frame; break; }
+          if (a.minCalls != null && calls.length < a.minCalls) {
+            ok = false; got = calls.length + ' calls (want >=' + a.minCalls + ')'; break;
+          }
+          if (a.maxCalls != null && calls.length > a.maxCalls) {
+            ok = false; got = calls.length + ' calls (want <=' + a.maxCalls + ')'; break;
+          }
+          // Any ONE of the calls satisfying the parameters is a pass: an attack
+          // legitimately draws the same sprite many times (tiles, trails, a
+          // ring of bullets), and requiring all of them to match would only be
+          // assertable for single-draw sprites.
+          const t = a.tol == null ? 2 : a.tol;
+          const hit = calls.find(d =>
+            near(d.x, a.x, t) && near(d.y, a.y, t) &&
+            near(d.xs, a.xscale, a.tol == null ? 0.01 : a.tol) &&
+            near(d.ys, a.yscale, a.tol == null ? 0.01 : a.tol) &&
+            near(d.rot, a.angle, a.tol == null ? 1 : a.tol) &&
+            near(d.alpha, a.alpha, a.tol == null ? 0.02 : a.tol));
+          ok = !!hit;
+          if (!ok) {
+            const c = calls[0];
+            got = calls.length + ' call(s), e.g. ' +
+              Math.round(c.x) + ',' + Math.round(c.y) +
+              ' scale ' + (+c.xs.toFixed(2)) + ',' + (+c.ys.toFixed(2)) +
+              ' rot ' + Math.round(c.rot) + ' alpha ' + (+c.alpha.toFixed(2));
+          } else {
+            got = calls.length + ' call(s), matched';
+          }
+          break;
+        }
         case 'box':
           if (!boxBest) { ok = false; got = 'no box'; break; }
           ok = near(boxBest.x, a.x, a.tol) && near(boxBest.y, a.y, a.tol) &&
@@ -277,5 +441,34 @@
 
   function load(specs) { SPECS = specs || []; return SPECS.length + ' specs loaded'; }
 
-  global.SPEC_CHECK = { load, run, runAll, get specs() { return SPECS; } };
+  /**
+   * What did this attack ACTUALLY draw on a given frame?
+   *
+   * The counterpart to writing a spec: read the GML to learn what should be
+   * drawn, then call this to see what was. Groups identical draws so a ring of
+   * 20 bullets reads as one line with a count rather than 20 rows.
+   *
+   *   await SPEC_CHECK.draws('knight_type98', 60)
+   */
+  async function draws(id, frame) {
+    const spec = { id, assertions: [{ kind: 'draw', name: ' none', atFrame: frame || 60, why: '', src: '' }] };
+    const had = SPECS.find(s => s.id === id);
+    if (!had) SPECS.push(spec); else SPECS.splice(SPECS.indexOf(had), 1, spec);
+    await run(id);
+    if (!had) SPECS.splice(SPECS.indexOf(spec), 1); else SPECS.splice(SPECS.indexOf(spec), 1, had);
+    const groups = new Map();
+    for (const d of census.draws) {
+      const k = [d.spr, Math.round(d.x), Math.round(d.y), +d.xs.toFixed(2),
+        +d.ys.toFixed(2), Math.round(d.rot), +d.alpha.toFixed(2)].join('|');
+      groups.set(k, (groups.get(k) || 0) + 1);
+    }
+    return [...groups.entries()]
+      .map(([k, n]) => {
+        const [spr, x, y, xs, ys, rot, alpha] = k.split('|');
+        return { spr, x: +x, y: +y, xscale: +xs, yscale: +ys, angle: +rot, alpha: +alpha, calls: n };
+      })
+      .sort((a, b) => b.calls - a.calls);
+  }
+
+  global.SPEC_CHECK = { load, run, runAll, draws, get specs() { return SPECS; } };
 })(window);
