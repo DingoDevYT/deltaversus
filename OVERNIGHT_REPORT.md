@@ -265,7 +265,18 @@ Spec suite progression through the night, each step a real fix:
 | + parent-chain fix | 1635 | 211 | 49 |
 | + Knight double-spawn + sepalpha | 1653 | 193 | 49 |
 | + turntimer peak | 1666 | 180 | 52 |
-| + Jevil turn block | **1670** | **176** | **57** |
+| + Jevil turn block | 1670 | 176 | 57 |
+| + **value snapshots** (measured per boss) | — | — | see below |
+
+The value-snapshot fix was the largest single win. Per boss, before → after:
+
+| boss | attacks | clean | failures |
+|---|---|---|---|
+| Knight | 15 | 2 → **6** | 37 → **10** |
+| Spamton NEO | 10 | 4 → **6** | 9 → **5** |
+| Jevil | 18 | 1 → **12** | 28 → **7** |
+| Pink | 10 | 3 → **9** | 15 → **1** |
+| **non-Gerson total** | **53** | **15 → 33** | **89 → 23** |
 
 Per-kind, current: `spawns` **394/394**, `count` **148/148**, `absent`
 **122/122**, `sprite` 110/111, `box` 47/50, `draw` 164/183, `ivar` 608/734,
@@ -321,6 +332,16 @@ previous baseline measured a broken observation — do not compare against it.
 > ```
 
 ---
+
+## Run the suite in BATCHES, not one sweep
+
+`SPEC_CHECK.runAll('<boss>')` per boss, not a single 142-attack sweep. The suite
+got much slower during this session, and that is a **consequence of the fixes,
+not a regression**: attacks used to terminate early because their turn timers
+were wrong (the studio's 90-frame floor, or 240 where the source pins 999999).
+Now they run their real length — NeoFinale's turn is 1200 frames — so
+SneoFaceAttack alone takes ~60s. A single sweep looks hung when it is merely
+simulating what the game actually does.
 
 ## A third checker bug, found the same way
 
