@@ -1,0 +1,189 @@
+# Overnight fidelity pass — what happened
+
+**Branch:** `studio-fidelity-overnight` (branched from `main` at `91969ca`).
+`main` is untouched. Restore point is `62683237`; every change since is a
+separate commit you can revert individually.
+
+**Server:** `node scripts/serve.js` → <http://localhost:8399/gml_studio.html>
+
+---
+
+## The headline
+
+**The measurement harness was lying, and it had been lying for several rounds.**
+
+The night's plan was "diff what the GML promises against what the engine does."
+The first three things that diff found were defects in the *diff*, not the
+engine. That matters more than any individual fix, because every "145/147 clean"
+in the old notes was produced by an observer that could not see whole categories
+of behaviour.
+
+### 1. The probe was starving Draw events
+
+`VISUAL_PROBE.stepTo()` ran N steps and drew **once**, at the end. GameMaker runs
+Draw every frame — and **Deltarune creates objects from Draw events**.
+`obj_gerson_green_chevron`'s Draw is what spawns `obj_spearblocker`, the shield
+that every green-soul spear is aimed at.
+
+So under the probe the shield never existed, all 18 of Gerson pattern 20's
+`scr_spearshot(..., special 14, ...)` rows found `i_ex(obj_spearblocker)` false,
+and the attack fired into nothing.
+
+| | before | after |
+|---|---|---|
+| Gerson green20 spears | **0** | **36** |
+| green21 | 0 | 14 |
+| green50 | 0 | 24 |
+
+This is also why the baseline had dozens of green patterns with byte-identical
+ink profiles — I nearly filed that as "the `attackpattern` selector isn't
+differentiating," which would have been a hunt through correct code. The only
+thing the probe ever let those attacks draw was the furniture.
+
+### 2. Measurements were machine-speed dependent
+
+Both probes wait ~350ms after launching for sprite bitmaps to decode. The
+studio's live rAF loop kept running through that wait, so "frame 8" meant "frame
+8 plus however many frames this machine got through." Most visibly
+`global.turntimer` read ~11 short (350ms at 30fps), failing **32 turn-length
+assertions that were all correct**.
+
+### 3. Pausing had to stop drawing too
+
+Deltarune mutates state in Draw — `obj_dbullet_vert` fades itself in with
+`image_alpha += 0.1` from its Draw. A paused-but-still-drawing loop kept
+advancing the game ~20 free Draw passes during the settle: Jevil's type 25 spades
+read `image_alpha` **3.8** where Create sets 0.
+
+> The lesson is the one this project keeps relearning in new clothes: **a check
+> that is wrong in the same direction as the thing it checks reports success.**
+
+---
+
+## Real engine bugs found and fixed
+
+All verified against source, all with the full battery green afterwards.
+
+1. **`instance_exists()` disagreed with `with`, at 392 call sites.**
+   The soul *is* a real `obj_heart` instance but is kept out of the stepped list,
+   and `getInstances()` aliased it while `instance_exists()` scanned `instances`
+   by name. `obj_heart.x` read fine; `instance_exists(obj_heart)` was **false** —
+   skipping every one of 172 `i_ex(obj_heart)` + 220 `instance_exists(obj_heart)`
+   guarded blocks in the corpus. Identical to the trap Round 8 fixed for
+   `obj_growtangle`. The soul aliases were also masking **real** objects:
+   `obj_heart_follower` is an object the Knight's Stars attack spawns.
+
+2. **Blend factors, the dest-alpha family** — derived from
+   `result = src*srcFactor + dst*dstFactor`:
+   - `(7,8)` → `source-atop`. Deltarune's mask-clipping idiom
+     (`scr_draw_in_mask`, `scr_draw_in_box_begin`); as `source-over` the mask did
+     nothing and content drew everywhere.
+   - `(7,7)` → `source-atop`. `obj_roaringknight_boxsplitter` tiles a flow
+     texture through a slash shape. Keeping the clip loses the additive glow;
+     `lighter` would flood the surface and destroy the shape.
+   - `(8,7)` → `destination-over`. `obj_purplecontrols` lays its purple field in
+     **behind** the lane grid; as `source-over` it painted over and hid it.
+
+3. **`surface_copy` / `surface_copy_part`** implemented — 15 call sites that had
+   been returning 0, so every surface snapshot was empty.
+
+4. **`sync_sprites` rejected art that was correct on the axis that mattered.**
+   Requiring *both* dimensions to equal the declared frame kept the export's
+   68×315 `spr_gerson_swing_down_telegraph` over NEW RIP's 80×360 — leaving
+   Gerson's swing telegraph **45px (12.5%) short** on the axis you read to dodge.
+
+---
+
+## New tooling
+
+- **`docs/js/spec_check.js`** — the oracle. Diffs GML promises against engine
+  behaviour as numbers, per attack. Every assertion cites the `file.gml:line` it
+  came from, so a failure can be argued with. Kinds: `spawns` / `absent` /
+  `count` / `pos` / `ivar` / `sprite` / **`draw`** / `box` / `turntimer`.
+- **The `draw` kind is the one you asked for.** You were right that the GML is
+  the visual oracle: it states not just *that* a sprite is drawn but *where, how
+  big, how rotated, how transparent*. `draw` asserts those directly, so "visually
+  correct" is checkable from source with no reference footage.
+  `await SPEC_CHECK.draws('<id>', <frame>)` in the console dumps what an attack
+  actually drew on a frame.
+- **`docs/SPEC_AUTHORING_BRIEF.md`** — the contract specs are written to.
+- **`scripts/build_attack_specs.js`** — merges spec workflow output, validates
+  every assertion against the vocabulary, drops vacuous ones loudly.
+- **`scripts/audit_trimmed_sprites.js`** — quantifies the trimmed-PNG gap.
+
+**Current spec suite: 621/768 assertions passing across 59 attacks.**
+
+---
+
+## Diagnosed precisely, deliberately NOT fixed
+
+I stopped short on these rather than half-land them at the end of a long session.
+Each is pinned to a line.
+
+1. **Only the Knight has a `turnBlock`.** In `scripts/gen_attacks.js` the boss
+   table gives Knight both a `boxBlock` and a `turnBlock`; Spamton NEO, Gerson,
+   Jevil and Pink have `boxBlock` only. That single omission is why **every
+   Spamton NEO attack reads turntimer 120** against expected
+   750/330/300/1200/430/260/90, and why four Jevil attacks fall back to the
+   90-frame floor.
+   *Why I didn't just add them:* Jevil's `global.turntimer = 240`
+   (`obj_joker_Step_0.gml:267`) sits inside a block that also runs
+   `event_user(5)` and `rr = choose(...)` — his own attack chooser. Replaying it
+   wholesale would override the roster's pick, the exact trap the notes record
+   for the Knight's `event_user(0)`. It needs a narrow anchor and verification.
+
+2. **The battle box is misplaced for Jevil and Gerson.** Canonical position is
+   `view+320, view+170` in every chapter (verified at ch1/ch4 growtangle creation
+   sites). The Knight's box is correct at (320,169). Jevil's measures **y=240**;
+   Gerson's controllers sit **60px off in x** (`anchor_x` 260 vs 320). Jevil's
+   own GML creates it correctly at `obj_joker_Step_0.gml:256-257`, so the block
+   is not being replayed.
+
+3. **Centre-origin trimmed sprites are drawn half-a-trim off.**
+   `gml_asset_db.drawSprite` ends in `ctx.drawImage(img, -ox, -oy)`, anchoring a
+   *trimmed* bitmap's top-left on the *full-frame* origin. `spr_donut_bullet` is
+   declared 48×50, origin (24,25) — the exact centre — and ships as a complete
+   24×25 donut, so it renders a **full half-sprite up-left**. **277 shipped
+   frames** have a centre origin and are trimmed.
+   *Why I didn't fix it:* `maskGeom` in `gml_helpers.js` uses the same declared
+   origin, so draw and collision currently **agree with each other** while both
+   being offset. Changing the draw alone desynchronises them — both must move
+   together, then be proven against the full baseline.
+
+4. **Knight types 102/107/108** pin `global.turntimer = 999999` inside the
+   controller branch (not the boss ladder); engine reads 240.
+
+---
+
+## Measured state
+
+| Check | Result |
+|---|---|
+| Semantics | **34/34** |
+| Compile | **154/154** (0 GML parse, 0 JS syntax) |
+| Visual probe | **146/147 clean** (was 145) |
+| Spec suite | 621/768 assertions |
+| Native call-site coverage | 99.27% |
+
+The single visual flag is `pink_type210`, which destroys its own battle box on
+purpose. Jevil's BYE BYE stopped flagging once the observer was fixed.
+
+`docs/js/visual_baseline.json` was **regenerated** after the observer fixes. The
+previous baseline measured a broken observation — do not compare against it.
+
+---
+
+## What still needs your eyes
+
+Nothing here is verifiable from source alone:
+
+- **Fonts are genuinely absent from the export** — no `fonts.tsv` in any REFDATA
+  chapter, no font directory in any EXPORT chapter. Text renders and the
+  typewriter works, but glyph metrics are a substitute face. This cannot be
+  fixed without font data.
+- **`pink_date3` reaches 100% ink at frame 180** — a full-screen wash. Could be a
+  correct scripted transition; I could not tell from source.
+- **`knight_type107` (Roaring) drops to 0.15% ink at frame 90** then 99.38% at
+  180. Plausibly the documented build-up-then-flood, but worth one look.
+- **Two chevrons and two shields** spawn per Gerson green attack where I'd expect
+  one each. May be correct (the pattern re-arms), may be a double-replay.
