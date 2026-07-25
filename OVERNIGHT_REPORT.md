@@ -306,3 +306,8 @@ Nothing here is verifiable from source alone:
   180. Plausibly the documented build-up-then-flood, but worth one look.
 - **Two chevrons and two shields** spawn per Gerson green attack where I'd expect
   one each. May be correct (the pattern re-arms), may be a double-replay.
+- **`pink_date1` ink dropped from ~52% to ~26%** after the parent-chain fix.
+  The date still renders correctly (portrait, dialogue, HP hearts, timer bar —
+  verified by eye earlier), and the likely cause is masking finally clipping the
+  backdrop instead of letting it cover the frame. But it is a large change and I
+  could not confirm from source which is right, so give it one look.
