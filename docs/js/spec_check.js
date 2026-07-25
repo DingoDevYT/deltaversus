@@ -299,6 +299,23 @@
     // controller pins raise further.
     let turntimerPeak = Number(global.turntimer) || 0;
 
+    // WHICH INSTANCE VARIABLES DOES THIS SPEC READ?
+    //
+    // Snapshots must capture VALUES, not instance references. Storing the live
+    // objects and reading them after the stepping loop meant every `ivar` and
+    // `pos` assertion was evaluated against the instance's state at the LAST
+    // sampled frame, not its own. Jevil's obj_suitbomb asserted at frame 2 read
+    // 250 — where the bomb had landed by frame 60 — instead of the -60 it
+    // genuinely holds at frame 2, and the engine was right the whole time. Same
+    // cause behind the Knight's local_turntimer reading ~60 low and the
+    // image_alpha values above 1.
+    const varsPerObj = {};
+    for (const a of spec.assertions || []) {
+      if (a.kind === 'ivar' && a.obj && a.name) {
+        (varsPerObj[a.obj] = varsPerObj[a.obj] || new Set()).add(a.name);
+      }
+    }
+
     const drawsAt = {};
     for (const f of marks) {
       at = stepToCapturing(f, at);
@@ -307,7 +324,18 @@
       const alive = rt.instances.filter(i => !i.destroyed);
       for (const i of alive) seenLive.add(i.object_name);
       const byName = {};
-      for (const i of alive) (byName[i.object_name] = byName[i.object_name] || []).push(i);
+      for (const i of alive) {
+        const nm = i.object_name;
+        if (!byName[nm]) byName[nm] = { n: 0, x: null, y: null, vars: {} };
+        const rec = byName[nm];
+        rec.n++;
+        if (rec.n === 1) {
+          // First live instance in creation order — the one `pos`/`ivar` mean.
+          rec.x = i.x; rec.y = i.y;
+          const want = varsPerObj[nm];
+          if (want) for (const v of want) rec.vars[v] = i[v];
+        }
+      }
       snap[f] = byName;
       // RAW max, with no "+f already counted down" compensation. That
       // compensation assumed the clock had decremented every frame since zero,
@@ -333,7 +361,8 @@
       let ok = true, got = '';
       const frame = a.atFrame != null ? a.atFrame : a.byFrame;
       const at2 = snap[frame] || {};
-      const list = a.obj ? (at2[a.obj] || []) : [];
+      const rec = a.obj ? at2[a.obj] : null;      // {n, x, y, vars} or undefined
+      const liveN = rec ? rec.n : 0;
 
       switch (a.kind) {
         case 'spawns': {
@@ -343,7 +372,7 @@
           // that outlive the sample — so a min is treated as satisfied by the
           // spawn record when nothing is left alive.
           const everSeen = ever(a.obj);
-          const n = list.length;
+          const n = liveN;
           ok = everSeen;
           if (a.max != null && n > a.max) ok = false;
           got = 'ever=' + everSeen + ' live=' + n;
@@ -354,20 +383,18 @@
           got = 'ever=' + ever(a.obj);
           break;
         case 'count':
-          ok = (a.min == null || list.length >= a.min) && (a.max == null || list.length <= a.max);
-          got = String(list.length);
+          ok = (a.min == null || liveN >= a.min) && (a.max == null || liveN <= a.max);
+          got = String(liveN);
           break;
         case 'pos': {
-          const i0 = list[0];
-          if (!i0) { ok = false; got = 'no instance'; break; }
-          ok = near(i0.x, a.x, a.tol) && near(i0.y, a.y, a.tol);
-          got = Math.round(i0.x) + ',' + Math.round(i0.y);
+          if (!rec) { ok = false; got = 'no instance'; break; }
+          ok = near(rec.x, a.x, a.tol) && near(rec.y, a.y, a.tol);
+          got = Math.round(rec.x) + ',' + Math.round(rec.y);
           break;
         }
         case 'ivar': {
-          const i0 = list[0];
-          if (!i0) { ok = false; got = 'no instance'; break; }
-          const v = i0[a.name];
+          if (!rec) { ok = false; got = 'no instance'; break; }
+          const v = rec.vars[a.name];
           got = String(v);
           if (a.eq != null) ok = near(v, a.eq, a.tol == null ? 0.001 : a.tol);
           if (a.min != null) ok = ok && Number(v) >= a.min;
