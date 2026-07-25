@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DELTAVERSUS — GML Automated Multi-Script Translator Studio</title>
+<title>DELTAVERSUS — GML Translator Studio</title>
 <style>
   :root {
     --bg: #090a10;
@@ -195,6 +195,24 @@
   }
   .hud-overlay b { color: var(--accent); }
 
+  /* Stacked so the sprite and engine readouts don't overlap each other. */
+  .status-readouts {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    pointer-events: none;
+  }
+  .sprite-status {
+    font-size: 11px;
+    color: var(--dim);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    text-align: right;
+  }
+
   .output-code {
     background: var(--code-bg);
     color: #f8f8f2;
@@ -206,35 +224,55 @@
     flex: 1;
   }
   .error-log {
-    background: #2a0808;
+    background: #1a0808;
     color: #ff6b6b;
     padding: 8px 12px;
     font-size: 11px;
     font-family: monospace;
     border-top: 1px solid #4a1515;
-    display: none;
+    max-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
   }
+  .error-log:empty { display: none; }
+  .volwrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--dim);
+    font-size: 14px;
+    user-select: none;
+  }
+  .volwrap input { width: 90px; accent-color: #ffd93b; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>DELTAVERSUS <span class="tag">Multi-Script GML Translator Studio</span></h1>
+  <h1>DELTAVERSUS <span class="tag">GML Translator Studio v2</span></h1>
   <div class="controls-bar">
     <select id="presetSelect">
       <option value="">-- Load GML Object Preset --</option>
-      <option value="knight_star">The Knight — obj_knight_pointing_star</option>
-      <option value="knight_tunnel">The Knight — obj_knight_tunnel_slasher_2_revised</option>
-      <option value="gerson_squish">Gerson — obj_gerson_squishes_box</option>
-      <option value="sneo_wall">Spamton NEO — obj_sneo_wall_controller_new</option>
+      <option value="knight_star">Knight — Pointing Star (Stars Attack)</option>
+      <option value="knight_tunnel">Knight — Sword Tunnel</option>
+      <option value="gerson_squish">Gerson — Squishes Box</option>
+      <option value="sneo_wall">Spamton NEO — Wall Controller</option>
     </select>
     <button id="btnTranslate" class="btn-primary">▶ Transpile & Play</button>
-    <button id="btnReset">↻ Reset Engine</button>
+    <button id="btnReset">↻ Reset</button>
+    <button id="btnPause">⏸ Pause</button>
+    <select id="diffSelect" title="Attack difficulty (dc.difficulty / boss.difficulty)">
+      <option value="0">DIFF 0</option>
+      <option value="1" selected>DIFF 1</option>
+      <option value="2">DIFF 2</option>
+    </select>
+    <label class="volwrap" id="hellWrap" style="display:none" title="Spamton NEO hellmode (dc.special)"><input type="checkbox" id="hellChk">HELL</label>
+    <label class="volwrap" title="Sound volume">🔊<input type="range" id="volSlider" min="0" max="100" step="1"></label>
   </div>
 </header>
 
 <main>
-  <!-- Left Side: GML Input / Transpiled JS Tabs -->
+  <!-- Left: GML Input / Transpiled JS -->
   <div class="editor-section">
     <div class="tabs">
       <div class="tab active" data-tab="gml">GML Object Events</div>
@@ -259,33 +297,225 @@
       </div>
     </div>
     <div id="tabJS" class="code-container" style="display:none">
-      <div class="output-code" id="jsResult">// Transpiled JavaScript object class code will appear here...</div>
+      <div class="output-code" id="jsResult">// Transpiled JavaScript will appear here...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">
+      <label style="font-weight:bold;color:#ff5a5a;font-size:12px">ACCUMULATED UNIQUE ERRORS (<span id="errCount">0</span>)</label>
+      <div>
+        <button id="btnClearErrors" style="background:#2a2e3a;color:#aaa;border:1px solid #4a4e5d;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:6px">🗑️ Clear</button>
+        <button id="btnCopyErrors" style="background:#38d878;color:#000;border:1px solid #38d878;font-weight:bold;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">📋 Copy All Unique Errors</button>
+      </div>
     </div>
     <div id="errorLog" class="error-log"></div>
   </div>
 
-  <!-- Right Side: Live HTML5 Canvas Preview -->
+  <!-- Right: Live Canvas Preview -->
   <div class="preview-section">
     <div class="hud-overlay">
       <div>Status: <b id="statusText">Ready</b></div>
-      <div>FPS: <span id="fpsText">60</span> | Active Instances: <span id="instCount">0</span></div>
+      <div>FPS: <span id="fpsText">60</span> | Instances: <span id="instCount">0</span></div>
       <div style="font-size:11px;color:var(--dim);margin-top:4px">Move SOUL with WASD or Arrow Keys</div>
+    </div>
+    <div class="status-readouts">
+      <div class="sprite-status" id="spriteStatus">Sprites: loading...</div>
+      <div class="sprite-status" id="engineStatus">Engine: idle</div>
     </div>
     <canvas id="canvas" width="640" height="480"></canvas>
   </div>
 </main>
 
+<script src="js/sprite_manifest.js"></script>
+<script src="js/sprite_origins.js"></script>
+<script src="js/gml_object_index.js"></script>
 <script src="js/gml_asset_db.js"></script>
 <script src="js/gml_runtime.js"></script>
+<script src="js/gml_helpers.js"></script>
+<script src="js/gml_compiler.js"></script>
+<script src="js/gml_codegen.js"></script>
 <script src="js/gml_translator.js"></script>
+<script src="js/gml_presets.js"></script>
+<script src="js/gml_scripts.js"></script>
+<script src="js/gml_objects.js"></script>
+<script src="js/gml_attacks.js"></script>
+<script src="js/gml_sounds.js"></script>
+<script src="js/gml_audio.js"></script>
+<script src="js/sprite_indices.js"></script>
+<script src="js/visual_probe.js"></script>
+<script src="js/flight_recorder.js"></script>
+<script src="js/spec_check.js"></script>
+<script src="js/attack_specs.js"></script>
 <script>
+if (typeof window !== 'undefined' && typeof global === 'undefined') window.global = window;
 (function() {
+  'use strict';
+
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  const translator = new GMLTranslator();
   let runtime = new GMLRuntimeEnvironment();
+  let translator = new GMLTranslator(runtime);
+  let paused = false;
 
-  // Tab switching
+  // ═══════════════════════════════════════════
+  // PRESET SELECTION LOADER
+  // ═══════════════════════════════════════════
+
+  const presetSelect = document.getElementById('presetSelect');
+
+  /**
+   * The attack being previewed, when it came from the real roster.
+   * An attack is a controller object plus a `type` — that's how the bosses
+   * dispatch them — so the type has to be applied to the spawned controller.
+   */
+  let pendingAttack = null;
+
+  /** Event bundle for an object out of the extracted per-chapter tables. */
+  function objectEvents(chapter, name) {
+    const t = window.GML_OBJECT_EVENTS_BY_CHAPTER && window.GML_OBJECT_EVENTS_BY_CHAPTER[chapter];
+    if (t && t[name]) return t[name];
+    // Presets carry their own copy for the objects that have one.
+    for (const [k, p] of Object.entries(window.GML_MASTER_PRESETS || {})) {
+      if ((p.name || k) === name) return p;
+    }
+    return null;
+  }
+
+  presetSelect.innerHTML = '<option value="">-- Select an attack --</option>';
+
+  // The real roster first: attacks named by the game itself, read out of each
+  // boss's dispatcher. Everything below is raw objects, useful for isolating a
+  // single bullet but NOT an attack.
+  if (window.GML_ATTACKS && window.GML_ATTACKS.length) {
+    const byBoss = {};
+    for (const a of window.GML_ATTACKS) (byBoss[a.bossLabel] = byBoss[a.bossLabel] || []).push(a);
+    for (const [bossLabel, list] of Object.entries(byBoss)) {
+      const g = document.createElement('optgroup');
+      g.label = `★ ${bossLabel} — real attacks (${list.length})`;
+      for (const a of list) {
+        const opt = document.createElement('option');
+        opt.value = 'attack:' + a.id;
+        opt.textContent = `${a.name}${a.type !== null && a.type !== undefined ? '  (type ' + a.type + ')' : ''}`;
+        g.appendChild(opt);
+      }
+      presetSelect.appendChild(g);
+    }
+  }
+
+  if (window.GML_MASTER_PRESETS) {
+    const groupObjects = document.createElement('optgroup');
+    groupObjects.label = '⚙ individual objects (bullets, VFX, controllers)';
+    for (const [key, p] of Object.entries(window.GML_MASTER_PRESETS)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = p.label;
+      groupObjects.appendChild(opt);
+    }
+    presetSelect.appendChild(groupObjects);
+  }
+
+  presetSelect.addEventListener('change', (e) => {
+    const key = e.target.value;
+
+    if (key.startsWith('attack:')) {
+      const a = (window.GML_ATTACKS || []).find(x => 'attack:' + x.id === key);
+      if (!a) return;
+      // A green-soul attack runs the BOSS's chart machine; the boss is the code.
+      const targetObj = a.launch === 'gerson-green' ? a.enemy : a.controller;
+      const ev = objectEvents(a.chapter, targetObj);
+      if (!ev) {
+        logError(`No event code extracted for ${targetObj}. Run scripts/gen_all.js.`);
+        return;
+      }
+      pendingAttack = a;
+      const hellWrap = document.getElementById('hellWrap');
+      if (hellWrap) hellWrap.style.display = a.hasSpecial ? '' : 'none';
+      document.getElementById('objName').value = targetObj;
+      document.getElementById('gmlCreate').value = ev.create || '';
+      document.getElementById('gmlStep').value = ev.step || '';
+      document.getElementById('gmlDraw').value = ev.draw || '';
+      translateAndPlay();
+      return;
+    }
+
+    const p = window.GML_MASTER_PRESETS ? window.GML_MASTER_PRESETS[key] : null;
+    if (p) {
+      pendingAttack = null;
+      document.getElementById('objName').value = p.name;
+      document.getElementById('gmlCreate').value = p.create || '';
+      document.getElementById('gmlStep').value = p.step || '';
+      document.getElementById('gmlDraw').value = p.draw || '';
+      translateAndPlay();
+    }
+  });
+
+  // ═══════════════════════════════════════════
+  // ERROR INTERCEPTION
+  // ═══════════════════════════════════════════
+
+  const errorLogEl = document.getElementById('errorLog');
+  const uniqueErrors = new Set();
+
+  function logError(msg) {
+    if (!msg) return;
+    const cleanMsg = String(msg).trim();
+    if (!uniqueErrors.has(cleanMsg)) {
+      uniqueErrors.add(cleanMsg);
+      const countEl = document.getElementById('errCount');
+      if (countEl) countEl.textContent = uniqueErrors.size;
+      errorLogEl.textContent = Array.from(uniqueErrors).join('\n---\n');
+    }
+  }
+
+  const btnCopy = document.getElementById('btnCopyErrors');
+  if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+      const text = Array.from(uniqueErrors).join('\n---\n');
+      if (!text) {
+        btnCopy.textContent = '⚡ No Errors!';
+        setTimeout(() => btnCopy.textContent = '📋 Copy Unique Errors', 1500);
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        btnCopy.textContent = '✅ Copied!';
+        setTimeout(() => btnCopy.textContent = '📋 Copy Unique Errors', 1500);
+      }).catch(() => {
+        const area = document.createElement('textarea');
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand('copy');
+        document.body.removeChild(area);
+        btnCopy.textContent = '✅ Copied!';
+        setTimeout(() => btnCopy.textContent = '📋 Copy Unique Errors', 1500);
+      });
+    });
+  }
+
+  const btnClear = document.getElementById('btnClearErrors');
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      uniqueErrors.clear();
+      if (document.getElementById('errCount')) document.getElementById('errCount').textContent = '0';
+      errorLogEl.textContent = '';
+    });
+  }
+
+  // Intercept console.error
+  const _origError = console.error;
+  console.error = function() {
+    _origError.apply(console, arguments);
+    const msg = Array.from(arguments).map(a => typeof a === 'object' ? (a.message || JSON.stringify(a)) : String(a)).join(' ');
+    logError(msg);
+  };
+
+  // Global error handler
+  window.onerror = function(msg, src, line, col, err) {
+    logError('GLOBAL: ' + msg + ' (' + (src || '') + ':' + line + ')');
+  };
+
+  // ═══════════════════════════════════════════
+  // TAB SWITCHING
+  // ═══════════════════════════════════════════
+
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -296,94 +526,326 @@
     });
   });
 
-  // Presets
+  // ═══════════════════════════════════════════
+  // PRESETS (based on REAL GML code from the game)
+  // ═══════════════════════════════════════════
+
   const PRESETS = {
     knight_star: {
       name: 'obj_knight_pointing_star',
-      create: `direction = point_direction(x, y, obj_heart.x, obj_heart.y);
-speed = 2;
-friction = -0.05;
-image_angle = direction;
-sprite_index = "spr_knight_bullet_star";
+      create: `scr_bullet_init();
+growspeed = 0.02;
+image_xscale = 0;
+image_yscale = 0;
+even = false;
+destroyonhit = false;
 timer = 0;
 con = 0;
-growspeed = 0.05;
-playSound = 1;
-difficulty = 2;`,
-      step: `timer += 1;
-if (con == 0) {
-  image_xscale += growspeed;
-  image_yscale += growspeed;
-  if (timer >= 30) con = 1;
-} else if (con == 1) {
-  friction = 0.5;
-  if (speed <= 0.1) con = 2;
-} else if (con == 2) {
-  if (timer >= 60) {
-    for (var i = 0; i < 6; i += 1) {
-      var d = instance_create(x, y, obj_knight_star_shrapnel);
-      d.direction = i * 60;
-      d.speed = 4;
-      d.sprite_index = "spr_knight_star";
-      d.image_blend = c_red;
-    }
+growstart = 0;
+playSound = true;
+beamflicker = 0;
+damage = 1;
+grazepoints = 2;
+element = 5;
+difficulty = 0;
+grazetimer = 0;
+side = 0;
+init = false;
+mask_index = spr_knight_bullet_star_mask;
+rotation = 0;
+dir = choose(-1, 1);`,
+
+      step: `if (x < (camerax() - (sprite_width / 2)) || y < (cameray() - (sprite_height / 2)) || y > (cameray() + 480 + (sprite_height / 2))) {
     instance_destroy();
-  }
-}`
+    exit;
+}
+
+if (!init) {
+    sprite_index = spr_knight_bullet_star;
+    init = true;
+}
+
+grazetimer++;
+if ((grazetimer % 4) == 0) grazed = 0;
+
+if (con == 0) {
+    image_xscale += growspeed;
+    image_yscale += growspeed;
+    if (image_xscale >= 1) {
+        con = 1;
+        speed = 2;
+        direction = point_direction(x, y, obj_heart.x + 10, obj_heart.y + 10);
+    }
+} else if (con == 1) {
+    friction = 0.5;
+    con++;
+} else if (con == 2) {
+    mask_index = spr_knight_bullet_star_mask;
+    if (speed == 0) {
+        gravity = 0.1;
+        gravity_direction = direction - 180;
+        friction = 0;
+    }
+    timer++;
+    if (timer >= 40) {
+        timer = 0;
+        con++;
+    }
+    growstart = image_xscale;
+} else if (con == 3) {
+    timer++;
+    image_xscale = growstart + clamp01(timer / 2);
+    image_yscale = growstart + clamp01(timer / 2);
+    
+    if (timer == 3) {
+        var _angle = 90;
+        for (i = 0; i < 6; i++) {
+            d = scr_childbullet(x, y, obj_knight_pointing_starchild);
+            d.image_angle = _angle;
+            d.direction = _angle;
+            d.speed = 4;
+            d.image_xscale = image_xscale * 0.5;
+            d.image_yscale = image_yscale * 0.5;
+            d.deceleration = 0.15;
+            d.sprite_index = spr_knight_starchild;
+            _angle += 60;
+        }
+        active = false;
+    }
+    
+    if (timer >= 4) {
+        instance_destroy();
+    }
+}`,
+
+      draw: `var _xscale = (sprite_width + 16) / sprite_get_width(sprite_index);
+var _yscale = (sprite_height + 16) / sprite_get_height(sprite_index);
+var _color = merge_color(c_gray, c_red, clamp01(timer / 30));
+var _alpha = (sin(timer * 3) + 1) * 0.25;
+
+draw_set_blend_mode(bm_add);
+scr_draw_beam_color(x, y, 600, 10, 90, c_white, 0, _alpha, false);
+draw_set_blend_mode(bm_normal);
+
+draw_sprite_ext(sprite_index, 1, x, y, _xscale + 0.1, _yscale + 0.1, image_angle, c_white, _alpha);
+draw_sprite_ext(sprite_index, 0, x, y, _xscale, _yscale, image_angle, _color, 1);`
     },
+
     knight_tunnel: {
       name: 'obj_knight_tunnel_slasher_2_revised',
-      create: `vspeed = 0;
-hspeed = -4;
+      create: `vertical_pos = 0;
+old_pos = 0;
+hole_size = 60;
+scr_bullet_init();
+damage = 206;
 timer = 0;
-vertical_pos = 0;`,
-      step: `timer += 1;
-if (timer % 8 == 0) {
-  var newpos = vertical_pos + 15 + irandom(90);
-  if (newpos > 60) newpos -= 120;
-  vertical_pos = clamp(newpos, -50, 50);
-  
-  var gapY = obj_growtangle.y + vertical_pos;
-  var topBlade = instance_create(x, gapY - 70, obj_tunnel_blade);
-  topBlade.hspeed = -5;
-  topBlade.image_angle = 270;
-  topBlade.sprite_index = "spr_knight_sword";
-  
-  var botBlade = instance_create(x, gapY + 70, obj_tunnel_blade);
-  botBlade.hspeed = -5;
-  botBlade.image_angle = 90;
-  botBlade.sprite_index = "spr_knight_sword";
+con = 1;
+first_strike = 1;`,
+
+      step: `timer++;
+
+if (timer >= 8) {
+    var newpos = old_pos + 15 + irandom(90);
+    if (newpos > 60)
+        newpos -= 120;
+    
+    old_pos = vertical_pos;
+    vertical_pos = newpos;
+    vertical_pos = clamp(vertical_pos, old_pos - 50, old_pos + 50);
+    var hole_diff = abs(old_pos - vertical_pos);
+    
+    if (hole_diff < 20)
+        hole_size = 36;
+    else if (hole_diff < 30)
+        hole_size = 44;
+    else if (hole_diff < 40)
+        hole_size = 52;
+    else
+        hole_size = 60;
+    
+    if (first_strike > 0) {
+        vertical_pos = irandom_range(-15, 15);
+        old_pos = vertical_pos;
+        hole_size = 100;
+        first_strike = scr_approach(first_strike, 0, 0.25);
+    }
+    
+    var mbox = mean(scr_get_box(1), scr_get_box(3));
+    var dorifto = 0.15 + (random(0.6) * choose(1, -1));
+    
+    if (vertical_pos > -20) {
+        var y1 = (mbox + vertical_pos) - (hole_size * 0.5);
+        var y2 = scr_get_box(1) - 40;
+        var y3 = max((y1 - y2) * (0.5 + random(0.5)), 50);
+        var y4 = y1 - y3;
+        
+        var bul = scr_fire_bullet(scr_get_box(0) + 40, mean(y1, y4), obj_knight_diamondswordbullet_ext, 180, 0.5);
+        bul.image_angle = 270;
+        bul.image_yscale = 1;
+        bul.sprite_index = spr_knight_diamondbullet_m;
+        bul.gravity_direction = 180;
+        bul.gravity = 0.4;
+        bul.vspeed = dorifto;
+    }
+    
+    if (vertical_pos < 20) {
+        var y1 = mbox + vertical_pos + (hole_size * 0.5);
+        var y2 = scr_get_box(3) + 40;
+        var y3 = max((y2 - y1) * (0.5 + random(0.5)), 60);
+        var y4 = y1 + y3;
+        
+        var bul2 = scr_fire_bullet(scr_get_box(0) + 40, mean(y1, y4), obj_knight_diamondswordbullet_ext, 180, 0.5);
+        bul2.image_angle = 90;
+        bul2.image_yscale = 1;
+        bul2.sprite_index = spr_knight_diamondbullet_m;
+        bul2.gravity_direction = 180;
+        bul2.gravity = 0.4;
+        bul2.vspeed = dorifto;
+    }
+    
+    timer = 0;
 }`
     },
+
     gerson_squish: {
       name: 'obj_gerson_squishes_box',
-      create: `timer = 0;`,
-      step: `timer += 1;
-if (timer == 26) {
-  obj_growtangle.image_xscale = 2.5;
-  obj_growtangle.image_yscale = 0.3;
+      create: `timer = 0;
+con = 0;
+image_xscale = 2;
+image_yscale = 2;
+image_speed = 0;
+sprite_index = spr_gerson_dodge_origin_top_bottom;`,
+
+      step: `if (con == 0) {
+    timer++;
+    if (timer == 1) {
+        vspeed = -48;
+        snd_play(snd_jump);
+    }
+    
+    if (vspeed < 0)
+        vspeed += 0.8;
+    
+    if (timer == 14) {
+        timer = 0;
+        con = 1;
+        vspeed = 0;
+        x = obj_growtangle.x;
+        y = cameray();
+    }
 }
-if (timer > 30 && timer < 120 && timer % 12 == 0) {
-  var slash = instance_create(obj_growtangle.x + random_range(-140, 140), obj_growtangle.y, obj_gerson_slash);
-  slash.sprite_index = "spr_gerson_hammer";
+
+if (con == 1) {
+    if (timer < 5)
+        timer++;
+    
+    y = lerp(cameray(), obj_growtangle.y - 70, timer / 5);
+    
+    if (timer == 5) {
+        y = obj_growtangle.y - 70;
+        con = 2;
+        timer = 0;
+    }
+}
+
+if (con == 2) {
+    timer++;
+    var timermax = 10;
+    
+    if (timer <= timermax) {
+        var maxscalex = lerp(9, 6, timer / timermax);
+        var maxscaley = lerp(0.2, 1, timer / timermax);
+        obj_growtangle.image_xscale = lerp(obj_growtangle.image_xscale, maxscalex, timer / timermax);
+        obj_growtangle.image_yscale = lerp(obj_growtangle.image_yscale, maxscaley, timer / timermax);
+    }
+    
+    if (timer > timermax) {
+        var maxscalex = lerp(5, 6, timer / 15);
+        var maxscaley = lerp(1.2, 1, timer / 15);
+        obj_growtangle.image_xscale = lerp(obj_growtangle.image_xscale, maxscalex, timer / 15);
+        obj_growtangle.image_yscale = lerp(obj_growtangle.image_yscale, maxscaley, timer / 15);
+    }
+    
+    y = obj_growtangle.y - (35 * obj_growtangle.image_yscale);
+    
+    if (timer >= 15) {
+        instance_create(x, y - 67, obj_gerson_teleport);
+        instance_destroy();
+    }
 }`
     },
+
     sneo_wall: {
       name: 'obj_sneo_wall_controller_new',
-      create: `timer = 0;
-spd = -16;`,
-      step: `timer += 1;
-if (timer < 16) spd += 0.6;
-else spd -= 0.1;
+      create: `wallsize = 7;
+wallcountmax = 35;
+wallcount = 0;
+wallsetupcount = 0;
+timer = 0;
+timer2 = 0;
+wallcreatetimermax = 30;
+con = 0;
+difficulty = 0;
+x = 0;
+y = 0;
 
-if (timer % 34 == 0) {
-  for (var r = 0; r < 5; r++) {
-    if (r !== 2) {
-      var tile = instance_create(x, obj_growtangle.y - 60 + r * 30, obj_sneo_tile);
-      tile.hspeed = spd;
-      tile.sprite_index = "spr_sneo_head";
+for (var a = 0; a < 35; a++) {
+    wallcreatetimer[a] = 30;
+    wallspeed[a] = -7;
+    walltype[a] = 1;
+}
+
+scr_sneo_wall_create(0, 2, 0, 3, 0, 1, 1);
+scr_sneo_wall_create(0, 3, 0, 2, 0, 30, 1);
+scr_sneo_wall_create(0, 2, 0, 3, 0, 30, 1);
+scr_sneo_wall_create(0, 0, 2, 3, 0, 30, 1);`,
+
+      step: `timer++;
+
+if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
+    timer = 0;
+    var bx = obj_growtangle.x + (obj_growtangle.width / 2) + 40;
+    var by = obj_growtangle.y - 60;
+    
+    var topTile = instance_create(bx, by - 30, obj_sneo_tile);
+    if (topTile) { topTile.hspeed = wallspeed[wallcount]; topTile.sprite_index = spr_sneo_head; }
+
+    if (breakspot1[wallcount] == 1) {
+        var t1 = instance_create(bx, by + 0, obj_sneo_tile);
+        if (t1) { t1.hspeed = wallspeed[wallcount]; t1.sprite_index = spr_sneo_head; }
+    } else if (pipispot1[wallcount] == 1) {
+        var t1 = instance_create(bx, by + 0, obj_sneo_tile);
+        if (t1) { t1.hspeed = wallspeed[wallcount]; t1.sprite_index = spr_sneo_bomb; }
     }
-  }
+
+    if (breakspot2[wallcount] == 2) {
+        var t2 = instance_create(bx, by + 30, obj_sneo_tile);
+        if (t2) { t2.hspeed = wallspeed[wallcount]; t2.sprite_index = spr_sneo_head; }
+    } else if (pipispot2[wallcount] == 2) {
+        var t2 = instance_create(bx, by + 30, obj_sneo_tile);
+        if (t2) { t2.hspeed = wallspeed[wallcount]; t2.sprite_index = spr_sneo_bomb; }
+    }
+
+    if (breakspot3[wallcount] == 3) {
+        var t3 = instance_create(bx, by + 60, obj_sneo_tile);
+        if (t3) { t3.hspeed = wallspeed[wallcount]; t3.sprite_index = spr_sneo_head; }
+    } else if (pipispot3[wallcount] == 3) {
+        var t3 = instance_create(bx, by + 60, obj_sneo_tile);
+        if (t3) { t3.hspeed = wallspeed[wallcount]; t3.sprite_index = spr_sneo_bomb; }
+    }
+
+    if (breakspot4[wallcount] == 4) {
+        var t4 = instance_create(bx, by + 90, obj_sneo_tile);
+        if (t4) { t4.hspeed = wallspeed[wallcount]; t4.sprite_index = spr_sneo_head; }
+    } else if (pipispot4[wallcount] == 4) {
+        var t4 = instance_create(bx, by + 90, obj_sneo_tile);
+        if (t4) { t4.hspeed = wallspeed[wallcount]; t4.sprite_index = spr_sneo_bomb; }
+    }
+
+    var botTile = instance_create(bx, by + 120, obj_sneo_tile);
+    if (botTile) { botTile.hspeed = wallspeed[wallcount]; botTile.sprite_index = spr_sneo_head; }
+
+    wallcount++;
 }`
     }
   };
@@ -398,85 +860,757 @@ if (timer % 34 == 0) {
     }
   });
 
-  // Controls (WASD / Arrows for Soul)
+  // ═══════════════════════════════════════════
+  // INPUT
+  // ═══════════════════════════════════════════
+
   const keys = {};
-  window.addEventListener('keydown', e => keys[e.key] = true);
-  window.addEventListener('keyup', e => keys[e.key] = false);
-
-  function updateSoul() {
-    const spd = 4;
-    if (isNaN(runtime.soul.x) || isNaN(runtime.soul.y)) {
-      runtime.soul.x = 320;
-      runtime.soul.y = 240;
+  window.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    // Yellow soul (Spamton NEO): hold Z to charge, release to fire. Tap = pellet,
+    // a full charge = big shot.
+    if (soulMode === 'yellow' && (e.key === 'z' || e.key === 'Z') && !e.repeat && !yCharging) {
+      yCharging = true;
+      yChargeFrames = 0;
     }
+  });
+  window.addEventListener('keyup', e => {
+    keys[e.key] = false;
+    if (soulMode === 'yellow' && (e.key === 'z' || e.key === 'Z') && yCharging) {
+      fireYellowShot(yChargeFrames >= 20);
+      yCharging = false;
+      yChargeFrames = 0;
+    }
+  });
 
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) runtime.soul.x -= spd;
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) runtime.soul.x += spd;
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) runtime.soul.y -= spd;
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) runtime.soul.y += spd;
+  // ── Soul modes ─────────────────────────────
+  // 'red' = dodge only. 'yellow' = the Spamton NEO justice soul: Z fires
+  // obj_yheart_shot — the REAL object, whose own Create/Step/collisions drive
+  // motion, hits and destruction of shootable bullets.
+  let soulMode = 'red';
+  let yCharging = false;
+  let yChargeFrames = 0;
 
-    const bw = Math.max(20, ((runtime.growtangle.width || 160) * Math.abs(runtime.growtangle.image_xscale || 1)) / 2);
-    const bh = Math.max(20, ((runtime.growtangle.height || 160) * Math.abs(runtime.growtangle.image_yscale || 1)) / 2);
-    const gx = runtime.growtangle.x || 320;
-    const gy = runtime.growtangle.y || 240;
-
-    runtime.soul.x = gmlMath.clamp(runtime.soul.x, gx - bw + 8, gx + bw - 8);
-    runtime.soul.y = gmlMath.clamp(runtime.soul.y, gy - bh + 8, gy + bh - 8);
+  function fireYellowShot(big) {
+    if (!runtime) return;
+    const boss = runtime.instances.find(i => i.object_name === 'obj_spamton_neo_enemy');
+    // The big shot IS obj_yheart_shot taking the boss's `upgrade > 0` branch in
+    // its own Create — flip the real flag rather than faking a variant.
+    if (big && boss) boss.upgrade = 1;
+    try { runtime.createInstance('obj_yheart_shot', runtime.soul.x + 10, runtime.soul.y); } catch (e) {}
+    if (big && boss) boss.upgrade = 0;
   }
 
-  // Translation & Execution Engine
+  /**
+   * The battle box draws ITSELF — it is a real obj_growtangle running its own
+   * Draw event (black fill from frame 1, then the hollow border frame, both
+   * tinted by image_blend and spun by image_angle).
+   *
+   * This used to stroke a synthetic green rectangle from scr_get_box's edges on
+   * top of it. That second box was always subtly wrong — an axis-aligned
+   * rectangle can't follow a rotating or custom-built box, and it kept drawing
+   * a box after an attack destroyed the real one. Two disagreeing boxes on
+   * screen is worse than one, so the overlay is gone; `debugBox` can be enabled
+   * to see the collision extent when a box's geometry is in question.
+   */
+  let debugBox = false;
+  function drawBoxOverlay(c) {
+    if (!debugBox) return;
+    const e = window.GML_BOX_EDGES ? window.GML_BOX_EDGES() : null;
+    if (!e) return;
+    c.strokeStyle = 'rgba(255,0,255,0.6)';
+    c.lineWidth = 1;
+    c.strokeRect(e.l, e.t, e.r - e.l, e.b - e.t);
+  }
+  window.setDebugBox = v => { debugBox = !!v; };
+
+  function drawSoulOverlay(c) {
+    // A date has no SOUL on screen — obj_date_controller draws its own
+    // obj_date_heart cursor for the answer boxes. The heart only returns for
+    // date 3's finale, which creates obj_purplecontrols to drive it.
+    const dating = runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_date_controller');
+    const purple = runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_purplecontrols');
+    if (dating && !purple) return;
+
+    const assets = window.gmlAssets;
+    let spr = soulMode === 'yellow' ? 'spr_yellowheart' : 'spr_heart';
+    // The game may retint the heart itself — purple mode does
+    // `obj_heart.sprite_index = spr_purpleheart` — and that always wins.
+    const own = runtime.soul && runtime.soul.sprite_index;
+    if (typeof own === 'string' && own && own !== 'spr_heart'
+        && window.GML_SPRITE_MANIFEST && window.GML_SPRITE_MANIFEST[own]) {
+      spr = own;
+    }
+    // Gerson's green mode recolours the soul; prefer a real green-heart sprite
+    // when one exists, otherwise mark the state with a green ring.
+    const green = greenActive();
+    if (green && spr === 'spr_heart' && window.GML_SPRITE_MANIFEST) {
+      for (const cand of ['spr_heartgreen', 'spr_greenheart', 'spr_heart_green']) {
+        if (window.GML_SPRITE_MANIFEST[cand]) { spr = cand; break; }
+      }
+    }
+    const img = assets ? assets.getImage(spr, 0) : null;
+    const sx = Math.floor(runtime.soul.x), sy = Math.floor(runtime.soul.y);
+    // THE SOUL IS TOP-LEFT ANCHORED, like the real obj_heart.
+    //
+    // spr_heart, spr_greenheart and spr_dodgeheartmask all have origin (0,0),
+    // which is why the entire corpus writes `obj_heart.x + 10, obj_heart.y + 10`
+    // when it means "the centre of the soul", and why scr_heartclamp subtracts a
+    // literal 20 from the right and bottom edges. Drawing it centred here made
+    // the picture disagree with obj_heart.x/y by half a heart, so everything
+    // anchored on the soul was displaced: obj_spearblocker sets
+    // `x = obj_heart.x + 10`, and every spear is placed as
+    // `obj_spearblocker.x + lengthdir_x(...)` — so the axe, its radius and the
+    // whole spear ring sat +10,+10 off. It also disagreed with our OWN collision
+    // mask, which honours the origin correctly.
+    const orig = (window.GML_SPRITE_ORIGINS || {})[spr] || [0, 0];
+    if (img && img.complete && img.naturalWidth > 0) {
+      c.drawImage(img, sx - Math.floor(Number(orig[0]) || 0), sy - Math.floor(Number(orig[1]) || 0));
+    } else {
+      c.fillStyle = soulMode === 'yellow' ? '#ffe100' : '#ff0000';
+      c.beginPath(); c.arc(sx + 8, sy + 8, 6, 0, Math.PI * 2); c.fill();
+    }
+    if (soulMode === 'yellow' && yCharging) {
+      const r = 8 + Math.min(14, yChargeFrames * 0.6);
+      c.strokeStyle = yChargeFrames >= 20 ? '#ffffff' : '#ffe100';
+      c.lineWidth = 2;
+      c.beginPath(); c.arc(sx, sy, r, 0, Math.PI * 2); c.stroke();
+    }
+    if (green && spr === 'spr_heart') {
+      // No green-heart art available — show the mode explicitly.
+      c.strokeStyle = '#33ff55';
+      c.lineWidth = 2;
+      c.beginPath(); c.arc(sx, sy, 10, 0, Math.PI * 2); c.stroke();
+    }
+  }
+
+  // ── The TURN CLOCK ───────────────────────────────────────────────────────
+  // Every Deltarune attack has a duration, and exactly one thing in the game
+  // measures it: obj_battlecontroller's Step does `global.turntimer -= 1` while
+  // `global.mnfight == 2`, and at <= 0 it tears the turn down. That block is
+  // byte-identical across all five chapters.
+  //
+  // The studio used to pin `turntimer = 9999` so attacks wouldn't self-destruct
+  // on frame one. That was worse than it looked: `scr_turntimer(n)` is a
+  // MAX-CLAMP (`if (global.turntimer < n) global.turntimer = n`), so a 9999
+  // floor silently neutralised every scr_turntimer call in the game, and attacks
+  // that phase themselves on thresholds (`if (global.turntimer < 500)`) froze in
+  // stage one. Nothing could ever end.
+  //
+  // We run the real countdown and the real teardown here because
+  // obj_battlecontroller's own Step is the battle MENU as well as the clock, and
+  // this studio deliberately does not run a battle. The semantics below are the
+  // game's, not invented: the cleanup targets are the two root parents the game
+  // itself uses, and `instancesOf` is descendant-aware, so `obj_bulletparent`
+  // reaps the whole bullet tree exactly as `with (obj_bulletparent)` does.
+  let turnEndedAt = null;
+  function tickTurnTimer() {
+    if (!runtime || Number(window.mnfight) !== 2) return;
+    // If the REAL obj_battlecontroller is present and stepping, it owns the
+    // clock — defer to the game's own code and don't double-count. It closes the
+    // turn by setting `obj_darkener.darken = 0`, and the DARKENER's Draw is what
+    // sets `obj_growtangle.growcon = 3` so the box shrinks away. With no darkener
+    // in the room that last link is missing, so close the box here instead.
+    if (runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_battlecontroller'
+        && typeof i.step === 'function')) {
+      if (Number(window.turntimer) <= 0
+          && !runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_darkener')) {
+        for (const g of GML_HELPERS.for(runtime).withList('obj_growtangle') || []) {
+          if (Number(g.growcon) !== 3) g.growcon = 3;
+        }
+      }
+      return;
+    }
+    const t = Number(window.turntimer);
+    if (!isFinite(t)) return;
+
+    if (t > 0) {
+      window.turntimer = t - 1;
+      if (t - 1 > 0) return;
+    } else if (turnEndedAt !== null) {
+      // Already torn down; wait out the game's 15-frame alarm[2] delay.
+      if (++turnEndedAt >= 15) {
+        turnEndedAt = null;
+        window.mnfight = 0;                       // scr_mnendturn
+        const st = document.getElementById('statusText');
+        if (st) { st.textContent = 'Attack finished'; st.style.color = '#8ab4ff'; }
+      }
+      return;
+    } else {
+      return;
+    }
+
+    // turntimer just hit 0 — the teardown, in the game's order.
+    const H = GML_HELPERS.for(runtime);
+    for (const parent of ['obj_bulletparent', 'obj_bulletgenparent']) {
+      for (const inst of H.withList(parent) || []) {
+        if (inst && !inst.destroyed) H.destroy(inst);
+      }
+    }
+    // obj_darkener.darken = 0 is what closes the battle box: the darkener's Draw
+    // sets obj_growtangle.growcon = 3, and the box shrinks itself over 15 frames.
+    for (const d of H.withList('obj_darkener') || []) d.darken = 0;
+    for (const g of H.withList('obj_growtangle') || []) g.growcon = 3;
+    turnEndedAt = 0;
+  }
+
+  // The visual probe drives the engine deterministically, so it needs the same
+  // per-step turn tick the frame loop applies.
+  window.GML_STUDIO_TICK_TURN = () => tickTurnTimer();
+
+  /**
+   * Place the soul so its CENTRE sits at (cx, cy).
+   *
+   * obj_heart is top-left anchored, so its x/y is the corner, not the middle.
+   * The offset is derived from the soul's own mask sprite rather than the
+   * literal 10 the corpus hard-codes, so a small-heart attack
+   * (spr_dodgeheart_small) lands correctly too.
+   */
+  function centreSoulOn(cx, cy) {
+    const soul = runtime.soul;
+    if (!soul) return;
+    const spr = soul.mask_index || soul.sprite_index || 'spr_heart';
+    const size = (window.GML_SPRITE_SIZES || {})[spr];
+    const w = size ? Number(size[0]) : 20;
+    const h = size ? Number(size[1]) : 20;
+    soul.x = Number(cx) - w / 2;
+    soul.y = Number(cy) - h / 2;
+  }
+  window.GML_CENTRE_SOUL = centreSoulOn;
+
+  /** A live green-soul shield means the game owns the soul right now. */
+  function greenActive() {
+    return runtime && runtime.instances.some(i => i.object_name === 'obj_spearblocker' && !i.destroyed);
+  }
+
+  function updateSoul() {
+    // Green mode: the shield reads the arrows through up_h()/left_h()... and
+    // the chart machine positions the heart — manual movement would fight it.
+    if (greenActive()) return;
+    // Purple mode (and anything else that takes the wheel): the game sets
+    // obj_heart.canmove = 0 and obj_purplecontrols moves the heart itself.
+    if (Number(runtime.soul.canmove) === 0) return;
+    const spd = 4;
+    if (isNaN(runtime.soul.x)) runtime.soul.x = 320;
+    if (isNaN(runtime.soul.y)) runtime.soul.y = 240;
+
+    let dx = 0, dy = 0;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) dx -= spd;
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) dx += spd;
+    if (keys['ArrowUp'] || keys['w'] || keys['W']) dy -= spd;
+    if (keys['ArrowDown'] || keys['s'] || keys['S']) dy += spd;
+
+    // Containment is the REAL obj_heart rule — collide against obj_battlesolid,
+    // then the view bounds — not a clamp to scr_get_box's rectangle. That's what
+    // makes rotated/custom boxes bound correctly and lets a DESTROYED box free
+    // the heart to the whole screen (Jevil's finale).
+    if (window.GML_MOVE_SOUL) window.GML_MOVE_SOUL(dx, dy);
+    else { runtime.soul.x += dx; runtime.soul.y += dy; }
+  }
+
+  // ── Volume ─────────────────────────────────
+  const volSlider = document.getElementById('volSlider');
+  if (volSlider && window.GML_AUDIO) {
+    volSlider.value = Math.round(GML_AUDIO.getMaster() * 100);
+    volSlider.addEventListener('input', () => GML_AUDIO.setMaster(volSlider.value / 100));
+  }
+
+  // ═══════════════════════════════════════════
+  // TRANSPILE & PLAY
+  // ═══════════════════════════════════════════
+
   function translateAndPlay() {
-    const objName = document.getElementById('objName').value.trim() || 'obj_translated_attack';
+    const objName = document.getElementById('objName').value.trim() || 'obj_translated';
     const gmlCreate = document.getElementById('gmlCreate').value;
     const gmlStep = document.getElementById('gmlStep').value;
     const gmlDraw = document.getElementById('gmlDraw').value;
 
-    const compiled = translator.compileObject(objName, { create: gmlCreate, step: gmlStep, draw: gmlDraw });
+
+
+    // Compile GML → JS.
+    //
+    // The chapter must be explicit: obj_dbulletcontroller exists in both ch2
+    // and ch3, and guessing picked the wrong chapter's scripts and defaults.
+    //
+    // The textareas only show create/step/draw, but the object's REAL event set
+    // (alarms, user events, Animation End, Outside Room, Destroy) comes from
+    // the extraction — compiling only the three visible events silently dropped
+    // the rest. Editor text overrides an event only when non-empty.
+    const chapter = pendingAttack ? pendingAttack.chapter : GMLTranslator.chapterOf({}, objName);
+    const baseTable = (window.GML_OBJECT_EVENTS_BY_CHAPTER && window.GML_OBJECT_EVENTS_BY_CHAPTER[chapter]) || {};
+    const mergedEvents = Object.assign({}, baseTable[objName] || {});
+    if (gmlCreate.trim()) mergedEvents.create = gmlCreate;
+    if (gmlStep.trim()) mergedEvents.step = gmlStep;
+    if (gmlDraw.trim()) mergedEvents.draw = gmlDraw;
+    mergedEvents.chapter = chapter;
+    const compiled = translator.compileObject(objName, mergedEvents);
+
     document.getElementById('jsResult').textContent = compiled.code;
 
-    // Reset Engine Runtime Environment
+    if (compiled.errors.length > 0) {
+      logError('Transpiler warnings:\n' + compiled.errors.join('\n'));
+    }
+
+    // Reset runtime
     runtime = new GMLRuntimeEnvironment();
-    document.getElementById('errorLog').style.display = 'none';
-    
+    window.activeGMLRuntime = runtime;
+    runtime.$chapter = compiled.chapter;
+    translator = new GMLTranslator(runtime);
+    GML_HELPERS.for(runtime);
+
+    // Battle globals live on window (GML `global`), so they leak between runs.
+    // The turn CLOCK starts at zero: `scr_turntimer(n)` is a max-clamp, so the
+    // boss's pre-attack floor and the controller's own duration compose on top
+    // of 0 exactly as they do in game. (It must NOT be pre-set high — that is
+    // what neutralised every scr_turntimer call and stopped attacks ending.)
+    window.turntimer = 0;
+    // The countdown gate. The real value is set by the turn state machine;
+    // "bullets are flying" is mnfight 2, which is the phase the studio recreates.
+    window.mnfight = 2;
+    window.interact = 0;
+    turnEndedAt = null;
+
+    // Silence the previous attack's sounds and loops.
+    if (window.GML_AUDIO) GML_AUDIO.stopAll();
+
+    // Box outline + SOUL join the depth pipeline at depth 0: negative-depth
+    // bullets draw over them, positive-depth background under.
+    runtime.$overlays = [
+      { depth: 0, tie: 1e9, draw: drawBoxOverlay },
+      { depth: 0, tie: 1e9 + 1, draw: drawSoulOverlay },
+    ];
+
+    // Soul mode per boss: Spamton NEO fights use the yellow (justice) soul.
+    soulMode = ((pendingAttack && pendingAttack.boss === 'spamton_neo')
+      || objName.toLowerCase().includes('sneo')
+      || objName.toLowerCase().includes('spamton')) ? 'yellow' : 'red';
+    yCharging = false;
+    yChargeFrames = 0;
+
+    /** Evaluate one generated class and register it. */
+    function registerUnit(name, code) {
+      const cls = new Function('GMLInstance', 'runtime', code + ';\nreturn ' + name + ';')(GMLInstance, runtime);
+      runtime.registerObject(name, cls);
+      return cls;
+    }
+
     try {
-      const evalFunc = new Function(
-        'GMLInstance', 'gmlMath', 'Snd', 'runtime', 
-        'draw_sprite_ext', 'draw_set_blend_mode', 'scr_draw_beam_color', 'sprite_get_width', 'sprite_get_height', 
-        'scr_afterimage', 'merge_color', 'toCSSColor', 'scr_ease_in', 'bm_add', 'bm_normal',
-        'c_white', 'c_red', 'c_black', 'c_blue', 'c_yellow', 'c_gray',
-        compiled.code + `;\nreturn ${objName};`
-      );
+      // Everything except the object under test compiles JUST-IN-TIME: classes
+      // when something first spawns them ($R.ensureClass, wired into
+      // createInstance) and scripts when first called ($R.scrCall). Compiling a
+      // chapter's ~600 objects and ~600 scripts up front blocked the page for
+      // minutes once the extraction became complete.
+      // The class under test extends $R.base(parent) — make sure the parent
+      // chain exists before evaluating it.
+      {
+        const oi = window.GML_OBJECT_INDEX;
+        const par = oi ? oi.defaults(objName, compiled.chapter).parent : null;
+        if (par) GML_HELPERS.for(runtime).ensureClass(par);
+      }
+      registerUnit(objName, compiled.code);
 
-      const ObjectClass = evalFunc(
-        GMLInstance, gmlMath, { play: () => {} }, runtime, 
-        draw_sprite_ext, draw_set_blend_mode, scr_draw_beam_color, sprite_get_width, sprite_get_height,
-        scr_afterimage, merge_color, toCSSColor, scr_ease_in, bm_add, bm_normal,
-        '#ffffff', '#ff0000', '#000000', '#0000ff', '#ffff00', '#808080'
-      );
-      
-      runtime.registerObject(objName, ObjectClass);
-      // Spawn at battle box center (320, 240)
-      runtime.createInstance(objName, 320, 240);
+      const status = document.getElementById('engineStatus');
+      if (status) {
+        const nScripts = Object.keys((window.GML_SCRIPT_SOURCES_BY_CHAPTER || {})[compiled.chapter] || {}).length;
+        const nObjects = Object.keys((window.GML_OBJECT_EVENTS_BY_CHAPTER || {})[compiled.chapter] || {}).length;
+        status.textContent = `${nScripts} scripts · ${nObjects} objects (JIT) · chapter ${compiled.chapter.replace('ch', '')}`;
+      }
 
-      document.getElementById('statusText').textContent = 'Running';
+      // The party EXISTS but is not DRAWN.
+      //
+      // They have to exist because attacks read them for positioning —
+      // scr_moveheart is literally `instance_create(obj_herokris.x + 10,
+      // obj_herokris.y + 40, obj_moveheart)`, and several attacks aim at party
+      // members. Deleting them would send those reads to a dead reference and
+      // put bullets at (0,0).
+      //
+      // They are not drawn because this studio shows ONE ATTACK, not a battle:
+      // the party is turn-system furniture, it competes for depth with the
+      // attack's own visuals, and their real on-screen placement is decided by
+      // battle code we deliberately do not run. Sprites are left at the object
+      // defaults — with visible = false the idle-sprite overrides this used to
+      // carry were pure guesswork anyway.
+      for (const name of ['obj_herosusie', 'obj_heroralsei', 'obj_mainchara', 'obj_herokris']) {
+        const inst = runtime.createInstance(name, 120, 240);
+        if (inst) { inst.visible = false; inst.step = null; }
+      }
+      // obj_battlecontroller EXISTS but does not run and does not draw.
+      //
+      // It has to exist because attacks re-depth themselves against it
+      // (`with (obj_battlecontroller) depth = obj_growtangle.depth + 2`) and
+      // read its fields. But its Step and Draw are the battle MENU — FIGHT/ACT/
+      // ITEM/SPARE, the two purple menu lines, the cursor sounds — plus the turn
+      // state machine that re-picks each enemy's attack. Letting it run put a
+      // half-working menu (with SFX) on top of every single attack, fought the
+      // roster's choice of attack, and moved the box.
+      //
+      // The turn CLOCK is the one thing we do want from it, and tickTurnTimer()
+      // implements exactly that block's semantics instead.
+      {
+        const bc = runtime.createInstance('obj_battlecontroller', 0, 0);
+        if (bc) { bc.step = null; bc.visible = false; }
+      }
+
+      // Auto-spawn parent attack controllers for child bullet objects so full attack patterns run
+      const PARENT_CONTROLLERS = {
+        'obj_knight_pointing_star': 'obj_knight_pointing_cone',
+        'obj_knight_pointing_starchild': 'obj_knight_pointing_cone',
+        'obj_knight_roaring_star': 'obj_knight_roaring2',
+        'obj_knight_diamondswordbullet_ext': 'obj_knight_tunnel_slasher_2_revised',
+        'obj_knight_fallingsword': 'obj_knight_swordfall',
+        'obj_gerson_hammer_bullet': 'obj_gerson_hammer_bro_attack_controller',
+        'obj_sneo_head': 'obj_sneo_wall_controller_new',
+        'obj_sneo_bomb': 'obj_sneo_wall_controller_new'
+      };
+
+      if (PARENT_CONTROLLERS[objName]) {
+        const parentName = PARENT_CONTROLLERS[objName];
+        if (!runtime.instances.some(i => i.object_name === parentName)) {
+          runtime.createInstance(parentName, 320, 240);
+        }
+      }
+
+      // ── THE REAL BATTLE BOX ──
+      // The runtime constructor's fake singleton never ran Step or Draw; drop
+      // it. The REAL obj_growtangle is created by the BOSS'S OWN GML below —
+      // each boss's box-setup block (GML_ATTACKS_BOXSETUP) and each attack's
+      // dispatcher branch (attack.setup) are replayed verbatim with self = the
+      // boss, so position, maxxscale/maxyscale, purple controls and heart
+      // markers all come out exactly as the real fight makes them.
+      {
+        const old = runtime.growtangle;
+        if (old) {
+          old.destroyed = true;
+          runtime.instances = runtime.instances.filter(i => i !== old);
+        }
+        runtime.growtangle = null;
+      }
+      const lowerName = objName.toLowerCase();
+      /**
+       * The boss instance every attack reads for its anchor position.
+       *
+       * Gerson's boss object is `obj_hammer_of_justice_enemy` — there is no
+       * `obj_gerson_enemy` in the game. The studio used to spawn that made-up
+       * name, so all 67 `obj_hammer_of_justice_enemy` references in the Gerson
+       * attacks resolved to an empty proxy sitting at the default (320, 240)
+       * instead of the real boss.
+       *
+       * Sprites come from the object defaults; only extras that the enemy's own
+       * Create would normally set are named here.
+       */
+      const BOSSES = [
+        { match: ['knight', 'roaring', 'sword'], name: 'obj_knight_enemy', x: 520, y: 180 },
+        { match: ['sneo', 'spamton'], name: 'obj_spamton_neo_enemy', x: 520, y: 160, sprite: 'spr_sneo_body' },
+        // No `also` list. It used to co-spawn obj_sound_of_justice_enemy on the
+        // assumption that it was part of this fight; it is a separate enemy
+        // drawn as spr_statue_sound_of_justice, so it appeared as a second,
+        // wrong-looking "Gerson" standing in the arena.
+        { match: ['gerson', 'hammer', 'cane', 'justice', 'spear'], name: 'obj_hammer_of_justice_enemy', x: 520, y: 180 },
+        { match: ['joker', 'jevil'], name: 'obj_joker', x: 520, y: 180 },
+        { match: ['pink'], name: 'obj_pink_enemy', x: 520, y: 180 },
+      ];
+      let bossInst = null;
+      for (const b of BOSSES) {
+        // A roster attack knows its own boss; guessing from the object name is
+        // only for the raw-object list.
+        const isMine = pendingAttack
+          ? pendingAttack.enemy === b.name
+          : b.match.some(m => lowerName.includes(m));
+        if (!isMine) continue;
+        const boss = runtime.createInstance(b.name, b.x, b.y);
+        bossInst = boss;
+        if (b.sprite) boss.sprite_index = b.sprite;
+        GML_HELPERS.for(runtime).syncImageNumber(boss);
+        boss.image_speed = 0.2;
+        // Fields the boss's own turn logic would have set before attacking; the
+        // attacks read these for positioning and scaling.
+        boss.myself = 0;
+        boss.difficulty = 1;
+        // Only the object under test should drive its own Step.
+        if (objName !== b.name) boss.step = null;
+        for (const extra of b.also || []) {
+          if (objName === extra) continue;
+          const e = runtime.createInstance(extra, b.x, b.y);
+          if (e) e.step = null;
+        }
+        break;
+      }
+
+      // Spawn the thing under test.
+      let mainInst = null;
+      const bossObjectNames = new Set(BOSSES.map(b => b.name));
+      const diff = Number((document.getElementById('diffSelect') || { value: 1 }).value);
+      const hell = !!(document.getElementById('hellChk') || {}).checked;
+      if (bossInst) {
+        bossInst.difficulty = diff;
+        bossInst.mytarget = 0;
+        // Always a number: the sneo dispatcher READS hellmode (`dc.special =
+        // hellmode`), and an unset read would materialise a truthy auto-array.
+        bossInst.hellmode = hell ? 1 : 0;
+        // The box block and the dispatcher branch both self-select on this.
+        if (pendingAttack && pendingAttack.selector && pendingAttack.choice !== null) {
+          bossInst[pendingAttack.selector] = pendingAttack.choice;
+        }
+      }
+
+      const H2 = GML_HELPERS.for(runtime);
+
+      // Battle arrays the dispatcher branches write into. The boss's Create
+      // (scr_monstersetup) usually seeds them, but never leave them undefined —
+      // `global.monsterat[myself] * 4` in Jevil's branch would throw.
+      if (!Array.isArray(window.monsterattackname)) window.monsterattackname = [''];
+      if (!Array.isArray(window.monsterat)) window.monsterat = [10];
+      if (!Array.isArray(window.monster)) window.monster = [1];
+      // Pink's date controller reads global.flag[1706..1708] ("have you seen
+      // this date before") in its Create; an unseeded global array throws.
+      if (!Array.isArray(window.flag)) window.flag = [];
+      if (!Array.isArray(window.tempflag)) window.tempflag = [];
+
+      // scr_moveheart tweens the heart via obj_moveheart from obj_herokris —
+      // battle furniture the studio doesn't run. Same contract, direct: put
+      // the soul at the box centre.
+      H2.scr.scr_moveheart = function () {
+        const g = runtime.instances.find(i => !i.destroyed && i.object_name === 'obj_growtangle');
+        if (g) centreSoulOn(g.x, g.y);
+        return runtime.soul;
+      };
+
+      /** Compile a raw GML fragment and run it with self = `self`. */
+      function runSnippet(gml, self, label) {
+        if (!gml || !self) return false;
+        try {
+          const c = translator.compileObject('__setup_snippet', { chapter, step: gml });
+          if (c.errors.length) logError(label + ' warnings:\n' + c.errors.join('\n'));
+          const cls = new Function('GMLInstance', 'runtime',
+            c.code + ';\nreturn __setup_snippet;')(GMLInstance, runtime);
+          cls.prototype.step.call(self);
+          return true;
+        } catch (e) {
+          logError(label + ' replay failed: ' + e.message);
+          return false;
+        }
+      }
+
+      /** Adopt whatever growtangle the replayed GML created. */
+      function syncGrowtangle() {
+        const g = runtime.instances.find(i => !i.destroyed && i.object_name === 'obj_growtangle');
+        if (g) runtime.growtangle = g;
+        return g;
+      }
+
+      // The boss's own box-setup block, before the dispatcher — the order the
+      // real turn runs them in. The Knight's block opens with event_user(0),
+      // his ATTACK CHOOSER, which would override the roster pick with his own
+      // turn sequence (and size the box for the wrong attack) — stub it for
+      // the replay only; the studio is the chooser here.
+      // A DATE has no battle box at all: Pink's own `mnfight == 1.5` prep skips
+      // the growtangle when a date is pending, and the date draws on its own
+      // full-screen surfaces. Replaying the box block would add a box the real
+      // fight never shows. Same for the type-210 finale, which destroys the box.
+      const isDate = !!(pendingAttack && pendingAttack.launch === 'pink-date');
+
+      // The box block is part of the BOSS'S TURN, so replay it only for attacks
+      // the boss itself dispatches (they carry the selector variable its branch
+      // keys on). An attack announced by a helper object — Pink's date
+      // controller spawning the type-210 finale — is not part of that turn, and
+      // replaying the turn's setup injects objects the real sequence never has.
+      // Concretely: Pink's block creates obj_purplecontrols, whose one-time
+      // `made` latch then fires under its DEFAULT mode, so when the finale later
+      // sets mode = 8 the node-maze builder has already been spent and the maze
+      // never appears.
+      const bossDispatched = !!(pendingAttack && pendingAttack.selector !== null
+        && pendingAttack.selector !== undefined);
+
+      if (pendingAttack && bossInst && !isDate && bossDispatched) {
+        const boxGML = (window.GML_ATTACKS_BOXSETUP || {})[pendingAttack.boss];
+        if (boxGML) {
+          // Swap the DISPATCH helper, not a property on the instance — reading
+          // an unset instance property materialises the truthy auto-array.
+          const savedEventUser = H2.eventUser;
+          H2.eventUser = function () { return 0; };
+          runSnippet(boxGML, bossInst, 'box setup');
+          H2.eventUser = savedEventUser;
+          syncGrowtangle();
+        }
+      }
+
+      if (isDate && bossInst) {
+        // The dating minigame is a TURN REPLACEMENT, not a bullet attack: Pink's
+        // dispatcher does `datecount++` and creates obj_date_controller, which
+        // reads obj_pink_enemy.datecount in its own Create to pick the date.
+        // So datecount must be set BEFORE the controller exists.
+        bossInst.datecount = pendingAttack.datecount;
+        // Date 3 is gated on `phaseturns >= 3` in the real fight, and its
+        // scripted timeline (which ends in the type-210 finale) reads it.
+        bossInst.phaseturns = 3;
+        bossInst.doki = 0;
+        window.turntimer = 999;
+        const bc = runtime.instances.find(i => i.object_name === 'obj_battlecontroller');
+        const dcDepth = (bc ? Number(bc.depth) || 0 : 0) - 9999999;
+        mainInst = runtime.createInstance('obj_date_controller', bossInst.x, bossInst.y);
+        if (mainInst) mainInst.depth = dcDepth;
+      } else if (pendingAttack && pendingAttack.launch === 'gerson-green' && bossInst) {
+        // The boss IS the attack. Other_10 fills the list_attack*[] chart for
+        // this pattern; attackcon = 1 starts the machine that feeds
+        // scr_spearshot row by row. The boss's Step stays ACTIVE for these
+        // (the BOSSES loop leaves it on because objName === the boss).
+        mainInst = bossInst;
+        bossInst.attackpattern = pendingAttack.pattern;
+        bossInst.trueturn = 1;
+        // Left at 0 deliberately. `attacked` gates the boss's dispatcher, but
+        // that branch also needs phase "bullets", which we withhold for a
+        // boss-driven chart — so it cannot fire anyway, and parts of the
+        // attackcon machine read `attacked` as still-attacking.
+        bossInst.attacked = 0;
+        GML_HELPERS.for(runtime).eventUser(bossInst, 0);
+        bossInst.attackcon = 1;
+        // The boss's dispatcher sets attackcon and the turn length on the SAME
+        // line (`attackcon = 1; ... scr_turntimer(999);`). Setting attackcon by
+        // hand skipped the duration, so every green chart was cut off at the
+        // 90-frame pre-attack floor and the spears vanished mid-pattern.
+        bossInst.rudebusterhitcount = 0;
+        H2.scrCall('scr_turntimer', bossInst, [999]);
+      } else if (!bossObjectNames.has(objName)) {
+        if (pendingAttack) {
+          // Replay the attack's WHOLE dispatcher branch with self = the boss.
+          // The branch does everything the real turn does — box tweaks,
+          // obj_purplecontrols with its `.mode`, heart markers, then
+          // scr_bulletspawner with type/difficulty — so nothing is guessed.
+          if (pendingAttack.setup && bossInst
+              && runSnippet(pendingAttack.setup, bossInst, 'dispatcher')) {
+            for (let i = runtime.instances.length - 1; i >= 0; i--) {
+              const inst = runtime.instances[i];
+              if (!inst.destroyed && inst.object_name === pendingAttack.controller) {
+                mainInst = inst;
+                break;
+              }
+            }
+          }
+          // Manual fallback (unbraced branches, replay errors): spawn the
+          // controller exactly as the boss does. scr_bulletspawner stamps
+          // creator/creatorid/target/damage — a direct createInstance left all
+          // four unset, which subtly corrupted every attack that reads them.
+          if (!mainInst) {
+            const bx = bossInst ? bossInst.x : 320;
+            const by = bossInst ? bossInst.y : 180;
+            if (bossInst) {
+              // scrCall JIT-compiles scr_bulletspawner on first use.
+              mainInst = H2.scrCall('scr_bulletspawner', bossInst, [bx, by, objName]);
+            }
+            if (!mainInst || typeof mainInst !== 'object') {
+              mainInst = runtime.createInstance(objName, bx, by);
+            }
+            if (mainInst) {
+              if (pendingAttack.type !== null && pendingAttack.type !== undefined) {
+                mainInst.type = pendingAttack.type;
+              }
+              // A dispatcher that pins a literal (`dc.difficulty = 0`) means that
+            // value IS the attack — Pink's finale pins 0 because obj_pinknodeact
+            // ramps it 0->4 itself as nodes are cleared. Only forward the UI
+            // setting where the boss passes its own difficulty through.
+            if (pendingAttack.difficultyLiteral !== null && pendingAttack.difficultyLiteral !== undefined) {
+              mainInst.difficulty = pendingAttack.difficultyLiteral;
+            } else if (pendingAttack.usesDifficulty) {
+              mainInst.difficulty = diff;
+            }
+            }
+          }
+          if (mainInst) {
+            if (pendingAttack.hasSpecial && hell) mainInst.special = 1;
+            // Boss-specific controller flags (e.g. ch1 sets `joker = 1` on the
+            // controller after dispatch, and its whole Jevil section gates on it).
+            if (pendingAttack.controllerSet) Object.assign(mainInst, pendingAttack.controllerSet);
+          }
+        } else {
+          mainInst = runtime.createInstance(objName, 320, 240);
+          // A child bullet tested on its own never gets its controller's cue to
+          // advance, so nudge it past the idle state.
+          if (mainInst && mainInst.con === 0) mainInst.con = 2;
+        }
+      }
+
+      // Adopt whatever box the replayed GML created; only if NO code made one
+      // (raw objects, replay failures) fall back to a default box — the real
+      // object still, so its Create/Step run the grow machine either way.
+      if (!isDate) {
+        let gt = syncGrowtangle();
+        if (!gt) {
+          H2.ensureClass('obj_growtangle');
+          gt = runtime.createInstance('obj_growtangle', 320, 170);
+          runtime.growtangle = gt;
+        }
+        // Purple attacks: obj_purplecontrols owns the soul (canmove = 0).
+        // Everyone else starts centred in the box, as scr_moveheart leaves it.
+        // Centred means the soul's MIDDLE, not its top-left anchor.
+        if (Number(runtime.soul.canmove) !== 0 || isNaN(runtime.soul.x)) {
+          centreSoulOn(gt.x, gt.y);
+        }
+      }
+
+      // If nothing in the replayed GML set a duration, apply the same
+      // pre-attack floor the bosses themselves use (`scr_turntimer(90)` in the
+      // mnfight == 1.5 block). Controllers that set their own longer duration on
+      // their first Step still raise it, because scr_turntimer only clamps up.
+      // The boss's TURN-LENGTH ladder, replayed like the box block. It lives
+      // outside the dispatcher branch, so the per-attack `setup` slice cannot
+      // contain it, and without it every attack fell back to the 90-frame floor
+      // below — which for the Knight's Stars meant `global.turntimer += 30`
+      // producing 120 against its own `endtimer` of 120, so it hit its
+      // terminate check on frame ONE and never spawned a star.
+      if (pendingAttack && bossInst && bossDispatched) {
+        const turnGML = (window.GML_ATTACKS_TURNSETUP || {})[pendingAttack.boss];
+        if (turnGML) runSnippet(turnGML, bossInst, 'turn length');
+      }
+
+      if (!(Number(window.turntimer) > 0)) window.turntimer = 90;
+      // Re-assert the phase LAST. obj_battlecontroller's own Create resets
+      // global.mnfight to 0 (it expects to be created before a fight begins),
+      // and its Step only counts the turn down while mnfight == 2 — so setting
+      // the phase before the battle context is built silently disables the clock.
+      //
+      // EXCEPT for a boss-driven chart (Gerson's green soul). There the BOSS is
+      // the attack: we hand-select a pattern, call its chart builder and start
+      // its attackcon machine. Phase "bullets" also unlocks the boss's own
+      // dispatcher, which re-picks the pattern from `trueturn` and resets rtimer
+      // every step — it fights the launch and nothing spawns. The boss owns its
+      // own timing here, so leave the phase alone and let it drive.
+      if (!(pendingAttack && pendingAttack.launch === 'gerson-green')) window.mnfight = 2;
+
+      // Keep this short: the readouts in the top-right share the row.
+      const label = pendingAttack ? pendingAttack.name : objName;
+      document.getElementById('statusText').textContent = 'Running ' + label;
       document.getElementById('statusText').style.color = '#38d878';
     } catch(err) {
-      document.getElementById('statusText').textContent = 'Translation Error';
+      document.getElementById('statusText').textContent = 'Error';
       document.getElementById('statusText').style.color = '#ff5a5a';
-      document.getElementById('errorLog').style.display = 'block';
-      document.getElementById('errorLog').textContent = 'Translation Exception:\n' + err.stack;
-      console.error('Translation Exception:', err);
+      logError('TRANSLATION ERROR:\n' + err.message + '\n' + err.stack);
     }
   }
 
   document.getElementById('btnTranslate').addEventListener('click', translateAndPlay);
   document.getElementById('btnReset').addEventListener('click', () => {
     runtime = new GMLRuntimeEnvironment();
+    uniqueErrors.clear();
+    if (document.getElementById('errCount')) document.getElementById('errCount').textContent = '0';
+    errorLogEl.textContent = '';
+    document.getElementById('statusText').textContent = 'Ready';
+    document.getElementById('statusText').style.color = '';
+  });
+  document.getElementById('btnPause').addEventListener('click', () => {
+    paused = !paused;
+    document.getElementById('btnPause').textContent = paused ? '▶ Resume' : '⏸ Pause';
   });
 
-  // Main Render Loop (60 FPS)
+  // ═══════════════════════════════════════════
+  // MAIN GAME LOOP (CRASH-PROOF)
+  // ═══════════════════════════════════════════
+
   let lastTime = performance.now(), frameCount = 0, fps = 60;
+  let lastStepTime = performance.now();
+  const stepInterval = 1000 / 30; // Fixed 30 FPS step cadence (GameMaker room_speed = 30 1:1)
+
   function gameLoop(now) {
+    // FPS counter
     frameCount++;
     if (now - lastTime >= 1000) {
       fps = frameCount;
@@ -485,44 +1619,103 @@ if (timer % 34 == 0) {
       document.getElementById('fpsText').textContent = fps;
     }
 
-    updateSoul();
-    runtime.step();
+    // Update sprite status
+    if (gmlAssets) {
+      const st = gmlAssets.getLoadStatus();
+      if (st.requested > 0) {
+        document.getElementById('spriteStatus').textContent =
+          `Sprites: ${st.loaded}/${st.requested} loaded` + (st.failed > 0 ? ` (${st.failed} failed)` : '');
+      } else {
+        document.getElementById('spriteStatus').textContent = 'Sprites: Ready';
+      }
+    }
 
-    // Render Canvas
+    // Soul movement
+    try { updateSoul(); } catch(e) { /* soul movement should never crash */ }
+
+    // Step all instances at fixed 30 FPS (GameMaker room_speed = 30 1:1)
+    const dt = now - lastStepTime;
+    if (dt >= stepInterval) {
+      if (!paused) {
+        // Feed held + pressed-edge input to the game's *_h()/*_p()/button*
+        // functions once per STEP (obj_spearblocker aims the green shield with
+        // these; edges must be per game step, not per key event).
+        {
+          const gi = window.$gmlInput || (window.$gmlInput = {});
+          const dn = {
+            l: !!(keys['ArrowLeft'] || keys['a'] || keys['A']),
+            r: !!(keys['ArrowRight'] || keys['d'] || keys['D']),
+            u: !!(keys['ArrowUp'] || keys['w'] || keys['W']),
+            d: !!(keys['ArrowDown'] || keys['s'] || keys['S']),
+            z: !!(keys['z'] || keys['Z'] || keys['Enter']),
+            x: !!(keys['x'] || keys['X'] || keys['Shift']),
+            c: !!(keys['c'] || keys['C']),
+          };
+          gi.lp = dn.l && !gi.l; gi.rp = dn.r && !gi.r;
+          gi.up = dn.u && !gi.u; gi.dp = dn.d && !gi.d;
+          gi.zp = dn.z && !gi.z; gi.xp = dn.x && !gi.x; gi.cp = dn.c && !gi.c;
+
+          // The game's OWN input scripts (up_h, left_p, button1_h...) read
+          // global.input_held / input_pressed / input_released — arrays that
+          // obj_time normally fills. Feed them directly with the real index
+          // layout: 0=down 1=right 2=up 3=left, 4/7=confirm, 5/8=cancel,
+          // 6/9=menu. Without these the compiled input scripts saw zeros, which
+          // is why the green-soul shield never rotated.
+          window.input_held = [dn.d, dn.r, dn.u, dn.l, dn.z, dn.x, dn.c, dn.z, dn.x, dn.c].map(Number);
+          window.input_pressed = [gi.dp, gi.rp, gi.up, gi.lp, gi.zp, gi.xp, gi.cp, gi.zp, gi.xp, gi.cp].map(Number);
+          window.input_released = [
+            !dn.d && gi.d, !dn.r && gi.r, !dn.u && gi.u, !dn.l && gi.l,
+            !dn.z && gi.z, !dn.x && gi.x, !dn.c && gi.c,
+            !dn.z && gi.z, !dn.x && gi.x, !dn.c && gi.c,
+          ].map(Number);
+
+          gi.l = dn.l; gi.r = dn.r; gi.u = dn.u; gi.d = dn.d;
+          gi.z = dn.z; gi.x = dn.x; gi.c = dn.c;
+        }
+        try { runtime.step(); } catch(e) {
+          logError('STEP CRASH: ' + e.message);
+        }
+        try { tickTurnTimer(); } catch(e) { logError('turn timer: ' + e.message); }
+        if (yCharging) yChargeFrames++;   // yellow-soul charge, in game steps
+      }
+      lastStepTime = now - (dt % stepInterval);
+    }
+
+    // ── RENDER ──
+    // Set active context for drawing functions
+    setActiveCtx(ctx);
+
+    // Clear canvas
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Growtangle (Battle Box)
-    const bx = runtime.growtangle.x || 320, by = runtime.growtangle.y || 240;
-    const bw = (runtime.growtangle.width || 160) * Math.abs(runtime.growtangle.image_xscale || 1);
-    const bh = (runtime.growtangle.height || 160) * Math.abs(runtime.growtangle.image_yscale || 1);
+    // Draw everything through the depth pipeline. The box outline and the SOUL
+    // are runtime overlays at depth 0 (registered in translateAndPlay), so
+    // negative-depth bullets correctly pass OVER them and positive-depth
+    // sprites sit behind — they are no longer painted before/after everything.
+    try { runtime.draw(ctx); } catch(e) {
+      logError('DRAW CRASH: ' + e.message);
+    }
 
-    ctx.strokeStyle = '#00ff00';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(bx - bw / 2, by - bh / 2, bw, bh);
-
-    // Draw Instances
-    runtime.draw(ctx);
-
-    // Draw Soul
-    ctx.fillStyle = '#ff0000';
-    ctx.beginPath();
-    ctx.arc(runtime.soul.x, runtime.soul.y, 6, 0, Math.PI * 2);
-    ctx.fill();
-
+    // Instance count
     document.getElementById('instCount').textContent = runtime.instances.length;
 
+    // ALWAYS schedule next frame
     requestAnimationFrame(gameLoop);
   }
 
+  // Start the loop
   requestAnimationFrame(gameLoop);
 
-  // Auto-load default preset
-  document.getElementById('presetSelect').value = 'knight_star';
-  document.getElementById('presetSelect').dispatchEvent(new Event('change'));
-  
-  // Auto-run initial translation on load
-  setTimeout(translateAndPlay, 100);
+  // Auto-load first valid boss attack controller preset
+  for (let i = 0; i < presetSelect.options.length; i++) {
+    if (presetSelect.options[i].value) {
+      presetSelect.selectedIndex = i;
+      presetSelect.dispatchEvent(new Event('change'));
+      break;
+    }
+  }
+
 })();
 </script>
 </body>

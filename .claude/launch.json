@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "dv-docs",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8402", "--directory", "docs"],
-      "port": 8402
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/serve.js"],
+      "port": 8399
     }
   ]
 }

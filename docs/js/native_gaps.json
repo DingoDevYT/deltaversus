@@ -1,0 +1,2447 @@
+[
+ {
+  "name": "layer_set_visible",
+  "calls": 666,
+  "example": "ch1/__background_set_internal.gml"
+ },
+ {
+  "name": "ds_map_set",
+  "calls": 213,
+  "example": "ch1/ossafe_file_text_close.gml"
+ },
+ {
+  "name": "ini_read_real",
+  "calls": 205,
+  "example": "ch1/scr_84_load_ini.gml"
+ },
+ {
+  "name": "ini_write_real",
+  "calls": 180,
+  "example": "ch1/scr_chapter_save_file_exists.gml"
+ },
+ {
+  "name": "file_text_writeln",
+  "calls": 153,
+  "example": "ch1/ossafe_file_text_writeln.gml"
+ },
+ {
+  "name": "layer_get_id",
+  "calls": 150,
+  "example": "ch2/obj_battleLayerHighlight_Draw_0.gml"
+ },
+ {
+  "name": "layer_get_all_elements",
+  "calls": 136,
+  "example": "ch1/tile_get_ids_at_depth.gml"
+ },
+ {
+  "name": "audio_sound_set_track_position",
+  "calls": 132,
+  "example": "ch1/obj_legend_Draw_0.gml"
+ },
+ {
+  "name": "file_text_write_real",
+  "calls": 129,
+  "example": "ch1/ossafe_file_text_write_real.gml"
+ },
+ {
+  "name": "sprite_delete",
+  "calls": 121,
+  "example": "ch1/obj_gameover_init_Step_0.gml"
+ },
+ {
+  "name": "audio_sound_get_track_position",
+  "calls": 108,
+  "example": "ch1/obj_legend_Draw_0.gml"
+ },
+ {
+  "name": "gamepad_button_check_pressed",
+  "calls": 93,
+  "example": "ch2/obj_spamton_enemy_Step_0.gml"
+ },
+ {
+  "name": "layer_get_depth",
+  "calls": 85,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "asset_get_index",
+  "calls": 72,
+  "example": "ch1/scr_84_get_sound.gml"
+ },
+ {
+  "name": "file_text_readln",
+  "calls": 71,
+  "example": "ch1/ossafe_file_text_readln.gml"
+ },
+ {
+  "name": "layer_sprite_get_sprite",
+  "calls": 69,
+  "example": "ch1/obj_84_lang_helper_Create_0.gml"
+ },
+ {
+  "name": "layer_sprite_get_y",
+  "calls": 69,
+  "example": "ch2/obj_bg_givedepth_Other_4.gml"
+ },
+ {
+  "name": "file_text_read_real",
+  "calls": 64,
+  "example": "ch1/ossafe_file_text_read_real.gml"
+ },
+ {
+  "name": "layer_x",
+  "calls": 61,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_y",
+  "calls": 61,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "buffer_async_group_option",
+  "calls": 60,
+  "example": "ch1/ossafe_savedata_load.gml"
+ },
+ {
+  "name": "sprite_get_texture",
+  "calls": 60,
+  "example": "ch2/draw_sprite_ext_mode.gml"
+ },
+ {
+  "name": "layer_get_all",
+  "calls": 59,
+  "example": "ch1/tile_get_ids_at_depth.gml"
+ },
+ {
+  "name": "file_text_write_string",
+  "calls": 58,
+  "example": "ch1/ossafe_file_text_write_string.gml"
+ },
+ {
+  "name": "ini_read_string",
+  "calls": 58,
+  "example": "ch1/scr_84_init_localization.gml"
+ },
+ {
+  "name": "ini_write_string",
+  "calls": 54,
+  "example": "ch1/scr_change_language.gml"
+ },
+ {
+  "name": "layer_get_y",
+  "calls": 53,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "game_change",
+  "calls": 50,
+  "example": "ch1/scr_chapterswitch.gml"
+ },
+ {
+  "name": "layer_sprite_get_xscale",
+  "calls": 50,
+  "example": "ch2/obj_bg_givedepth_Other_4.gml"
+ },
+ {
+  "name": "draw_get_font",
+  "calls": 46,
+  "example": "ch2/obj_battlecontroller_Draw_0.gml"
+ },
+ {
+  "name": "instance_place_list",
+  "calls": 46,
+  "example": "ch4/obj_bookshelf_moveable2x2_Step_0.gml"
+ },
+ {
+  "name": "shader_get_sampler_index",
+  "calls": 45,
+  "example": "ch2/pal_swap_init_system.gml"
+ },
+ {
+  "name": "layer_sprite_get_yscale",
+  "calls": 45,
+  "example": "ch2/obj_bg_givedepth_Other_4.gml"
+ },
+ {
+  "name": "get_string",
+  "calls": 44,
+  "example": "ch2/obj_spritecomparer_Draw_0.gml"
+ },
+ {
+  "name": "ini_close",
+  "calls": 43,
+  "example": "ch1/ossafe_ini_close.gml"
+ },
+ {
+  "name": "layer_get_x",
+  "calls": 43,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "room_goto_next",
+  "calls": 43,
+  "example": "ch1/obj_checker_animtest_Step_0.gml"
+ },
+ {
+  "name": "texture_set_stage",
+  "calls": 43,
+  "example": "ch2/pal_swap_set.gml"
+ },
+ {
+  "name": "draw_surface_part",
+  "calls": 43,
+  "example": "ch3/scr_appsurface_copy.gml"
+ },
+ {
+  "name": "layer_sprite_get_x",
+  "calls": 43,
+  "example": "ch3/obj_ch3_PGS01B_convo_Create_0.gml"
+ },
+ {
+  "name": "layer_destroy",
+  "calls": 42,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_hspeed",
+  "calls": 42,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "font_add_sprite_ext",
+  "calls": 41,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "sprite_get_uvs",
+  "calls": 40,
+  "example": "ch2/pal_swap_set.gml"
+ },
+ {
+  "name": "layer_sprite_get_index",
+  "calls": 40,
+  "example": "ch2/obj_bg_givedepth_Other_4.gml"
+ },
+ {
+  "name": "layer_depth",
+  "calls": 38,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "collision_rectangle_list",
+  "calls": 38,
+  "example": "ch3/obj_board_camera_Step_0.gml"
+ },
+ {
+  "name": "ini_open",
+  "calls": 34,
+  "example": "ch1/ossafe_ini_open.gml"
+ },
+ {
+  "name": "sprite_get_name",
+  "calls": 32,
+  "example": "ch1/obj_84_lang_helper_Create_0.gml"
+ },
+ {
+  "name": "window_set_size",
+  "calls": 32,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "layer_get_name",
+  "calls": 29,
+  "example": "ch1/__background_get_colour_element.gml"
+ },
+ {
+  "name": "layer_sprite_get_speed",
+  "calls": 29,
+  "example": "ch2/obj_bg_givedepth_Other_4.gml"
+ },
+ {
+  "name": "layer_sprite_destroy",
+  "calls": 28,
+  "example": "ch1/obj_84_lang_helper_Create_0.gml"
+ },
+ {
+  "name": "room_next",
+  "calls": 27,
+  "example": "ch1/obj_doorC_Alarm_2.gml"
+ },
+ {
+  "name": "surface_copy",
+  "calls": 27,
+  "example": "ch3/obj_fx_zoom_Draw_73.gml"
+ },
+ {
+  "name": "path_set_kind",
+  "calls": 26,
+  "example": "ch2/obj_berdlyb_spearblast_Step_0.gml"
+ },
+ {
+  "name": "layer_sprite_get_angle",
+  "calls": 26,
+  "example": "ch4/findsprite.gml"
+ },
+ {
+  "name": "layer_sprite_get_blend",
+  "calls": 26,
+  "example": "ch4/findsprite.gml"
+ },
+ {
+  "name": "audio_set_master_gain",
+  "calls": 25,
+  "example": "ch1/scr_gamestart.gml"
+ },
+ {
+  "name": "vertex_colour",
+  "calls": 25,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "vertex_normal",
+  "calls": 25,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "file_text_close",
+  "calls": 24,
+  "example": "ch1/ossafe_file_text_close.gml"
+ },
+ {
+  "name": "buffer_delete",
+  "calls": 24,
+  "example": "ch1/scr_84_load_map_json.gml"
+ },
+ {
+  "name": "layer_tilemap_get_id",
+  "calls": 24,
+  "example": "ch2/obj_battleLayerHighlight_Draw_0.gml"
+ },
+ {
+  "name": "vertex_position",
+  "calls": 24,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "json_decode",
+  "calls": 23,
+  "example": "ch1/scr_84_load_map_json.gml"
+ },
+ {
+  "name": "audio_sound_length",
+  "calls": 23,
+  "example": "ch2/c_soundplay_wait.gml"
+ },
+ {
+  "name": "layer_sprite_get_alpha",
+  "calls": 23,
+  "example": "ch4/findsprite.gml"
+ },
+ {
+  "name": "buffer_create",
+  "calls": 22,
+  "example": "ch1/ossafe_savedata_load.gml"
+ },
+ {
+  "name": "draw_text_ext_transformed_color",
+  "calls": 22,
+  "example": "ch3/obj_dw_ranking_hub_sign_Draw_0.gml"
+ },
+ {
+  "name": "lerp_in",
+  "calls": 22,
+  "example": "ch5/obj_platswap_Other_10.gml"
+ },
+ {
+  "name": "lerp_out",
+  "calls": 22,
+  "example": "ch5/obj_platswap_Other_10.gml"
+ },
+ {
+  "name": "_copyfunc",
+  "calls": 22,
+  "example": "ch5/obj_script_delayed_function_Other_10.gml"
+ },
+ {
+  "name": "layer_background_blend",
+  "calls": 21,
+  "example": "ch1/__background_set_colour.gml"
+ },
+ {
+  "name": "audio_group_set_gain",
+  "calls": 20,
+  "example": "ch1/scr_load.gml"
+ },
+ {
+  "name": "layer_get_element_type",
+  "calls": 20,
+  "example": "ch1/tile_get_ids_at_depth.gml"
+ },
+ {
+  "name": "layer_create",
+  "calls": 20,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_background_htiled",
+  "calls": 20,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "instance_activate_object",
+  "calls": 19,
+  "example": "ch1/obj_boxpuzzle_event_Step_0.gml"
+ },
+ {
+  "name": "surface_get_texture",
+  "calls": 19,
+  "example": "ch2/pal_swap_set.gml"
+ },
+ {
+  "name": "file_text_open_write",
+  "calls": 18,
+  "example": "ch1/ossafe_file_text_open_write.gml"
+ },
+ {
+  "name": "audio_pause_all",
+  "calls": 18,
+  "example": "ch1/switch_asyncPause.gml"
+ },
+ {
+  "name": "layer_script_begin",
+  "calls": 18,
+  "example": "ch2/pal_swap_enable_layer.gml"
+ },
+ {
+  "name": "sprite_duplicate",
+  "calls": 18,
+  "example": "ch2/obj_spritecomparer_Create_0.gml"
+ },
+ {
+  "name": "animcurve_get_channel",
+  "calls": 18,
+  "example": "ch4/obj_fancy_ripples_alt_Create_0.gml"
+ },
+ {
+  "name": "instance_create_layer",
+  "calls": 18,
+  "example": "ch4/obj_gigaprophecy_Create_0.gml"
+ },
+ {
+  "name": "layer_background_alpha",
+  "calls": 17,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_script_end",
+  "calls": 17,
+  "example": "ch2/pal_swap_enable_layer.gml"
+ },
+ {
+  "name": "tilemap_get_at_pixel",
+  "calls": 17,
+  "example": "ch4/obj_rotating_tower_animation_Create_0.gml"
+ },
+ {
+  "name": "buffer_read",
+  "calls": 16,
+  "example": "ch1/scr_84_load_map_json.gml"
+ },
+ {
+  "name": "layer_get_visible",
+  "calls": 16,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "view_set_surface_id",
+  "calls": 16,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "camera_destroy",
+  "calls": 16,
+  "example": "ch3/obj_puzzlecloset_manager_Create_0.gml"
+ },
+ {
+  "name": "tilemap_get",
+  "calls": 16,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "window_set_caption",
+  "calls": 15,
+  "example": "ch1/scr_windowcaption.gml"
+ },
+ {
+  "name": "layer_background_get_blend",
+  "calls": 15,
+  "example": "ch1/__background_get_colour.gml"
+ },
+ {
+  "name": "layer_background_create",
+  "calls": 15,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_background_xscale",
+  "calls": 15,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_background_yscale",
+  "calls": 15,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "view_set_wport",
+  "calls": 15,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "view_set_hport",
+  "calls": 15,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "room_goto_previous",
+  "calls": 15,
+  "example": "ch1/obj_doorB_Alarm_2.gml"
+ },
+ {
+  "name": "room_previous",
+  "calls": 15,
+  "example": "ch1/obj_doorD_Alarm_2.gml"
+ },
+ {
+  "name": "gamepad_get_description",
+  "calls": 15,
+  "example": "ch1/obj_gamecontroller_Other_75.gml"
+ },
+ {
+  "name": "draw_tilemap",
+  "calls": 15,
+  "example": "ch2/obj_battleLayerHighlight_Draw_0.gml"
+ },
+ {
+  "name": "path_get_y",
+  "calls": 15,
+  "example": "ch2/obj_berdlyb_spearblast_Draw_0.gml"
+ },
+ {
+  "name": "surface_copy_part",
+  "calls": 15,
+  "example": "ch3/obj_board_controller_Draw_0.gml"
+ },
+ {
+  "name": "draw_path",
+  "calls": 14,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "layer_vspeed",
+  "calls": 14,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "camera_set_view_target",
+  "calls": 14,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "instance_deactivate_object",
+  "calls": 14,
+  "example": "ch1/obj_boxpuzzle_event_Create_0.gml"
+ },
+ {
+  "name": "path_get_x",
+  "calls": 14,
+  "example": "ch2/obj_berdlyb_spearblast_Draw_0.gml"
+ },
+ {
+  "name": "addshroom",
+  "calls": 14,
+  "example": "ch5/scr_mushroomstack_helpers.gml"
+ },
+ {
+  "name": "audio_resume_all",
+  "calls": 13,
+  "example": "ch1/switch_asyncPause.gml"
+ },
+ {
+  "name": "camera_set_view_border",
+  "calls": 13,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "_callback",
+  "calls": 13,
+  "example": "ch1/obj_screen_loading_Alarm_0.gml"
+ },
+ {
+  "name": "variable_instance_get_names",
+  "calls": 13,
+  "example": "ch2/scr_cutscene_savestate.gml"
+ },
+ {
+  "name": "file_text_read_string",
+  "calls": 12,
+  "example": "ch1/ossafe_file_text_read_string.gml"
+ },
+ {
+  "name": "buffer_async_group_begin",
+  "calls": 12,
+  "example": "ch1/ossafe_savedata_load.gml"
+ },
+ {
+  "name": "buffer_async_group_end",
+  "calls": 12,
+  "example": "ch1/ossafe_savedata_load.gml"
+ },
+ {
+  "name": "string_split",
+  "calls": 12,
+  "example": "ch1/scr_init_launch_parameters.gml"
+ },
+ {
+  "name": "gpu_set_texfilter",
+  "calls": 12,
+  "example": "ch1/texture_set_interpolation.gml"
+ },
+ {
+  "name": "layer_background_vtiled",
+  "calls": 12,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "layer_background_stretch",
+  "calls": 12,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "window_set_fullscreen",
+  "calls": 12,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "ds_priority_clear",
+  "calls": 12,
+  "example": "ch2/pal_swap_layer_reset.gml"
+ },
+ {
+  "name": "set_screen_color",
+  "calls": 12,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "draw_tile",
+  "calls": 12,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "file_text_open_read",
+  "calls": 11,
+  "example": "ch1/ossafe_file_text_open_read.gml"
+ },
+ {
+  "name": "layer_get_hspeed",
+  "calls": 11,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "vertex_create_buffer",
+  "calls": 11,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "draw_get_halign",
+  "calls": 11,
+  "example": "ch2/obj_queen_search_window_Draw_0.gml"
+ },
+ {
+  "name": "draw_get_valign",
+  "calls": 11,
+  "example": "ch2/obj_queen_search_window_Draw_0.gml"
+ },
+ {
+  "name": "ds_priority_destroy",
+  "calls": 11,
+  "example": "ch3/scr_custom_pal_swapper.gml"
+ },
+ {
+  "name": "part_type_destroy",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_CleanUp_0.gml"
+ },
+ {
+  "name": "part_type_create",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_type_sprite",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_type_speed",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_type_life",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_type_direction",
+  "calls": 11,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "makeasset",
+  "calls": 11,
+  "example": "ch5/obj_dw_fcastle_left_twodoors_Create_0.gml"
+ },
+ {
+  "name": "file_text_eof",
+  "calls": 10,
+  "example": "ch1/ossafe_file_text_eof.gml"
+ },
+ {
+  "name": "layer_background_get_sprite",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_htiled",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_vtiled",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_xscale",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_yscale",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_get_vspeed",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_alpha",
+  "calls": 10,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "camera_get_view_border_x",
+  "calls": 10,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_get_view_border_y",
+  "calls": 10,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_get_view_speed_x",
+  "calls": 10,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_get_view_speed_y",
+  "calls": 10,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_set_view_speed",
+  "calls": 10,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "file_copy",
+  "calls": 10,
+  "example": "ch1/DEVICE_MENU_Other_15.gml"
+ },
+ {
+  "name": "switch_controller_support_get_selected_id",
+  "calls": 10,
+  "example": "ch1/obj_gamecontroller_Other_75.gml"
+ },
+ {
+  "name": "gamepad_test_mapping",
+  "calls": 10,
+  "example": "ch1/obj_gamecontroller_Other_75.gml"
+ },
+ {
+  "name": "gamepad_get_guid",
+  "calls": 10,
+  "example": "ch1/obj_gamecontroller_Step_1.gml"
+ },
+ {
+  "name": "switch_accounts_select_account",
+  "calls": 10,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "switch_accounts_open_user",
+  "calls": 10,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "os_is_paused",
+  "calls": 10,
+  "example": "ch1/obj_time_Draw_75.gml"
+ },
+ {
+  "name": "ds_priority_create",
+  "calls": 10,
+  "example": "ch2/pal_swap_init_system.gml"
+ },
+ {
+  "name": "camera_create_view",
+  "calls": 10,
+  "example": "ch3/obj_puzzlecloset_manager_Create_0.gml"
+ },
+ {
+  "name": "audio_get_name",
+  "calls": 10,
+  "example": "ch3/obj_snd_maker_Create_0.gml"
+ },
+ {
+  "name": "part_system_destroy",
+  "calls": 10,
+  "example": "ch4/obj_climb_explosion_CleanUp_0.gml"
+ },
+ {
+  "name": "part_system_create",
+  "calls": 10,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_system_automatic_draw",
+  "calls": 10,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_emitter_create",
+  "calls": 10,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_emitter_region",
+  "calls": 10,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "gpu_set_texrepeat",
+  "calls": 10,
+  "example": "ch5/d3d_draw_block.gml"
+ },
+ {
+  "name": "buffer_get_size",
+  "calls": 9,
+  "example": "ch1/ossafe_savedata_save.gml"
+ },
+ {
+  "name": "audio_group_load",
+  "calls": 9,
+  "example": "ch1/scr_load_audio.gml"
+ },
+ {
+  "name": "texturegroup_get_textures",
+  "calls": 9,
+  "example": "ch1/scr_prefetch_textures.gml"
+ },
+ {
+  "name": "texture_prefetch",
+  "calls": 9,
+  "example": "ch1/scr_prefetch_textures.gml"
+ },
+ {
+  "name": "layer_background_visible",
+  "calls": 9,
+  "example": "ch1/__background_set_element.gml"
+ },
+ {
+  "name": "gamepad_get_device_count",
+  "calls": 9,
+  "example": "ch1/obj_gamecontroller_Step_1.gml"
+ },
+ {
+  "name": "object_get_sprite",
+  "calls": 9,
+  "example": "ch1/obj_testoverworldenemy_Step_0.gml"
+ },
+ {
+  "name": "layer_exists",
+  "calls": 9,
+  "example": "ch2/pal_swap_enable_layer.gml"
+ },
+ {
+  "name": "ds_priority_add",
+  "calls": 9,
+  "example": "ch2/pal_swap_enable_layer.gml"
+ },
+ {
+  "name": "screen_save",
+  "calls": 9,
+  "example": "ch2/obj_title_placeholder_Step_2.gml"
+ },
+ {
+  "name": "layer_sprite_get_id",
+  "calls": 9,
+  "example": "ch2/obj_weirdroute_manipulator_Create_0.gml"
+ },
+ {
+  "name": "set_screen_con",
+  "calls": 9,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "get_integer",
+  "calls": 9,
+  "example": "ch3/obj_snd_maker_Step_0.gml"
+ },
+ {
+  "name": "part_system_drawit",
+  "calls": 9,
+  "example": "ch4/obj_climb_explosion_Draw_0.gml"
+ },
+ {
+  "name": "tilemap_get_tileset",
+  "calls": 9,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "draw_arrow",
+  "calls": 8,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "vertex_format_begin",
+  "calls": 8,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "vertex_format_add_normal",
+  "calls": 8,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "vertex_format_add_colour",
+  "calls": 8,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "vertex_format_end",
+  "calls": 8,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "game_get_speed",
+  "calls": 8,
+  "example": "ch2/scr_beatbullet.gml"
+ },
+ {
+  "name": "layer_background_get_id",
+  "calls": 8,
+  "example": "ch2/gml_Room_room_teacup_demoauto_Create.gml"
+ },
+ {
+  "name": "mp_grid_clear_cell",
+  "calls": 8,
+  "example": "ch3/obj_b2bombfun_Step_0.gml"
+ },
+ {
+  "name": "show_question",
+  "calls": 8,
+  "example": "ch3/obj_mainchara_board_KeyPress_32.gml"
+ },
+ {
+  "name": "part_type_size",
+  "calls": 8,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "layer_sprite_index",
+  "calls": 8,
+  "example": "ch4/obj_dw_churchc_finalclimb_Create_0.gml"
+ },
+ {
+  "name": "animcurve_channel_evaluate",
+  "calls": 8,
+  "example": "ch4/obj_fancy_ripples_alt_Draw_0.gml"
+ },
+ {
+  "name": "part_emitter_stream",
+  "calls": 8,
+  "example": "ch4/obj_lightbeamfx_Create_0.gml"
+ },
+ {
+  "name": "sprite_get_info",
+  "calls": 8,
+  "example": "ch5/draw_shadowcast.gml"
+ },
+ {
+  "name": "dm",
+  "calls": 8,
+  "example": "ch5/obj_plat_antisoftlock_zone_Step_0.gml"
+ },
+ {
+  "name": "buffer_load_async",
+  "calls": 7,
+  "example": "ch1/ossafe_savedata_load.gml"
+ },
+ {
+  "name": "show_error",
+  "calls": 7,
+  "example": "ch1/scr_84_pop.gml"
+ },
+ {
+  "name": "window_get_fullscreen",
+  "calls": 7,
+  "example": "ch1/obj_time_Draw_75.gml"
+ },
+ {
+  "name": "path_set_precision",
+  "calls": 7,
+  "example": "ch2/obj_background_cyberlines_Draw_0.gml"
+ },
+ {
+  "name": "randomise",
+  "calls": 7,
+  "example": "ch2/obj_thrashmachine_backup_Step_0.gml"
+ },
+ {
+  "name": "vertex_begin",
+  "calls": 7,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "vertex_end",
+  "calls": 7,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "vertex_submit",
+  "calls": 7,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "gpu_get_blendmode",
+  "calls": 7,
+  "example": "ch3/obj_afterimage_blend_Draw_0.gml"
+ },
+ {
+  "name": "layer_background_speed",
+  "calls": 7,
+  "example": "ch3/obj_tenna_zoom_Other_11.gml"
+ },
+ {
+  "name": "part_emitter_destroy_all",
+  "calls": 7,
+  "example": "ch4/obj_climb_explosion_CleanUp_0.gml"
+ },
+ {
+  "name": "tilemap_get_cell_x_at_pixel",
+  "calls": 7,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "tilemap_get_cell_y_at_pixel",
+  "calls": 7,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "makenpc",
+  "calls": 7,
+  "example": "ch5/obj_dw_fcastle_left_twodoors_Create_0.gml"
+ },
+ {
+  "name": "os_get_info",
+  "calls": 6,
+  "example": "ch1/scr_controls_default.gml"
+ },
+ {
+  "name": "audio_destroy_stream",
+  "calls": 6,
+  "example": "ch1/obj_astream_Destroy_0.gml"
+ },
+ {
+  "name": "audio_is_paused",
+  "calls": 6,
+  "example": "ch2/obj_battlecontroller_Step_0.gml"
+ },
+ {
+  "name": "tilemap_x",
+  "calls": 6,
+  "example": "ch2/obj_ch2_city_car_a_Step_0.gml"
+ },
+ {
+  "name": "sprite_set_bbox",
+  "calls": 6,
+  "example": "ch2/obj_spritecomparer_Draw_0.gml"
+ },
+ {
+  "name": "layer_sprite_change",
+  "calls": 6,
+  "example": "ch2/obj_weirdroute_manipulator_Create_0.gml"
+ },
+ {
+  "name": "vertex_delete_buffer",
+  "calls": 6,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "mp_grid_add_cell",
+  "calls": 6,
+  "example": "ch3/obj_board_controller_Draw_0.gml"
+ },
+ {
+  "name": "audio_emitter_free",
+  "calls": 6,
+  "example": "ch3/obj_room_teevie_rhythm_CleanUp_0.gml"
+ },
+ {
+  "name": "gif_add_surface",
+  "calls": 6,
+  "example": "ch3/obj_time_Draw_77.gml"
+ },
+ {
+  "name": "part_type_gravity",
+  "calls": 6,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_system_update",
+  "calls": 6,
+  "example": "ch4/obj_lightbeamfx_Create_0.gml"
+ },
+ {
+  "name": "audio_get_recorder_count",
+  "calls": 6,
+  "example": "ch4/obj_micmenu_Create_0.gml"
+ },
+ {
+  "name": "camera_set_proj_mat",
+  "calls": 6,
+  "example": "ch5/d3d_set_perspective.gml"
+ },
+ {
+  "name": "environment_get_variable",
+  "calls": 5,
+  "example": "ch1/onSteamDeck.gml"
+ },
+ {
+  "name": "file_delete",
+  "calls": 5,
+  "example": "ch1/ossafe_file_delete.gml"
+ },
+ {
+  "name": "ds_map_set_post",
+  "calls": 5,
+  "example": "ch1/ossafe_file_text_readln.gml"
+ },
+ {
+  "name": "ini_open_from_string",
+  "calls": 5,
+  "example": "ch1/ossafe_ini_open.gml"
+ },
+ {
+  "name": "json_encode",
+  "calls": 5,
+  "example": "ch1/ossafe_savedata_save.gml"
+ },
+ {
+  "name": "buffer_write",
+  "calls": 5,
+  "example": "ch1/ossafe_savedata_save.gml"
+ },
+ {
+  "name": "buffer_save_async",
+  "calls": 5,
+  "example": "ch1/ossafe_savedata_save.gml"
+ },
+ {
+  "name": "draw_ellipse_color",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_ellipse_colour",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_point_color",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_point_colour",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect_color",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect_colour",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect_ext",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect_color_ext",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "draw_roundrect_colour_ext",
+  "calls": 5,
+  "example": "ch1/ossafe_shapes.gml"
+ },
+ {
+  "name": "buffer_load",
+  "calls": 5,
+  "example": "ch1/scr_84_load_map_json.gml"
+ },
+ {
+  "name": "ds_map_find_first",
+  "calls": 5,
+  "example": "ch1/scr_controls_default.gml"
+ },
+ {
+  "name": "ds_map_find_next",
+  "calls": 5,
+  "example": "ch1/scr_controls_default.gml"
+ },
+ {
+  "name": "ds_list_read",
+  "calls": 5,
+  "example": "ch1/scr_ds_list_read.gml"
+ },
+ {
+  "name": "ds_list_write",
+  "calls": 5,
+  "example": "ch1/scr_ds_list_write.gml"
+ },
+ {
+  "name": "parameter_count",
+  "calls": 5,
+  "example": "ch1/scr_init_launch_parameters.gml"
+ },
+ {
+  "name": "parameter_string",
+  "calls": 5,
+  "example": "ch1/scr_init_launch_parameters.gml"
+ },
+ {
+  "name": "audio_create_stream",
+  "calls": 5,
+  "example": "ch1/snd_init.gml"
+ },
+ {
+  "name": "layer_tile_x",
+  "calls": 5,
+  "example": "ch1/tile_layer_shift.gml"
+ },
+ {
+  "name": "layer_tile_get_x",
+  "calls": 5,
+  "example": "ch1/tile_layer_shift.gml"
+ },
+ {
+  "name": "layer_tile_y",
+  "calls": 5,
+  "example": "ch1/tile_layer_shift.gml"
+ },
+ {
+  "name": "layer_tile_get_y",
+  "calls": 5,
+  "example": "ch1/tile_layer_shift.gml"
+ },
+ {
+  "name": "layer_tile_alpha",
+  "calls": 5,
+  "example": "ch1/tile_set_alpha.gml"
+ },
+ {
+  "name": "layer_background_exists",
+  "calls": 5,
+  "example": "ch1/__background_get_internal.gml"
+ },
+ {
+  "name": "layer_background_get_stretch",
+  "calls": 5,
+  "example": "ch1/__background_set_internal.gml"
+ },
+ {
+  "name": "layer_background_change",
+  "calls": 5,
+  "example": "ch1/__background_set_internal.gml"
+ },
+ {
+  "name": "camera_create",
+  "calls": 5,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "vertex_format_add_position_3d",
+  "calls": 5,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "layer_force_draw_depth",
+  "calls": 5,
+  "example": "ch1/__init_global.gml"
+ },
+ {
+  "name": "camera_get_view_angle",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_get_view_target",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_visible",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_xport",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_yport",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_wport",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_hport",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "view_get_surface_id",
+  "calls": 5,
+  "example": "ch1/__view_get.gml"
+ },
+ {
+  "name": "camera_set_view_angle",
+  "calls": 5,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "view_set_visible",
+  "calls": 5,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "view_set_xport",
+  "calls": 5,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "view_set_yport",
+  "calls": 5,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "view_set_camera",
+  "calls": 5,
+  "example": "ch1/__view_set_internal.gml"
+ },
+ {
+  "name": "psn_load_modules",
+  "calls": 5,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "psn_init_np_libs",
+  "calls": 5,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "psn_post_uds_event",
+  "calls": 5,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "window_enable_borderless_fullscreen",
+  "calls": 5,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "switch_save_data_mount",
+  "calls": 5,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "switch_accounts_is_user_open",
+  "calls": 5,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "window_set_cursor",
+  "calls": 5,
+  "example": "ch1/obj_initializer2_Create_0.gml"
+ },
+ {
+  "name": "switch_controller_support_set_defaults",
+  "calls": 5,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "switch_controller_support_set_singleplayer_only",
+  "calls": 5,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "switch_controller_set_supported_styles",
+  "calls": 5,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "application_surface_enable",
+  "calls": 5,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "application_surface_draw_enable",
+  "calls": 5,
+  "example": "ch1/obj_time_Create_0.gml"
+ },
+ {
+  "name": "switch_save_data_commit",
+  "calls": 5,
+  "example": "ch1/obj_time_Other_72.gml"
+ },
+ {
+  "name": "window_center",
+  "calls": 5,
+  "example": "ch1/obj_time_Step_1.gml"
+ },
+ {
+  "name": "buffer_get_surface",
+  "calls": 5,
+  "example": "ch2/obj_shapepuzzle_Draw_0.gml"
+ },
+ {
+  "name": "layer_sprite_speed",
+  "calls": 5,
+  "example": "ch2/obj_weirdroute_manipulator_Create_0.gml"
+ },
+ {
+  "name": "gml_std_string_split",
+  "calls": 5,
+  "example": "ch3/scr_rhythmgame_tools.gml"
+ },
+ {
+  "name": "video_get_status",
+  "calls": 5,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "video_close",
+  "calls": 5,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "audio_emitter_create",
+  "calls": 5,
+  "example": "ch3/obj_room_teevie_rhythm_Create_0.gml"
+ },
+ {
+  "name": "audio_play_sound_on",
+  "calls": 5,
+  "example": "ch3/obj_room_teevie_rhythm_Create_0.gml"
+ },
+ {
+  "name": "layer_background_destroy",
+  "calls": 5,
+  "example": "ch3/obj_shootout_controller_CleanUp_0.gml"
+ },
+ {
+  "name": "mp_grid_path",
+  "calls": 5,
+  "example": "ch3/obj____KeyPress_105.gml"
+ },
+ {
+  "name": "audio_start_recording",
+  "calls": 5,
+  "example": "ch4/scr_mic_record.gml"
+ },
+ {
+  "name": "call_later",
+  "calls": 5,
+  "example": "ch4/obj_dw_church_arena_Step_0.gml"
+ },
+ {
+  "name": "gpu_get_texrepeat",
+  "calls": 5,
+  "example": "ch5/d3d_draw_block.gml"
+ },
+ {
+  "name": "texture_get_uvs",
+  "calls": 5,
+  "example": "ch5/d3d_primitive_begin_texture.gml"
+ },
+ {
+  "name": "matrix_build_identity",
+  "calls": 5,
+  "example": "ch5/d3d_transform_add_rotation_x.gml"
+ },
+ {
+  "name": "matrix_set",
+  "calls": 5,
+  "example": "ch5/d3d_transform_add_rotation_x.gml"
+ },
+ {
+  "name": "shader_set_uniform_f_array",
+  "calls": 5,
+  "example": "ch5/obj_castlereflect_Draw_0.gml"
+ },
+ {
+  "name": "tilemap_get_width",
+  "calls": 5,
+  "example": "ch5/obj_gardenlight_Draw_0.gml"
+ },
+ {
+  "name": "tilemap_get_height",
+  "calls": 5,
+  "example": "ch5/obj_gardenlight_Draw_0.gml"
+ },
+ {
+  "name": "tilemap_set",
+  "calls": 5,
+  "example": "ch5/obj_grassanim_Create_0.gml"
+ },
+ {
+  "name": "psn_init_trophy",
+  "calls": 4,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "psn_get_trophy_unlock_state",
+  "calls": 4,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "psn_unlock_trophy",
+  "calls": 4,
+  "example": "ch1/obj_event_manager_Create_0.gml"
+ },
+ {
+  "name": "psn_tick",
+  "calls": 4,
+  "example": "ch1/obj_event_manager_Step_0.gml"
+ },
+ {
+  "name": "ds_priority_copy",
+  "calls": 4,
+  "example": "ch2/_pal_swap_layer_end.gml"
+ },
+ {
+  "name": "ds_priority_delete_min",
+  "calls": 4,
+  "example": "ch2/_pal_swap_layer_start.gml"
+ },
+ {
+  "name": "vertex_format_add_texcoord",
+  "calls": 4,
+  "example": "ch2/__init_d3d.gml"
+ },
+ {
+  "name": "layer_get_id_at_depth",
+  "calls": 4,
+  "example": "ch2/obj_ch2_scene8_Create_0.gml"
+ },
+ {
+  "name": "buffer_md5",
+  "calls": 4,
+  "example": "ch2/obj_shapepuzzle_Draw_0.gml"
+ },
+ {
+  "name": "gamepad_is_connected",
+  "calls": 4,
+  "example": "ch2/obj_time_Step_1.gml"
+ },
+ {
+  "name": "layer_sprite_y",
+  "calls": 4,
+  "example": "ch2/obj_weirdroute_manipulator_Create_0.gml"
+ },
+ {
+  "name": "keyboard_check_direct",
+  "calls": 4,
+  "example": "ch3/scr_input_manager.gml"
+ },
+ {
+  "name": "point_distance_3d",
+  "calls": 4,
+  "example": "ch3/Vector3.gml"
+ },
+ {
+  "name": "video_get_duration",
+  "calls": 4,
+  "example": "ch3/obj_ch3_couch_video_Draw_0.gml"
+ },
+ {
+  "name": "layer_background_sprite",
+  "calls": 4,
+  "example": "ch3/obj_room_console_room_Create_0.gml"
+ },
+ {
+  "name": "room_get_name",
+  "calls": 4,
+  "example": "ch4/scr_itemuse.gml"
+ },
+ {
+  "name": "gamepad_button_value",
+  "calls": 4,
+  "example": "ch4/scr_shoulder.gml"
+ },
+ {
+  "name": "part_emitter_burst",
+  "calls": 4,
+  "example": "ch4/obj_climb_explosion_Step_0.gml"
+ },
+ {
+  "name": "audio_listener_position",
+  "calls": 4,
+  "example": "ch4/obj_darkness_sound_attack_Create_0.gml"
+ },
+ {
+  "name": "layer_sprite_blend",
+  "calls": 4,
+  "example": "ch4/obj_dw_churchb_libraryconnector_Create_0.gml"
+ },
+ {
+  "name": "draw_surface_tiled_ext",
+  "calls": 4,
+  "example": "ch4/obj_gigaprophecy_Draw_0.gml"
+ },
+ {
+  "name": "audio_emitter_position",
+  "calls": 4,
+  "example": "ch4/obj_homealone_kitchen_Step_0.gml"
+ },
+ {
+  "name": "camera_apply",
+  "calls": 4,
+  "example": "ch4/obj_ppfx_motionblur_Draw_0.gml"
+ },
+ {
+  "name": "layer_instance_get_instance",
+  "calls": 4,
+  "example": "ch4/obj_room_castle_town_Create_0.gml"
+ },
+ {
+  "name": "tile_get_index",
+  "calls": 4,
+  "example": "ch4/obj_rotating_tower_controller_new_Create_0.gml"
+ },
+ {
+  "name": "surface_save",
+  "calls": 4,
+  "example": "ch4/obj_rotating_tower_controller_new_Draw_0.gml"
+ },
+ {
+  "name": "matrix_get",
+  "calls": 4,
+  "example": "ch5/d3d_transform_add_rotation_x.gml"
+ },
+ {
+  "name": "matrix_multiply",
+  "calls": 4,
+  "example": "ch5/d3d_transform_add_rotation_x.gml"
+ },
+ {
+  "name": "tilemap_set_at_pixel",
+  "calls": 4,
+  "example": "ch5/obj_dw_garden_secretfox_Step_0.gml"
+ },
+ {
+  "name": "set",
+  "calls": 4,
+  "example": "ch5/obj_lerpvar_Step_0.gml"
+ },
+ {
+  "name": "tilemap_get_x",
+  "calls": 3,
+  "example": "ch2/obj_ch2_city_car_a_Step_0.gml"
+ },
+ {
+  "name": "sprite_add",
+  "calls": 3,
+  "example": "ch2/obj_gif_analyzer_Create_0.gml"
+ },
+ {
+  "name": "application_get_position",
+  "calls": 3,
+  "example": "ch3/application_surface_scale.gml"
+ },
+ {
+  "name": "draw_handler",
+  "calls": 3,
+  "example": "ch3/scr_84_draw_menu.gml"
+ },
+ {
+  "name": "vertex_format_add_position",
+  "calls": 3,
+  "example": "ch3/scr_draw_sprite_pos_fixed.gml"
+ },
+ {
+  "name": "video_draw",
+  "calls": 3,
+  "example": "ch3/obj_ch3_couch_video_Draw_0.gml"
+ },
+ {
+  "name": "video_pause",
+  "calls": 3,
+  "example": "ch3/obj_ch3_couch_video_Draw_0.gml"
+ },
+ {
+  "name": "video_get_position",
+  "calls": 3,
+  "example": "ch3/obj_ch3_couch_video_Draw_0.gml"
+ },
+ {
+  "name": "collision_circle_list",
+  "calls": 3,
+  "example": "ch3/obj_confetti_wind_Step_0.gml"
+ },
+ {
+  "name": "instance_deactivate_layer",
+  "calls": 3,
+  "example": "ch3/obj_gameover_minigame_Draw_0.gml"
+ },
+ {
+  "name": "scr_rhythmgame_editor_load_newest",
+  "calls": 3,
+  "example": "ch3/obj_rhythmgame_editor_Other_11.gml"
+ },
+ {
+  "name": "gif_open",
+  "calls": 3,
+  "example": "ch3/obj_time_Draw_77.gml"
+ },
+ {
+  "name": "gif_save",
+  "calls": 3,
+  "example": "ch3/obj_time_Draw_77.gml"
+ },
+ {
+  "name": "instance_id_get",
+  "calls": 3,
+  "example": "ch3/obj_time_Step_1.gml"
+ },
+ {
+  "name": "audio_stop_recording",
+  "calls": 3,
+  "example": "ch4/scr_mic_record.gml"
+ },
+ {
+  "name": "callback",
+  "calls": 3,
+  "example": "ch4/obj_ch4_DCC01_fountain_Create_0.gml"
+ },
+ {
+  "name": "part_type_alpha3",
+  "calls": 3,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "part_system_depth",
+  "calls": 3,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "layer_element_move",
+  "calls": 3,
+  "example": "ch4/obj_dw_churchc_finalclimb_Create_0.gml"
+ },
+ {
+  "name": "gpu_get_blendenable",
+  "calls": 3,
+  "example": "ch4/obj_hsv_shifter_Draw_0.gml"
+ },
+ {
+  "name": "ppfx_effect_set_parameter",
+  "calls": 3,
+  "example": "ch4/obj_ppfx_motionblur_Draw_0.gml"
+ },
+ {
+  "name": "audio_emitter_falloff",
+  "calls": 3,
+  "example": "ch4/obj_room_town_mid_Create_0.gml"
+ },
+ {
+  "name": "matrix_build_projection_ortho",
+  "calls": 3,
+  "example": "ch5/d3d_set_perspective.gml"
+ },
+ {
+  "name": "matrix_build_lookat",
+  "calls": 3,
+  "example": "ch5/d3d_set_projection.gml"
+ },
+ {
+  "name": "camera_set_view_mat",
+  "calls": 3,
+  "example": "ch5/d3d_set_projection.gml"
+ },
+ {
+  "name": "collision_line_list",
+  "calls": 3,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "sprite_set_bbox_mode",
+  "calls": 3,
+  "example": "ch5/scr_floortex_generate.gml"
+ },
+ {
+  "name": "layer_background_index",
+  "calls": 3,
+  "example": "ch5/scr_parallax_background.gml"
+ },
+ {
+  "name": "tile_set_index",
+  "calls": 3,
+  "example": "ch5/obj_dw_garden_secretfox_Step_0.gml"
+ },
+ {
+  "name": "tilemap_get_tile_width",
+  "calls": 3,
+  "example": "ch5/obj_grassanim_new_Create_0.gml"
+ },
+ {
+  "name": "part_type_scale",
+  "calls": 3,
+  "example": "ch5/obj_sakurafubuki_mini_Create_0.gml"
+ },
+ {
+  "name": "stem_ease_x",
+  "calls": 3,
+  "example": "ch5/obj_slashpusher_anchor_Create_0.gml"
+ },
+ {
+  "name": "stem_ease_y",
+  "calls": 3,
+  "example": "ch5/obj_slashpusher_anchor_Create_0.gml"
+ },
+ {
+  "name": "ds_queue_create",
+  "calls": 2,
+  "example": "ch2/obj_maus_cursor_follow_Create_0.gml"
+ },
+ {
+  "name": "layer_sprite_x",
+  "calls": 2,
+  "example": "ch2/obj_weirdroute_manipulator_Create_0.gml"
+ },
+ {
+  "name": "draw_surface_general",
+  "calls": 2,
+  "example": "ch3/scr_draw_surface_zoom.gml"
+ },
+ {
+  "name": "set_screen_image_index",
+  "calls": 2,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "mp_grid_create",
+  "calls": 2,
+  "example": "ch3/obj_board_controller_Create_0.gml"
+ },
+ {
+  "name": "video_open",
+  "calls": 2,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "video_enable_loop",
+  "calls": 2,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "video_set_volume",
+  "calls": 2,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "video_get_format",
+  "calls": 2,
+  "example": "ch3/obj_ch3_couch_video_Create_0.gml"
+ },
+ {
+  "name": "video_resume",
+  "calls": 2,
+  "example": "ch3/obj_ch3_couch_video_Draw_0.gml"
+ },
+ {
+  "name": "draw_set_circle_precision",
+  "calls": 2,
+  "example": "ch4/obj_church_ripple_Draw_0.gml"
+ },
+ {
+  "name": "audio_falloff_set_model",
+  "calls": 2,
+  "example": "ch4/obj_darkness_sound_attack_Create_0.gml"
+ },
+ {
+  "name": "draw_surface_tiled",
+  "calls": 2,
+  "example": "ch4/obj_lightbeamfx_Draw_0.gml"
+ },
+ {
+  "name": "gpu_get_colorwriteenable",
+  "calls": 2,
+  "example": "ch4/obj_lowres_circle_manager_Create_0.gml"
+ },
+ {
+  "name": "audio_get_recorder_info",
+  "calls": 2,
+  "example": "ch4/obj_micmenu_Create_0.gml"
+ },
+ {
+  "name": "gpu_set_ztestenable",
+  "calls": 2,
+  "example": "ch5/d3d_set_hidden.gml"
+ },
+ {
+  "name": "camera_get_proj_mat",
+  "calls": 2,
+  "example": "ch5/d3d_set_perspective.gml"
+ },
+ {
+  "name": "shader_replace_simple",
+  "calls": 2,
+  "example": "ch5/liveshaderupdate.gml"
+ },
+ {
+  "name": "variable_struct_get_names",
+  "calls": 2,
+  "example": "ch5/scr_copy_struct.gml"
+ },
+ {
+  "name": "shader_replace_simple_sync",
+  "calls": 2,
+  "example": "ch5/shader_replace_simple_macros.gml"
+ },
+ {
+  "name": "tile_get_flip",
+  "calls": 2,
+  "example": "ch5/obj_castlereflect_Create_0.gml"
+ },
+ {
+  "name": "tile_set_flip",
+  "calls": 2,
+  "example": "ch5/obj_castlereflect_Create_0.gml"
+ },
+ {
+  "name": "ds_stack_destroy",
+  "calls": 2,
+  "example": "ch5/obj_ds_lifetime_manager_Alarm_0.gml"
+ },
+ {
+  "name": "ds_queue_destroy",
+  "calls": 2,
+  "example": "ch5/obj_ds_lifetime_manager_Alarm_0.gml"
+ },
+ {
+  "name": "layer_sprite_alpha",
+  "calls": 2,
+  "example": "ch5/obj_dw_garden_secretfox_Step_0.gml"
+ },
+ {
+  "name": "ossafe_d_sprite_part_ext",
+  "calls": 2,
+  "example": "ch5/obj_fallingbox_Draw_0.gml"
+ },
+ {
+  "name": "alarm0_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_0.gml"
+ },
+ {
+  "name": "alarm1_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_1.gml"
+ },
+ {
+  "name": "alarm2_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_2.gml"
+ },
+ {
+  "name": "alarm3_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_3.gml"
+ },
+ {
+  "name": "alarm4_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_4.gml"
+ },
+ {
+  "name": "alarm5_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Alarm_5.gml"
+ },
+ {
+  "name": "room_start_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Other_4.gml"
+ },
+ {
+  "name": "room_end_func",
+  "calls": 2,
+  "example": "ch5/obj_object_Other_5.gml"
+ },
+ {
+  "name": "gpu_set_tex_filter",
+  "calls": 2,
+  "example": "ch5/obj_orange_puppet_Other_21.gml"
+ },
+ {
+  "name": "custom_state",
+  "calls": 2,
+  "example": "ch5/obj_plat_follower_Step_0.gml"
+ },
+ {
+  "name": "surface_depth_disable",
+  "calls": 2,
+  "example": "ch5/obj_sunshadows_Create_0.gml"
+ },
+ {
+  "name": "buffer_exists",
+  "calls": 2,
+  "example": "ch5/obj_zen_sand_Draw_0.gml"
+ },
+ {
+  "name": "layer_tile_visible",
+  "calls": 1,
+  "example": "ch1/tile_layer_hide.gml"
+ },
+ {
+  "name": "vertex_format_add_textcoord",
+  "calls": 1,
+  "example": "ch1/__init_d3d.gml"
+ },
+ {
+  "name": "psn_np_commerce_dialog_tick",
+  "calls": 1,
+  "example": "ch1/obj_splashscreen_Step_0.gml"
+ },
+ {
+  "name": "switch_show_store",
+  "calls": 1,
+  "example": "ch1/obj_splashscreen_Step_0.gml"
+ },
+ {
+  "name": "ds_map_add_list",
+  "calls": 1,
+  "example": "ch2/pal_swap_enable_layer.gml"
+ },
+ {
+  "name": "array_height_2d",
+  "calls": 1,
+  "example": "ch2/obj_ch2_city_car_a_Step_0.gml"
+ },
+ {
+  "name": "surface_getpixel_ext",
+  "calls": 1,
+  "example": "ch2/obj_fireworks_manager_Other_10.gml"
+ },
+ {
+  "name": "sprite_prefetch",
+  "calls": 1,
+  "example": "ch3/scr_prefetchallsprites.gml"
+ },
+ {
+  "name": "set_screen",
+  "calls": 1,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "set_screen_timer",
+  "calls": 1,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "set_screen_sprite",
+  "calls": 1,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "set_screen_offset",
+  "calls": 1,
+  "example": "ch3/scr_teevie_screen.gml"
+ },
+ {
+  "name": "mp_grid_destroy",
+  "calls": 1,
+  "example": "ch3/obj_board_controller_Draw_0.gml"
+ },
+ {
+  "name": "mp_grid_draw",
+  "calls": 1,
+  "example": "ch3/obj_board_controller_Draw_0.gml"
+ },
+ {
+  "name": "screen_save_part",
+  "calls": 1,
+  "example": "ch3/obj_board_playercamera_Draw_75.gml"
+ },
+ {
+  "name": "object_set_persistent",
+  "calls": 1,
+  "example": "ch3/obj_ch3_dw_man_scenetransition_persistent_Create_0.gml"
+ },
+ {
+  "name": "audio_emitter_gain",
+  "calls": 1,
+  "example": "ch3/obj_room_teevie_rhythm_Step_0.gml"
+ },
+ {
+  "name": "surface_getpixel",
+  "calls": 1,
+  "example": "ch3/obj_screen_channel_change_backup_Draw_0.gml"
+ },
+ {
+  "name": "display_get_gui_width",
+  "calls": 1,
+  "example": "ch3/obj_shutta_photo_controller_Draw_74.gml"
+ },
+ {
+  "name": "display_get_gui_height",
+  "calls": 1,
+  "example": "ch3/obj_shutta_photo_controller_Draw_74.gml"
+ },
+ {
+  "name": "buffer_seek",
+  "calls": 1,
+  "example": "ch4/scr_mic_record.gml"
+ },
+ {
+  "name": "buffer_copy",
+  "calls": 1,
+  "example": "ch4/scr_mic_record.gml"
+ },
+ {
+  "name": "part_type_death",
+  "calls": 1,
+  "example": "ch4/obj_climb_explosion_Create_0.gml"
+ },
+ {
+  "name": "display_set_gui_size",
+  "calls": 1,
+  "example": "ch4/obj_controller_motion_blur_Draw_64.gml"
+ },
+ {
+  "name": "audio_listener_orientation",
+  "calls": 1,
+  "example": "ch4/obj_darkness_sound_attack_Create_0.gml"
+ },
+ {
+  "name": "path_clear_points",
+  "calls": 1,
+  "example": "ch4/obj_darkshape_centipede_head_Create_0.gml"
+ },
+ {
+  "name": "ds_list_copy",
+  "calls": 1,
+  "example": "ch4/obj_darkshape_centipede_head_Other_10.gml"
+ },
+ {
+  "name": "pattern_to_use",
+  "calls": 1,
+  "example": "ch4/obj_darkshape_manager_Step_0.gml"
+ },
+ {
+  "name": "path_get_point_x",
+  "calls": 1,
+  "example": "ch4/obj_ghosthouse_jackolantern_Step_0.gml"
+ },
+ {
+  "name": "path_get_point_y",
+  "calls": 1,
+  "example": "ch4/obj_ghosthouse_jackolantern_Step_0.gml"
+ },
+ {
+  "name": "gpu_set_tex_repeat",
+  "calls": 1,
+  "example": "ch4/obj_halo_whirl_Draw_0.gml"
+ },
+ {
+  "name": "part_type_blend",
+  "calls": 1,
+  "example": "ch4/obj_lightbeamfx_Create_0.gml"
+ },
+ {
+  "name": "surface_get_target",
+  "calls": 1,
+  "example": "ch4/obj_lightsource_lamp_Other_25.gml"
+ },
+ {
+  "name": "ppfx_destroy",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_CleanUp_0.gml"
+ },
+ {
+  "name": "ppfx_application_render_init",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "ppfx_create",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "ppfx_profile_create",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "pp_bloom",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "pp_lut3d",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "pp_motion_blur",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "pp_dithering",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "pp_white_balance",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "ppfx_profile_load",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Create_0.gml"
+ },
+ {
+  "name": "ppfx_draw",
+  "calls": 1,
+  "example": "ch4/obj_ppfx_motionblur_Draw_77.gml"
+ },
+ {
+  "name": "gpu_set_cullmode",
+  "calls": 1,
+  "example": "ch5/d3d_set_culling.gml"
+ },
+ {
+  "name": "draw_set_lighting",
+  "calls": 1,
+  "example": "ch5/d3d_set_lighting.gml"
+ },
+ {
+  "name": "room_get_camera",
+  "calls": 1,
+  "example": "ch5/d3d_set_perspective.gml"
+ },
+ {
+  "name": "matrix_build_projection_perspective",
+  "calls": 1,
+  "example": "ch5/d3d_set_perspective.gml"
+ },
+ {
+  "name": "camera_get_active",
+  "calls": 1,
+  "example": "ch5/d3d_set_projection.gml"
+ },
+ {
+  "name": "matrix_build_projection_perspective_fov",
+  "calls": 1,
+  "example": "ch5/d3d_set_projection_ext.gml"
+ },
+ {
+  "name": "gpu_set_zwriteenable",
+  "calls": 1,
+  "example": "ch5/d3d_start.gml"
+ },
+ {
+  "name": "vertex_position_3d",
+  "calls": 1,
+  "example": "ch5/d3d_vertex_normal_texture.gml"
+ },
+ {
+  "name": "vertex_texcoord",
+  "calls": 1,
+  "example": "ch5/d3d_vertex_normal_texture.gml"
+ },
+ {
+  "name": "ds_stack_create",
+  "calls": 1,
+  "example": "ch5/scr_ds_manager.gml"
+ },
+ {
+  "name": "pre_draw_func",
+  "calls": 1,
+  "example": "ch5/obj_arbitrary_Draw_76.gml"
+ },
+ {
+  "name": "post_draw_func",
+  "calls": 1,
+  "example": "ch5/obj_arbitrary_Draw_77.gml"
+ },
+ {
+  "name": "ds_priority_empty",
+  "calls": 1,
+  "example": "ch5/obj_castlereflect_manager_Draw_76.gml"
+ },
+ {
+  "name": "ds_priority_delete_max",
+  "calls": 1,
+  "example": "ch5/obj_castlereflect_manager_Draw_76.gml"
+ },
+ {
+  "name": "layer_sprite_create",
+  "calls": 1,
+  "example": "ch5/obj_depthsorter_Create_0.gml"
+ },
+ {
+  "name": "layer_shader",
+  "calls": 1,
+  "example": "ch5/obj_dw_fcastle_pinkroom_Create_0.gml"
+ },
+ {
+  "name": "scr_roommenu_debug",
+  "calls": 1,
+  "example": "ch5/obj_dw_fcastle_yellow_miniboss_Draw_0.gml"
+ },
+ {
+  "name": "tilemap_get_frame",
+  "calls": 1,
+  "example": "ch5/obj_gardenlight_Draw_0.gml"
+ },
+ {
+  "name": "freezegame",
+  "calls": 1,
+  "example": "ch5/obj_heart_Alarm_0.gml"
+ },
+ {
+  "name": "get",
+  "calls": 1,
+  "example": "ch5/obj_lerpvar_Step_0.gml"
+ },
+ {
+  "name": "gpu_get_alphatestenable",
+  "calls": 1,
+  "example": "ch5/obj_lowres_circle_manager_Create_0.gml"
+ },
+ {
+  "name": "gpu_get_blendmode_ext",
+  "calls": 1,
+  "example": "ch5/obj_lowres_circle_manager_Create_0.gml"
+ },
+ {
+  "name": "destroy_func",
+  "calls": 1,
+  "example": "ch5/obj_marker_centerpoint_Destroy_0.gml"
+ },
+ {
+  "name": "beginstep_func",
+  "calls": 1,
+  "example": "ch5/obj_marker_centerpoint_Step_1.gml"
+ },
+ {
+  "name": "_cb",
+  "calls": 1,
+  "example": "ch5/obj_npc_castle_grand_glow_Create_0.gml"
+ },
+ {
+  "name": "draw_surface_stretched_ext",
+  "calls": 1,
+  "example": "ch5/obj_orange_text_Draw_0.gml"
+ },
+ {
+  "name": "ds_list_set",
+  "calls": 1,
+  "example": "ch5/obj_pink_battlemovement_Step_0.gml"
+ },
+ {
+  "name": "string_trim_start",
+  "calls": 1,
+  "example": "ch5/obj_plat_combatstarter_Create_0.gml"
+ },
+ {
+  "name": "orig_get_hit",
+  "calls": 1,
+  "example": "ch5/obj_plat_enm_gun_Create_0.gml"
+ },
+ {
+  "name": "effect",
+  "calls": 1,
+  "example": "ch5/obj_plat_targethelper_Create_0.gml"
+ },
+ {
+  "name": "burn",
+  "calls": 1,
+  "example": "ch5/obj_ralsei_hook_Step_2.gml"
+ },
+ {
+  "name": "special_reticle_draw_function",
+  "calls": 1,
+  "example": "ch5/obj_wateringcan_Create_0.gml"
+ },
+ {
+  "name": "buffer_set_surface",
+  "calls": 1,
+  "example": "ch5/obj_zen_sand_Draw_0.gml"
+ },
+ {
+  "name": "shader_replace_simple_raw",
+  "calls": 1,
+  "example": "ch5/gml_Script_shader_replace_simple.gml"
+ }
+]
