@@ -249,7 +249,7 @@ Each is pinned to a line.
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
 | Runtime | **154/154** clean, 0 errors, 0 hard failures |
-| Spec suite | **1670/1846** assertions (90.5%), **57 of 142** attacks fully clean |
+| Spec suite | **1796/1846** assertions (97.3%), **99 of 142** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
