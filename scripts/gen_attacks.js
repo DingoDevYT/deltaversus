@@ -51,7 +51,16 @@ const BOSSES = [
   { id: 'spamton_neo', chapter: 'ch2', chNum: 2, label: 'Spamton NEO',
     enemy: 'obj_spamton_neo_enemy',
     boxBlock: { file: 'gml_Object_obj_spamton_neo_enemy_Step_0.gml',
-                anchor: 'if (!instance_exists(obj_growtangle))' } },
+                anchor: 'if (!instance_exists(obj_growtangle))' },
+    // Spamton NEO's turn length is a flat default followed by per-rr overrides,
+    // ending at `turns += 1`. Note scr_turntimer only RAISES
+    // (`if (global.turntimer < arg0) global.turntimer = arg0`), so the
+    // `if (rr == 5) scr_turntimer(90)` after the 260 default is a NO-OP and
+    // that attack really does get 260 — replaying the block verbatim is the
+    // only way to get that right without re-deriving it.
+    turnBlock: { file: 'gml_Object_obj_spamton_neo_enemy_Step_0.gml',
+                 anchor: 'scr_turntimer(260);',
+                 endAnchor: 'turns += 1;' } },
   { id: 'gerson', chapter: 'ch4', chNum: 4, label: 'Gerson / Hammer of Justice',
     enemy: 'obj_hammer_of_justice_enemy',
     // Gerson: plain camera-center box, then a with-block applies boxoffset.
@@ -195,6 +204,17 @@ function extractTurnBlock(dir, cfg) {
   const clean = strip(src);
   const at = clean.indexOf(cfg.anchor);
   if (at === -1) return null;
+  // Bosses do not share a shape here. The Knight's ladder terminates in a
+  // trailing `else scr_turntimer(N);`; Spamton NEO's is a flat default followed
+  // by `if (rr == N) scr_turntimer(X)` lines and simply stops at `turns += 1`.
+  // Requiring the Knight's shape is why only the Knight ever got a turn block,
+  // and why every other boss fell back to the studio's floor — all 8 Spamton
+  // NEO attacks read 120 against 750/330/300/1200/430/260/90.
+  if (cfg.endAnchor) {
+    const end = clean.indexOf(cfg.endAnchor, at);
+    if (end === -1) return null;
+    return src.slice(at, end).trim();
+  }
   const tail = /\n\s*else\s*\n\s*scr_turntimer\(\s*\d+\s*\)\s*;/.exec(clean.slice(at));
   if (!tail) return null;
   return src.slice(at, at + tail.index + tail[0].length).trim();

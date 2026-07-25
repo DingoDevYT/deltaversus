@@ -92,6 +92,28 @@ All verified against source, all with the full battery green afterwards.
    68×315 `spr_gerson_swing_down_telegraph` over NEW RIP's 80×360 — leaving
    Gerson's swing telegraph **45px (12.5%) short** on the axis you read to dodge.
 
+5. **The studio ran every attack on DIFF 1.** The header select had
+   `<option value="1" selected>`. The game's own default is **0**:
+   `obj_dbulletcontroller`'s Create sets `difficulty = 0` (line 21), and so does
+   `obj_spamton_neo_enemy`'s (line 54). So every attack had been taking its
+   *harder* branch — Spamton NEO's HeartAttackNeo took the
+   `rr == 2 && difficulty == 1` path for turntimer 850 instead of 750, and the
+   Knight's boxsplitter and rotating slash both read difficulty 1 where the
+   source says 0. Now defaults to 0; DIFF 1/2 remain selectable.
+
+6. **Spamton NEO's turn lengths are applied again.** Only the Knight had a
+   `turnBlock` because `extractTurnBlock()` was hard-coded to the Knight's
+   shape — it required a trailing `else scr_turntimer(N);`. Spamton's ladder is
+   a flat default followed by `if (rr == N)` overrides, ending at `turns += 1`.
+   The extractor now accepts an `endAnchor`, and SNEO has a turn block.
+   Verified live: 260 / 850 / 330 / 300 where all eight previously read 120.
+
+   **A spec was wrong here, and the source settled it.** `scr_turntimer` only
+   RAISES (`if (global.turntimer < arg0) global.turntimer = arg0`), so
+   `if (rr == 5) scr_turntimer(90)` *after* the 260 default is a **no-op** —
+   PipisExplosion really does get 260, not the 90 the spec claimed. Replaying
+   the block verbatim gets that right without anyone having to notice.
+
 ---
 
 ## New tooling
@@ -120,17 +142,15 @@ All verified against source, all with the full battery green afterwards.
 I stopped short on these rather than half-land them at the end of a long session.
 Each is pinned to a line.
 
-1. **Only the Knight has a `turnBlock`.** In `scripts/gen_attacks.js` the boss
-   table gives Knight both a `boxBlock` and a `turnBlock`; Spamton NEO, Gerson,
-   Jevil and Pink have `boxBlock` only. That single omission is why **every
-   Spamton NEO attack reads turntimer 120** against expected
-   750/330/300/1200/430/260/90, and why four Jevil attacks fall back to the
-   90-frame floor.
-   *Why I didn't just add them:* Jevil's `global.turntimer = 240`
+1. **Jevil, Gerson and Pink still have no `turnBlock`.** (Knight and Spamton NEO
+   now do — see fix 6 above.) Four Jevil attacks fall back to the studio's
+   90-frame floor against a real 240.
+   *Why I didn't just add Jevil's:* his `global.turntimer = 240`
    (`obj_joker_Step_0.gml:267`) sits inside a block that also runs
    `event_user(5)` and `rr = choose(...)` — his own attack chooser. Replaying it
    wholesale would override the roster's pick, the exact trap the notes record
-   for the Knight's `event_user(0)`. It needs a narrow anchor and verification.
+   for the Knight's `event_user(0)`. It needs a narrow anchor and verification,
+   which is a change to make awake.
 
 2. **The battle box is misplaced for Jevil and Gerson.** Canonical position is
    `view+320, view+170` in every chapter (verified at ch1/ch4 growtangle creation
@@ -162,14 +182,38 @@ Each is pinned to a line.
 | Semantics | **34/34** |
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
-| Spec suite | 621/768 assertions |
+| Spec suite | **646/768** assertions, 14 attacks fully clean |
 | Native call-site coverage | 99.27% |
+
+Spec suite progression through the night, each step a real fix:
+
+| after | passing | failing | clean attacks |
+|---|---|---|---|
+| first run | 567 | 201 | 1 |
+| freeze the live loop | 619 | 149 | 8 |
+| pause stops drawing | 621 | 147 | 8 |
+| SNEO turn block + DIFF 0 | **646** | **122** | **14** |
+
+Some of the remaining 122 are *specs* that are wrong, not engine faults — the
+`scr_turntimer` max-clamp case above is a proven example. A triage pass
+(`spec-triage` workflow) is re-validating every assertion against its cited line
+so that what remains is engine-wrong by construction.
 
 The single visual flag is `pink_type210`, which destroys its own battle box on
 purpose. Jevil's BYE BYE stopped flagging once the observer was fixed.
 
 `docs/js/visual_baseline.json` was **regenerated** after the observer fixes. The
 previous baseline measured a broken observation — do not compare against it.
+
+> **One housekeeping item:** the DIFF 1→0 fix landed after that file was
+> written, and legitimately moved 20 attacks (they now take their correct
+> *easier* branches — `pink_type202` drops sharply because
+> `obj_huge_anime_face` and `obj_pink_battlemovement` only spawn on the
+> difficulty-1 path). `localStorage` holds the current baseline; to refresh the
+> disk copy, run this in the studio console and paste the result over the file:
+> ```js
+> await VISUAL_PROBE.runAll().then(r => { const d={}; for (const x of r.results) d[x.id]=x.captures.map(c=>c.inkPct); return JSON.stringify(d); })
+> ```
 
 ---
 

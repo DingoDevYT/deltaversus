@@ -262,8 +262,15 @@
     <button id="btnReset">↻ Reset</button>
     <button id="btnPause">⏸ Pause</button>
     <select id="diffSelect" title="Attack difficulty (dc.difficulty / boss.difficulty)">
-      <option value="0">DIFF 0</option>
-      <option value="1" selected>DIFF 1</option>
+      <!-- 0 is the GAME's default: obj_dbulletcontroller's Create sets
+           `difficulty = 0` (line 21) and so does obj_spamton_neo_enemy's
+           (line 54). Defaulting the studio to 1 silently ran every attack on
+           its harder branch — Spamton NEO's HeartAttackNeo took the
+           `rr == 2 && difficulty == 1` path for turntimer 850 instead of 750,
+           and the Knight's boxsplitter and rotating slash both read
+           difficulty 1 where the source says 0. -->
+      <option value="0" selected>DIFF 0</option>
+      <option value="1">DIFF 1</option>
       <option value="2">DIFF 2</option>
     </select>
     <label class="volwrap" id="hellWrap" style="display:none" title="Spamton NEO hellmode (dc.special)"><input type="checkbox" id="hellChk">HELL</label>
