@@ -275,6 +275,13 @@
       for (let f = from; f < frame; f++) {
         try { rt.step(); } catch (e) { /* surfaced via the error log */ }
         if (global.GML_STUDIO_TICK_TURN) { try { global.GML_STUDIO_TICK_TURN(); } catch (e) {} }
+        // Sample the clock EVERY frame, not just at the marks. A controller
+        // that pins `global.turntimer = 999999` does it on its first step and
+        // the countdown starts immediately, so a peak taken only at frame 8
+        // reads 999991 and an `eq: 999999` assertion fails against an engine
+        // that set exactly that.
+        const t = Number(global.turntimer);
+        if (isFinite(t) && t > turntimerPeak) turntimerPeak = t;
         // Draw EVERY frame — Deltarune spawns objects from Draw events (the
         // green-soul shield is created in a chevron's Draw), so skipping them
         // silently removes whole attacks. See visual_probe.stepTo.
@@ -329,6 +336,12 @@
       const rt = global.activeGMLRuntime;
       drawsAt[f] = census.draws.slice();
       const alive = rt.instances.filter(i => !i.destroyed);
+      // The SOUL is a real obj_heart instance but is deliberately kept out of
+      // the stepped list (the studio drives its movement itself), so a spec
+      // asserting on obj_heart — Jevil's BYE BYE and the Knight's roar both
+      // raise `boundaryup` to 160 — found "no instance" while getInstances
+      // resolved it perfectly well. Same disagreement instance_exists had.
+      if (rt.soul && !rt.soul.destroyed) alive.push(rt.soul);
       for (const i of alive) seenLive.add(i.object_name);
       const byName = {};
       for (const i of alive) {
