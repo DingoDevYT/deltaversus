@@ -527,7 +527,48 @@
         if (live.length) return live;
         return (this.growtangle && !this.growtangle.destroyed) ? [this.growtangle] : [];
       }
-      return this.instances.filter(i => !i.destroyed && (i.object_name === name || name === 'all'));
+      if (name === 'all') return this.instances.filter(i => !i.destroyed);
+      // PARENT-TYPED QUERIES. In GameMaker, naming an object in `with`,
+      // instance_exists, instance_number, place_meeting and friends selects
+      // that object AND EVERY DESCENDANT of it. Matching object_name exactly
+      // silently returned nothing for every parent in the corpus:
+      //   obj_battlesolid   255 references — obj_growtangle's parent, so the
+      //                     battle box was invisible to `with (obj_battlesolid)`
+      //                     and to the soul's containment place_meeting
+      //   obj_bulletparent  146 references, 40 children in ch3 alone — this is
+      //                     what obj_battlecontroller clears at turn end, so
+      //                     bullets were never torn down
+      //   obj_monsterparent 206 references
+      return this.instances.filter(i => !i.destroyed && this._isKindOf(i.object_name, name));
+    }
+
+    /** Ancestor chain of an object name, memoised per runtime. */
+    _ancestorsOf(objectName) {
+      if (!this._ancestorCache) this._ancestorCache = new Map();
+      let set = this._ancestorCache.get(objectName);
+      if (set) return set;
+      set = new Set();
+      const oi = global.GML_OBJECT_INDEX;
+      const ch = this.$chapter || 'ch3';
+      let cur = objectName;
+      // Depth-bounded: a malformed table must not spin here.
+      for (let d = 0; d < 16 && cur; d++) {
+        let parent = null;
+        try { parent = oi && oi.defaults ? oi.defaults(cur, ch).parent : null; } catch (e) { parent = null; }
+        if (!parent || set.has(parent)) break;
+        set.add(parent);
+        cur = parent;
+      }
+      this._ancestorCache.set(objectName, set);
+      return set;
+    }
+
+    _isKindOf(objectName, queryName) {
+      // Exact match first so the common case never walks anything; the
+      // ancestor set is memoised per object name, so the miss path is one
+      // Set.has(). No "does this parent have children" cache — that would be
+      // an answer about a world that changes every time something spawns.
+      return objectName === queryName || this._ancestorsOf(objectName).has(queryName);
     }
 
     // --- STEP: run all instance steps with error isolation ---

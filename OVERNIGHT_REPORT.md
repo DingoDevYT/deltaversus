@@ -114,6 +114,26 @@ All verified against source, all with the full battery green afterwards.
    PipisExplosion really does get 260, not the 90 the spec claimed. Replaying
    the block verbatim gets that right without anyone having to notice.
 
+7. **Parent-typed instance queries were a no-op — the biggest one.**
+   In GameMaker, naming an object in `with`, `instance_exists`,
+   `instance_number` or `place_meeting` selects that object **and every
+   descendant of it**. `getInstances()` matched `object_name` exactly, so every
+   parent-typed query in the corpus returned nothing:
+
+   | parent | refs | what broke |
+   |---|---|---|
+   | `obj_battlesolid` | 255 | `obj_growtangle`'s parent — the battle box was invisible to `with (obj_battlesolid)` **and to the soul's containment `place_meeting`** |
+   | `obj_bulletparent` | 146 (40 children in ch3) | what `obj_battlecontroller` clears at turn end, so bullets were never torn down |
+   | `obj_monsterparent` | 206 | every query against the boss's parent type |
+
+   Fixed with memoised ancestor sets. Deliberately *no* "does this parent have
+   children" cache — that would be an answer about a world that changes every
+   time something spawns.
+
+   Verified: `obj_battlesolid` now resolves to `obj_growtangle@320,170`,
+   `obj_bulletparent` matches 11 live instances, and Jevil's `obj_spadering`
+   spawns at **320,170** exactly as its spec asserts (it read 320,240 before).
+
 ---
 
 ## New tooling
@@ -152,17 +172,18 @@ Each is pinned to a line.
    for the Knight's `event_user(0)`. It needs a narrow anchor and verification,
    which is a change to make awake.
 
-2. **The battle box is misplaced for Jevil and Gerson.** The *default* creation
-   site is `view+320, view+170` in every chapter (verified at ch1/ch4 growtangle
-   creation sites), and the Knight's box is correct at (320,169). Jevil's
-   measures **y=240**; Gerson's controllers sit **60px off in x** (`anchor_x`
-   260 vs 320). Jevil's own GML creates it correctly at
-   `obj_joker_Step_0.gml:256-257`, so the block is not being replayed.
+2. ~~The battle box is misplaced for Jevil and Gerson.~~ **I WAS WRONG — and
+   the real cause turned out to be much bigger. See fix 7 below.**
 
-   *Caveat found during triage:* "always y=170" is too broad — individual
-   attacks legitimately move it. Knight `myattackchoice 13` (sword tunnel new)
-   creates its growtangle at `cameray() + 190`. Check the attack's own branch
-   before treating a non-170 box as a bug.
+   The boxes were always in the right place (Jevil 320,170; Gerson 320,170;
+   Knight's slit 168,170). What was broken was `obj_battlesolid`, the box's
+   PARENT, which had no instances at all — so everything positioned relative to
+   it fell back to the canvas centre and read as "the box is at y=240".
+
+   *Caveat still worth keeping:* "the box is always at y=170" is too broad.
+   Knight `myattackchoice 13` (sword tunnel new) creates its growtangle at
+   `cameray() + 190`. Check the attack's own branch before calling a non-170
+   box a bug.
 
 3. **Centre-origin trimmed sprites are drawn half-a-trim off.**
    `gml_asset_db.drawSprite` ends in `ctx.drawImage(img, -ox, -oy)`, anchoring a
