@@ -182,6 +182,21 @@ All verified against source, all with the full battery green afterwards.
 
 ---
 
+## The ranked fix list (start here)
+
+Failures cluster into a few causes, not 176 separate bugs. Counts are attacks
+affected, from the current run.
+
+| # | Cluster | Where to look |
+|---|---|---|
+| 10 | `obj_spearshot.hp` reads 1, Create says 2 | The only `hp--` is `obj_spearshot_Other_10.gml:200`, behind `if (bouncespear > 0 && hp > 1)` — a bounce-spear mechanic. Either the spears are bouncing when they shouldn't, or the specs assumed the Create value survives. NOT caused by the parent-chain change: `obj_spearshot` has no parent and no collision calls. |
+| 9 | `spr_gerson_swing` never drawn | The green SWITCH's sprite (`obj_gerson_green_switch`, drawn via `draw_self`). Patterns opening on `special == 36` create the shield directly and never make a switch — so some of these specs are likely wrong, but check which. |
+| 7 | `obj_spearshot.fakespeed` | Chart row speeds. |
+| 5 | `obj_hammer_of_justice_enemy.visible` | `scr_spearshot` sets `visible = false` on several branches. |
+| 13 | Knight `local_turntimer` ~60 short | Was partly the double-spawn; re-measure now that it is fixed. |
+| 5 | Jevil `obj_suitbomb` y/vspeed | **Measured correct in isolation** (y −80→−70→−60 at vspeed 10, exactly as Create says), but the suite reports y≈150-220 and vspeed 0, and the value varies run to run. Suspect the checker's frame indexing, not the engine — verify before touching any GML. |
+| 3 | Gerson controllers 60px off in x | `anchor_x` 260 vs 320. |
+
 ## Diagnosed precisely, deliberately NOT fixed
 
 I stopped short on these rather than half-land them at the end of a long session.
@@ -234,7 +249,7 @@ Each is pinned to a line.
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
 | Runtime | **154/154** clean, 0 errors, 0 hard failures |
-| Spec suite | **1635/1846** assertions (88.6%), **49 of 142** attacks fully clean |
+| Spec suite | **1670/1846** assertions (90.5%), **57 of 142** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
@@ -247,7 +262,14 @@ Spec suite progression through the night, each step a real fix:
 | SNEO turn block + DIFF 0 | 646 | 122 | 14 |
 | + Gerson's 82 green charts (141 attacks) | 1627 | 208 | 49 |
 | + triage corrections (142 attacks) | 1630 | 216 | 48 |
-| + parent-chain fix | **1635** | **211** | **49** |
+| + parent-chain fix | 1635 | 211 | 49 |
+| + Knight double-spawn + sepalpha | 1653 | 193 | 49 |
+| + turntimer peak | 1666 | 180 | 52 |
+| + Jevil turn block | **1670** | **176** | **57** |
+
+Per-kind, current: `spawns` **394/394**, `count` **148/148**, `absent`
+**122/122**, `sprite` 110/111, `box` 47/50, `draw` 164/183, `ivar` 608/734,
+`turntimer` 46/59, `pos` 31/45.
 
 Pass rate by assertion kind, after triage:
 
