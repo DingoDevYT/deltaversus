@@ -152,12 +152,17 @@ Each is pinned to a line.
    for the Knight's `event_user(0)`. It needs a narrow anchor and verification,
    which is a change to make awake.
 
-2. **The battle box is misplaced for Jevil and Gerson.** Canonical position is
-   `view+320, view+170` in every chapter (verified at ch1/ch4 growtangle creation
-   sites). The Knight's box is correct at (320,169). Jevil's measures **y=240**;
-   Gerson's controllers sit **60px off in x** (`anchor_x` 260 vs 320). Jevil's
-   own GML creates it correctly at `obj_joker_Step_0.gml:256-257`, so the block
-   is not being replayed.
+2. **The battle box is misplaced for Jevil and Gerson.** The *default* creation
+   site is `view+320, view+170` in every chapter (verified at ch1/ch4 growtangle
+   creation sites), and the Knight's box is correct at (320,169). Jevil's
+   measures **y=240**; Gerson's controllers sit **60px off in x** (`anchor_x`
+   260 vs 320). Jevil's own GML creates it correctly at
+   `obj_joker_Step_0.gml:256-257`, so the block is not being replayed.
+
+   *Caveat found during triage:* "always y=170" is too broad — individual
+   attacks legitimately move it. Knight `myattackchoice 13` (sword tunnel new)
+   creates its growtangle at `cameray() + 190`. Check the attack's own branch
+   before treating a non-170 box as a bug.
 
 3. **Centre-origin trimmed sprites are drawn half-a-trim off.**
    `gml_asset_db.drawSprite` ends in `ctx.drawImage(img, -ox, -oy)`, anchoring a

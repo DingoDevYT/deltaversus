@@ -33,6 +33,31 @@ const KINDS = {
 
 function extractSpecs(file) {
   const raw = fs.readFileSync(file, 'utf8');
+
+  // A workflow's task-output file can be EMPTY even on success — the result is
+  // then only in the run's journal.jsonl, one {"type":"result"} line per agent.
+  // Read that shape too rather than reporting "no specs" on a run that produced
+  // hundreds.
+  if (path.basename(file) === 'journal.jsonl' || /\n\s*\{"type"/.test(raw.slice(0, 2000))) {
+    const out = [];
+    let verified = 0, changes = 0;
+    for (const line of raw.trim().split('\n')) {
+      let j;
+      try { j = JSON.parse(line); } catch (e) { continue; }
+      if (j.type !== 'result') continue;
+      const v = j.value !== undefined ? j.value : j.result;
+      if (!v || typeof v !== 'object' || !Array.isArray(v.specs)) continue;
+      // A result carrying `changes` came from the adversarial verify stage and
+      // supersedes the authored one for the same ids.
+      if (v.changes) { verified++; changes += v.changes.length; }
+      for (const s of v.specs) out.push({ spec: s, verified: !!v.changes });
+    }
+    console.log(`  journal: ${out.length} spec objects, ${verified} verified batches, ${changes} recorded changes`);
+    // Verified last so they win the later-wins merge.
+    return out.filter(x => !x.verified).map(x => x.spec)
+      .concat(out.filter(x => x.verified).map(x => x.spec));
+  }
+
   let j;
   try { j = JSON.parse(raw); } catch (e) { console.log(`  ! ${path.basename(file)}: not JSON`); return []; }
   // Workflow output nests the script's return value under `result`.

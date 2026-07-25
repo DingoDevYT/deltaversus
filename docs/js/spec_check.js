@@ -361,6 +361,14 @@
         case 'draw': {
           // Visual fidelity, straight from the source's own draw call.
           const calls = (drawsAt[frame] || []).filter(d => d.spr === a.name);
+          // `maxCalls: 0` is the NEGATIVE form — "this must not be drawn on this
+          // frame" — so no calls is the pass, not the failure. Testing emptiness
+          // first made every such assertion fail on correct behaviour.
+          if (a.maxCalls === 0) {
+            ok = calls.length === 0;
+            got = calls.length + ' call(s)';
+            break;
+          }
           if (!calls.length) { ok = false; got = 'not drawn on frame ' + frame; break; }
           if (a.minCalls != null && calls.length < a.minCalls) {
             ok = false; got = calls.length + ' calls (want >=' + a.minCalls + ')'; break;

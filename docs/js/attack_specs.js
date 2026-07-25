@@ -7,7 +7,7 @@
  * file and line it came from, so a failure can be argued with rather than
  * guessed at. Nothing here is a judgement about how an attack should feel.
  *
- * 59 attacks, 768 assertions.
+ * 141 attacks, 1835 assertions.
  */
 window.ATTACK_SPECS = [
  {
@@ -7068,6 +7068,10035 @@ window.ATTACK_SPECS = [
     "tol": 2,
     "why": "nothing here resizes the box, so it grows to obj_growtangle's default maxxscale/maxyscale = 2 over spr_battlebg_0's 75x75",
     "src": "obj_growtangle_Create_0.gml:13,14"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green240",
+  "name": "Gerson GREEN pattern 240 - swing-around volley",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row in the 240 chart, and opcode 1 runs instance_create(x-5, y+4, obj_gerson_green_switch) once",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:394"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 170,
+    "min": 1,
+    "max": 1,
+    "why": "the single green switch spawns exactly one chevron at switch.x-15, switch.y once image_index>4; the timer<1 guard makes it single-shot",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 190,
+    "min": 1,
+    "max": 1,
+    "why": "the shield is created once from the chevron's Draw when chevron.x < obj_heart.x, con=1 making it single-shot; pattern 240 has no opcode 36 row and never creates obj_gerson_growtangle, so this is the only shield path",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 17,
+    "max": 17,
+    "why": "the 240 block appends 18 rows (1 + 1 + 3 + 6 + 6 + 1); every choose(1,2,3) branch of each group has the identical row count, so 17 special==16 rows always fire and each creates exactly one obj_spearshot, only row 0 being a control row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:392"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_growtangle",
+    "byFrame": 300,
+    "why": "no row in the 240 chart uses special==31, and scr_spearshot line 450 is the only obj_gerson_growtangle creation site in the chapter",
+    "src": "gml_GlobalScript_scr_spearshot.gml:450"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "name": "swingaround",
+    "eq": 1,
+    "why": "every spear row in 240 uses special==16, and the opcode-16 branch sets swingaround = 1 so each spear swings in on the 25-frame lerp arc",
+    "src": "gml_GlobalScript_scr_spearshot.gml:261"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "name": "special",
+    "eq": 0,
+    "why": "the opcode-16 branch explicitly clears the spear's own special to 0, so no spear in 240 orbits at rotateradius",
+    "src": "gml_GlobalScript_scr_spearshot.gml:256"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "name": "fakespeed",
+    "min": 6.4,
+    "max": 9.6,
+    "tol": 0.05,
+    "why": "spearspeed=8 and every spear row passes 8 itself (row 1), 8*1.2, 8*1 or 8*0.8, identically across all three choose branches, so fakespeed is confined to 6.4..9.6; grav is 0 so Step's fakespeed += grav never changes it in flight",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:398"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "the 240 chart contains no special==3 row and the boss's own diagonal_enabled is 0, so the Create-time transform check never fires and the shield stays cardinal-only",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "name": "radius",
+    "eq": 30,
+    "why": "radius is set to 30 in Create and is only lerped to 35 inside the diagonal_transform==1 branch of Draw, which pattern 240 never triggers",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "name": "justlength",
+    "eq": 4,
+    "why": "the parry window the shield grants on each direction press is justlength = 4 frames from Create",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 200,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "tol": 0.02,
+    "why": "draw_sprite_ext passes image_xscale/image_yscale in args 5-6 (both 1, since only the diagonal transform squashes yscale) and image_alpha in arg 9, which ramps +0.2/frame to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 250,
+    "why": "the shield's Draw assigns spr_spear_arrow to every bouncespear==0 spear each frame; pattern 240 has overlapping spears (10-frame gaps vs ~22-24 frame flight, len=fakespeed*29 ending at len<50) so at least one non-closest spear draws the plain arrow",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow_highlight",
+    "byFrame": 250,
+    "why": "the shield promotes the closest spear (min len/fakespeed, fadespear!=3, bouncespear==0, longspear==0) to the highlight sprite; all 17 of pattern 240's spears qualify",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:261"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green9",
+  "name": "Gerson GREEN pattern 9 — bounce shells, red hammer, swing-down volley",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "attackcountmax",
+    "eq": 17,
+    "why": "the branch calls scr_spearpattern 17 times (721,722,728-731,733, 6 loop rows, 760-763)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:719"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:721"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 320,
+    "why": "no row in the pattern-9 branch passes arg3 == 1, the only opcode that creates the green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:719"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 320,
+    "why": "the chevron is only created by obj_gerson_green_switch, which this pattern never spawns",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, which sets diagonal_enabled = 1 on the boss",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:722"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 150,
+    "min": 4,
+    "max": 4,
+    "why": "only rows 2-5 (three opcode-19 shells plus one opcode-35 red hammer) create spears; every other row is opcode 32/4/10/36/3",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:728"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 2,
+    "why": "row 2 uses opcode 19, which sets hp = 2 and maxhp = 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:294"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "row 2's \"u\" token normalises to direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:292"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 90,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 180,
+    "why": "row 5 is opcode 35 from \"r\" (direction 180) and the red hammer draws at 2x with image_angle = direction",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:70"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 290,
+    "min": 8,
+    "max": 8,
+    "why": "row 6, the six randomised loop rows and row 15 are all opcode 32, each creating exactly one swing-down",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:733"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 130,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "swing-downs are created at 2x scale and drawn with image_xscale/image_yscale",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:18"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 320,
+    "min": 3,
+    "why": "rows 13 and 14 are opcode 4 with arg2 == -5 and row 16 is opcode 10, each creating a teleport",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:760"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green10",
+  "name": "Gerson pattern 10 — swing-down beat chain into box hits",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 14,
+    "why": "row 768, seven loop rows, row 803, rows 810-813 and row 814 make 14 rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:766"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "swingdownbeatspeed",
+    "eq": 22,
+    "why": "chart is built with the Create value 23, then decremented once at the end of the branch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:804"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "no row uses a spear opcode — every row is 32, 11, 12 or 10",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:766"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the branch contains no opcode 36, the only opcode that creates obj_spearblocker",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:766"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 230,
+    "min": 9,
+    "max": 9,
+    "why": "rows 0-8 are all opcode 32 (both loop branches also use 32), each creating exactly one swing-down",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:768"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 10,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the swing-down telegraph is created at 2x and drawn with image_xscale/image_yscale",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 5,
+    "name": "timetoswing",
+    "eq": 10,
+    "why": "the Gerson-present branch overwrites the default 22 with 10",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:30"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 5,
+    "name": "telegraphtime",
+    "eq": 8,
+    "why": "the Gerson-present branch overwrites the default 12 with 8",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:31"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 5,
+    "name": "image_angle",
+    "eq": 0,
+    "why": "row 0 passes arg2 = 0, so the opcode-32 branch pins image_angle to 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:459"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 5,
+    "name": "image_alpha",
+    "eq": 1.4,
+    "why": "created at alpha 1.4 and only decays once con == 1 and speed < 12",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:20"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hits_box",
+    "byFrame": 380,
+    "min": 4,
+    "max": 4,
+    "why": "rows 9-12 are opcodes 11,12,11,12, each producing one obj_gerson_hits_box via a type-4/5 teleport",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:810"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 400,
+    "min": 5,
+    "why": "rows 9-12 each create one positioned teleport and row 14's opcode 10 creates the type-10 return teleport",
+    "src": "gml_GlobalScript_scr_spearshot.gml:209"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green11",
+  "name": "Gerson pattern 11 — box throw controller (hammer bro barrage)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 20,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole branch is a single scr_spearpattern call",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:818"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_box_throw_controller",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "the single row is opcode 50, which instance_creates one obj_box_throw_controller",
+    "src": "gml_GlobalScript_scr_spearshot.gml:689"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "opcode 50 is a control opcode, so this pattern fires no spears at all",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:818"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the chart has no opcode 36 row, so no green shield is ever created",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:818"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller's Create hides Gerson for the whole attack",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize sets image_xscale/image_yscale to 2 on creation",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 5,
+    "name": "hammer_timer_goal",
+    "eq": 10,
+    "why": "phase-0 throw cadence is 10 frames between hammer volleys",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_laugh",
+    "atFrame": 5,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the controller's default sprite is drawn at the scr_darksize 2x scale before the teleport at timer 15",
+    "src": "gml_Object_obj_box_throw_controller_Draw_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport_generic",
+    "byFrame": 25,
+    "min": 1,
+    "why": "at timer 15 the controller goes invisible and creates a teleport puff before relocating to the box",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 32,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "sprite switches to spr_gerson_swing at timer 19 and becomes visible again at timer 23, still at 2x",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:19"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hammer_bro_hammer",
+    "byFrame": 70,
+    "min": 3,
+    "why": "the first phase-0 volley is 3 + irandom(1) hammers, so at least 3 exist once hammer_timer hits its goal",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:84"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_hammer_bro_hammer",
+    "atFrame": 60,
+    "name": "fakegravity",
+    "eq": 0.6,
+    "why": "thrown hammers are given fakegravity 0.6 with gravity_direction 270",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:111"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_hammer_bro_hammer",
+    "atFrame": 60,
+    "name": "grazepoints",
+    "eq": 2.5,
+    "why": "the spawn block overwrites scr_bullet_init's grazepoints with 2.5",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:116"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_hammer_bro_hammer",
+    "atFrame": 60,
+    "name": "target",
+    "eq": 3,
+    "why": "thrown hammers are retargeted to target 3 after scr_bullet_init",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:113"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green12",
+  "name": "Gerson GREEN pattern 12 — shell opener into full 8-way spear sweep",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 26,
+    "why": "the branch makes 26 scr_spearpattern calls (826-831, 834-845, 848-855)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:820"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:826"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 10,
+    "name": "justlength",
+    "eq": 4,
+    "why": "the parry window is 4 frames at shield birth and is never reassigned",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, unlocking diagonal blocking before any diagonal spear row fires",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:827"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 60,
+    "xscale": 1,
+    "yscale": 0.6,
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform grows the blocking radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 24,
+    "max": 24,
+    "why": "rows 2-25 are all spear opcodes (19, 40.4 and plain 0); only rows 0 and 1 are control rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:828"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 2,
+    "why": "row 2 uses opcode 19, giving the first shell hp 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:294"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "row 2's \"u\" token normalises to direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:292"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 340,
+    "why": "no row in the pattern-12 branch passes arg3 == 1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:820"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 300,
+    "why": "the blocker assigns spr_spear_arrow to every non-bounce spear each Draw, and rows 7-11/13-25 are plain spears",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green13",
+  "name": "Gerson GREEN pattern 13 — long-lead spear ladder",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 17,
+    "why": "the branch makes 17 scr_spearpattern calls (860,861,865,866, 869-876, 879-883)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:858"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:860"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, unlocking diagonals before the \"ur\"/\"dr\"/\"ul\"/\"dl\" rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:861"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 10,
+    "name": "justlength",
+    "eq": 4,
+    "why": "the parry window is 4 frames at shield birth and is never reassigned",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 15,
+    "max": 15,
+    "why": "rows 2-16 are spear opcodes (four opcode-20 shells plus eleven plain); rows 0 and 1 are control rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:865"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 3,
+    "why": "row 2 uses opcode 20, giving the shell hp 3 and maxhp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:306"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "opcode 20 marks the shell as bouncespear type 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "row 2's \"u\" token normalises to direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:304"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 210,
+    "min": 8,
+    "why": "rows 4-11 all carry wait 0 so they fire on eight consecutive frames, and their 155-211 frame leads keep them all airborne together",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:869"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 320,
+    "why": "no row in the pattern-13 branch passes arg3 == 1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:858"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 300,
+    "why": "the blocker assigns spr_spear_arrow to every non-bounce spear, and rows 4-11 and 14-16 are plain spears",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 30,
+    "why": "the soul switches to the green heart sprite while an un-vanished blocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green14",
+  "name": "Gerson GREEN pattern 14 — shell wave into rapid up-spears and red hammer",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 22,
+    "why": "the branch makes 22 scr_spearpattern calls (888,889,893-900, 902-913)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:886"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:888"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, unlocking diagonals before the \"dr\"/\"ul\"/\"ur\" rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:889"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform grows the blocking radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 390,
+    "min": 20,
+    "max": 20,
+    "why": "rows 2-21 are spear opcodes (two 19, six 20, eleven plain, one 35); rows 0 and 1 are control rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:893"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 2,
+    "why": "row 2 uses opcode 19, giving the first shell hp 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:294"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "bouncespear",
+    "eq": 1,
+    "why": "opcode 19 marks the shell as bouncespear type 1",
+    "src": "gml_GlobalScript_scr_spearshot.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 0,
+    "why": "row 2's \"l\" token normalises to direction 0 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:292"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 370,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 270,
+    "why": "the final row is opcode 35 from \"u\" (direction 270) and the red hammer draws at 2x with image_angle = direction",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:70"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no row in the pattern-14 branch passes arg3 == 1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:886"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 350,
+    "why": "the blocker assigns spr_spear_arrow to every non-bounce spear, and rows 3,4,6-10 and 17-20 are plain",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 30,
+    "why": "the soul switches to the green heart sprite while an un-vanished blocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green15",
+  "name": "Gerson GREEN pattern 15 — cardinal-only shell and spear drill",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 18,
+    "why": "the branch makes 18 scr_spearpattern calls (918,919,923-932, 936-941)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:916"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:918"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, which still unlocks diagonals even though this chart uses only cardinals",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:919"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 60,
+    "xscale": 1,
+    "yscale": 0.6,
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform grows the blocking radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 340,
+    "min": 16,
+    "max": 16,
+    "why": "rows 2-17 are all spear opcodes (six opcode-20 shells plus ten plain); rows 0 and 1 are control rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:923"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 3,
+    "why": "row 2 uses opcode 20, giving the shell hp 3 and maxhp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:306"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "opcode 20 marks the shell as bouncespear type 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "row 2's \"u\" token normalises to direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:304"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "every spear row in this chart passes spearspeed = 12 and opcode 20 leaves grav at 0",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:921"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 340,
+    "why": "no row in the pattern-15 branch passes arg3 == 1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:916"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 300,
+    "why": "the blocker assigns spr_spear_arrow to every non-bounce spear, and ten rows here are plain",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green16",
+  "name": "Gerson pattern 16 — shell kick controller",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 20,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole branch is a single scr_spearpattern call",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:945"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_shell_kick_controller",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "the single row is opcode 52, which instance_creates one shell-kick controller",
+    "src": "gml_GlobalScript_scr_spearshot.gml:697"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "why": "opcode 52 is a control opcode, so this pattern fires no spears at all",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:945"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 200,
+    "why": "the chart has no opcode 36 row, so no green shield exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:945"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize sets image_xscale/image_yscale to 2 on creation",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 5,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller starts hidden and only reveals itself at timer 12",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 5,
+    "name": "shell_counter",
+    "eq": 1,
+    "why": "shell_counter starts at 1, which is exactly the value that makes the timer-40 branch end rather than loop",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 20,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller hides Gerson at timer 12 when it takes over his position",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:24"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "at timer 12 the controller becomes visible with spr_gerson_swing, still at the scr_darksize 2x scale",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:22"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_shell_pinball",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "one pinball is kicked at timer 32 and shell_counter == 1 stops the sequence from repeating",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:50"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_pinball",
+    "atFrame": 36,
+    "name": "target",
+    "eq": 3,
+    "why": "the kicked shell is retargeted to target 3 after scr_bullet_init",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:59"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_pinball",
+    "atFrame": 36,
+    "name": "destroyonhit",
+    "eq": 0,
+    "why": "the spawn block overwrites scr_bullet_init's destroyonhit with false so the shell keeps bouncing",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:63"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport_generic",
+    "byFrame": 55,
+    "min": 1,
+    "why": "at timer 40 the controller vanishes and leaves a delayed-destroy teleport puff",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:73"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green17",
+  "name": "Gerson GREEN pattern 17 — armoured shell then 23-spear finale",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 30,
+    "why": "the branch makes 30 scr_spearpattern calls (949,950,955-958, 963, 966-988)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:947"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is opcode 36, which creates obj_spearblocker only if none exists",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:949"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, unlocking diagonals long before the \"ul\"/\"ur\"/\"dl\"/\"dr\" rows at 972-986",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:950"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 60,
+    "xscale": 1,
+    "yscale": 0.6,
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform grows the blocking radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 410,
+    "min": 28,
+    "max": 28,
+    "why": "rows 2-29 are all spear opcodes (four 20, one 21, twenty-three plain); rows 0 and 1 are control rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:955"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "hp",
+    "eq": 3,
+    "why": "row 2 uses opcode 20, giving the first shell hp 3 and maxhp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:306"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "opcode 20 marks the shell as bouncespear type 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 6,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "row 2's \"u\" token normalises to direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:304"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 8,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "non-gigashell bounce shells draw the colour layer at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 410,
+    "why": "no row in the pattern-17 branch passes arg3 == 1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:947"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 300,
+    "why": "the blocker assigns spr_spear_arrow to every non-bounce spear, and 23 of this chart's rows are plain",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 30,
+    "why": "the soul switches to the green heart sprite while an un-vanished blocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green27",
+  "name": "Rudebuster (pattern 27)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 2,
+    "why": "pattern 27 appends exactly two chart rows via scr_spearpattern (attackcountmax++ per call)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1307"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_dbulletcontroller",
+    "byFrame": 12,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 26 calls scr_bulletspawner(x, y, obj_dbulletcontroller) exactly once",
+    "src": "gml_GlobalScript_scr_spearshot.gml:421"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 12,
+    "name": "type",
+    "eq": 250,
+    "why": "opcode 26 pins the spawned controller to dc.type = 250",
+    "src": "gml_GlobalScript_scr_spearshot.gml:422"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_sin",
+    "byFrame": 40,
+    "min": 2,
+    "why": "type 250 emits obj_bullet_sin in a for(i<2) pair on every frame with btimer >= starttime (20)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3387"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_sin",
+    "byFrame": 90,
+    "min": 20,
+    "why": "btimer runs 20..40 emitting a pair each frame before resetting, so two full 40-frame cycles fit inside 90 frames",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3383"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 40,
+    "why": "the first emission of each cycle (special == 0) overrides the bullet sprite to spr_spadebullet",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3413"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_bullet_sin",
+    "atFrame": 40,
+    "name": "amplitudex",
+    "eq": 0,
+    "why": "type 250 pins amplitudex = 0 so the sine wobble is purely vertical",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3402"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_bullet_sin",
+    "atFrame": 40,
+    "name": "timefactory",
+    "eq": 0.7,
+    "why": "type 250 pins timefactory = 0.7 (Create default is 1)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3400"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 600,
+    "why": "pattern 27 contains no special == 1 row, so the green-transition chain never starts",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1307"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 600,
+    "why": "neither opcode 1 nor opcode 36 appears in this chart, so no shield is ever created",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1308"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 600,
+    "why": "the only spear row is row 1, and row 0's wait of 9999 gates it (list_attackwait[attackcount-1]) far beyond any turn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1307"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 90,
+    "min": 1,
+    "max": 1,
+    "why": "a single rudebuster controller persists for the whole turn; nothing in the chart spawns a second",
+    "src": "gml_GlobalScript_scr_spearshot.gml:421"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green28",
+  "name": "Green shield — up-spam with side shells (pattern 28)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 16,
+    "why": "pattern 28 appends 16 chart rows (2 control + 14 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1331"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1313) creates exactly one obj_gerson_green_switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y) once image_index > 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield once, gated by con == 0 && x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 215,
+    "min": 14,
+    "max": 14,
+    "why": "14 of the 16 rows are spear opcodes (lines 1318-1331: four opcode 19 shells plus ten plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1318"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1314) unlocks diagonal blocking on the shield",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform lerps radius 30 -> 35 and clamps it to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: the parry window is 4 frames and this chart never changes it",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws itself at unmodified image_xscale with alpha ramped to 1 (+0.2/frame)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 10,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 1,
+    "why": "the green switch draws itself at 2x scale set in its Create event",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'u' rows at 1319-1321 store direction 270 and scr_spearshot sets image_angle = direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:725"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "row 6 (line 1322) is opcode 19, a bouncespear shell, drawn at scale 0.75 since gigashell is false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 100,
+    "why": "the soul switches to the green heart sprite while a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green29",
+  "name": "Green shield — full eight-direction sweep (pattern 29)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 14,
+    "why": "pattern 29 appends 14 chart rows (2 control + 12 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1352"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1336) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron's Draw event creates the shield once when it crosses the heart's x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_green_chevron",
+    "atFrame": 30,
+    "name": "direction",
+    "eq": 180,
+    "why": "the chevron is fired leftward at direction 180 with friction -2 and never turns",
+    "src": "gml_Object_obj_gerson_green_chevron_Create_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "min": 12,
+    "max": 12,
+    "why": "12 of the 14 rows are spear opcodes (lines 1341-1352: two opcode 40 shells plus ten plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1341"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1337) unlocks diagonals, which this chart's dl/dr/ul/ur rows require",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform grows the shield radius from 30 to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 70,
+    "angle": 45,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'dl' row at 1343 stores direction 45 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:25"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 70,
+    "angle": 135,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'dr' row at 1345 stores direction 135 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:22"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 165,
+    "angle": 315,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'ul' row at 1349 stores direction 315 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:31"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 175,
+    "angle": 225,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'ur' row at 1351 stores direction 225 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:28"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 120,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "row 8 (line 1347) is opcode 40, a slowbounce shell, drawn at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale once its alpha has ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green30",
+  "name": "Green shield — all-shell barrage (pattern 30)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 10,
+    "why": "pattern 30 appends 10 chart rows (2 control + 8 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1368"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1357) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron once its animation passes image_index 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 110,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once (con = 1 makes it single-shot)",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "min": 8,
+    "max": 8,
+    "why": "8 of the 10 rows are spear opcodes (lines 1361-1368: 40, 41, 42, 41, 40, 41, 42, 19)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1361"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 120,
+    "maxCalls": 0,
+    "why": "every spear row here is a bounce opcode, and the shield only assigns spr_spear_arrow to spears with bouncespear == 0",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:247"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 75,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "opcodes 40/41/42 set bouncespear and never set gigashell, so shells draw at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 130,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "rows 7 and 8 (lines 1366-1367) are still in flight at this point, also at shell scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:130"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1358) unlocks diagonals for the ul/dl/dr/ur shells at 1365-1368",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform clamps the shield radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 110,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 110,
+    "why": "the soul turns green while the shield exists and has not vanished",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green31",
+  "name": "Green shield — slow cardinal rotation (pattern 31)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 11,
+    "why": "pattern 31 appends 11 chart rows (2 control + 9 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1386"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1373) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once when it crosses the heart's x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 275,
+    "min": 9,
+    "max": 9,
+    "why": "9 of the 11 rows are spear opcodes (lines 1378-1386: three opcode 20 shells plus six plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1378"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1374) unlocks diagonal blocking even though every spear row here is cardinal",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform clamps the shield radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 85,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'r' row at 1380 stores direction 180 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:16"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 160,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'u' row at 1383 stores direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 115,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "row 5 (line 1381) is opcode 20, a 3 hp bouncespear shell, drawn at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_gradient_telegraph",
+    "byFrame": 275,
+    "why": "the plain-spear telegraph is gated on obj_sound_of_justice_enemy existing, which it does not in a Gerson green turn",
+    "src": "gml_GlobalScript_scr_spearshot.gml:743"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green32",
+  "name": "Green shield — short six-spear phrase (pattern 32)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 8,
+    "why": "pattern 32 appends 8 chart rows (2 control + 6 spear) — the shortest of this group",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1401"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1391) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron once image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once (con = 1 makes it single-shot)",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 130,
+    "min": 6,
+    "max": 6,
+    "why": "6 of the 8 rows are spear opcodes (lines 1396-1401: two opcode 20 shells plus four plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1396"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1392) unlocks diagonal blocking on the shield",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform grows the shield radius from 30 to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'r' row at 1399 stores direction 180 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:16"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 90,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'u' row at 1400 stores direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 50,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "row 3 (line 1397) is opcode 20, a bouncespear shell, drawn at scale 0.75 with gigashell false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 100,
+    "why": "the soul turns green while the shield exists and has not vanished",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green33",
+  "name": "Green shield — left-heavy shell mix (pattern 33)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 10,
+    "why": "pattern 33 appends 10 chart rows (2 control + 8 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1418"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1406) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once when it crosses the heart's x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 215,
+    "min": 8,
+    "max": 8,
+    "why": "8 of the 10 rows are spear opcodes (lines 1411-1418: four opcode 20 shells plus four plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1411"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1407) unlocks diagonal blocking on the shield",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform grows the shield radius from 30 to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 90,
+    "angle": 0,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'l' row at 1414 stores direction 0 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:19"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 160,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'u' row at 1417 stores direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 135,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "rows 6-7 (lines 1415-1416) are opcode 20 shells, drawn at scale 0.75 with gigashell false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_gradient_telegraph",
+    "byFrame": 215,
+    "why": "the plain-spear telegraph requires obj_sound_of_justice_enemy, absent in a Gerson green turn",
+    "src": "gml_GlobalScript_scr_spearshot.gml:743"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green34",
+  "name": "Green shield — paired doubles (pattern 34)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 14,
+    "why": "pattern 34 appends 14 chart rows (2 control + 12 spear), fired as six same-direction pairs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1439"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1423) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron once image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once (con = 1 makes it single-shot)",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 205,
+    "min": 12,
+    "max": 12,
+    "why": "12 of the 14 rows are spear opcodes (lines 1428-1439: four opcode 20 shells plus eight plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1428"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1424) unlocks diagonal blocking on the shield",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform grows the shield radius from 30 to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 90,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the paired 'd' rows at 1430-1431 store direction 90 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:13"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 90,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the paired 'r' rows at 1432-1433 store direction 180 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:16"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 140,
+    "angle": 0,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the paired 'l' rows at 1436-1437 store direction 0 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:19"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 120,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "rows 8-9 (lines 1434-1435) are opcode 20 shells, drawn at scale 0.75 with gigashell false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 100,
+    "why": "the soul turns green while the shield exists and has not vanished",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green35",
+  "name": "Green shield — triple shell bursts (pattern 35)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 12,
+    "why": "pattern 35 appends 12 chart rows (2 control + 10 spear)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1458"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 opcode 1 (line 1444) creates exactly one green switch",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once when it crosses the heart's x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 215,
+    "min": 10,
+    "max": 10,
+    "why": "10 of the 12 rows are spear opcodes (lines 1449-1458: six opcode 20 shells plus four plain spears)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1449"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 opcode 3 (line 1445) unlocks diagonal blocking on the shield",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform grows the shield radius from 30 to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state: 4-frame parry window, unchanged by this chart",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 55,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "the three 'u' rows at 1449-1451 are opcode 20 shells, drawn at scale 0.75 with gigashell false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:100"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 140,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "minCalls": 1,
+    "why": "the three 'l' rows at 1454-1456 are a second opcode 20 shell burst, also drawn at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:130"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 85,
+    "angle": 90,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'd' row at 1452 stores direction 90 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:13"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 175,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the 'u' row at 1458 stores direction 270 and image_angle is set to direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "the shield draws at unmodified image_xscale with alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 100,
+    "why": "the soul turns green while the shield exists and has not vanished",
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green54",
+  "name": "Gerson GREEN 54 - up/diagonal drill",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 30,
+    "why": "2 control rows (special 1, special 3) + 28 spear rows at lines 2083-2110",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2076"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is (0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2078"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "switch spawns one chevron at (x-15,y) once image_index > 4, guarded by timer < 1",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "chevron creates the shield once, gated on con==0 and x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 215,
+    "min": 28,
+    "max": 28,
+    "why": "28 of the 30 rows carry special 0; last spear row fires at t=202",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2083"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 12,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3 behind row 0's wait 1, so diagonals unlock at t=1 before the first ul row at t=14",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2079"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "opcode 3 preceded the shield, so Create sees diagonal_enabled==1 and radius lerps 30 to 35 by the 8th draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "image_yscale",
+    "min": 0.6,
+    "max": 0.72,
+    "why": "yscale lerps toward 0.6 but the radius branch clears diagonal_transform on draw 8, freezing yscale near 0.667",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 60,
+    "angle": 90,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "arg 7 is image_angle, settled at idealdir 90; arg 5 image_xscale is never written; arg 9 image_alpha has ramped 0.2/draw to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 0,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "arg 7 is image_angle = direction; chart rows 8-9 (line 2089) are l = 0 and are airborne t=46..84",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 140,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "chart rows 18-19 (line 2099) are u = 270, fired t=122/126 with a 40-frame lead",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow_highlight",
+    "byFrame": 120,
+    "why": "blocker retags the nearest live spear (min len/fakespeed) as the highlight sprite each Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:261"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 140,
+    "min": 3,
+    "why": "8-frame cadence against a 40-frame lead keeps about 5 spears in flight",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2097"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "scr_spearpattern_reset zeroed list_attackspecial2[0..99] in Create, so argument4 here is 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green55",
+  "name": "Gerson GREEN 55 - accelerating random pairs",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 34,
+    "why": "2 control rows plus a 16-iteration loop emitting 2 rows each = 34",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2122"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is (0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2115"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "switch spawns one chevron at (x-15,y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "chevron creates the shield once when it crosses the heart x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 375,
+    "min": 32,
+    "max": 32,
+    "why": "32 spear rows (16 loop iterations x 2); last fires at t=359",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2125"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 48,
+    "min": 1,
+    "max": 1,
+    "why": "row 1 carries wait 40, so only the first spear (row 2, t=41) is out before row 3 at t=56",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2116"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 12,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3 fired at t=1",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2116"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "shield Create inherits diagonal_enabled==1 and radius lerps 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 48,
+    "name": "fakespeed",
+    "eq": 10,
+    "why": "spearspeed starts at 10 and the first pair is emitted before any increment; grav is 0 so it never changes in flight",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2118"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 300,
+    "name": "fakespeed",
+    "eq": 20,
+    "why": "spearspeed += 2 per pair is gated by spearspeed < 20, so every row from i=5 on is 20",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2128"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 300,
+    "name": "len",
+    "max": 800,
+    "why": "len = fakespeed * heartframes and the cap makes 20*40=800 the maximum spawn length",
+    "src": "gml_GlobalScript_scr_spearshot.gml:724"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "angle": 90,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "arg 7 image_angle settled at idealdir 90, arg 9 image_alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "args 5/6/9 are image_xscale, image_yscale, image_alpha, all left at 1; directions here are choose() so no angle asserted",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "scr_spearpattern_reset zeroed list_attackspecial2 in Create, so argument4 here is 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green56",
+  "name": "Gerson GREEN 56 - slow long-lead swarm",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 50,
+    "why": "2 control rows plus a 24-iteration loop emitting 2 rows each = 50",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2144"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is (0,0,0,1,60); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2138"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "switch spawns one chevron at (x-15,y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "chevron creates the shield once when it crosses the heart x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 40,
+    "min": 0,
+    "max": 0,
+    "why": "row 0 carries wait 60, so no spear can exist before t=61",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2138"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "it is only zeroed in Create and the special-3 row sits behind row 0's 60-frame wait, so it is still 0 at t=40",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2138"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 80,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 (special 3) fires at t=60 and unlocks diagonals",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2139"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 40,
+    "name": "radius",
+    "eq": 30,
+    "tol": 0.01,
+    "why": "shield is born before the unlock, so it is still the round 30-radius form at t=40",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "opcode 3 at t=60 sets diagonal_transform and radius lerps to 35 within 8 draws",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 40,
+    "angle": 90,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "before the transform args 5/6 are still 1 and arg 7 image_angle is idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fakespeed",
+    "eq": 3,
+    "why": "every loop row uses spearspeed = 3",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2141"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 70,
+    "name": "len",
+    "max": 360,
+    "why": "len = fakespeed * heartframes = 3 * 120 at spawn and only decreases",
+    "src": "gml_GlobalScript_scr_spearshot.gml:724"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "min": 48,
+    "max": 48,
+    "why": "48 spear rows (24 iterations x 2); last fires at t=390",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2147"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 250,
+    "min": 12,
+    "why": "120-frame lead against a 7-frame cadence keeps roughly 16 spears alive at once",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2142"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green57",
+  "name": "Gerson GREEN 57 - double chart (loop + scripted volley)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 88,
+    "why": "57 matches TWO top-level ifs: 42 rows from the 57||58 loop block plus 46 from the scripted block",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2205"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 140,
+    "min": 2,
+    "max": 2,
+    "why": "opcode 1 appears twice - row 0 and row 42 (fires t=80) - so the green switch plays a second time mid-attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2207"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 140,
+    "min": 2,
+    "max": 2,
+    "why": "each switch spawns its own chevron at (x-15,y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 150,
+    "min": 2,
+    "max": 2,
+    "why": "the chevron's instance_create has no i_ex guard (unlike opcode 36), so the second chevron makes a second shield",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 180,
+    "min": 2,
+    "max": 2,
+    "why": "nothing destroys the first shield, and both snap to obj_heart.x+10, drawing on top of each other",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 275,
+    "min": 84,
+    "max": 84,
+    "why": "40 spear rows from the loop block plus 44 scripted rows; last fires at t=259",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2209"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 32,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3 behind row 0's wait 20, so diagonals unlock at t=20",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2155"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 48,
+    "name": "fakespeed",
+    "eq": 7,
+    "why": "the attackpattern==57 override sets spearspeed = 7 for every loop-block row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2169"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "special-3 transform lerps the shield radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 100,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "arg 7 is image_angle = direction; scripted rows 44-47 (line 2209) are 270, fired t=82..91 with a 30-frame lead",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 110,
+    "angle": 180,
+    "minCalls": 1,
+    "why": "scripted rows 48-51 (line 2213) are direction 180, fired t=94..103, arriving t=124..133",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 122,
+    "angle": 0,
+    "minCalls": 1,
+    "why": "scripted rows 52-55 (line 2217) are direction 0, fired t=106..115, arriving t=136..145",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "min": 20,
+    "why": "the loop block's growing totalheartframes (20+7k) leaves dozens of spears still inbound when the scripted volley starts",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2182"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "scr_spearpattern_reset zeroed list_attackspecial2 in Create, so argument4 here is 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green58",
+  "name": "Gerson GREEN 58 - staggered-lead barrage",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 42,
+    "why": "58 only matches the shared 57||58 loop block: 2 control rows plus 20 iterations x 2 = 42",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2179"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is (0,0,0,1,20); unlike 57 there is no second opcode-1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2154"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "switch spawns one chevron at (x-15,y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "one chevron means one shield, and nothing destroys it while turntimer is high",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "min": 0,
+    "max": 0,
+    "why": "rows 0 and 1 carry wait 20 each, so the first spear row cannot fire before t=40",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2154"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 95,
+    "min": 40,
+    "max": 40,
+    "why": "all 40 spear rows use wait 0, which the attackcon 1/2 handshake floors to a 1-frame gap, so every one is out by t=79",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2182"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 50,
+    "name": "fakespeed",
+    "eq": 8,
+    "why": "the attackpattern==58 override sets spearspeed = 8 for every spear row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2175"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 88,
+    "min": 25,
+    "why": "totalheartframes += beat(6) per row staggers arrivals 7 frames apart while all 40 fire in 40 frames",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 32,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3 fired at t=20",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2155"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "special-3 transform lerps the shield radius from 30 to 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 70,
+    "angle": 90,
+    "xscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "arg 7 image_angle settled at idealdir 90, arg 5 image_xscale untouched, arg 9 image_alpha ramped to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 70,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 1,
+    "why": "args 5/6/9 are image_xscale, image_yscale, image_alpha, all left at 1; directions are choose() so no angle asserted",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 70,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "scr_spearpattern_reset zeroed list_attackspecial2 in Create, so argument4 here is 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green70",
+  "name": "Gerson 70 - box throw (opcode 50)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole chart is one row: scr_spearpattern(x, y, 60, 50, 9999)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2256"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_box_throw_controller",
+    "byFrame": 8,
+    "min": 1,
+    "max": 1,
+    "why": "opcode 50 dispatches to instance_create(arg0, arg1, obj_box_throw_controller)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:689"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "opcode 50 takes a non-spear branch of scr_spearshot, and the controller never creates one either",
+    "src": "gml_GlobalScript_scr_spearshot.gml:687"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the chart has no opcode 1, 3 or 36 row, so no green shield is ever made",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2256"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no opcode-1 row means this is not a green-soul attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2256"
+   },
+   {
+    "kind": "turntimer",
+    "min": 9000,
+    "why": "the controller pins global.turntimer = 9999 and the row's own wait of 9999 keeps attackcon from ending the turn",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 3,
+    "name": "hammer_timer_goal",
+    "eq": 10,
+    "why": "Create pins the hammer cadence goal at 10",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 3,
+    "name": "hammer_phase",
+    "eq": 0,
+    "why": "Create starts in hammer_phase 0 (contrast obj_hammer_bounce_controller which starts at -1)",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize() sets image_xscale and image_yscale to 2",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 3,
+    "name": "image_speed",
+    "eq": 0.5,
+    "why": "Create sets the animation rate to 0.5; Step only zeroes it at timer 23",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller hides Gerson on creation",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "boxoffset",
+    "eq": 1,
+    "why": "70 satisfies attackpattern > 69 && < 72, so the box is offset for this attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2268"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle",
+    "atFrame": 3,
+    "name": "y",
+    "eq": 190,
+    "tol": 2,
+    "why": "box is made at cameray()+cameraheight()/2 = 240 then shifted up 50 by boxoffset",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:631"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport_generic",
+    "byFrame": 30,
+    "min": 1,
+    "why": "controller timer case 15 spawns the teleport puff at (x+64, y+36)",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:8"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green71",
+  "name": "Gerson 71 - hammer bounce (opcode 51)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole chart is one row: scr_spearpattern(x, y, 60, 51, 9999)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2259"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_hammer_bounce_controller",
+    "byFrame": 8,
+    "min": 1,
+    "max": 1,
+    "why": "opcode 51 dispatches to instance_create(arg0, arg1, obj_hammer_bounce_controller)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:693"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "opcode 51 takes a non-spear branch of scr_spearshot",
+    "src": "gml_GlobalScript_scr_spearshot.gml:691"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the chart has no opcode 1, 3 or 36 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2259"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no opcode-1 row means this is not a green-soul attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2259"
+   },
+   {
+    "kind": "turntimer",
+    "min": 9000,
+    "why": "the controller pins global.turntimer = 9999",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 3,
+    "name": "hammer_timer",
+    "eq": 17,
+    "why": "Create seeds hammer_timer at 17, not 0",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 3,
+    "name": "hammer_timer_goal",
+    "eq": 30,
+    "why": "bounce cadence goal is 30 (three times the box-throw controller's 10)",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 3,
+    "name": "hammer_phase",
+    "eq": -1,
+    "why": "Create starts in hammer_phase -1",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize() sets image_xscale and image_yscale to 2",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:11"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 3,
+    "name": "image_speed",
+    "eq": 0.5,
+    "why": "Create sets the animation rate to 0.5",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller hides Gerson on creation",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:15"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "boxoffset",
+    "eq": 1,
+    "why": "71 satisfies attackpattern > 69 && < 72, so the box is offset",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2268"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle",
+    "atFrame": 3,
+    "name": "y",
+    "eq": 190,
+    "tol": 2,
+    "why": "box centre 240 shifted up 50 by boxoffset",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:631"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green72",
+  "name": "Gerson 72 - shell kick (opcode 52)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole chart is one row: scr_spearpattern(x, y, 60, 52, 9999)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2262"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_shell_kick_controller",
+    "byFrame": 8,
+    "min": 1,
+    "max": 1,
+    "why": "opcode 52 dispatches to instance_create(arg0, arg1, obj_gerson_shell_kick_controller)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:697"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "opcode 52 takes a non-spear branch; the shell is obj_gerson_shell_pinball, not obj_spearshot",
+    "src": "gml_GlobalScript_scr_spearshot.gml:695"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the chart has no opcode 1, 3 or 36 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2262"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no opcode-1 row means this is not a green-soul attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2262"
+   },
+   {
+    "kind": "turntimer",
+    "min": 9000,
+    "why": "the controller pins global.turntimer = 9999",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 3,
+    "name": "shell_counter",
+    "eq": 1,
+    "why": "Create seeds shell_counter at 1",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 40,
+    "name": "full_timer",
+    "eq": 999,
+    "why": "full_timer is pinned at 999 and Step's decrement is gated on full_timer < 999, so it never moves",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize() sets image_xscale and image_yscale to 2",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_shell_kick_controller",
+    "atFrame": 3,
+    "name": "visible",
+    "eq": 0,
+    "why": "the controller starts hidden and only reveals itself at timer 12",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 20,
+    "name": "visible",
+    "eq": 0,
+    "why": "unlike 70/71 this controller hides Gerson in Step at timer 12, not in Create",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:24"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "boxoffset",
+    "eq": 0,
+    "why": "72 fails attackpattern < 72, so the else branch runs and the box is NOT offset",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2270"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle",
+    "atFrame": 3,
+    "name": "y",
+    "eq": 240,
+    "tol": 2,
+    "why": "box is created at cameray()+cameraheight()/2 = 240 and the boxoffset shift is skipped",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_shell_pinball",
+    "byFrame": 50,
+    "min": 1,
+    "why": "controller timer 32 kicks the pinball shell into the box",
+    "src": "gml_Object_obj_gerson_shell_kick_controller_Step_0.gml:50"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green73",
+  "name": "Gerson 73 - box rumble (opcode 53)",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 5,
+    "name": "attackcountmax",
+    "eq": 1,
+    "why": "the whole chart is one row: scr_spearpattern(x, y, 60, 53, 9999)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2265"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_box_rumble_controller",
+    "byFrame": 8,
+    "min": 1,
+    "max": 1,
+    "why": "opcode 53 dispatches to instance_create(arg0, arg1, obj_gerson_box_rumble_controller)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:701"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "opcode 53 takes a non-spear branch of scr_spearshot",
+    "src": "gml_GlobalScript_scr_spearshot.gml:699"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "the chart has no opcode 1, 3 or 36 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2265"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no opcode-1 row means this is not a green-soul attack",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2265"
+   },
+   {
+    "kind": "turntimer",
+    "min": 9000,
+    "why": "the controller pins global.turntimer = 9999",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_rumble_controller",
+    "atFrame": 3,
+    "name": "phase",
+    "eq": 0,
+    "why": "Create starts in phase 0; Step only advances it at timer 24",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_rumble_controller",
+    "atFrame": 3,
+    "name": "bonk_side",
+    "eq": -1,
+    "why": "Create seeds bonk_side at -1",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_rumble_controller",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "scr_darksize() sets image_xscale and image_yscale to 2",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_rumble_controller",
+    "atFrame": 3,
+    "name": "image_speed",
+    "eq": 0,
+    "why": "Create freezes the animation; image_index is driven by scr_lerpvar instead",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:11"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_rumble_controller",
+    "atFrame": 3,
+    "name": "visible",
+    "eq": 0,
+    "why": "Create hides the controller itself",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "visible",
+    "eq": 0,
+    "why": "Create hides Gerson for the rumble",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:14"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_lerpvar",
+    "byFrame": 8,
+    "min": 2,
+    "why": "Create issues two scr_lerpvar calls (y +80 over 16, image_index 0 to 6 over 12) and scr_lerpvar_instance makes an obj_lerpvar for each",
+    "src": "gml_Object_obj_gerson_box_rumble_controller_Create_0.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 3,
+    "name": "boxoffset",
+    "eq": 0,
+    "why": "73 fails attackpattern < 72, so the else branch runs and the box is NOT offset",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2270"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle",
+    "atFrame": 3,
+    "name": "y",
+    "eq": 240,
+    "tol": 2,
+    "why": "box is created at cameray()+cameraheight()/2 = 240; box_bonk only moves it from timer 32",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green170",
+  "name": "Gerson green 170 — cardinal/diagonal sweep with two slow-bounce shells",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row, and it creates one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:212"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 210,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron, gated by timer<1 once image_index>4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 210,
+    "min": 1,
+    "max": 1,
+    "why": "the single chevron creates the shield once it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one shield is live for the whole pattern — nothing here vanishes or re-spawns it",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 210,
+    "min": 12,
+    "max": 12,
+    "why": "14 chart rows minus the two control rows (special 1 and 3) = 12 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:217"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 60,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special==3, which sets diagonal_enabled on the boss",
+    "src": "gml_GlobalScript_scr_spearshot.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 drives the shield radius lerp 30->35, clamped to 35 once it exceeds 34",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "the diagonal_transform block sets diagonal_enabled on the shield's first draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "yscale lerps toward 0.6 but freezes at 0.6671 when the radius clamp kills diagonal_transform after 8 draws",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch is drawn with draw_self at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 85,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 45,
+    "alpha": 1,
+    "why": "row 4 is \"dl\" => direction 45, and image_angle is set to direction at spawn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:219"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 130,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "row 8's special==40 shell is a non-giga shell, drawn at scale 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 210,
+    "why": "no row uses redhammer (35) or breakshield (30), so the shield is never shattered",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:210"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green180",
+  "name": "Gerson green 180 — all-shell pattern, four bounce variants",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row, creating one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:233"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 210,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 210,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it passes obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 210,
+    "min": 8,
+    "max": 8,
+    "why": "10 chart rows minus the two control rows (special 1 and 3) = 8 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:237"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius from 30 to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 unlocks diagonal blocking before any spear arrives",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale and leaves xscale at 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "every row here is a shell opcode (40/41/42/19); none set gigashell, so scale is 0.75",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "spearspeed local is 12 and is passed as arg1 to every row, and shells carry grav 0 so it never changes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:235"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "hp",
+    "eq": 3,
+    "why": "the shell opcodes in flight here (40, 41, 42) are all created with hp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:553"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 210,
+    "why": "no redhammer or breakshield row, so the shield survives the whole pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:231"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green200",
+  "name": "Gerson green 200 — cardinal-only triplets with three bounce shells",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 280,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:249"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 280,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron once image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 280,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 280,
+    "min": 9,
+    "max": 9,
+    "why": "11 chart rows minus the two control rows (special 1 and 3) = 9 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:254"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "one shield stays live for the whole pattern",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 unlocks diagonals even though every spear row here is cardinal",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "six rows are plain spears (special 0), which the shield's Draw retags as spr_spear_arrow",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 130,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "the row-5 special==20 shell is drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 280,
+    "why": "no redhammer or breakshield row, so the shield is never shattered",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:247"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green210",
+  "name": "Gerson green 210 — short six-spear opener",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 140,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:267"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 150,
+    "min": 6,
+    "max": 6,
+    "why": "8 chart rows minus the two control rows (special 1 and 3) = 6 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:272"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 (wait 10) unlocks diagonal blocking",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "the shield's parry window is pinned to 4 frames at Create and never reassigned",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 75,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 180,
+    "alpha": 1,
+    "why": "row 5 is \"r\" => direction 180, and image_angle is set to direction at spawn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:275"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "rows 2 and 3 are special==20 shells, drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 150,
+    "why": "no redhammer or breakshield row, so the shield survives",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:265"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green211",
+  "name": "Gerson green 211 — eight spears, four bounce shells",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 220,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:282"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 230,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 230,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 230,
+    "min": 8,
+    "max": 8,
+    "why": "10 chart rows minus the two control rows (special 1 and 3) = 8 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:287"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 160,
+    "min": 1,
+    "max": 1,
+    "why": "one shield stays live for the whole pattern",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 (wait 10) unlocks diagonal blocking",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 110,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "rows 4, 5, 8 and 9 are plain spears, which the shield's Draw retags as spr_spear_arrow",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "rows 2 and 3 are special==20 shells, drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 230,
+    "why": "no redhammer or breakshield row, so the shield survives",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:280"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green212",
+  "name": "Gerson green 212 — paired spears, twelve total",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 210,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:299"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 220,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 220,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 220,
+    "min": 12,
+    "max": 12,
+    "why": "14 chart rows minus the two control rows (special 1 and 3) = 12 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:304"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 110,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 unlocks diagonal blocking, though all 12 spear rows are cardinal",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 110,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 110,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 180,
+    "alpha": 1,
+    "why": "rows 6 and 7 are \"r\" => direction 180, copied into image_angle at spawn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:309"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 70,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "rows 4 and 5 are \"d\" => direction 90, copied into image_angle at spawn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:307"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 55,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "rows 2 and 3 are special==20 shells, drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 220,
+    "why": "no redhammer or breakshield row, so the shield survives",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:297"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green213",
+  "name": "Gerson green 213 — shell triplets with plain-spear answers",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 220,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:320"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 230,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 230,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 230,
+    "min": 10,
+    "max": 10,
+    "why": "12 chart rows minus the two control rows (special 1 and 3) = 10 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:325"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 180,
+    "min": 1,
+    "max": 1,
+    "why": "one shield stays live for the whole pattern",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 (wait 20) unlocks diagonal blocking",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "rows 5, 6, 10 and 11 are plain spears, retagged as spr_spear_arrow by the shield's Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "rows 2-4 are special==20 shells, drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "spearspeed local is 12 and is passed as arg1 to every spear row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:323"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 230,
+    "why": "no redhammer or breakshield row, so the shield survives",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:318"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green220",
+  "name": "Gerson green 220 — the 26-spear turn-17 barrage",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 340,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row (wait 10)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:339"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 340,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 340,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the one shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 340,
+    "min": 26,
+    "max": 26,
+    "why": "28 chart rows minus the two control rows (special 1 and 3) = 26 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:345"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "one shield stays live across all 26 spears",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "row 1's special==3 grows the shield radius to the 35 clamp",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special==3 at row 1 unlocks the diagonals this pattern leans on heavily",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 0.667,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the diagonal transform squashes the shield to 0.6671 yscale",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 100,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 225,
+    "alpha": 1,
+    "why": "row 10 is \"ur\" => direction 225, copied into image_angle at spawn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:353"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 95,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "the row-11 special==20 shell is drawn at the non-giga 0.75 scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 340,
+    "why": "no redhammer or breakshield row, so the shield survives the whole barrage",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:337"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green230",
+  "name": "Gerson green 230 — four red hammers, shield rebuilt between each",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "rows 0, 2, 4 and 6 are all special==1, so the green switch fires four times",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:384"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "each switch spawns exactly one chevron, so four in total",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "the chevron's con gate is per-instance, so each of the four chevrons makes one shield",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "8 chart rows minus the four special==1 control rows = 4 spear rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:383"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 30,
+    "why": "this chart has no special==3 row, so the shield keeps its Create radius of 30",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "no special==3 row means diagonal blocking is never unlocked here",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "justlength",
+    "eq": 4,
+    "why": "the shield's parry window is pinned to 4 frames at Create and never reassigned",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "with no diagonal transform the shield is drawn unsquashed at 1x1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 125,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "row 3 is \"l\" => direction 0, and the redhammer branch draws at a hardcoded 2x scale",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:70"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the first green switch draws itself at the 2x scale its Create pins",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker_piece",
+    "byFrame": 250,
+    "min": 6,
+    "why": "a special==35 red hammer forces breakshield, shattering the shield into six pieces",
+    "src": "gml_Object_obj_spearshot_Other_10.gml:378"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green100",
+  "name": "Fade Spear Cascade (attackpattern 100)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch at (x-5, y+4)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:11"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y); the timer<1 guard makes it single-shot",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield (con=1 makes it single-shot) once x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "the chart never issues opcode 36 or 55, so the single shield stays alive for the whole pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "radius",
+    "eq": 30,
+    "why": "shield birth radius; the chart has no opcode-3 row so the diagonal transform never grows it to 35",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield parry window is 4 frames at birth and is only ever read, never reassigned",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "no row in this chart carries special == 3, so diagonal blocking is never unlocked",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 260,
+    "min": 18,
+    "max": 18,
+    "why": "19 rows carry special == 14; opcode 14 is gated on i_ex(obj_spearblocker) and row 1 dispatches at frame 1, long before the green chain lands the shield, so exactly 18 of the 19 fire (rows 2-19 all dispatch at frame 41 or later)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:237"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fadespeed",
+    "eq": 25,
+    "why": "every spear this chart produces is an opcode-14 fade spear, which is hard-coded to fadespeed 25",
+    "src": "gml_GlobalScript_scr_spearshot.gml:246"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "obj_gerson_green_switch's sprite is spr_gerson_swing and its Draw is draw_self(), with Create pinning both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "draw_sprite_ext passes image_xscale/image_yscale, which stay 1 with no diagonal transform, and image_alpha which ramps +0.2 to 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "the shield retags every bouncespear==0 spear to spr_spear_arrow each Draw; these fade spears all have bouncespear == 0",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 260,
+    "why": "no row carries special == 32, the only opcode that creates a swing-down",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green101",
+  "name": "Fast Fade Volley (attackpattern 101)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:63"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "one shield only; the chart issues neither opcode 36 nor opcode 55",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:61"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "radius",
+    "eq": 30,
+    "why": "shield birth radius, untouched because this chart has no special == 3 row",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "all eight spear rows are cardinal (d/u/l/r) and no opcode-3 row unlocks diagonals",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "max": 8,
+    "why": "the chart holds exactly 8 special==14 rows, so 8 is a hard ceiling; opcode 14 creates nothing while obj_spearblocker is absent, and row 1 dispatches at frame 1, before the green chain lands the shield",
+    "src": "gml_GlobalScript_scr_spearshot.gml:237"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "name": "fakespeed",
+    "eq": 0,
+    "why": "opcode 14 pins fakespeed to 0 and the fade branch exits before any grav/len integration; the shortest fadespeartimermax in this chart is 60, which cannot have elapsed by frame 45",
+    "src": "gml_GlobalScript_scr_spearshot.gml:241"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fadespeed",
+    "eq": 25,
+    "why": "opcode 14 hard-codes the post-fade inward speed to 25 for every spear in this chart",
+    "src": "gml_GlobalScript_scr_spearshot.gml:246"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 80,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "shield drawn with image_xscale/image_yscale (both 1, no diagonal transform in this chart) at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 200,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green110",
+  "name": "Bounce Shell Ring (attackpattern 110)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:88"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 11,
+    "max": 11,
+    "why": "11 rows carry special == 19 (lines 93-103) and opcode 19 creates its spear unconditionally at (-9999,-9999); spawns is cumulative so the row-1 shell still counts even though it self-destructs for want of a shield",
+    "src": "gml_GlobalScript_scr_spearshot.gml:287"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "bouncespear",
+    "eq": 1,
+    "why": "opcode 19 makes a type-1 bounce shell; every spear row in this chart is opcode 19",
+    "src": "gml_GlobalScript_scr_spearshot.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "hp",
+    "eq": 2,
+    "why": "opcode 19 shells take 2 hits, and no shell has closed on the shield by frame 120 (len starts at 12*50 = 600 and shrinks 12/frame)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:294"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "maxhp",
+    "eq": 2,
+    "why": "opcode 19 sets maxhp 2, which drives the shell colour ramp",
+    "src": "gml_GlobalScript_scr_spearshot.gml:295"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 270,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "the chart fires four diagonal rows (ul/ur/dl/dr at lines 98,100,101,103) but never issues opcode 3, so diagonal blocking is never unlocked",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 270,
+    "name": "radius",
+    "eq": 30,
+    "why": "with no opcode-3 row the shield radius never lerps up to 35",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 120,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "the colour overlay is drawn with the local var scale, which is 0.75 unless gigashell is true, and opcode 19 never sets gigashell",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "shield drawn with image_xscale/image_yscale, both still 1 because no opcode-3 row runs the diagonal transform",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 300,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green111",
+  "name": "Three-Hit Shells (attackpattern 111)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:108"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "min": 5,
+    "max": 5,
+    "why": "exactly 5 rows carry special == 20 (lines 113-117) and opcode 20 creates its shell unconditionally",
+    "src": "gml_GlobalScript_scr_spearshot.gml:299"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "opcode 20 makes a type-2 bounce shell, distinct from pattern 110's type 1",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "hp",
+    "eq": 3,
+    "why": "opcode 20 shells take 3 hits and none has reached the shield by frame 120",
+    "src": "gml_GlobalScript_scr_spearshot.gml:306"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "maxhp",
+    "eq": 3,
+    "why": "opcode 20 sets maxhp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:307"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "every row passes spearspeed = 12 as arg1, grav is 0, and no shell has bounced yet (a bounce is what would overwrite fakespeed with -17)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:111"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "all five spear rows are cardinal and no opcode-3 row appears, so diagonals stay locked",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 120,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "the colour overlay is drawn with the local var scale = 0.75; gigashell is never set by opcode 20",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 150,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "shield drawn with image_xscale/image_yscale, both still 1 with no diagonal transform",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 200,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green112",
+  "name": "Nine-HP Shell then Spear Run (attackpattern 112)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:122"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "one shield only; the chart issues neither opcode 36 nor opcode 55",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:120"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 16,
+    "max": 16,
+    "why": "one special==21 row (line 127) plus fifteen special==0 rows (lines 130-144); both branches create their instance unconditionally, and spawns is cumulative",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:127"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 200,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "every row passes spearspeed = 12 as arg1 and grav is 0, so the inward radial speed never changes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:128"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 200,
+    "name": "bouncespear",
+    "eq": 0,
+    "why": "rows 2-16 are plain spears (special 0); the lone opcode-21 shell dispatches at frame 1 and obj_spearshot's Step destroys any spear while obj_spearblocker does not yet exist, so no shell survives to frame 200",
+    "src": "gml_Object_obj_spearshot_Step_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 250,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "every direction token in this chart is cardinal (u/l/d/r) and no opcode-3 row appears",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 250,
+    "name": "radius",
+    "eq": 30,
+    "why": "with no opcode-3 row the shield radius never lerps up to 35",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 250,
+    "why": "the shield retags every bouncespear==0 spear to spr_spear_arrow each Draw; 15 of the 16 rows qualify",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 200,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "shield drawn with image_xscale/image_yscale, both still 1 with no diagonal transform",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 300,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green120",
+  "name": "Long Note Spears (attackpattern 120)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:149"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 200,
+    "min": 4,
+    "max": 4,
+    "why": "exactly 4 rows carry special == 25 (lines 150-153) and opcode 25 creates its spear unconditionally",
+    "src": "gml_GlobalScript_scr_spearshot.gml:408"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "longspear",
+    "eq": 1,
+    "why": "opcode 25 flags every spear in this chart as a long note",
+    "src": "gml_GlobalScript_scr_spearshot.gml:413"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "fakespeed",
+    "eq": 10,
+    "why": "all four rows pass arg1 = 10 as the inward radial speed and grav is 0",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:151"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow_long_piece",
+    "atFrame": 80,
+    "xscale": 30,
+    "yscale": 1,
+    "angle": 180,
+    "why": "the bar is drawn with image_xscale * longnotepieces; the 'r' row (direction 180) passes argument5 = 30 into longnotepieces and image_xscale/image_yscale stay 1 for non-bounce spears",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:158"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow_long_piece",
+    "atFrame": 120,
+    "xscale": 15,
+    "yscale": 1,
+    "angle": 0,
+    "why": "the 'l' row (direction 0) passes argument5 = 15, giving a bar half the length of the 'r' row's",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:158"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow_long",
+    "byFrame": 150,
+    "why": "the shield retags any longspear==1 spear to spr_spear_arrow_long each Draw, and the highlight retag explicitly excludes longspear",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:251"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "all four spear rows are cardinal and no opcode-3 row appears",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "shield drawn with image_xscale/image_yscale, both still 1 with no diagonal transform",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 200,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green140",
+  "name": "Swing-Down Clock (attackpattern 140)",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 300,
+    "why": "this chart opens straight into opcode 32 and contains no special == 1 row, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:160"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 300,
+    "why": "the chevron is only ever created by the green switch, which this chart never spawns",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 300,
+    "why": "no special == 1 row and no special == 36 row, the only two shield paths",
+    "src": "gml_GlobalScript_scr_spearshot.gml:525"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "why": "every row is special 32 or special 10; neither opcode creates an obj_spearshot",
+    "src": "gml_GlobalScript_scr_spearshot.gml:452"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 fires immediately and every row's wait is beat = 40, so the second swing-down cannot arrive before frame 40",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:158"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 140,
+    "min": 4,
+    "max": 4,
+    "why": "beat = 40 puts rows 0-3 at t = 0/40/80/120 and row 4 at t = 160",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:158"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 740,
+    "min": 18,
+    "max": 18,
+    "why": "18 rows carry special == 32 (lines 160-177), the last dispatching at t = 680; the 19th row is opcode 10, the turn-end marker",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:160"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 4,
+    "x": 284,
+    "tol": 4,
+    "why": "row 0 is \"up1\", which resolves to arg0 = -36; opcode 32 creates at obj_growtangle.x + arg0 and obj_growtangle is made at camerax() + camerawidth()/2 = 320, and direction 270 means x never moves",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 8,
+    "x": 298,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1.4,
+    "tol": 4,
+    "why": "\"up1\" leaves _argument2 at arg2 = 0 so image_angle is 0, taking the x+14 draw branch; Create pins 2x scale and image_alpha 1.4, which only starts dropping once con == 1 and speed < 12",
+    "src": "gml_Object_obj_gerson_swing_down_new_Draw_0.gml:11"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 4,
+    "name": "timetoswing",
+    "eq": 10,
+    "why": "the Create override fires whenever obj_hammer_of_justice_enemy exists (the trueturn test is ORed with true), cutting timetoswing from 22 to 10",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:30"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 4,
+    "name": "telegraphtime",
+    "eq": 8,
+    "why": "the same Create override drops telegraphtime from 12 to 8",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:31"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 48,
+    "name": "version",
+    "eq": 1,
+    "why": "row 1 is \"up2\", whose token sets _argument2 = -3; only the arg2 == -3 branch of opcode 32 sets version = 1, and row 0's swing-down has already self-destructed by frame 48",
+    "src": "gml_GlobalScript_scr_spearshot.gml:486"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 48,
+    "name": "image_angle",
+    "eq": -3,
+    "why": "the arg2 == -3 branch assigns image_angle = arg2 literally and nothing in Step rewrites it",
+    "src": "gml_GlobalScript_scr_spearshot.gml:483"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 88,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 90,
+    "why": "row 2 is \"left1\", which resolves _argument2 = 90, so image_angle = 90 takes the rotated draw branch at 2x scale",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:64"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green150",
+  "name": "Rudebuster Handoff (attackpattern 150)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_dbulletcontroller",
+    "byFrame": 40,
+    "min": 1,
+    "why": "row 0 carries special == 26, which routes the attack to scr_bulletspawner(x, y, obj_dbulletcontroller)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:421"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 40,
+    "name": "type",
+    "eq": 250,
+    "why": "opcode 26 pins the spawned controller to type 250, the rudebuster sine-bullet pattern",
+    "src": "gml_GlobalScript_scr_spearshot.gml:422"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_sin",
+    "byFrame": 60,
+    "min": 2,
+    "why": "the type 250 branch runs a for-loop of 2 obj_bullet_sin creations per frame once btimer reaches starttime = 20",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3387"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 300,
+    "why": "this two-row chart has no special == 1 row, so no green transition happens at all",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:183"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 300,
+    "why": "the chevron is only ever created by the green switch, which this chart never spawns",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 300,
+    "why": "no special == 1 and no special == 36 row, so neither shield path runs",
+    "src": "gml_GlobalScript_scr_spearshot.gml:525"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "why": "the chart's one spear row is index 1, and row 0's list_attackwait is 9999, so the spear cannot be dispatched until frame 9999",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:183"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 300,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green160",
+  "name": "Diagonal Unlock Shell Run (attackpattern 160)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "scr_turntimer(999) is what the bullet phase sets before the chart runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:658"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,1); opcode 1 creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:189"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates exactly one shield when x < obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 240,
+    "min": 14,
+    "max": 14,
+    "why": "4 rows carry special == 19 (lines 194,198,201,205) and 10 rows are plain spears (195-197,199,200,202-204,206,207); both branches create their instance unconditionally and spawns is cumulative",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:194"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 carries special == 3, which sets obj_hammer_of_justice_enemy.diagonal_enabled; the shield is born later and inherits diagonal_transform from that flag in Create, then latches diagonal_enabled in Draw",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:190"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius toward 35 and snaps it to exactly 35 once it passes 34",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_transform",
+    "eq": 0,
+    "why": "the transform clears its own flag once the radius passes 34, so it runs exactly once",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:106"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "alpha": 1,
+    "why": "the diagonal transform never touches image_xscale, so the shield is still drawn at 1x horizontally at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "every spear row passes spearspeed = 12 as arg1 and grav is 0; every spear alive at frame 120 is still inbound and has not bounced",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:192"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 105,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "why": "the third opcode-19 shell (line 201) dispatches at frame 99 and is still idle at 105; bounce shells draw the colour overlay with the local var scale = 0.75 because opcode 19 never sets gigashell",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "the shield retags every bouncespear==0 spear to spr_spear_arrow; 10 of the 14 rows are plain spears",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the green switch's Draw is draw_self() and Create pins both scales to 2",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 240,
+    "why": "no row carries special == 32",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green0",
+  "name": "Gerson green — opening spear waltz (attackpattern 0)",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 20,
+    "max": 1,
+    "why": "row 0 is scr_spearpattern(0,0,0,1,30); scr_spearshot's arg3==1 branch creates exactly one obj_gerson_green_switch at (x-5, y+4)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:497"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing",
+    "atFrame": 8,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the green switch's Draw is draw_self(); Create sets image_xscale/image_yscale = 2 and leaves image_angle 0 / image_alpha 1 (its alpha is only zeroed once image_index > 6.5)",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "max": 1,
+    "why": "the switch creates exactly one chevron at (x-15, y) once image_index > 4, guarded by timer < 1",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_chevron2",
+    "byFrame": 45,
+    "why": "obj_gerson_green_chevron's sprite is spr_gerson_chevron2 and its Draw calls draw_self() every frame until timer == 100",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron's Draw creates exactly one shield when it crosses obj_heart.x, then latches con = 1",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "idealdir",
+    "eq": 90,
+    "why": "shield is born facing UP",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 30,
+    "why": "cardinal-only shield radius; radius only changes inside the diagonal_transform block",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "justlength",
+    "eq": 4,
+    "why": "parry window is 4 frames",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "pattern 0 (Other_10.gml:495-508) contains no special==3 row and Gerson's own diagonal_enabled starts 0, so the shield keeps Create's 0",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 60,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "the shield's only unconditional draw passes image_xscale/image_yscale (1), image_angle (rotated 1 deg/rep to idealdir 90 within ~5 frames) and image_alpha (ramped +0.2/frame to 1)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "max": 0,
+    "why": "rows 0 and 1 are control opcodes (1 and 34) with waits 30 and 20, so the first spear row at Other_10.gml:502 cannot dispatch before t=50",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:498"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green1",
+  "name": "Gerson green — stacked lead-time barrage (attackpattern 1)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36, whose !i_ex-guarded branch creates exactly one shield",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:512"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "why": "pattern 1 opens on special==36 (direct shield), never special==1, so the green-switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:512"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 45,
+    "why": "no green switch means no chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "min": 12,
+    "max": 14,
+    "why": "all 14 spear rows (517-545) pass arg4 = 0, so they dispatch one per frame from t=15 and are simultaneously airborne; staggering comes from heartframestotal, not from waits",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:517"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "name": "direction",
+    "eq": 270,
+    "why": "oldest live spear is row 1, \"u\" -> direction 270, and special==0 means the rotate-toward-special block never touches direction",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "name": "fakespeed",
+    "eq": 4.8,
+    "why": "row 1 fires at spearspeed(6) * 0.8 and grav is 0, so fakespeed never changes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:517"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "name": "special",
+    "eq": 0,
+    "why": "every spear row passes arg3 = 0, so scr_spearshot's default branch sets special = arg3 = 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:721"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 45,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "leak canary: the dispatcher always calls scr_spearshot with 5 args, so swingaround is overwritten with list_attackspecial2, which scr_spearpattern_reset zeroed and no 6-arg row ever set",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 45,
+    "name": "idealdir",
+    "eq": 90,
+    "why": "shield born facing UP",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 45,
+    "name": "radius",
+    "eq": 30,
+    "why": "pattern 1 never unlocks diagonals, so radius stays at Create's 30",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 45,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "unsquashed shield at image_angle rotated to idealdir 90, alpha fully ramped",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 45,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 270,
+    "alpha": 1,
+    "why": "obj_spearshot's own sprite is spr_nothing; the shield assigns spr_spear_arrow to every non-closest spear and the spear's non-bounce draw passes image_xscale/image_yscale (1) and image_angle = direction = 270 for the \"u\" rows",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green2",
+  "name": "Gerson green — sixteen-spear volley (attackpattern 2)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36 with wait 0, creating exactly one shield before any spear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:550"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "why": "pattern 2 has no special==1 row, so the switch/chevron chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:550"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 30,
+    "why": "no green switch means no chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "min": 14,
+    "max": 16,
+    "why": "all 16 spear rows (555-570) pass arg4 = 0, so they dispatch on consecutive frames t=1..16 and are all still inbound at t=30 (earliest death is row 2's 40-frame lead, ~t=41)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:555"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "name": "direction",
+    "eq": 0,
+    "why": "oldest live spear is row 1, \"l\" -> direction 0",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "name": "fakespeed",
+    "eq": 6,
+    "why": "row 1 is the slow 110-frame left spear at speed 6",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:555"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "leak canary: every row is 5-arg, so list_attackspecial2 must still read 0 when handed to swingaround",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "name": "idealdir",
+    "eq": 90,
+    "why": "shield born facing UP",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "pattern 2 is entirely cardinal (555-570) and has no special==3 row",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "unsquashed cardinal shield at image_angle rotated to idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 180,
+    "alpha": 1,
+    "why": "the \"r\" rows (556/559/562/570) store direction 180 and the spear's non-bounce draw passes image_angle = direction at scale 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 200,
+    "min": 1,
+    "max": 3,
+    "why": "only the last long-lead rows are still airborne: row 15 (speed 18, 190 frames) and row 16 (speed 6, 205 frames); row 14 expires near t=192",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:569"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 200,
+    "name": "fakespeed",
+    "eq": 18,
+    "why": "oldest survivor at t=200 is row 15, the speed-18 left spear (len 3420 shrinking 18/frame from t=15)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:569"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green3",
+  "name": "Gerson green — mid-pattern diagonal unlock (attackpattern 3)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36, the guarded direct-shield path, creating exactly one shield",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:575"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "why": "pattern 3 has no special==1 row, so the green switch/chevron chain must never run here",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:575"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 30,
+    "why": "no green switch means no chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "min": 2,
+    "max": 4,
+    "why": "rows 1-3 fire at t=1/11/21 on beat=10 and none has expired yet (40-frame lead)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:579"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "name": "fakespeed",
+    "eq": 10,
+    "why": "oldest live spear is row 1 at spearspeed(14) - 4",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:579"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "leak canary: every row of pattern 3 is 5-arg, so list_attackspecial2 must still read 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "the special==3 row is index 14 and does not dispatch until t=142, so diagonals are still locked at t=100",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:592"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "before the unlock the shield is the tall cardinal shape at image_xscale/image_yscale = 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 190,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 14's special==3 sets diagonal_transform = 1 on the shield, and the shield's own Draw flips diagonal_enabled to 1 on the first frame that block runs",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 190,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius 30 -> 35 at 0.2/frame and snaps to exactly 35 once radius > 34 (8th iteration)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 190,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "after the unlock image_xscale is still 1 and the shield still points at idealdir 90; yscale is deliberately NOT asserted because the radius>34 snap clears diagonal_transform on iteration 8, freezing image_yscale mid-lerp instead of ever reaching the literal 0.6",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 185,
+    "min": 3,
+    "max": 5,
+    "why": "row 8's slow 120-frame \"ul\" is still in flight alongside the three fast \"ul\" rows fired after the unlock (t=162/167/172)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:593"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 185,
+    "name": "fakespeed",
+    "eq": 4.2,
+    "why": "the oldest survivor is the hazard row 8, spearspeed(14) * 0.3 — its 120-frame lead is what makes it land after the diagonal unlock",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:586"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 185,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 315,
+    "alpha": 1,
+    "why": "\"ul\" stores direction 315 and the spear's non-bounce draw passes image_angle = direction at scale 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green4",
+  "name": "Gerson green — red hammer fakeout and swing-down (attackpattern 4)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36 with wait 8, creating exactly one shield before the hammer",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:604"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 20,
+    "why": "pattern 4 has no special==1 row, so the green switch chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:604"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "only the special==355 red hammer (dispatched t=8) is out at t=20; the next spear row waits behind the special==9 row's 65-frame wait",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:605"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "redhammer",
+    "eq": 1,
+    "why": "arg3 == 355 marks the projectile as a red hammer",
+    "src": "gml_GlobalScript_scr_spearshot.gml:519"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "redhammerfakeout",
+    "eq": 1,
+    "why": "355 (not 35) is the fakeout variant that stalls and retreats instead of landing",
+    "src": "gml_GlobalScript_scr_spearshot.gml:520"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "fakespeed",
+    "eq": 1,
+    "why": "the chart gives the hammer fakespeed 1 over 280 frames, and the 355 branch leaves grav at 0 so it does not accelerate",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:605"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "direction",
+    "eq": 270,
+    "why": "\"u\" stores direction 270, so the hammer approaches from above",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 270,
+    "alpha": 1,
+    "why": "the red-hammer draw call passes literal 2, 2 for xscale/yscale and image_angle = direction — half scale here would be the classic silent porting bug",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:70"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_laugh",
+    "byFrame": 60,
+    "why": "row 2's special==9 (dispatched t=24) swaps Gerson to spr_gerson_laugh and state 12, whose Draw branch calls draw_self()",
+    "src": "gml_GlobalScript_scr_spearshot.gml:184"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 105,
+    "min": 2,
+    "max": 4,
+    "why": "after the 65-frame laugh the beat-10 block starts at t=89: the stalled hammer plus the \"d\" and \"ul\" rows are airborne",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:607"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 150,
+    "why": "row 7's special==400 (dispatched t=139) hides Gerson and creates obj_gerson_teleport at (x+45, y+45)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:26"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 250,
+    "max": 1,
+    "why": "row 12 is scr_spearpattern(0, -70, 0, 32, 45), dispatched at t=235; arg2 >= 0 creates one swing-down at (growtangle.x + 0, growtangle.y - 70)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:458"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 245,
+    "name": "gravity_direction",
+    "eq": 270,
+    "why": "gravity_direction = arg2 + 270 = 0 + 270, and nothing in its Step rewrites it",
+    "src": "gml_GlobalScript_scr_spearshot.gml:461"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 245,
+    "name": "timetoswing",
+    "eq": 10,
+    "why": "the Gerson branch is guarded by `|| true`, so timetoswing is always overwritten from Create's 22 to 10",
+    "src": "gml_Object_obj_gerson_swing_down_new_Create_0.gml:30"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green5",
+  "name": "Gerson green — box throw handoff (attackpattern 5)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "the whole chart is one row, scr_spearpattern(x, y, 60, 50, 9999); arg3 == 50 creates exactly one obj_box_throw_controller at Gerson's (x, y)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:621"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 60,
+    "why": "pattern 5 contains no spear opcode and the controller never references obj_spearshot — this attack is not a spear chart at all",
+    "src": "gml_GlobalScript_scr_spearshot.gml:689"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 60,
+    "why": "pattern 5 has neither a special==1 nor a special==36 row, so no green shield is ever built",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:621"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "why": "no special==1 row means no green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 20,
+    "name": "hammer_timer_goal",
+    "eq": 10,
+    "why": "the throw cadence is 10 frames",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 20,
+    "name": "hammer_phase",
+    "eq": 0,
+    "why": "the box-throw controller starts already in phase 0, unlike the hammer-bounce controller",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 20,
+    "name": "hammer_timer",
+    "eq": 0,
+    "why": "hammer_timer only starts counting once timer > 36, so at t=20 it is still Create's 0",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:75"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 20,
+    "name": "hammer_counter",
+    "eq": 0,
+    "why": "no volley has been thrown yet",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 12,
+    "name": "image_speed",
+    "eq": 0.5,
+    "why": "Create's image_speed 0.5 is later overwritten to 0 at timer == 23, so it must still be 0.5 at t=12",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_box_throw_controller",
+    "atFrame": 12,
+    "name": "z",
+    "eq": 0,
+    "why": "z stays 0 until scr_jump_arc runs, which needs timer > 84",
+    "src": "gml_Object_obj_box_throw_controller_Create_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport_generic",
+    "byFrame": 25,
+    "why": "at timer == 15 the controller warps: one teleport puff at (x+64, y+36) before it relocates to obj_growtangle.x + 80",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:8"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_swing",
+    "byFrame": 40,
+    "why": "timer == 19 swaps the controller to spr_gerson_swing and timer == 23 makes it visible again, and its Draw is a straight draw_sprite_ext(sprite_index, ...)",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:19"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hammer_bro_hammer",
+    "byFrame": 70,
+    "why": "hammer_timer starts at timer > 36 and reaches hammer_timer_goal 10 around timer 46, firing the first volley (its size is 3 + irandom(1) and must not be asserted)",
+    "src": "gml_Object_obj_box_throw_controller_Step_0.gml:94"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green6",
+  "name": "Gerson green — diagonal fan, up then down (attackpattern 6)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 25,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36 with wait 0, creating exactly one shield one frame before the first spear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:661"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 25,
+    "why": "pattern 6 has no special==1 row, so the green switch/chevron chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:661"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "why": "no green switch means no chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "min": 2,
+    "max": 3,
+    "why": "rows 1-3 fire at t=1/11/21 on beat=10 and all have 40-frame leads, so all three are airborne",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:665"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "name": "direction",
+    "eq": 315,
+    "why": "oldest live spear is row 1, \"ul\" -> direction 315",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:31"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "name": "fakespeed",
+    "eq": 10,
+    "why": "row 1 fires at spearspeed(12) - 2",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:665"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "leak canary: all 18 spear rows are 5-arg, so list_attackspecial2 must still read 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 25,
+    "name": "idealdir",
+    "eq": 90,
+    "why": "shield born facing UP",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 25,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "pattern 6 fires diagonals but contains NO special==3 row (661-683), and Gerson's own diagonal_enabled starts at 0, so the shield keeps Create's 0",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 25,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "unsquashed cardinal shield: pattern 6 never triggers the diagonal squash transform",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 25,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 315,
+    "alpha": 1,
+    "why": "the opening \"ul\" pair draws at image_angle = direction = 315 at scale 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 232,
+    "min": 1,
+    "max": 3,
+    "why": "after beat drops to 8 the tail fires at t=176/188/200/208; by t=232 only the closing \"d\"/\"dr\" pair (682-683) is still airborne",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:682"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 232,
+    "name": "direction",
+    "eq": 90,
+    "why": "the tail flips to below-the-shield; the oldest survivor at t=232 is the row-17 \"d\" spear -> direction 90",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 232,
+    "name": "fakespeed",
+    "eq": 16,
+    "why": "that closing \"d\" row fires at spearspeed(12) + 4",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:682"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green7",
+  "name": "Gerson green — left/right triplets into bounce shells (attackpattern 7)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==36 with wait 0, creating exactly one shield",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:688"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 30,
+    "why": "pattern 7 has no special==1 row, so the green switch/chevron chain never runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:688"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 30,
+    "why": "no green switch means no chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "min": 3,
+    "max": 5,
+    "why": "the opening left triplet (692-694) fires on beat/half-beat at t=1/11/16 and the first \"r\" follows at t=21, all with 40-frame leads",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:692"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "name": "direction",
+    "eq": 0,
+    "why": "oldest live spear is row 1, \"l\" -> direction 0",
+    "src": "gml_GlobalScript_scr_spearpattern.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "name": "fakespeed",
+    "eq": 14.4,
+    "why": "the triplet is a decelerating ramp: row 1 is spearspeed(12) * 1.2",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:692"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "name": "radius",
+    "eq": 30,
+    "why": "pattern 7 has no special==3 row, so the shield keeps the cardinal radius",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "pattern 7 fires \"ul\"/\"dr\" but never unlocks diagonals itself (688-713)",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "unsquashed cardinal shield at image_angle rotated to idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 25,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "\"l\" stores direction 0 and the spear's non-bounce draw passes image_angle = direction at scale 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 190,
+    "min": 1,
+    "max": 1,
+    "why": "row 19 waits beat+20 then row 20's special==19 shell fires alone at t=173; its 70-frame wait keeps the next shell far behind and row 19 has already expired",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:711"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 190,
+    "name": "bouncespear",
+    "eq": 1,
+    "why": "arg3 == 19 makes a type-1 bounce shell, not a spear",
+    "src": "gml_GlobalScript_scr_spearshot.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 190,
+    "name": "hp",
+    "eq": 2,
+    "why": "opcode 19 shells take 2 hits, and at len 264 the shell has not yet reached the len<50 hit test",
+    "src": "gml_GlobalScript_scr_spearshot.gml:294"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 190,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "the shell sets image_xscale/yscale to 1.5 but the bounce draw call passes the local `scale` (0.75, because gigashell is false) — drawing it at 1.5 would double its apparent size",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:130"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green8",
+  "name": "Gerson green — hammer bounce handoff (attackpattern 8)",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "the whole chart is one row, scr_spearpattern(x, y, 60, 51, 9999); arg3 == 51 creates exactly one obj_hammer_bounce_controller at Gerson's (x, y)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:717"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 60,
+    "why": "pattern 8 contains no spear opcode and the controller never references obj_spearshot",
+    "src": "gml_GlobalScript_scr_spearshot.gml:693"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 60,
+    "why": "pattern 8 has neither a special==1 nor a special==36 row, so no green shield is built",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:717"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 60,
+    "why": "no special==1 row means no green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 20,
+    "name": "hammer_timer",
+    "eq": 17,
+    "why": "unlike the box-throw controller this one starts its throw timer pre-loaded at 17, and phase -1 blocks it from advancing",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 20,
+    "name": "hammer_timer_goal",
+    "eq": 30,
+    "why": "first bounce cadence is 30 frames before scr_approach ramps it toward 14",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 20,
+    "name": "hammer_phase",
+    "eq": -1,
+    "why": "phase stays -1 through the warp intro, so hammer_timer must NOT advance before timer 42",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 20,
+    "name": "z",
+    "eq": 0,
+    "why": "no jump arc yet",
+    "src": "gml_Object_obj_hammer_bounce_controller_Create_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport_generic",
+    "byFrame": 25,
+    "why": "at timer == 15 the controller warps, creating a teleport puff at (x+64, y+36) before relocating to obj_growtangle.x + 80",
+    "src": "gml_Object_obj_hammer_bounce_controller_Step_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_bounce_controller",
+    "atFrame": 55,
+    "name": "hammer_phase",
+    "eq": 0,
+    "why": "timer == 42 flips hammer_phase to 0 and starts the bounce cadence",
+    "src": "gml_Object_obj_hammer_bounce_controller_Step_0.gml:47"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_hammer_throw",
+    "byFrame": 60,
+    "why": "timer == 42 also swaps the controller to the throw sprite, which its Draw renders via draw_sprite_ext(sprite_index, ...)",
+    "src": "gml_Object_obj_hammer_bounce_controller_Step_0.gml:50"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hammer_bounce_left",
+    "byFrame": 75,
+    "why": "hammer_timer climbs from 17 once phase 0 starts at timer 42 and reaches goal 30 around timer 54, firing the first leftward hammer at ((x+100)-42, (y+90)-86)",
+    "src": "gml_Object_obj_hammer_bounce_controller_Step_0.gml:75"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green36",
+  "name": "Green - 3HP bounce shells, cardinals then diagonals",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the only special==1 row and scr_spearshot's arg3==1 branch creates exactly one green switch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1463"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron at (x-15,y) once image_index>4 and timer<1",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once (con=1 makes it single-shot) once its x passes obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state pins the parry window at 4 frames and nothing reassigns justlength",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1's special==3 sets the ENEMY's diagonal_enabled, so the later-born shield's Create turns on diagonal_transform and its Draw then sets diagonal_enabled=1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 120,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "the diagonal transform lerps radius 30->35 and clamps to exactly 35 once it passes 34",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:103"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 240,
+    "min": 8,
+    "max": 8,
+    "why": "8 of the 10 chart rows are spear rows (special==20); rows 0 and 1 are control opcodes 1 and 3",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1469"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "maxhp",
+    "eq": 3,
+    "why": "special==20 gives every shell in this pattern maxhp 3",
+    "src": "gml_GlobalScript_scr_spearshot.gml:307"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "special==20 is the bouncespear-2 shell variant, not the bouncespear-1 one",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "the special==20 branch never assigns swingaround, so it keeps the Create default false (leak canary for list_attackspecial2 residue)",
+    "src": "gml_Object_obj_spearshot_Create_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 60,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "shells draw the colour overlay at scale 0.75 because gigashell is false, at image_alpha 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 120,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "the shield draws unmirrored at image_angle converged on idealdir 90, alpha ramped to 1 (yscale omitted: the diagonal transform squashes it to 0.6)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green37",
+  "name": "Green - four red hammers, one green transition each",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "this chart has four separate special==1 rows (indices 0, 2, 4, 6), so the green transition runs four times",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1481"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 360,
+    "min": 4,
+    "max": 4,
+    "why": "each green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 370,
+    "min": 4,
+    "max": 4,
+    "why": "the chevron's shield spawn is unguarded (only the sound is), so all four chevrons each create a shield",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 350,
+    "min": 4,
+    "max": 4,
+    "why": "four special==35 rows (u, l, r, d) are the only spear rows in the chart",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1486"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 135,
+    "name": "redhammer",
+    "eq": 1,
+    "why": "special==35 flags every projectile in this pattern as a red hammer",
+    "src": "gml_GlobalScript_scr_spearshot.gml:508"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 135,
+    "name": "grav",
+    "eq": 0.3,
+    "tol": 0.001,
+    "why": "the red hammer accelerates inward at grav 0.3 per frame, unlike a plain spear's grav 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:509"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 135,
+    "name": "redhammerfakeout",
+    "eq": 0,
+    "why": "opcode 35 never assigns redhammerfakeout, so it keeps the Create default 0 (only opcode 355 sets it to 1)",
+    "src": "gml_Object_obj_spearshot_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 135,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the red hammer is drawn at double scale on image_index 3, not at the sprite's native size",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:70"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 220,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "this chart contains no special==3 row, so the shield never unlocks diagonal blocking",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 220,
+    "name": "radius",
+    "eq": 30,
+    "why": "with no diagonal transform the shield keeps its birth radius of 30",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 220,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "untransformed shield draws at 1x1 facing idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green38",
+  "name": "Green - swingaround volley (randomised bearings)",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the chart's single special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1497"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once before any spear row fires",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1's special==3 runs before the shield is born, so the shield's Create turns diagonal_transform on and its Draw sets diagonal_enabled=1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "the diagonal transform clamps radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:103"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 17,
+    "max": 17,
+    "why": "19 rows total, of which 2 are control (special 1 and 3); all 17 remaining rows are special==16 regardless of which choose() branch the RNG takes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1499"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 150,
+    "name": "swingaround",
+    "eq": 1,
+    "why": "special==16 marks every spear in this pattern as a swingaround spear that spirals in over its first 25 frames",
+    "src": "gml_GlobalScript_scr_spearshot.gml:261"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 150,
+    "name": "special",
+    "eq": 0,
+    "why": "the special==16 branch zeroes the instance's special so the spear travels straight instead of curving to a target angle",
+    "src": "gml_GlobalScript_scr_spearshot.gml:256"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "row 1's wait of 60 followed by row 2's wait of 50 means exactly one spear exists before frame ~123",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1498"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 300,
+    "why": "this chart contains no special==32 row, so no swing-down bullet may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1495"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 150,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield draws unmirrored facing idealdir 90 at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 200,
+    "why": "the shield's Draw retags every non-bounce spear with spr_spear_arrow (only the single closest one is upgraded to the highlight sprite)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green39",
+  "name": "Green - box shrink then fourteen swing-downs",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 560,
+    "why": "no row in this chart uses a spear opcode; every row is 11, 12, 27, 32, 28, 4 or 10",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1599"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 560,
+    "why": "no special==1, ==36 or ==31 row exists, so none of the three shield-creation paths (chevron, opcode 36, obj_gerson_growtangle's Draw) can run",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1599"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 560,
+    "why": "this pattern has no special==1 row, so the green transition never plays",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1602"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_growtangle_transform",
+    "byFrame": 220,
+    "min": 1,
+    "max": 1,
+    "why": "row 4 is special==27, the chart's only one, which creates exactly one growtangle transform",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1606"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_growtangle_transform",
+    "atFrame": 200,
+    "name": "shrink",
+    "eq": 1,
+    "why": "opcode 27 sets shrink=true on the fresh instance (Create defaults it false), driving obj_growtangle's scale down toward 1.5",
+    "src": "gml_GlobalScript_scr_spearshot.gml:427"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 200,
+    "min": 1,
+    "max": 1,
+    "why": "row 4's wait of 1 then row 5's beat of 26 means only the first of the fourteen swing-downs has fired by here",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1606"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 225,
+    "min": 2,
+    "max": 2,
+    "why": "the second swing-down lands exactly beat=26 frames after the first, before the third at beat 25",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1612"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 470,
+    "min": 14,
+    "max": 14,
+    "why": "repeat(14) emits fourteen special==32 rows and every choose() token (arg2 of 0, 90, 180, 270 or -3) creates exactly one bullet; only the bearing is random",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1610"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hits_box",
+    "byFrame": 220,
+    "min": 4,
+    "max": 4,
+    "why": "two special==11 rows and two special==12 rows each land a teleport of type 4/5, which spawns one hits-box apiece",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:93"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 560,
+    "min": 8,
+    "max": 8,
+    "why": "eight special==4 rows each create one obj_gerson_teleport whose alarm[0]=4 builds one obj_gerson_swing_down",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:62"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 560,
+    "min": 13,
+    "max": 15,
+    "why": "rows 0-3 (opcodes 11/12) plus eight opcode-4 rows plus the closing opcode-10 row; the two extra teleports depend on Gerson still being visible when rows 0 and 1 fire",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1602"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 300,
+    "name": "visible",
+    "eq": 0,
+    "why": "row 1's special==12 hides Gerson and only a type-10 teleport restores him, which the closing special==10 row does not reach until frame ~550",
+    "src": "gml_GlobalScript_scr_spearshot.gml:216"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_giant_hammer",
+    "byFrame": 560,
+    "why": "no special==2 row exists in this chart",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1599"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green40",
+  "name": "Green - 2HP shell barrage into 3HP finisher",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the chart's single special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1637"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1's special==3 precedes the shield's birth, so its Create sets diagonal_transform and its Draw then sets diagonal_enabled=1 for the ul/ur/dl/dr rows",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "the diagonal transform clamps the shield radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:103"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 520,
+    "min": 14,
+    "max": 14,
+    "why": "16 rows total minus the two control rows (special 1 and 3) leaves eleven special==19 rows and three special==20 rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1639"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the first spear row carries wait 90, so no second spear may exist this early",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1639"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 150,
+    "min": 5,
+    "max": 5,
+    "why": "after the 90-frame gap the next four rows fire on beat=9, and the row at 1643 then holds for 50 frames",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1640"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 11,
+    "max": 11,
+    "why": "the eleven special==19 rows have all fired and the row at 1649 holds 60 frames before the special==20 block begins",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1649"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 130,
+    "name": "maxhp",
+    "eq": 2,
+    "why": "special==19 shells carry maxhp 2, unlike the special==20 shells that close the pattern",
+    "src": "gml_GlobalScript_scr_spearshot.gml:295"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 130,
+    "name": "bouncespear",
+    "eq": 1,
+    "why": "special==19 is the bouncespear-1 variant, which pins spinindex to 0 when drawn",
+    "src": "gml_GlobalScript_scr_spearshot.gml:293"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle_color",
+    "atFrame": 130,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "alpha": 1,
+    "why": "shells draw the colour overlay at scale 0.75 because gigashell is false",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:119"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 130,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield draws unmirrored facing idealdir 90 at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green41",
+  "name": "Green - giant hammer, box hits and swing-downs",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the chart's single special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1661"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "no row in this chart uses a spear opcode, and obj_spearshot is only ever created inside scr_spearshot",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1659"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_giant_hammer",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "row 1 is special==2, creating one obj_giant_hammer at the soul's position with type 2",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1662"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_giant_hammer",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 2,
+    "why": "opcode 2 forces the hammer into its type-2 shield-parry behaviour",
+    "src": "gml_GlobalScript_scr_spearshot.gml:10"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_hits_box",
+    "byFrame": 400,
+    "min": 7,
+    "max": 7,
+    "why": "three special==11 rows and four special==12 rows each land a type-4/5 teleport that spawns one hits-box",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:93"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 400,
+    "min": 7,
+    "max": 7,
+    "why": "seven special==4 rows (lines 1667-1672 and 1676) each build one teleport whose alarm creates one swing-down",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:62"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 200,
+    "name": "visible",
+    "eq": 0,
+    "why": "the special==12 row at 1664 hides Gerson and only a type-10 teleport restores him, which the closing special==10 row does not reach until frame ~380",
+    "src": "gml_GlobalScript_scr_spearshot.gml:216"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green42",
+  "name": "Green - fast-bounce shells with plain spear fills",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the chart's single special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1682"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1's special==3 precedes the shield's birth, so its Create sets diagonal_transform and its Draw then sets diagonal_enabled=1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 130,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "the diagonal transform clamps the shield radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:103"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 250,
+    "min": 8,
+    "max": 8,
+    "why": "10 rows minus two control rows leaves three special==22 shells and five plain special==0 spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1687"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "the first spear row carries wait 90, so only one spear may exist this early",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1687"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 130,
+    "min": 3,
+    "max": 3,
+    "why": "waits 90 then 12 then 36 put exactly three spears out before the row at 1690 fires",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1688"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 160,
+    "name": "special",
+    "eq": 0,
+    "why": "a special==0 row falls through to the default branch, which stores special = arg3 = 0 so the spear never curves (opcode 22 zeroes it too)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:721"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 160,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "the dispatcher always passes list_attackspecial2 as argument4, and scr_spearpattern_reset zeroes that array, so a 5-arg row must yield swingaround 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 160,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the shield retags non-bounce spears as spr_spear_arrow and obj_spearshot's else-branch draws them at image_xscale/image_yscale, which nothing changes from 1",
+    "src": "gml_Object_obj_spearshot_Draw_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 130,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield draws unmirrored facing idealdir 90 at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green43",
+  "name": "Green - fifty-one swing-down sweep",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "every row is special 13, 4 or 10; none is a spear opcode",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1697"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "no special==1, ==36 or ==31 row exists, so none of the three shield-creation paths (chevron, opcode 36, obj_gerson_growtangle's Draw) can run",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1697"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "this pattern has no special==1 row, so the green transition never plays",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1699"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_hits_box",
+    "byFrame": 400,
+    "why": "no special==11 or ==12 row exists, so no type-4/5 teleport and therefore no hits-box",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1697"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_squishes_box",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special==13, which creates exactly one squishes-box and hides Gerson",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1699"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 200,
+    "name": "visible",
+    "eq": 0,
+    "why": "special==13 sets visible=false on the first row, and only the closing special==10 row's type-10 teleport restores it",
+    "src": "gml_GlobalScript_scr_spearshot.gml:230"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 400,
+    "min": 52,
+    "max": 52,
+    "why": "51 special==4 rows (lines 1700-1750) each create one teleport, plus one from the closing special==10 row; Gerson is already invisible so the extra visible-branch teleport never fires",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1700"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 400,
+    "min": 51,
+    "max": 51,
+    "why": "each of the 51 opcode-4 teleports has swingdowntype -1 or -2, which takes the alarm's default branch and creates one swing-down; the type-10 teleport creates none",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:62"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 100,
+    "min": 8,
+    "max": 8,
+    "why": "row 0's wait of 35 then seven waits of 5 emit exactly eight swing-downs before the 40-frame hold at line 1707",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1707"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 175,
+    "min": 16,
+    "max": 16,
+    "why": "the second right-to-left sweep adds eight more on beat 5 before the 35-frame hold at line 1715",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1715"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 210,
+    "min": 22,
+    "max": 22,
+    "why": "the six wait-1 rows at 1716-1721 fire one frame apart, adding six swing-downs before the 17-frame hold",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1721"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_giant_hammer",
+    "byFrame": 400,
+    "why": "no special==2 row exists in this chart",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1697"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green44",
+  "name": "Green - fade-spear finale",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 45,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is the chart's single special==1 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1756"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 70,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch emits exactly one chevron",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 95,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield exactly once",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1's special==3 precedes the shield's birth, so its Create sets diagonal_transform and its Draw sets diagonal_enabled=1, making the 45/135/225/315 fade rings blockable",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.01,
+    "why": "the diagonal transform clamps the shield radius to exactly 35",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:103"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 150,
+    "name": "justlength",
+    "eq": 4,
+    "why": "shield birth state pins the parry window at 4 frames",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:12"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 700,
+    "min": 66,
+    "max": 69,
+    "why": "71 rows minus the two control rows leaves 69 spear rows; the three special==14 rows at 1762-1766 fire before the chevron has built the shield and their i_ex(obj_spearblocker) guard can drop them",
+    "src": "gml_GlobalScript_scr_spearshot.gml:237"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 285,
+    "min": 34,
+    "max": 37,
+    "why": "37 spear rows have dispatched by the 20-frame hold at line 1803, before the wait-0 fade burst begins",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1803"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 320,
+    "min": 50,
+    "max": 53,
+    "why": "the sixteen special==17 rows at 1807-1823 all carry wait 0, so they fire one per frame and add 16 spears in 16 frames",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1807"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 600,
+    "min": 50,
+    "max": 53,
+    "why": "line 1823 carries wait 320, so no spear may be added for 320 frames after the special==17 ring completes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1823"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 150,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield draws unmirrored facing idealdir 90 at full alpha",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow",
+    "byFrame": 250,
+    "why": "the shield's Draw retags every non-bounce spear with spr_spear_arrow",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 700,
+    "why": "this chart contains no special==32 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1754"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_giant_hammer",
+    "byFrame": 700,
+    "why": "no special==2 row exists in this chart",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1754"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green18",
+  "name": "Gerson green pattern 18 — red hammer, darken, growtangle swing-down gauntlet",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "attackcountmax",
+    "min": 40,
+    "max": 64,
+    "why": "40 rows are unconditional; the repeat(8) at :1033 adds 3 more rows per iteration whose b=choose(0,1,2,3) is not 2 (b==2 has no branch, b==4 is unreachable), so the row count is 40+3k, 0<=k<=8",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:991"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 36, the guarded direct shield spawn `if (!i_ex(obj_spearblocker)) instance_create(x,y,obj_spearblocker)` at scr_spearshot:524",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:993"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 20,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "obj_spearblocker Create sets diagonal_enabled=0, and row 0 carries wait 40 so the special-3 unlock on row 1 cannot fire before frame 40",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:993"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, which sets obj_spearblocker.diagonal_transform=1 and the enemy's diagonal_enabled=1; the shield's Draw promotes diagonal_transform to diagonal_enabled=1 at Draw_0:78",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:994"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "the diagonal transform lerps radius 30 -> 35 at 0.2 and snaps it to exactly 35 once it passes 34 (Draw_0:102-104)",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:98"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 60,
+    "y": 240,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "tol": 0.5,
+    "why": "row 2 is special 35 with direction token \"l\" (direction 0), so x1/y1 put the hammer on the horizontal ray at the shield's y=240; Draw_0:70 draws spr_gerson_red_hammer at hardcoded 2,2 with image_angle = direction = 0",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:995"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "redhammer",
+    "eq": 1,
+    "why": "special 35 sets _inst.redhammer = 1 (and grav = 0.3); row 2 is the only obj_spearshot alive at that time",
+    "src": "gml_GlobalScript_scr_spearshot.gml:508"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_darken",
+    "byFrame": 130,
+    "min": 1,
+    "max": 1,
+    "why": "row 3 is special 29 -> instance_create(x, y, obj_gerson_darken); it fires 40 frames after row 2, which carries wait 40",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:996"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_growtangle_transform",
+    "byFrame": 150,
+    "min": 1,
+    "max": 1,
+    "why": "row 4 is special 27 -> instance_create(x, y, obj_gerson_growtangle_transform) with shrink = true, whose Step lerps obj_growtangle maxxscale/maxyscale 2 -> 1.5",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:997"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 290,
+    "min": 8,
+    "max": 8,
+    "why": "rows 5-12 are eight special-32 swing-downs on beat 18 around obj_growtangle; row 12 carries wait 60 so row 13 (special 31) cannot fire until well after frame 290",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1000"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 133,
+    "y": 240,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 270,
+    "tol": 0.5,
+    "why": "row 5 is scr_spearpattern(70, 0, 270, 32, 18): created at obj_growtangle+(70,0) = (390,240) with image_angle 270 and direction 270+270 = 180, so it only moves horizontally; Create pins image_xscale/yscale to 2 and the Draw offset lengthdir_y(14, 360) is 0, leaving y at 240",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1000"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_growtangle",
+    "byFrame": 350,
+    "min": 1,
+    "max": 1,
+    "why": "row 13 is special 31 -> instance_create(x, y, obj_gerson_growtangle), the box-transform object that also freezes the row cadence via the Step_0 attackcon==2 guard while it lives",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1008"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "green mode creates obj_growtangle at camerax()+camerawidth()/2, cameray()+cameraheight()/2 = (320,240) with boxoffset false, and spr_battlebg_0 is 75x75 at maxxscale/maxyscale 2, so the box is 150x150 at its largest before the special-27 shrink",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green19",
+  "name": "Gerson green pattern 19 — giant shells, red hammer, sixteen-swing finale",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "attackcountmax",
+    "eq": 38,
+    "why": "the branch appends exactly 38 rows: 2 control (36, 3), 6 spear rows, 18 special-32 swing-downs, then 27/28/4x8/10.5/9",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1085"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 560,
+    "why": "this pattern has no special-1 row; its shield comes from the direct special-36 spawn on row 0, so the green-switch/chevron chain must never run",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1087"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 special 36 creates exactly one obj_spearblocker via the `if (!i_ex(obj_spearblocker))` guard",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1087"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 60,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3 and row 0 carries wait 1, so diagonal_transform is set on frame 1 and the shield's Draw promotes it to diagonal_enabled=1 immediately",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1088"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "tol": 0.5,
+    "why": "the shield is drawn at x+shakex, y+shakey with shake 0 giving +1,+1 on the box centre (320,240 via obj_heart+10); image_xscale is never assigned so it stays 1, and image_angle converges on idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 6,
+    "max": 6,
+    "why": "only rows 2-7 are spear opcodes (41.1, 42.1, 40.6, 21.66, 20.1, 35); the other 32 rows are swing-downs and control opcodes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1089"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "rows 2-6 all use bounce-shell opcodes 41.1/42.1/40.6/21.66/20.1, every one of which sets bouncespear = 2",
+    "src": "gml_GlobalScript_scr_spearshot.gml:630"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 8,
+    "name": "hp",
+    "eq": 3,
+    "why": "row 2 is special 41.1 -> hp = maxhp = 3, dispatched on frame 2; row 3 (42.1, hp 2) does not fire until frame 12, so frame 8 unambiguously samples row 2's shell",
+    "src": "gml_GlobalScript_scr_spearshot.gml:632"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 20,
+    "name": "gigashell",
+    "eq": 1,
+    "why": "special 41.1 sets _inst.gigashell = true, which is what makes the shell draw at scale 1 instead of 0.75",
+    "src": "gml_GlobalScript_scr_spearshot.gml:634"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 55,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 225,
+    "tol": 0.1,
+    "why": "row 4 is special 40.6 (gigashell) with token \"ur\" -> direction 225, so Draw_0:130 uses scale 1 and angle = point_direction(x, y, obj_heart+10) = 225 while the shell rides the incoming ray",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1091"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 62,
+    "y": 240,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "angle": 180,
+    "tol": 0.5,
+    "why": "row 5 is special 21.66, which sets no gigashell flag, so Draw_0:100 keeps scale 0.75; token \"r\" -> direction 180 pins it to the horizontal ray at the shield's y = 240",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1092"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_red_hammer",
+    "atFrame": 231,
+    "y": 240,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "tol": 0.5,
+    "why": "row 7 is special 35 with token \"l\" -> direction 0; Draw_0:70 draws spr_gerson_red_hammer at hardcoded 2,2 with image_angle = direction = 0 along the horizontal ray",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1094"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 470,
+    "min": 18,
+    "max": 18,
+    "why": "rows 8-25 are eighteen special-32 rows with accelerating waits 16,15,14,13,12,11,10,9,8,8,7,7,7,7,7,6,6,21",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1095"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_growtangle",
+    "byFrame": 560,
+    "why": "pattern 19 has no special-31 row, so the box-transform object never exists and the row cadence is never frozen by the Step_0 attackcon==2 guard",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1085"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green20",
+  "name": "Gerson green pattern 20 — nineteen fade-in spears on a 16-frame ladder",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 21,
+    "why": "the branch appends 21 rows: special 1, special 3, then 19 special-14 fade spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1127"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch), fired once on frame 0",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1129"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 50,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y) once image_index > 4, gated single-shot by `if (timer < 1)`",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield from its Draw event once x < obj_heart.x, then sets con = 1 so it can only ever happen once",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 25,
+    "min": 0,
+    "max": 0,
+    "why": "row 2 fires on frame 2 but special 14 is wrapped in `if (i_ex(obj_spearblocker))`, and the shield only exists after the switch+chevron chain completes; row 3 does not fire until frame 42 because row 2 carries wait 40",
+    "src": "gml_GlobalScript_scr_spearshot.gml:237"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, which sets the enemy's diagonal_enabled=1; the shield's Create then copies that into diagonal_transform and its Draw promotes it",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1130"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "tol": 0.5,
+    "why": "the shield draws at x+1, y+1 on the box centre with idealdir 90; image_xscale is never assigned anywhere in the object so it stays 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 290,
+    "min": 17,
+    "max": 19,
+    "why": "there are 19 special-14 rows, but each is guarded by i_ex(obj_spearblocker) and row 2 fires on frame 2 before the chevron has created the shield, so the leading row(s) produce nothing",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1137"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fadespear",
+    "eq": 1,
+    "why": "special 14 sets fadespear = 1; rows 8-11 fire on frames 104-107 with fadespeartimermax 65/30/40/55, so every live spear is still fading at frame 120",
+    "src": "gml_GlobalScript_scr_spearshot.gml:245"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fadespeed",
+    "eq": 25,
+    "why": "special 14 hardcodes fadespeed = 25, the inward speed adopted as fakespeed once the fade-in finishes",
+    "src": "gml_GlobalScript_scr_spearshot.gml:246"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "fakespeed",
+    "eq": 0,
+    "why": "special 14 sets fakespeed = 0 so a fade spear hangs at its spawn radius until fadespeartimer reaches fadespeartimermax",
+    "src": "gml_GlobalScript_scr_spearshot.gml:241"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 290,
+    "why": "pattern 20 contains no special-32 row, so no hammer swing-down telegraph may ever appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1127"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at camerax()+320, cameray()+240 and spr_battlebg_0 (75x75) is scaled by maxxscale/maxyscale 2; no special-27 or -31 row shrinks it in this pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green21",
+  "name": "Gerson green pattern 21 — eight long fade-in spears fired in one burst",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 10,
+    "why": "the branch appends 10 rows: special 1, special 3, then 8 special-14 fade spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1180"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1182"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 50,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch creates exactly one chevron at (x-15, y), single-shot via `if (timer < 1)`",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron spawns the shield once from its Draw event and latches con = 1",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "radius",
+    "eq": 35,
+    "tol": 0.5,
+    "why": "row 1 is special 3, and the resulting diagonal transform lerps radius 30 -> 35 and snaps it to exactly 35 once it passes 34",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:98"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblocker",
+    "atFrame": 100,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "tol": 0.5,
+    "why": "the shield is drawn one pixel down-right of the box centre (x+shakex, y+shakey with shake 0) at idealdir 90 and its unmodified image_xscale of 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:302"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 130,
+    "min": 5,
+    "max": 8,
+    "why": "all 8 special-14 rows dispatch between frame 2 and frame 28 (row 2 carries wait 20, the rest 0), but each is guarded by i_ex(obj_spearblocker) and the leading row(s) fire before the chevron has built the shield",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1188"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "min": 5,
+    "max": 8,
+    "why": "every spawned spear is still alive at frame 60: the shortest fadespeartimermax in the chart is 60 (row 4, arg1 = 60), so none has finished fading and rushed in yet",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1191"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fadespear",
+    "eq": 1,
+    "why": "special 14 sets fadespear = 1 on every spear this pattern makes",
+    "src": "gml_GlobalScript_scr_spearshot.gml:245"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fakespeed",
+    "eq": 0,
+    "why": "special 14 pins fakespeed to 0 so the spear holds station at its spawn radius during the fade",
+    "src": "gml_GlobalScript_scr_spearshot.gml:241"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "name": "fadespeed",
+    "eq": 25,
+    "why": "special 14 hardcodes fadespeed = 25, adopted as fakespeed when the fade timer expires",
+    "src": "gml_GlobalScript_scr_spearshot.gml:246"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 230,
+    "why": "no special-32 row exists in pattern 21, so no swing-down telegraph may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1180"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "green mode's obj_growtangle sits at camera centre (320,240) with spr_battlebg_0 75x75 at scale 2; pattern 21 has no shrink or transform row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green22",
+  "name": "Gerson green pattern 22 — eleven two-hit bounce shells",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 13,
+    "why": "the branch appends 13 rows: special 1, special 3, then 11 special-19 bounce shells",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1206"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1208"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 50,
+    "min": 1,
+    "max": 1,
+    "why": "the switch spawns exactly one chevron at (x-15, y) once its image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield once from Draw when it crosses obj_heart.x, then latches con = 1",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, which sets the enemy's diagonal_enabled = 1 before the shield exists, and the shield's Create copies it into diagonal_transform",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1209"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 50,
+    "min": 0,
+    "max": 0,
+    "why": "row 2 dispatches on frame 2 with no shield yet, and obj_spearshot self-destructs on `!i_ex(obj_spearblocker)`; row 3 does not fire until frame 92 because row 2 carries wait 90",
+    "src": "gml_Object_obj_spearshot_Step_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 290,
+    "min": 11,
+    "max": 11,
+    "why": "exactly 11 rows use special 19, and its instance_create is unguarded so it runs for all of them even though the first is destroyed for want of a shield",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1214"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 105,
+    "name": "bouncespear",
+    "eq": 1,
+    "why": "special 19 sets bouncespear = 1 on every spear this pattern makes",
+    "src": "gml_GlobalScript_scr_spearshot.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 105,
+    "name": "maxhp",
+    "eq": 2,
+    "why": "special 19 sets hp = maxhp = 2, i.e. these are the two-hit shells",
+    "src": "gml_GlobalScript_scr_spearshot.gml:295"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 110,
+    "x": 320,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "angle": 270,
+    "tol": 0.5,
+    "why": "row 3 uses token \"u\" (direction 270): the spear sits at blocker + lengthdir(len, 90) so its x is pinned to the shield's x = 320, and with no gigashell flag Draw_0:100 keeps scale 0.75 while angle = point_direction to the heart centre = 270",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1215"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 200,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "angle": 225,
+    "tol": 0.1,
+    "why": "row 9 uses token \"ur\" -> direction 225, a diagonal shell; special 19 sets no gigashell so the draw scale stays 0.75",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1221"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 290,
+    "why": "pattern 22 has no special-32 row, so no swing-down telegraph may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1206"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at camera centre with spr_battlebg_0 (75x75) at scale 2 and nothing in this pattern resizes it",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green23",
+  "name": "Gerson green pattern 23 — five three-hit bounce shells",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 7,
+    "why": "the branch appends only 7 rows: special 1, special 3, then 5 special-20 bounce shells",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1227"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1229"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 50,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch creates exactly one chevron at (x-15, y), gated single-shot by `if (timer < 1)`",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron spawns the shield once from its Draw event and sets con = 1 so it cannot repeat",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, unlocking diagonal blocking for the whole pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1230"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 50,
+    "min": 0,
+    "max": 0,
+    "why": "row 2 fires on frame 2 before the chevron has built the shield and obj_spearshot self-destructs without one; row 3 only fires on frame 92 because row 2 carries wait 90",
+    "src": "gml_Object_obj_spearshot_Step_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 210,
+    "min": 5,
+    "max": 5,
+    "why": "exactly 5 rows use special 20 (\"u\",\"u\",\"l\",\"r\",\"d\"); the other two rows are control opcodes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1235"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 105,
+    "name": "bouncespear",
+    "eq": 2,
+    "why": "special 20 sets bouncespear = 2, the arcing shell variant, on every spear in this pattern",
+    "src": "gml_GlobalScript_scr_spearshot.gml:305"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 105,
+    "name": "maxhp",
+    "eq": 3,
+    "why": "special 20 sets hp = maxhp = 3, one more than pattern 22's special-19 shells",
+    "src": "gml_GlobalScript_scr_spearshot.gml:307"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 105,
+    "x": 320,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "angle": 270,
+    "tol": 0.5,
+    "why": "row 3 is token \"u\" (direction 270), so it rides the vertical ray with x pinned to the shield's x = 320; special 20 sets no gigashell so the shell draws at 0.75 scale",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1236"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bounce_shell_idle",
+    "atFrame": 125,
+    "y": 240,
+    "xscale": 0.75,
+    "yscale": 0.75,
+    "angle": 180,
+    "tol": 0.5,
+    "why": "row 5 is token \"r\" (direction 180) fired on beat 9 after row 4, so it approaches along the horizontal ray at the shield's y = 240",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1238"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 250,
+    "why": "pattern 23 contains no special-32 row, so no swing-down telegraph may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1227"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "green mode's obj_growtangle sits at camera centre with spr_battlebg_0 (75x75) at scale 2 and this pattern never resizes it",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green24",
+  "name": "Gerson green pattern 24 — nine-HP shell then fifteen plain spears",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 18,
+    "why": "the branch appends 18 rows: special 1, special 3, one special-21 shell, then 15 plain (special 0) spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1242"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1244"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "min": 1,
+    "max": 1,
+    "why": "the green switch's chevron creates exactly one shield from its Draw event once it crosses obj_heart.x, then latches con = 1",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, so diagonal blocking is unlocked for the whole pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1245"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 30,
+    "min": 0,
+    "max": 0,
+    "why": "row 2's nine-HP shell dispatches on frame 2 with no shield yet and obj_spearshot self-destructs on `!i_ex(obj_spearblocker)`; row 3 does not fire until frame 52 because row 2 carries wait 50",
+    "src": "gml_Object_obj_spearshot_Step_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "min": 16,
+    "max": 16,
+    "why": "16 of the 18 rows are spear opcodes: one special 21 plus fifteen special-0 rows",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1250"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 130,
+    "name": "special",
+    "eq": 0,
+    "why": "every plain row passes arg3 = 0 so scr_spearshot's default branch stores special = arg3 = 0, meaning no mid-flight curve",
+    "src": "gml_GlobalScript_scr_spearshot.gml:721"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 130,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "Step_0 always calls scr_spearshot with 5 arguments, so swingaround = list_attackspecial2[row]; these rows never pass a sixth scr_spearpattern argument, leaving that slot at its reset value 0 — the cross-turn residue canary",
+    "src": "gml_GlobalScript_scr_spearshot.gml:761"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 130,
+    "x": 320,
+    "angle": 270,
+    "xscale": 1,
+    "yscale": 1,
+    "tol": 0.5,
+    "why": "rows 3-5 are token \"u\" (direction 270); the spear sits at blocker + lengthdir(len, 90) so x is pinned to the shield's x = 320, drawn unscaled with image_angle = direction",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1255"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 130,
+    "y": 240,
+    "angle": 0,
+    "xscale": 1,
+    "yscale": 1,
+    "tol": 0.5,
+    "why": "row 6 is token \"l\" (direction 0), which puts the spear on the horizontal ray at the shield's y = 240 with image_angle 0",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1256"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow",
+    "atFrame": 205,
+    "y": 240,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "tol": 0.5,
+    "why": "rows 8-12 are five \"r\" spears on wait 4, all riding the horizontal ray at y = 240 with image_angle 180",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1258"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 205,
+    "min": 5,
+    "max": 6,
+    "why": "the five \"r\" spears of rows 8-12 fire on waits of 4 frames (frames 183-199) and each takes about 46-49 frames to cross len 600 at fakespeed 12, so they stack five deep, with row 7's \"d\" spear expiring right around that frame",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1258"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 300,
+    "why": "pattern 24 has no special-32 row, so no swing-down telegraph may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1242"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle sits at camera centre (320,240) with spr_battlebg_0 (75x75) at scale 2 and nothing here resizes it",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green25",
+  "name": "Gerson green pattern 25 — four long-note spears",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "attackcountmax",
+    "eq": 6,
+    "why": "the branch appends 6 rows: special 1, special 3, then 4 special-25 long spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1270"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "row 0 is special 1 -> instance_create(x-5, y+4, obj_gerson_green_switch)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1272"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 50,
+    "min": 1,
+    "max": 1,
+    "why": "the switch creates exactly one chevron at (x-15, y), single-shot via `if (timer < 1)`",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "min": 1,
+    "max": 1,
+    "why": "the chevron creates the shield once from Draw when it crosses obj_heart.x, then latches con = 1",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 80,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is special 3, unlocking diagonal blocking for the pattern",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1273"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 40,
+    "min": 0,
+    "max": 0,
+    "why": "row 2 dispatches on frame 2 before the chevron has built the shield and obj_spearshot self-destructs without one; row 3 waits until frame 62 because row 2 carries wait 60",
+    "src": "gml_Object_obj_spearshot_Step_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearshot",
+    "byFrame": 170,
+    "min": 4,
+    "max": 4,
+    "why": "exactly 4 rows use special 25 (\"u\",\"r\",\"l\",\"d\"); the remaining two rows are control opcodes",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1274"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "longspear",
+    "eq": 1,
+    "why": "special 25 sets longspear = 1, which is what makes obj_spearblocker force sprite_index to spr_spear_arrow_long and skip the closest-spear highlight",
+    "src": "gml_GlobalScript_scr_spearshot.gml:413"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "fakespeed",
+    "eq": 10,
+    "why": "all four rows pass arg1 = 10 and special 25 leaves grav at its Create value of 0, so fakespeed stays 10 while len = 10 * 50 = 500 unwinds",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1274"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow_long_piece",
+    "atFrame": 80,
+    "y": 240,
+    "xscale": 30,
+    "yscale": 1,
+    "angle": 180,
+    "tol": 0.5,
+    "why": "row 3 passes 30 as the sixth argument, stored in list_attackspecial2 and read back as longnotepieces; Draw_0:158 draws the bar at image_xscale * longnotepieces = 30 by image_yscale = 1 along the \"r\" horizontal ray at y = 240",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1275"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow_long",
+    "atFrame": 80,
+    "y": 240,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "tol": 0.5,
+    "why": "obj_spearblocker forces every longspear's sprite_index to spr_spear_arrow_long, drawn unscaled at the instance position with image_angle = direction = 180",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:251"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spear_arrow_long_piece",
+    "atFrame": 115,
+    "x": 320,
+    "xscale": 30,
+    "yscale": 1,
+    "angle": 90,
+    "tol": 0.5,
+    "why": "row 5 is token \"d\" (direction 90) with 30 long-note pieces, so its bar is 30x long and its x is pinned to the shield's x = 320 (lengthdir_x at 270 is 0)",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1277"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 180,
+    "why": "pattern 25 has no special-32 row, so no swing-down telegraph may appear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1270"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "green mode's obj_growtangle sits at camera centre with spr_battlebg_0 (75x75) at scale 2 and this pattern never resizes it",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green26",
+  "name": "Gerson green pattern 26 — eighteen swing-down telegraphs, no green soul",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "attackcountmax",
+    "eq": 19,
+    "why": "the branch appends 19 rows: 18 special-32 swing-downs on beat 40 plus a closing special-10 row",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1280"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 420,
+    "why": "pattern 26 contains neither a special-1 nor a special-36 row, so the green shield is never created and the soul stays red",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1280"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 420,
+    "why": "no row uses special 1, so the green-switch/chevron transition chain must never run",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1284"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 420,
+    "why": "every row is special 32 or special 10, neither of which creates obj_spearshot, so this pattern fires no spears at all",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1284"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gerson_swing_down_new",
+    "atFrame": 15,
+    "min": 1,
+    "max": 1,
+    "why": "rows are spaced by beat = 40 while a swing-down lives roughly 25 frames (timetoswing 10, then speed decay and image_alpha -= 0.2 from 1.4 until it goes negative), so exactly one telegraph is on screen at a time",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1284"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down_new",
+    "byFrame": 470,
+    "min": 12,
+    "max": 12,
+    "why": "rows 0-11 fire on frames 0,40,...,440 at beat 40, so twelve swing-downs have been created by frame 470 and row 12 not until frame 480",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1284"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 12,
+    "x": 298,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1.4,
+    "tol": 0.5,
+    "why": "row 0's token \"up1\" resolves to (-36,-75) with arg2 left at 0, so special 32 places it at obj_growtangle+(-36,-75) = (284,165) with image_angle 0; the image_angle<1 Draw branch offsets it to x+14 = 298, Create pins image_xscale/yscale to 2 and image_alpha to 1.4, and direction 270 means it only moves vertically",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1284"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 92,
+    "y": 204,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 90,
+    "tol": 0.5,
+    "why": "row 2's token \"left1\" resolves to (-75,-36,90), so it spawns at obj_growtangle+(-75,-36) = (245,204) with image_angle 90; its Draw offset lengthdir_y(14,180) is zero and direction 90+270 = 0 makes its motion purely horizontal, pinning y at 204",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1286"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 332,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 315,
+    "tol": 0.1,
+    "why": "row 8's token \"diag1\" resolves to (90,-90,315), so the telegraph created on frame 320 (row 8 at beat 40) carries image_angle 315 and the 2x Create scale",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1292"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_gerson_swing_down_new",
+    "atFrame": 452,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 225,
+    "tol": 0.1,
+    "why": "row 11's token \"diag4\" resolves to (90,90,225), so the telegraph created on frame 440 carries image_angle 225 at the 2x Create scale",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1295"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_growtangle",
+    "byFrame": 420,
+    "why": "pattern 26 has no special-31 row, so the box-transform object never exists and the row cadence is never frozen",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1280"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 240,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle sits at camerax()+320, cameray()+240 with spr_battlebg_0 (75x75) at maxxscale/maxyscale 2; pattern 26 has no special-27 shrink row so the box stays 150x150 throughout",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green45",
+  "name": "Pattern 45 — eight-point hammer ring (no green soul)",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 140,
+    "why": "all 10 rows use control opcodes 4/9/10 — not one row falls through to the plain-spear branch, so the pattern fires zero spears",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1846"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 140,
+    "why": "the chart contains no opcode-1 row and no opcode-36 row, so neither shield path ever runs",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1844"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 140,
+    "why": "no row has special == 1, so the green-soul transition chain never starts",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1844"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gerson_teleport",
+    "atFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "row 0 fires opcode 4 while Gerson is still visible: one vanish-puff at gerson.x+45,y+45 plus one arg2==-3 telegraph, and both live 4 frames on alarm[0]",
+    "src": "gml_GlobalScript_scr_spearshot.gml:35,82"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_teleport",
+    "atFrame": 3,
+    "x": 450,
+    "y": 260,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 0,
+    "why": "row 0's telegraph sits at obj_growtangle.x+lengthdir_x(130,0)=450, obj_growtangle.y+20+lengthdir_y(130,0)=260, at 2x and image_alpha 0",
+    "src": "gml_GlobalScript_scr_spearshot.gml:82,86"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 35,
+    "min": 8,
+    "max": 8,
+    "why": "exactly 8 rows carry special==4 with arg2==-3, and each teleport's alarm makes one hammer — the ring is 8 strong",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1846"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 35,
+    "name": "swingdowntype",
+    "eq": -3,
+    "why": "arg2 = -3 is copied onto the teleport and forwarded to the hammer",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:43"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 35,
+    "name": "timetoswing",
+    "eq": 999,
+    "why": "swingdowntype -3 parks the hammers indefinitely until the timer==34 broadcast releases all of them together",
+    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 35,
+    "name": "image_angle",
+    "eq": -90,
+    "why": "row 0 runs with swingdown_ex == 0, so the teleport's image_angle is 0 and the hammer takes image_angle - 90",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:44"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_swing_down",
+    "atFrame": 35,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 8,
+    "maxCalls": 8,
+    "why": "all 8 ring hammers are alive and drawn at the Create-pinned 2x before any of them swings or spawns afterimages",
+    "src": "gml_Object_obj_gerson_swing_down_Create_0.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "visible",
+    "eq": 0,
+    "why": "row 0's opcode 4 hides Gerson for the whole pattern; only row 9's type-10 teleport brings him back",
+    "src": "gml_GlobalScript_scr_spearshot.gml:34"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_teleport",
+    "byFrame": 5,
+    "why": "obj_gerson_teleport's Create pins its sprite and row 0 makes two of them on the first dispatch",
+    "src": "gml_Object_obj_gerson_teleport_Create_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green46",
+  "name": "Pattern 46 — gold cross barrage into four giant hammers",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, which instance_creates the green transition at gerson.x-5, y+4",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_swing",
+    "atFrame": 3,
+    "x": 455,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the switch spawns at gerson.x - 5 = 460-5 and its Create pins image_xscale/yscale = 2; only its y lerps, so x is the assertable axis",
+    "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "min": 1,
+    "why": "the switch's Step makes exactly one chevron at x-15 once image_index passes 4 (image_speed 1/3)",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield the frame it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3; it fires ~19 frames before the shield exists, so the with() is a no-op and Create picks the flag up from the enemy instead",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius 30 toward 35 and clamps it on the 8th Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "image_yscale",
+    "eq": 0.667,
+    "tol": 0.01,
+    "why": "radius crosses 34 first and clears diagonal_transform, freezing image_yscale at 0.6+0.4*0.8^8 — it never reaches the 0.6 target",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "the shield is pinned to obj_heart.x+10,y+10 (= growtangle 320,240) plus the constant +1 shake offset, and settles at idealdir 90 with no input",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "goldcon",
+    "eq": 1,
+    "why": "row 2 is opcode 8, the only thing in the chart that raises goldcon",
+    "src": "gml_GlobalScript_scr_spearshot.gml:180"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 60,
+    "min": 6,
+    "max": 12,
+    "why": "rows 3-18 are 16 plain spears on a 3-frame cadence with 30-frame leads, so ten are in flight around frame 60",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1863"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 0,
+    "why": "rows 11-14 send arg0 = 0 spears, and a plain spear's image_angle is copied straight from its direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:722,725"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 60,
+    "angle": 90,
+    "why": "rows 15-18 send arg0 = 90 spears; the blocker's Draw stamps spr_spear_arrow on every non-shell spear",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:248"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_giant_hammer",
+    "byFrame": 95,
+    "min": 1,
+    "why": "row 19 is opcode 2, which creates the giant hammer at obj_heart.x-20, y-20",
+    "src": "gml_GlobalScript_scr_spearshot.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 300,
+    "min": 3,
+    "max": 3,
+    "why": "the chart holds five special==1 rows and the chevron's shield create is unguarded, so shields accumulate — three exist by the third switch (rows 0, 21, 24)",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green47",
+  "name": "Pattern 47 — squished box, 53 falling hammers",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "all 55 rows are control opcodes (one 13, fifty-three 4s, one 10) — the pattern never reaches the plain-spear branch",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1906"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearblocker",
+    "byFrame": 400,
+    "why": "no opcode-1 and no opcode-36 row, so this is a RED-soul pattern despite living in the green chart",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1904"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 400,
+    "why": "no row has special == 1",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1904"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_squishes_box",
+    "byFrame": 4,
+    "min": 1,
+    "why": "row 0 is opcode 13, which creates the box-squisher at the enemy's own x,y and depth",
+    "src": "gml_GlobalScript_scr_spearshot.gml:231"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_squishes_box",
+    "atFrame": 4,
+    "name": "type",
+    "eq": 5,
+    "why": "opcode 13 stamps type = 5 on the squisher",
+    "src": "gml_GlobalScript_scr_spearshot.gml:232"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 30,
+    "name": "visible",
+    "eq": 0,
+    "why": "opcode 13 hides Gerson on row 0, before any of the 53 hammer rows run",
+    "src": "gml_GlobalScript_scr_spearshot.gml:230"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gerson_teleport",
+    "atFrame": 250,
+    "y": 145,
+    "tol": 2,
+    "why": "every one of the 53 opcode-4 rows passes arg1 = 145, so all telegraphs land on cameray()+145; only arg0 (x) varies row to row",
+    "src": "gml_GlobalScript_scr_spearshot.gml:160"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gerson_teleport",
+    "atFrame": 250,
+    "min": 2,
+    "why": "rows 29-35 fire one frame apart (wait 1) and each telegraph lives 4 frames on alarm[0], so several overlap",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1935"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_teleport",
+    "atFrame": 250,
+    "y": 145,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 0,
+    "why": "the generic opcode-4 branch draws the telegraph at 2x with image_alpha 0 — it is a silent spawner, not a visible flash",
+    "src": "gml_GlobalScript_scr_spearshot.gml:160,163"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_swing_down",
+    "byFrame": 45,
+    "min": 1,
+    "why": "row 1 fires at wait 35 and its telegraph's alarm makes the first hammer 4 frames later",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:62"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_swing_down",
+    "atFrame": 250,
+    "xscale": -2,
+    "yscale": 2,
+    "why": "a hammer created left of obj_growtangle.x is mirrored: image_xscale = -2 and x += 124; rows 29-34 use arg0 100..350, all left of centre",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:66"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_gerson_teleport",
+    "byFrame": 45,
+    "why": "obj_gerson_teleport's Create pins its sprite and 53 rows create one each",
+    "src": "gml_Object_obj_gerson_teleport_Create_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green48",
+  "name": "Pattern 48 — green switch, three telegraphed hammers, then a 9999 hold",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "min": 1,
+    "why": "the switch's Step makes exactly one chevron at x-15 when image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield once it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "this chart has NO opcode-3 row, so the shield stays cardinal-only — unlike patterns 46/49/50/51/53",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1963"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "radius",
+    "eq": 30,
+    "why": "with no diagonal unlock the Create-time radius is never lerped to 35",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield pinned to obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, unsquashed at yscale 1, resting at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 400,
+    "why": "row 3's wait is 9999, so the chart's only spear row (row 4) cannot dispatch inside the turn",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1968"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_teleport",
+    "byFrame": 6,
+    "min": 1,
+    "why": "rows 1-3 are opcode 4, and row 1 also spends a vanish-puff because Gerson is still visible",
+    "src": "gml_GlobalScript_scr_spearshot.gml:35,160"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 14,
+    "min": 3,
+    "max": 3,
+    "why": "exactly three opcode-4 rows (268/316/364, arg2 = 60) each produce one hammer via the telegraph's alarm; the vanish-puff has type 0 and makes none",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:52"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 14,
+    "name": "swingdowntype",
+    "eq": 60,
+    "why": "arg2 = 60 is stored on the telegraph and forwarded to the hammer",
+    "src": "gml_GlobalScript_scr_spearshot.gml:162"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_swing_down",
+    "atFrame": 14,
+    "name": "timetoswing",
+    "eq": 22,
+    "why": "swingdowntype >= 11 selects the 22-frame telegraph window",
+    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:49"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_gerson_swing_down",
+    "atFrame": 14,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 3,
+    "maxCalls": 3,
+    "why": "three hammers, each at the Create-pinned 2x, all still in their pre-swing telegraph",
+    "src": "gml_Object_obj_gerson_swing_down_Create_0.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 40,
+    "name": "visible",
+    "eq": 0,
+    "why": "row 1's opcode 4 hides Gerson and nothing in this chart restores him",
+    "src": "gml_GlobalScript_scr_spearshot.gml:34"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green49",
+  "name": "Pattern 49 — green shield, giant hammer, box-hit volley",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "switch to chevron to shield: the chevron's Draw creates it when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3; it fires long before the shield exists, so the flag reaches the shield through its Create instead",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius 30 toward 35 and clamps on the 8th Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "image_yscale",
+    "eq": 0.667,
+    "tol": 0.01,
+    "why": "radius crosses 34 before yscale crosses 0.62, clearing diagonal_transform and freezing yscale at 0.6+0.4*0.8^8",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_spearshot",
+    "byFrame": 300,
+    "why": "the four rows are opcodes 1, 3, 2 and 5 — none of them is a spear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1974"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_giant_hammer",
+    "byFrame": 8,
+    "min": 1,
+    "why": "row 2 is opcode 2, creating the giant hammer at obj_heart.x-20, obj_heart.y-20",
+    "src": "gml_GlobalScript_scr_spearshot.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_giant_hammer",
+    "atFrame": 8,
+    "name": "dir",
+    "eq": 0,
+    "why": "opcode 2 copies arg0 onto ham.dir, and row 2 passes arg0 = 0 (the left-side swing arc)",
+    "src": "gml_GlobalScript_scr_spearshot.gml:11"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gerson_box_hit_controller",
+    "atFrame": 8,
+    "x": 0,
+    "y": 5,
+    "tol": 1,
+    "why": "opcode 5 creates the controller at the raw arg0,arg1 the chart passes — literally (0, 5) — and the controller never moves",
+    "src": "gml_GlobalScript_scr_spearshot.gml:168"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gerson_box_hit_controller",
+    "atFrame": 8,
+    "name": "count",
+    "eq": 7,
+    "why": "the controller's Create fixes seven box hits before the turn hands back",
+    "src": "gml_Object_obj_gerson_box_hit_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_box_hit",
+    "byFrame": 30,
+    "min": 1,
+    "why": "the controller's first side teleport (timer == 25) resolves into a swinging Gerson 70px inward",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:10"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 60,
+    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:27"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green50",
+  "name": "Pattern 50 — up-beat with diagonal accents",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "min": 1,
+    "why": "the switch's Step makes exactly one chevron at x-15 when image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3, which the shield picks up through its Create because it fires before the shield exists — the pattern needs it for the 225/315/135/45 rows",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "image_yscale",
+    "eq": 0.667,
+    "tol": 0.01,
+    "why": "the transform stops on radius (8th Draw), freezing yscale at 0.6+0.4*0.8^8 rather than the nominal 0.6",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield sits on obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "min": 1,
+    "max": 3,
+    "why": "13 spear rows on 10/21-frame waits with 30-frame leads keep one to three in flight at a time",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1984"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "the oldest live spear here is the row-8 arg0 = 270 shot, and a plain spear's image_angle is its direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:722,725"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "fakespeed",
+    "eq": 8,
+    "why": "every 270 row in this chart passes arg1 = 8, and fakespeed is copied verbatim",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1990"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "all rows are 5-arg, so list_attackspecial2 stays at its reset value 0 and no swing-around residue leaks in",
+    "src": "gml_GlobalScript_scr_spearpattern_reset.gml:12"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 125,
+    "angle": 315,
+    "why": "row 11 passes arg0 = 315, the up-left diagonal; the blocker's Draw stamps spr_spear_arrow on every non-shell spear",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1993"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow_highlight",
+    "byFrame": 100,
+    "why": "the blocker re-sprites the spear with the smallest len/fakespeed each Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:261"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 60,
+    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:27"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green51",
+  "name": "Pattern 51 — two full clockwise rings, second one faster",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "min": 1,
+    "why": "the switch's Step makes exactly one chevron at x-15 when image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is opcode 3 — mandatory here, since the ring includes 315/45/135/225 bearings",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 90,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius 30 toward 35 and clamps on the 8th Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 90,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "min": 2,
+    "max": 4,
+    "why": "repeat(2) x 8 rows on a flat 15-frame wait with a 50-frame lead keeps about three of the first ring alive at once",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2006"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "fakespeed",
+    "eq": 12,
+    "why": "the first repeat runs at _spd = 12",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2003"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "name": "fakespeed",
+    "eq": 15,
+    "why": "_spd += 3 between the two repeats, so the second ring flies at 15",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2016"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 100,
+    "name": "swingaround",
+    "eq": 0,
+    "why": "every row is 5-arg, so list_attackspecial2 keeps its reset value and no stale swing-around leaks in from an earlier turn",
+    "src": "gml_GlobalScript_scr_spearpattern_reset.gml:12"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 100,
+    "angle": 180,
+    "why": "the ring's 7th bearing is 180 and a plain spear's image_angle equals its direction",
+    "src": "gml_GlobalScript_scr_spearshot.gml:722,725"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 100,
+    "angle": 135,
+    "why": "the ring's 6th bearing is 135 — a diagonal that only exists because row 1 unlocked diagonal blocking",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2013"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "min": 2,
+    "max": 4,
+    "why": "the second ring runs the same 15-frame cadence, so its in-flight population matches the first",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2008"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 60,
+    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:27"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green52",
+  "name": "Pattern 52 — three curving spears that swing to diagonals",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 55,
+    "name": "diagonal_enabled",
+    "eq": 0,
+    "why": "the chart has no opcode-3 row, so diagonal blocking is never unlocked even though all three spears end on diagonal bearings",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2020"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 55,
+    "name": "radius",
+    "eq": 30,
+    "why": "with no diagonal transform the Create-time radius is never lerped to 35",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:17"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 55,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "unsquashed shield on obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 55,
+    "min": 0,
+    "max": 0,
+    "why": "row 0's wait is 60, so the first spear cannot dispatch until frame 61 — this pattern opens with a full second of nothing",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2022"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 75,
+    "min": 1,
+    "max": 1,
+    "why": "row 1 fires at wait 60 and row 2 not until 45 frames later, so exactly one spear is airborne",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2023"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 75,
+    "name": "special",
+    "eq": 315,
+    "why": "arg3 = 315 is not a known opcode, so it falls through to the default branch and becomes the spear's curve target",
+    "src": "gml_GlobalScript_scr_spearshot.gml:721"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 75,
+    "name": "image_angle",
+    "eq": 315,
+    "why": "arg3 > 20 overwrites image_angle with the special value, so the spear is drawn already rotated to the bearing it will curve into",
+    "src": "gml_GlobalScript_scr_spearshot.gml:765"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 75,
+    "name": "fakespeed",
+    "eq": 8,
+    "why": "row 1 passes arg1 = 8, copied verbatim to fakespeed",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2023"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow_highlight",
+    "atFrame": 75,
+    "angle": 315,
+    "why": "with a single spear alive the blocker marks it as the closest and it draws at the pre-set 315 image_angle",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:261"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "min": 1,
+    "max": 1,
+    "why": "row 2 fires 45 frames after row 1 and row 3 a further 40, so the second spear also flies alone",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2024"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 120,
+    "name": "image_angle",
+    "eq": 225,
+    "why": "row 2's arg3 = 225 becomes both its special and its drawn image_angle",
+    "src": "gml_GlobalScript_scr_spearshot.gml:765"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 55,
+    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:27"
+   }
+  ]
+ },
+ {
+  "id": "gerson_green53",
+  "name": "Pattern 53 — 56-spear accelerating spiral",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_switch",
+    "byFrame": 5,
+    "min": 1,
+    "why": "row 0 is special == 1, the green transition",
+    "src": "gml_GlobalScript_scr_spearshot.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gerson_green_chevron",
+    "byFrame": 25,
+    "min": 1,
+    "why": "the switch's Step makes exactly one chevron at x-15 when image_index passes 4",
+    "src": "gml_Object_obj_gerson_green_switch_Step_0.gml:5"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_spearblocker",
+    "byFrame": 45,
+    "min": 1,
+    "why": "the chevron's Draw creates the shield when it crosses obj_heart.x",
+    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 91,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "row 1 is the first of five opcode-3 rows; the spiral steps in 45 degree increments so diagonal blocking is required",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 91,
+    "name": "radius",
+    "eq": 35,
+    "why": "the diagonal transform lerps radius 30 toward 35 and clamps on the 8th Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 91,
+    "name": "image_yscale",
+    "eq": 0.667,
+    "tol": 0.01,
+    "why": "radius crosses 34 before yscale crosses 0.62, so diagonal_transform clears and yscale freezes at 0.6+0.4*0.8^8",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spearblocker",
+    "atFrame": 91,
+    "x": 321,
+    "y": 241,
+    "xscale": 1,
+    "angle": 90,
+    "alpha": 1,
+    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 91,
+    "min": 4,
+    "max": 8,
+    "why": "beat = 4 with heartframes = 40 means roughly ten leads overlap; the third five-row sweep plus the start of the eleven-row sweep are in flight",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2032"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 91,
+    "name": "fakespeed",
+    "eq": 9,
+    "why": "spearspeed stays at its initial 9 for the first four sweeps — the += 0.5 ramp only starts in the 30-row loop",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2033"
+   },
+   {
+    "kind": "draw",
+    "obj": "",
+    "name": "spr_spear_arrow",
+    "atFrame": 91,
+    "angle": 270,
+    "why": "the third sweep runs _dir = 90 + i*45 for i in 0..4, ending on 270; a plain spear's image_angle is its direction",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2054"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "min": 5,
+    "why": "the 30-row finale fires every 4 frames with ~38 frame leads, so around ten spears are simultaneously in flight",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2066"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearshot",
+    "atFrame": 240,
+    "name": "fakespeed",
+    "min": 9,
+    "max": 23.5,
+    "why": "the finale ramps spearspeed 9 -> 23.5 in 0.5 steps over 30 rows, so every live spear sits inside that band",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2070"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spear_arrow_highlight",
+    "byFrame": 91,
+    "why": "the blocker re-sprites the spear with the smallest len/fakespeed each Draw",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:261"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_greenheart",
+    "byFrame": 60,
+    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
+    "src": "gml_Object_obj_heart_Step_0.gml:27"
    }
   ]
  }
