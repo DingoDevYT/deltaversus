@@ -87,7 +87,17 @@ const BOSSES = [
     // and always grows to a fixed 2x. Jevil's finale floods the SCREEN with
     // spades from the view edges; the box itself never resizes.
     boxBlock: { file: 'gml_Object_obj_joker_Step_0.gml',
-                anchor: 'if (!instance_exists(obj_growtangle))' } },
+                anchor: 'if (!instance_exists(obj_growtangle))' },
+    // Jevil sets one flat turn length for every attack with a DIRECT
+    // `global.turntimer = 240;` (obj_joker_Step_0.gml:267) rather than through
+    // scr_turntimer. Sliced to the assignment ALONE: the enclosing
+    // `if (rtimer == 12)` block continues into `event_user(5)` — his own attack
+    // chooser — plus `rr = choose(...)` and the battle message, and replaying
+    // any of that would override the roster's pick with a random attack. Same
+    // trap the notes record for the Knight's event_user(0) in the box block.
+    turnBlock: { file: 'gml_Object_obj_joker_Step_0.gml',
+                 anchor: 'global.turntimer = 240;',
+                 endAnchor: 'event_user(5);' } },
   { id: 'pink', chapter: 'ch5', chNum: 5, label: 'Pink',
     enemy: 'obj_pink_enemy',
     // Pink's default box + obj_purplecontrols spawn live in an if/else on
@@ -219,7 +229,11 @@ function extractTurnBlock(dir, cfg) {
   for (let from = 0; ;) {
     const hit = clean.indexOf(cfg.anchor, from);
     if (hit === -1) break;
-    if (/scr_turntimer/.test(clean.slice(hit, hit + (cfg.anchorWindow || 80)))) { at = hit; break; }
+    // `turntimer`, not `scr_turntimer` — Jevil sets his turn length with a
+    // direct `global.turntimer = 240;` rather than through the script, and the
+    // Knight's dispatcher branch still fails the test because its first 80
+    // characters are the monsterattackname assignment and the bullet spawner.
+    if (/turntimer/.test(clean.slice(hit, hit + (cfg.anchorWindow || 80)))) { at = hit; break; }
     from = hit + cfg.anchor.length;
   }
   if (at === -1) return null;
