@@ -188,7 +188,7 @@ Each is pinned to a line.
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
 | Runtime | **154/154** clean, 0 errors, 0 hard failures |
-| Spec suite | **1627/1835** assertions, **49 of 141** attacks fully clean |
+| Spec suite | **1630/1846** assertions (88.3%), **48 of 142** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
@@ -201,19 +201,24 @@ Spec suite progression through the night, each step a real fix:
 | SNEO turn block + DIFF 0 | 646 | 122 | 14 |
 | + Gerson's 82 green charts (141 attacks) | **1627** | **208** | **49** |
 
-Pass rate by assertion kind on the full suite:
+Pass rate by assertion kind, after triage:
 
-| kind | passing |
-|---|---|
-| `absent` | 122/122 |
-| `count` | 146/148 |
-| `sprite` | 111/112 |
-| `box` | 47/49 |
-| `spawns` | 375/394 |
-| **`draw`** (visual) | **163/184** |
-| `ivar` | 606/735 |
-| `turntimer` | 30/45 |
-| `pos` | 27/46 |
+| kind | passing | note |
+|---|---|---|
+| `absent` | 122/122 | |
+| `count` | 147/148 | |
+| `sprite` | 110/111 | |
+| `box` | 47/50 | |
+| `spawns` | 375/394 | |
+| **`draw`** (visual) | **164/183** | the new visual oracle |
+| `ivar` | 608/734 | |
+| `pos` | 28/45 | hardest to assert; most remaining are real |
+| `turntimer` | 29/59 | **got worse on purpose** — see below |
+
+`turntimer` went 30/45 → 29/59 because triage *added* 14 turn-length assertions
+for Jevil, Gerson and Pink. They fail because those three bosses still have no
+`turnBlock` (open item 1). That is the suite correctly describing a known engine
+gap rather than hiding it, and it is exactly what a fix list should do.
 
 **The specs survive adversarial re-reading.** A triage pass re-opened every
 cited line and returned **344 KEPT, 12 FIXED, 2 DROPPED** — so the large
