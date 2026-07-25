@@ -397,6 +397,13 @@
   // RUNTIME ENVIRONMENT
   // ═══════════════════════════════════════════════════════════════
 
+  // Shared by every runtime: the object parent table is a property of the
+  // CHAPTER, not of a run, and a runtime is rebuilt for each of the 154
+  // presets. One frozen empty set avoids allocating for the common case of an
+  // object with no parent at all.
+  const EMPTY_ANCESTORS = new Set();
+  const ANCESTOR_CACHE = {};
+
   class GMLRuntimeEnvironment {
     constructor() {
       this.instances = [];
@@ -542,24 +549,40 @@
       return this.instances.filter(i => !i.destroyed && this._isKindOf(i.object_name, name));
     }
 
-    /** Ancestor chain of an object name, memoised per runtime. */
+    /**
+     * Ancestor set of an object name, memoised per CHAPTER (not per runtime —
+     * a runtime is rebuilt for every attack, and re-deriving this 154 times was
+     * the whole cost).
+     *
+     * Walks `objectDefs[name].p` directly rather than calling
+     * `GML_OBJECT_INDEX.defaults()`: that helper allocates a Set, an array and
+     * a result object and re-walks the entire chain on every call, so using it
+     * per link made this O(depth^2) with allocations on a path that runs for
+     * every instance of every `with` in every frame.
+     */
     _ancestorsOf(objectName) {
-      if (!this._ancestorCache) this._ancestorCache = new Map();
-      let set = this._ancestorCache.get(objectName);
-      if (set) return set;
-      set = new Set();
-      const oi = global.GML_OBJECT_INDEX;
       const ch = this.$chapter || 'ch3';
-      let cur = objectName;
-      // Depth-bounded: a malformed table must not spin here.
-      for (let d = 0; d < 16 && cur; d++) {
-        let parent = null;
-        try { parent = oi && oi.defaults ? oi.defaults(cur, ch).parent : null; } catch (e) { parent = null; }
-        if (!parent || set.has(parent)) break;
-        set.add(parent);
-        cur = parent;
+      let perChapter = ANCESTOR_CACHE[ch];
+      if (!perChapter) perChapter = ANCESTOR_CACHE[ch] = new Map();
+      let set = perChapter.get(objectName);
+      if (set) return set;
+      set = EMPTY_ANCESTORS;
+      const oi = global.GML_OBJECT_INDEX;
+      const defs = oi && ((oi.chapters && oi.chapters[ch] && oi.chapters[ch].objectDefs) || oi.objectDefs);
+      if (defs) {
+        let cur = objectName, first = true;
+        // Depth-bounded: a malformed table must not spin here.
+        for (let d = 0; d < 16; d++) {
+          const def = defs[cur];
+          const parent = def && def.p;
+          if (!parent) break;
+          if (first) { set = new Set(); first = false; }
+          if (set.has(parent)) break;             // cycle
+          set.add(parent);
+          cur = parent;
+        }
       }
-      this._ancestorCache.set(objectName, set);
+      perChapter.set(objectName, set);
       return set;
     }
 
