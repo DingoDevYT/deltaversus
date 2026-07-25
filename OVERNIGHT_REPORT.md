@@ -209,7 +209,7 @@ Each is pinned to a line.
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
 | Runtime | **154/154** clean, 0 errors, 0 hard failures |
-| Spec suite | **1630/1846** assertions (88.3%), **48 of 142** attacks fully clean |
+| Spec suite | **1635/1846** assertions (88.6%), **49 of 142** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
@@ -220,7 +220,9 @@ Spec suite progression through the night, each step a real fix:
 | freeze the live loop | 619 | 149 | 8 |
 | pause stops drawing | 621 | 147 | 8 |
 | SNEO turn block + DIFF 0 | 646 | 122 | 14 |
-| + Gerson's 82 green charts (141 attacks) | **1627** | **208** | **49** |
+| + Gerson's 82 green charts (141 attacks) | 1627 | 208 | 49 |
+| + triage corrections (142 attacks) | 1630 | 216 | 48 |
+| + parent-chain fix | **1635** | **211** | **49** |
 
 Pass rate by assertion kind, after triage:
 
