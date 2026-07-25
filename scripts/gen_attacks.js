@@ -202,7 +202,26 @@ function extractTurnBlock(dir, cfg) {
   const src = readIfExists(path.join(dir, cfg.file));
   if (!src) return null;
   const clean = strip(src);
-  const at = clean.indexOf(cfg.anchor);
+  // The anchor can be AMBIGUOUS. `if (myattackchoice == 7)` appears twice in
+  // obj_knight_enemy's Step: once as combinationattack's DISPATCHER branch and
+  // again, ~170 lines later, as the first arm of the turn-length ladder.
+  // Taking the first match sliced 5,027 characters starting at the dispatcher —
+  // including FOUR `scr_bulletspawner(x, y, obj_dbulletcontroller)` calls and
+  // their `monsterattackname` assignments. The studio replays this block, so
+  // every Knight attack spawned a SECOND controller: doubled singletons
+  // (obj_knight_swordfall live=2), doubled bullet counts (obj_fallingsword 14
+  // where the chart says 6-8), and local_turntimers ~60 frames stale because a
+  // second copy had been running all along.
+  //
+  // So accept only an occurrence that actually introduces a turn ladder: one
+  // with `scr_turntimer` close behind it.
+  let at = -1;
+  for (let from = 0; ;) {
+    const hit = clean.indexOf(cfg.anchor, from);
+    if (hit === -1) break;
+    if (/scr_turntimer/.test(clean.slice(hit, hit + (cfg.anchorWindow || 80)))) { at = hit; break; }
+    from = hit + cfg.anchor.length;
+  }
   if (at === -1) return null;
   // Bosses do not share a shape here. The Knight's ladder terminates in a
   // trailing `else scr_turntimer(N);`; Spamton NEO's is a flat default followed

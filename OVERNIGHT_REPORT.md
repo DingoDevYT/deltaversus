@@ -114,6 +114,31 @@ All verified against source, all with the full battery green afterwards.
    PipisExplosion really does get 260, not the 90 the spec claimed. Replaying
    the block verbatim gets that right without anyone having to notice.
 
+8. **Every Knight attack was spawning its controller TWICE.**
+   `extractTurnBlock` anchors the Knight's turn ladder on
+   `if (myattackchoice == 7)` — but that string appears **twice** in
+   `obj_knight_enemy`'s Step: first as combinationattack's *dispatcher* branch,
+   then ~170 lines later as the first arm of the actual turn-length ladder.
+   `indexOf` took the first, so the extracted "turn block" was **5,027
+   characters starting at the dispatcher**, containing four
+   `scr_bulletspawner(x, y, obj_dbulletcontroller)` calls. The studio replays
+   that block, so a second controller was created on every launch.
+
+   Symptoms this explains at once: `obj_knight_swordfall` live=2 where the
+   source says one, `obj_fallingsword` at 14 where the chart says 6-8,
+   `obj_tracking_swords_manager` doubled, and `local_turntimer` reading ~60
+   frames stale because a second copy had been stepping all along. It is very
+   likely also the "two chevrons and two shields" I had flagged on Gerson.
+
+   The anchor now only accepts an occurrence with `scr_turntimer` within 80
+   characters — i.e. one that actually introduces a turn ladder. Block went
+   5,027 → 976 chars. Verified: one controller, one swordfall, one manager, one
+   cone per launch, and the `global.turntimer = 999999` pins on types
+   105/107/108 finally apply (999996 at frame 3, previously stuck at 240).
+
+   **Found because Landon asked about shader work on the Stars cone** — chasing
+   that led into the Knight's turn handling.
+
 7. **Parent-typed instance queries were a no-op — the biggest one.**
    In GameMaker, naming an object in `with`, `instance_exists`,
    `instance_number` or `place_meeting` selects that object **and every

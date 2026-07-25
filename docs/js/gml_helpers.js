@@ -3604,7 +3604,42 @@
       ctx.globalCompositeOperation = op || 'source-over';
     };
     global.draw_set_blend_mode_ext = global.gpu_set_blendmode_ext;
-    global.gpu_set_blendmode_ext_sepalpha = function (src, dst) { global.gpu_set_blendmode_ext(src, dst); };
+
+    /**
+     * Separate-alpha blending. The ALPHA pair is the whole point of this call
+     * and forwarding only the colour pair threw it away.
+     *
+     * `(..., bm_dest_alpha, bm_zero)` on the alpha channel is
+     * `Ad' = Ad*Ad + As*0`, i.e. **keep the destination's alpha and contribute
+     * none from the source** — Deltarune's "paint into this shape without
+     * changing its silhouette" idiom. It appears in
+     * obj_knight_pointing_cone (the Stars cone, twice), obj_darkness_overlay in
+     * both ch4 and ch5, obj_darkness_overlay_twofloor and obj_board_quizwheel.
+     *
+     * The cone builds its wedge as a pr_trianglelist primitive on a cleared
+     * surface, then scrolls spr_knight_bullet_flow across the FULL 640-wide
+     * surface with this mode so the texture only shows inside the wedge. Read
+     * as the colour pair alone that is `(bm_src_alpha, bm_one)` = 'lighter',
+     * additive and unclipped — so the flow flooded the whole surface and the
+     * cone lost its shape entirely.
+     *
+     * Canvas cannot express "additive AND clipped to destination alpha" in one
+     * operator, so we keep the CLIP: `source-atop` restricts the paint to the
+     * existing alpha and preserves it exactly. That loses the additive
+     * brightening over the wedge but keeps the silhouette, which is the
+     * effect's visual identity — the same trade already made for the
+     * (bm_dest_alpha, bm_dest_alpha) boxsplitter case.
+     */
+    global.gpu_set_blendmode_ext_sepalpha = function (src, dst, asrc, adst) {
+      const ctx = global.$gmlActiveCtx;
+      const a = num(asrc) + ',' + num(adst);
+      // 7 = bm_dest_alpha, 1 = bm_zero, 6 = bm_inv_src_alpha, 2 = bm_one.
+      if (ctx && a === '7,1') { ctx.globalCompositeOperation = 'source-atop'; return; }
+      // Alpha erased wherever the source covers: a hole punch.
+      if (ctx && a === '1,6') { ctx.globalCompositeOperation = 'destination-out'; return; }
+      // Anything else: the colour pair carries the meaning.
+      global.gpu_set_blendmode_ext(src, dst);
+    };
 
     // ── Box clipping ─────────────────────────────────────────────────────
     // The runtime's scr_draw_in_box_* close over ITS OWN old gt_minx/gt_maxx
