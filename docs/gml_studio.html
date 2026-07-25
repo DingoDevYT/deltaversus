@@ -1601,6 +1601,24 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     document.getElementById('btnPause').textContent = paused ? '▶ Resume' : '⏸ Pause';
   });
 
+  /**
+   * Let the deterministic probes freeze the live loop.
+   *
+   * VISUAL_PROBE and SPEC_CHECK step the runtime themselves, but they must wait
+   * ~350ms after launching for sprite bitmaps to DECODE — and the rAF loop kept
+   * running through that wait, advancing the game by however many frames the
+   * machine got through. So "frame 8" was really "frame 8 plus a machine-speed
+   * dependent number", and `global.turntimer` read ~11 short of the value the
+   * boss had just set (350ms at 30fps), failing 32 turn-length assertions that
+   * were all correct. Freezing the loop makes a measured frame mean the frame.
+   */
+  window.GML_STUDIO_SET_PAUSED = function (v) {
+    const was = paused;
+    paused = !!v;
+    document.getElementById('btnPause').textContent = paused ? '▶ Resume' : '⏸ Pause';
+    return was;
+  };
+
   // ═══════════════════════════════════════════
   // MAIN GAME LOOP (CRASH-PROOF)
   // ═══════════════════════════════════════════
@@ -1682,6 +1700,17 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     }
 
     // ── RENDER ──
+    // PAUSE MUST STOP DRAWING TOO, not just stepping.
+    //
+    // Deltarune MUTATES STATE IN DRAW EVENTS — obj_dbullet_vert fades itself in
+    // with `image_alpha += 0.1` from its Draw, obj_gerson_green_chevron spawns
+    // the green-soul shield from its Draw. So a paused-but-still-drawing loop
+    // keeps advancing the game. The deterministic probes wait ~350ms for sprite
+    // bitmaps to decode, and at 60fps that was ~20 free Draw passes: Jevil's
+    // type 25 spades read image_alpha 3.8 where Create sets 0, and type 74 read
+    // 1.1 against an expected 0-0.15. Pausing here makes a paused studio
+    // genuinely frozen.
+    if (paused) { requestAnimationFrame(gameLoop); return; }
     // Set active context for drawing functions
     setActiveCtx(ctx);
 

@@ -143,6 +143,10 @@
   async function run(attackId, opts) {
     opts = opts || {};
     if (!launch(attackId)) return { id: attackId, error: 'not in roster' };
+    // Freeze the live rAF loop for the whole measurement: it would otherwise
+    // advance the game during the settle wait below by a machine-speed
+    // dependent number of frames, so "frame 30" would not mean frame 30.
+    const wasPaused = global.GML_STUDIO_SET_PAUSED ? global.GML_STUDIO_SET_PAUSED(true) : false;
     // Let the launch settle before capturing. Stepping deterministically runs
     // far faster than the browser DECODES images, and a sprite whose bitmap is
     // not ready draws as a placeholder — so a probe that starts immediately
@@ -181,6 +185,7 @@
     };
     res.flags = verdict(res);
     if (opts.png) res.png = canvas().toDataURL('image/png');
+    if (global.GML_STUDIO_SET_PAUSED) global.GML_STUDIO_SET_PAUSED(wasPaused);
     return res;
   }
 

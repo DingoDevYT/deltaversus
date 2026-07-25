@@ -803,6 +803,88 @@ It settled these, two of which were bugs:
   table in `gml_compiler.js` is therefore a choice — safe here because the corpus never
   mixes bitwise with comparison unbracketed.
 
+## Round 16: the observer was the bug
+
+Read this section before trusting any measurement in this file.
+
+Round 15 built `spec_check.js` to diff what the GML promises against what the
+engine does. Pointing it at the roster found 201 failures — and the first three
+things it "found" were all defects in the MEASUREMENT, not the engine. Each one
+had been silently corrupting every check that came before it.
+
+**1. The probe was starving Draw events.** `VISUAL_PROBE.stepTo()` ran N steps
+and drew ONCE at the end. GameMaker runs Draw every frame, and **Deltarune
+creates objects from Draw events**: `obj_gerson_green_chevron`'s Draw is what
+spawns `obj_spearblocker`, the shield every green-soul spear is aimed at.
+Measured on Gerson pattern 20 — the shield never appeared, so all 18
+`scr_spearshot(..., special 14, ...)` rows found `i_ex(obj_spearblocker)` false
+and fired into nothing: **0 spears. Drawing each frame gives 36.** green21 goes
+0 → 14, green50 → 24. This is also why the baseline showed dozens of green
+patterns with byte-identical ink profiles and why they read as "all the same
+attack": the only thing the probe ever let them draw was the furniture.
+
+**2. The live rAF loop ran during the settle wait.** Both probes wait ~350ms
+after launching for sprite bitmaps to decode. The studio's loop kept stepping
+through it, so "frame 8" meant "frame 8 plus however many frames this machine
+managed" — *measurements were machine-speed dependent*. Most visibly
+`global.turntimer` read ~11 short (350ms at 30fps), failing 32 turn-length
+assertions that were all correct. `GML_STUDIO_SET_PAUSED()` now freezes the
+loop for the duration of a measurement.
+
+**3. Pausing has to stop DRAWING too.** Deltarune mutates state in Draw —
+`obj_dbullet_vert` fades itself in with `image_alpha += 0.1` from its Draw. A
+paused-but-still-drawing loop kept advancing the game ~20 free Draw passes
+during the settle: Jevil's type 25 spades read `image_alpha` **3.8** where
+Create sets 0.
+
+The lesson is the one this project keeps relearning in new clothes: **a check
+that is wrong in the same direction as the thing it checks reports success.**
+The visual probe had been reporting "145/147 clean" for rounds while never
+letting a Draw-spawned object exist.
+
+### Real engine bugs found underneath
+
+Once the observer was honest, these were left — all confirmed against source:
+
+- **`instance_exists()` disagreed with `with`, at 392 call sites.** The soul IS
+  a real `obj_heart` instance but is deliberately kept out of the stepped list,
+  and `getInstances()` aliased it while `instance_exists()` scanned `instances`
+  by name. So `obj_heart.x` read correctly and `instance_exists(obj_heart)` was
+  **false** — skipping every one of 172 `i_ex(obj_heart)` + 220
+  `instance_exists(obj_heart)` guarded blocks. Exactly the trap Round 8 fixed
+  for `obj_growtangle`; aliases that lie about existence poison `if (!exists)`.
+  Existence now delegates to `getInstances`, and the soul aliases no longer mask
+  REAL objects — `obj_heart_follower` is an object the Knight's Stars spawns.
+- **Blend factors, the dest-alpha family**, all derived from
+  `result = src*srcFactor + dst*dstFactor`:
+  `(7,8)`→`source-atop` (Deltarune's mask-clipping idiom in `scr_draw_in_mask`;
+  as source-over the mask did nothing), `(7,7)`→`source-atop` (the boxsplitter
+  tiles a flow texture through a slash shape — keep the clip, `lighter` would
+  flood the surface), `(8,7)`→`destination-over` (`obj_purplecontrols` lays its
+  purple field in BEHIND the lane grid; source-over painted over and hid it).
+- **`surface_copy` / `surface_copy_part`** implemented (15 call sites, was
+  returning 0, so every surface snapshot was empty).
+- **`sync_sprites` rejected art that was correct on the axis that mattered** —
+  requiring BOTH dimensions to equal the declared frame kept the export's
+  68×315 `spr_gerson_swing_down_telegraph` over NEW RIP's 80×360, leaving the
+  swing telegraph 45px (12.5%) short on the axis the player reads to dodge.
+
+### Open, diagnosed, not yet fixed
+
+- **Jevil's box and turn length are never applied.** `obj_joker_Step_0.gml`
+  lines 256-267 create the box at `view+320, view+170` *and* set
+  `global.turntimer = 240`, in one block that the dispatcher-replay does not
+  capture (Jevil selects with `jattack` in `Other_15`, but this block lives in
+  `Step`). Both symptoms — box measured at y=240 instead of 170, and 4 attacks
+  falling back to the studio's 90-frame floor — are that one block.
+  Canonical box position across all chapters is `view+320, view+170`.
+- **Spamton NEO's turn lengths are never applied**: all 8 attacks read 120
+  against expected 750/330/300/1200/430/260/90.
+- **Gerson's controllers sit 60px off in x** (`anchor_x` 260 vs 320), the same
+  box-origin problem in a different boss.
+- **Knight controller-side turn timers**: types 102/107/108 pin
+  `global.turntimer = 999999` inside the controller branch and read 240.
+
 ## Round 15: a spec oracle, and the trim gap measured
 
 The previous oracles are **saturated**, and that is the finding that shapes this

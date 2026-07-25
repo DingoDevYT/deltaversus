@@ -237,7 +237,12 @@
     sel.dispatchEvent(new Event('change'));
     document.getElementById('btnTranslate').click();
     // Art decodes asynchronously and a not-yet-decoded sprite draws as a
-    // placeholder; settle before measuring, or we measure loading.
+    // placeholder; settle before measuring, or we measure loading. FREEZE the
+    // live loop across that wait — otherwise it advances the game by a
+    // machine-speed-dependent number of frames and every measurement (most
+    // visibly global.turntimer, read ~11 short) is off by however fast the
+    // machine is.
+    const wasPaused = global.GML_STUDIO_SET_PAUSED ? global.GML_STUDIO_SET_PAUSED(true) : false;
     await new Promise(r => setTimeout(r, 350));
 
     /**
@@ -299,6 +304,7 @@
       }
     }
     census.active = false;
+    if (global.GML_STUDIO_SET_PAUSED) global.GML_STUDIO_SET_PAUSED(wasPaused);
 
     const ever = name => census.spawned.has(name) || seenLive.has(name);
 
