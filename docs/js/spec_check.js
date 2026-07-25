@@ -286,7 +286,18 @@
     // before the census is armed; `census.spawned` is the real record.
     const seenLive = new Set();
     let boxBest = null, at = 0;
-    const turntimerStart = Number(global.turntimer);
+    // The turn length an attack SETS, not the value at an arbitrary instant.
+    //
+    // Reading it once at launch is wrong for any attack whose duration is
+    // pinned inside the CONTROLLER's Step rather than the boss's ladder —
+    // Knight types 102/105/106/107/108 all do `global.turntimer = 999999`
+    // there, so at launch they still read the boss's 240 and only jump once the
+    // controller has stepped. Tracking the MAXIMUM across the sampled frames is
+    // correct for both shapes, because nothing lowers the clock except the
+    // per-frame countdown: `scr_turntimer` only ever raises
+    // (`if (global.turntimer < arg0) global.turntimer = arg0`) and the
+    // controller pins raise further.
+    let turntimerPeak = Number(global.turntimer) || 0;
 
     const drawsAt = {};
     for (const f of marks) {
@@ -298,6 +309,15 @@
       const byName = {};
       for (const i of alive) (byName[i.object_name] = byName[i.object_name] || []).push(i);
       snap[f] = byName;
+      // RAW max, with no "+f already counted down" compensation. That
+      // compensation assumed the clock had decremented every frame since zero,
+      // which is false for an attack that has ENDED — it sits at 0, and 0 + 180
+      // invents a peak of 180 that was never set. The launch sample already
+      // captures the boss-ladder value, and a controller that pins
+      // `global.turntimer = 999999` re-pins it every frame, so the raw maximum
+      // is right for both shapes.
+      const tt = Number(global.turntimer);
+      if (isFinite(tt) && tt > turntimerPeak) turntimerPeak = tt;
       const box = alive.find(i => i.object_name === 'obj_growtangle');
       if (box && (!boxBest || box.sprite_width > boxBest.w)) {
         boxBest = { x: box.x, y: box.y, w: box.sprite_width, h: box.sprite_height };
@@ -407,7 +427,7 @@
                 Math.round(boxBest.w) + 'x' + Math.round(boxBest.h);
           break;
         case 'turntimer': {
-          const v = turntimerStart;
+          const v = turntimerPeak;
           got = String(v);
           ok = true;
           if (a.eq != null) ok = near(v, a.eq, a.tol == null ? 2 : a.tol);

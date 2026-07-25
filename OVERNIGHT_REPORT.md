@@ -300,6 +300,26 @@ previous baseline measured a broken observation — do not compare against it.
 
 ---
 
+## A third checker bug, found the same way
+
+`turntimer` assertions sampled `global.turntimer` once, at launch. That is the
+wrong moment for any attack whose duration is pinned inside the CONTROLLER's
+Step rather than the boss's ladder — Knight types 102/105/106/107/108 all do
+`global.turntimer = 999999` there, so at launch they still read the boss's 240
+and only jump once the controller has stepped. Seven assertions were failing on
+an engine that was right; verified by hand that type 108 reads 999996 at frame
+3.
+
+Now tracks the MAXIMUM across sampled frames (compensating for the per-frame
+countdown), which is correct for both shapes because nothing raises the clock
+except `scr_turntimer` — and that only ever raises
+(`if (global.turntimer < arg0) global.turntimer = arg0`).
+
+That is three checker bugs found by the checker's own failures (spawns inferred
+from live instances, `maxCalls: 0` treated as a miss, and this). Worth stating
+plainly: **a spec suite's early failures are mostly about the suite.** The
+useful signal only starts once it stops finding itself.
+
 ## Two things I got wrong, corrected
 
 Recording these because both were *my* errors, and the second nearly became a
