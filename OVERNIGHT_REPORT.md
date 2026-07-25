@@ -275,6 +275,23 @@ previous baseline measured a broken observation — do not compare against it.
 
 ---
 
+## Two things I got wrong, corrected
+
+Recording these because both were *my* errors, and the second nearly became a
+wrong entry in this file:
+
+1. **"Jevil's box is at y=240, Gerson's is 60px off in x."** Wrong. Both boxes
+   were always at 320,170. Their PARENT `obj_battlesolid` had no instances, so
+   everything positioned relative to it fell back to the canvas centre. Finding
+   that turned a wrong bug report into the largest fix of the night.
+2. **"The parent-chain fix caused a performance regression."** Wrong. The
+   runtime suite has always run past 600s — the very first invocation this
+   session, before any change, timed out identically. I had also stacked three
+   copies of it concurrently, and its stdout is BUFFERED when redirected, so a
+   file that looked frozen at 178 bytes was simply un-flushed. The hunt still
+   paid for itself: it exposed a real O(depth²)-with-allocations walk in the
+   new code, now fixed.
+
 ## What still needs your eyes
 
 Nothing here is verifiable from source alone:
