@@ -142,15 +142,22 @@
         return orig.apply(this, arguments);
       };
     }
-    const Hh = global.GML_HELPERS && global.GML_HELPERS.for(global.activeGMLRuntime);
-    if (Hh && typeof Hh.drawSelf === 'function') {
-      const origSelf = Hh.drawSelf.bind(Hh);
-      // Patch on the shared helper namespace so it survives runtime swaps.
-      global.GML_HELPERS.$specDrawSelf = origSelf;
-      Hh.drawSelf = function (inst) {
-        if (census.active && inst) {
-          record(inst.sprite_index, inst.x, inst.y, inst.image_xscale,
-            inst.image_yscale, inst.image_angle, inst.image_alpha, 'drawSelf');
+    // The INSTANCE's own drawSelf, not the helper's. `draw_self()` in GML
+    // compiles to `window.draw_self`, whose body is
+    // `this.drawSelf(_activeCtx)` — an instance method. Hooking the helper
+    // caught neither that nor the automatic per-instance draw, so every object
+    // that renders with plain `draw_self()` was invisible to the census.
+    // obj_gerson_green_switch does exactly that, which is why 10 assertions
+    // reported `spr_gerson_swing` "not drawn" while the switch was alive,
+    // visible, at xscale 2 and holding that very sprite.
+    const IP = global.GMLInstance && global.GMLInstance.prototype;
+    if (IP && typeof IP.drawSelf === 'function' && !IP.__specHooked) {
+      IP.__specHooked = true;
+      const origSelf = IP.drawSelf;
+      IP.drawSelf = function () {
+        if (census.active) {
+          record(this.sprite_index, this.x, this.y, this.image_xscale,
+            this.image_yscale, this.image_angle, this.image_alpha, 'drawSelf');
         }
         return origSelf.apply(this, arguments);
       };
