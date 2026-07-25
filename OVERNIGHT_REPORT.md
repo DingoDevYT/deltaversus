@@ -187,17 +187,42 @@ Each is pinned to a line.
 | Semantics | **34/34** |
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
-| Spec suite | **646/768** assertions, 14 attacks fully clean |
+| Runtime | **154/154** clean, 0 errors, 0 hard failures |
+| Spec suite | **1627/1835** assertions, **49 of 141** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
 
 | after | passing | failing | clean attacks |
 |---|---|---|---|
-| first run | 567 | 201 | 1 |
+| first run (59 attacks) | 567 | 201 | 1 |
 | freeze the live loop | 619 | 149 | 8 |
 | pause stops drawing | 621 | 147 | 8 |
-| SNEO turn block + DIFF 0 | **646** | **122** | **14** |
+| SNEO turn block + DIFF 0 | 646 | 122 | 14 |
+| + Gerson's 82 green charts (141 attacks) | **1627** | **208** | **49** |
+
+Pass rate by assertion kind on the full suite:
+
+| kind | passing |
+|---|---|
+| `absent` | 122/122 |
+| `count` | 146/148 |
+| `sprite` | 111/112 |
+| `box` | 47/49 |
+| `spawns` | 375/394 |
+| **`draw`** (visual) | **163/184** |
+| `ivar` | 606/735 |
+| `turntimer` | 30/45 |
+| `pos` | 27/46 |
+
+**The specs survive adversarial re-reading.** A triage pass re-opened every
+cited line and returned **344 KEPT, 12 FIXED, 2 DROPPED** — so the large
+majority of remaining failures are *engine*-wrong, not spec-wrong. That is the
+list to work from.
+
+The `draw` oracle earned its place on its first run: it caught
+`spr_gerson_swing` never being drawn on frames the source says it should be, and
+`spr_spearblocker` rendering at yscale 0.67 where the chart says 0.6.
 
 Some of the remaining 122 are *specs* that are wrong, not engine faults — the
 `scr_turntimer` max-clamp case above is a proven example. A triage pass

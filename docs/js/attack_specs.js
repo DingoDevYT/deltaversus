@@ -7,7 +7,7 @@
  * file and line it came from, so a failure can be argued with rather than
  * guessed at. Nothing here is a judgement about how an attack should feel.
  *
- * 141 attacks, 1835 assertions.
+ * 142 attacks, 1846 assertions.
  */
 window.ATTACK_SPECS = [
  {
@@ -19,9 +19,8 @@ window.ATTACK_SPECS = [
     "obj": "obj_bullet_knight_crescentGenerator",
     "atFrame": 1,
     "x": 480,
-    "y": 160,
     "tol": 2,
-    "why": "(camerax()+480+80)-80 = 480, cameray()+160 = 160",
+    "why": "(camerax()+480+80)-80 = 480; x is never written again, y is omitted because scr_lerpvar drives y to a random ypos[] slot",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2244"
    },
    {
@@ -47,7 +46,7 @@ window.ATTACK_SPECS = [
     "atFrame": 4,
     "name": "shootrate",
     "eq": 15,
-    "why": "Create sets 30, the type==2 init block overwrites it with 15",
+    "why": "Create sets 30, the type==2 init block overwrites it with 15; the damagereduction==0.04 override cannot fire because obj_knight_enemy's Step sets damagereduction=0.2 on its first frame",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:29"
    },
    {
@@ -65,7 +64,7 @@ window.ATTACK_SPECS = [
     "atFrame": 4,
     "name": "moverate",
     "eq": 10,
-    "why": "moverate = shootrate - 5 = 15 - 5",
+    "why": "moverate = shootrate - 5 = 15 - 5, computed before any damagereduction override",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:30"
    },
    {
@@ -83,7 +82,7 @@ window.ATTACK_SPECS = [
     "atFrame": 4,
     "name": "curpos",
     "eq": 2,
-    "why": "curpos = round(yposcount/2)-1 = round(6/2)-1 = 2 once the ypos table is built; first shot that mutates it is ~frame 16",
+    "why": "curpos = round(yposcount/2)-1 = round(6/2)-1 = 2 once the ypos table is built on step 2; first shot that mutates it is step 16",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:101"
    },
    {
@@ -91,7 +90,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_crescentslash_slashinganimation",
     "byFrame": 16,
     "min": 1,
-    "why": "createslash fires at shoottimer == shootrate-4 == 11 and spawns the slash anim at (x+12, y+18)",
+    "why": "createslash fires at shoottimer == shootrate-4 == 11 (step 12) and spawns the slash anim at (x+12, y+18)",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:322"
    },
    {
@@ -99,7 +98,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_bullet_knightcrescent",
     "byFrame": 20,
     "min": 2,
-    "why": "each volley creates two crescents at (x, y+5) and (x, y-5)",
+    "why": "each volley creates two crescents at (x, y+5) and (x, y-5); first volley at shoottimer 15 == step 16",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:138"
    },
    {
@@ -108,7 +107,7 @@ window.ATTACK_SPECS = [
     "atFrame": 22,
     "min": 2,
     "max": 2,
-    "why": "exactly one pair per volley and shootrate is 15, so the second pair does not exist until ~frame 31",
+    "why": "exactly one pair per volley and shootrate is 15, so the second pair does not exist until step 31",
     "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:135"
    },
    {
@@ -118,14 +117,14 @@ window.ATTACK_SPECS = [
     "w": 38,
     "h": 150,
     "tol": 2,
-    "why": "myattackchoice 0 puts obj_growtangle at (320-152, 170) with maxxscale 0.5 and default maxyscale 2 on the 75x75 spr_battlebg sprite",
+    "why": "myattackchoice 0 puts obj_growtangle at (320-152, 170) with maxxscale 0.5 and default maxyscale 2 on the 75x75 spr_battlebg_0 sprite",
     "src": "gml_Object_obj_knight_enemy_Step_0.gml:351"
    },
    {
     "kind": "turntimer",
     "eq": 300,
     "tol": 2,
-    "why": "myattackchoice == 0 && difficulty == 0 -> scr_turntimer(300)",
+    "why": "myattackchoice == 0 -> scr_turntimer(300) at either difficulty 0 or 1",
     "src": "gml_Object_obj_knight_enemy_Step_0.gml:580"
    }
   ]
@@ -174,7 +173,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "endtimer",
     "eq": 120,
-    "why": "controller endtimer stays 120 at difficulty 0 (the +30/+60 needs difficulty >= 2) and is pushed onto the cone",
+    "why": "controller endtimer stays 120 at difficulty 0 (the +30/+60 needs difficulty >= 2) and is pushed onto the cone, whose Create also says 120",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1964"
    },
    {
@@ -184,7 +183,7 @@ window.ATTACK_SPECS = [
     "x": 435,
     "y": 114,
     "tol": 3,
-    "why": "tween reaches 1 after 20 frames (0.05/frame) pinning the cone at obj_growtangle.x+115 = 435, obj_growtangle.y-56 = 114, then it stops updating",
+    "why": "tween reaches 1 after 20 frames (0.05/frame) pinning the cone at obj_growtangle.x+115 = 435, obj_growtangle.y-56 = 114, then it stops updating; the x += 0.25 drift needs angle >= 60, ~frame 71",
     "src": "gml_Object_obj_knight_pointing_cone_Step_0.gml:39"
    },
    {
@@ -201,7 +200,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_pointing_star",
     "byFrame": 50,
     "min": 1,
-    "why": "first star fires once btimer >= 45 (btimer zeroed at init on frame 1)",
+    "why": "first star fires once btimer >= 45 (btimer zeroed at init on step 1, so step 46)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1986"
    },
    {
@@ -209,7 +208,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_pointing_star",
     "byFrame": 75,
     "min": 5,
-    "why": "after made != 0 the cadence drops to one star every 4 frames",
+    "why": "after made != 0 the cadence drops to one star every 4 frames (steps 50, 54, 58, 62, ...)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1981"
    },
    {
@@ -219,21 +218,21 @@ window.ATTACK_SPECS = [
     "name": "speed",
     "min": 5,
     "max": 7.5,
-    "why": "first star uses size = random_range(0.5,1) so speed = lerp(10,5,size) is bounded by [5,7.5]",
+    "why": "first star uses size = random_range(0.5,1) so speed = lerp(10,5,size) is bounded by [5,7.5]; con is 0 so nothing damps it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2025"
    },
    {
     "kind": "sprite",
     "name": "spr_knight_bullet_star_easy",
     "byFrame": 55,
-    "why": "star swaps to the easy sprite because the controller pushes difficulty 0 onto it",
+    "why": "star swaps to the easy sprite on its first step because the controller pushes difficulty 0 onto it",
     "src": "gml_Object_obj_knight_pointing_star_Step_0.gml:10"
    },
    {
     "kind": "absent",
     "obj": "obj_knight_pointing_starchild",
     "byFrame": 100,
-    "why": "stars only burst into 6 starchildren after the cone sets con = 1, which needs global.turntimer <= endtimer (120) - far past frame 100",
+    "why": "stars only burst into 6 starchildren after the cone sets con = 1, which needs global.turntimer <= endtimer (120) - far past frame 100 with a 270-frame turn",
     "src": "gml_Object_obj_knight_pointing_star_Step_0.gml:77"
    },
    {
@@ -242,7 +241,7 @@ window.ATTACK_SPECS = [
     "w": 168,
     "h": 132,
     "tol": 2,
-    "why": "myattackchoice 1 sets obj_growtangle maxxscale 2.25 / maxyscale 1.75 on the 75x75 battlebg sprite at y = 170",
+    "why": "myattackchoice 1 sets obj_growtangle maxxscale 2.25 / maxyscale 1.75 on the 75x75 battlebg sprite at y = 170; x is omitted because the cone drags obj_growtangle.x left once con >= 2",
     "src": "gml_Object_obj_knight_enemy_Step_0.gml:371"
    },
    {
@@ -282,7 +281,7 @@ window.ATTACK_SPECS = [
     "name": "local_turntimer",
     "eq": 327,
     "tol": 3,
-    "why": "Create sets local_turntimer = 330 and Step decrements it once per frame",
+    "why": "Create sets local_turntimer = 330 and Step decrements it once per frame; the object has no Other_10 so event_user(0) is a no-op",
     "src": "gml_Object_obj_roaringknight_boxsplitter_attack_Create_0.gml:28"
    },
    {
@@ -300,7 +299,7 @@ window.ATTACK_SPECS = [
     "atFrame": 6,
     "name": "slash_count",
     "eq": 1,
-    "why": "Create starts timer at 200 so the first slash fires on the object's very first step",
+    "why": "Create starts timer at 200 so the first slash fires on the object's very first step and the next needs 47 more frames",
     "src": "gml_Object_obj_roaringknight_boxsplitter_attack_Create_0.gml:7"
    },
    {
@@ -327,7 +326,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_split_growtangle",
     "byFrame": 40,
     "min": 1,
-    "why": "at splitslash timer == 30 the box splitter box is created at (obj_growtangle.x, obj_growtangle.y)",
+    "why": "at splitslash timer == 30 the box splitter box is created at (obj_growtangle.x, obj_growtangle.y) regardless of the random vertical flag",
     "src": "gml_Object_obj_roaringknight_splitslash_Step_0.gml:83"
    },
    {
@@ -336,14 +335,14 @@ window.ATTACK_SPECS = [
     "atFrame": 45,
     "name": "image_xscale",
     "eq": 2,
-    "why": "split box copies obj_growtangle.image_xscale, which is the default maxxscale 2 for this attack",
+    "why": "split box copies obj_growtangle.image_xscale, which is the default maxxscale 2 for this attack, and never rewrites it",
     "src": "gml_Object_obj_knight_split_growtangle_Create_0.gml:2"
    },
    {
     "kind": "sprite",
     "name": "spr_rk_quickslash",
     "byFrame": 42,
-    "why": "at timer == 30 the telegraph swaps to the actual slash sprite and animates",
+    "why": "at timer == 30 the telegraph swaps to the actual slash sprite and Draw switches to draw_self()",
     "src": "gml_Object_obj_roaringknight_splitslash_Step_0.gml:105"
    },
    {
@@ -433,14 +432,14 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_diamondswordbullet_ext",
     "byFrame": 22,
     "min": 5,
-    "why": "real volleys every 8 frames plus decorative fake walls every 4 frames from fake_timer 12",
+    "why": "real volleys every 8 frames (steps 12, 20) plus decorative fake walls every 4 frames from fake_timer 12 (steps 16, 20)",
     "src": "gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0.gml:376"
    },
    {
     "kind": "sprite",
     "name": "spr_roaringknight_point_ol",
     "byFrame": 12,
-    "why": "at introtimer == 5 the slasher switches to the pointing sprite",
+    "why": "at introtimer == 5 the slasher switches to the pointing sprite, which Draw renders every frame",
     "src": "gml_Object_obj_knight_tunnel_slasher_2_revised_Step_0.gml:208"
    },
    {
@@ -496,7 +495,7 @@ window.ATTACK_SPECS = [
     "w": 262,
     "h": 262,
     "tol": 3,
-    "why": "growtangle spawned at camerax()+320, cameray()+170 and scaled 3.5; spr_battlebg_0 is 75x75 so 75*3.5 = 262.5 (Step init rounds maxscale to 131/37.5 -> 262)",
+    "why": "growtangle spawned at camerax()+320, cameray()+170 and scaled 3.5 by both the boss (maxxscale/maxyscale) and branch 103; spr_battlebg_0 is 75x75 so 75*3.5 = 262.5",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2105"
    },
    {
@@ -512,7 +511,7 @@ window.ATTACK_SPECS = [
     "name": "slash_angle",
     "min": 45,
     "max": 135,
-    "why": "Create sets slash_angle = 90 + irandom_range(-45,45), so it can never leave [45,135]",
+    "why": "Create sets slash_angle = 90 + irandom_range(-45,45), so it can never leave [45,135]; the timer-45 rewrite is far later",
     "src": "gml_Object_obj_knight_stream_Create_0.gml:3"
    },
    {
@@ -521,7 +520,7 @@ window.ATTACK_SPECS = [
     "byFrame": 30,
     "min": 2,
     "max": 2,
-    "why": "at manager timer==20 exactly two obj_bullet_knight_stream are fired (slash_angle and 180-slash_angle)",
+    "why": "at manager timer==20 exactly two obj_bullet_knight_stream are fired (slash_angle and 180-slash_angle); the next pair waits for timer 45+20",
     "src": "gml_Object_obj_knight_stream_Step_0.gml:14"
    },
    {
@@ -540,7 +539,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 170,
     "tol": 40,
-    "why": "fired at obj_growtangle.x+xoff / obj_growtangle.y+yoff with growtangle at (320,170) and offsets in irandom_range(-40,40); speed is 0 so it never moves",
+    "why": "fired at obj_growtangle.x+xoff / obj_growtangle.y+yoff with growtangle at (320,170) and exactly one offset drawn from irandom_range(-40,40); speed is 0 and nothing writes x/y again",
     "src": "gml_Object_obj_knight_stream_Step_0.gml:14"
    },
    {
@@ -556,9 +555,9 @@ window.ATTACK_SPECS = [
     "kind": "spawns",
     "obj": "obj_regularbullet",
     "byFrame": 60,
-    "min": 24,
+    "min": 36,
     "max": 36,
-    "why": "each obj_bullet_knight_stream fires 3+3 obj_regularbullet at its timer 16, 24 and 32; two stream bullets give 12 per volley",
+    "why": "each obj_bullet_knight_stream fires 3+3 obj_regularbullet on its timer 16, 24 and 32 (timer%8==0 while timer<40); two stream bullets x 3 volleys x 6 = 36",
     "src": "gml_Object_obj_bullet_knight_stream_Step_0.gml:22"
    },
    {
@@ -596,7 +595,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "difficulty",
     "eq": 0,
-    "why": "Create sets difficulty = 2 but the controller overwrites it with its own difficulty, which the dispatcher copies from the boss (0)",
+    "why": "Create sets difficulty = 2 but the controller overwrites it with its own difficulty, which the dispatcher copies from the boss (0); scr_bullet_inherit never touches difficulty",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2128"
    },
    {
@@ -642,7 +641,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "rotation",
     "eq": 16,
-    "why": "Create sets rotation = rotation_base = 16 before the aim state begins",
+    "why": "Create sets rotation = rotation_base = 16 and the intro state (first 17 steps) never touches it",
     "src": "gml_Object_obj_knight_rotating_slash_Create_0.gml:7"
    },
    {
@@ -651,14 +650,14 @@ window.ATTACK_SPECS = [
     "byFrame": 30,
     "min": 1,
     "max": 1,
-    "why": "the intro state lasts 17 frames, then aim timer==1 creates one obj_knight_circle; the next aim entry is ~40 frames later",
+    "why": "the intro state lasts 17 frames, then aim timer==1 creates one obj_knight_circle; the next aim entry is step 60",
     "src": "gml_Object_obj_knight_rotating_slash_Step_0.gml:255"
    },
    {
     "kind": "sprite",
     "name": "spr_rk_quickslash_marker",
     "byFrame": 30,
-    "why": "Draw renders spr_rk_quickslash_marker once state==\"aim\" and timer is nonzero",
+    "why": "Draw renders spr_rk_quickslash_marker once state==\"aim\" and timer is nonzero (step 17)",
     "src": "gml_Object_obj_knight_rotating_slash_Draw_0.gml:22"
    },
    {
@@ -674,7 +673,7 @@ window.ATTACK_SPECS = [
     "byFrame": 60,
     "min": 1,
     "max": 1,
-    "why": "aim lasts slash_base+6+slash_offset = 30 frames, then the slash state emits one obj_roaringknight_slash per slash_list entry and slash_number is 1",
+    "why": "aim lasts slash_base+6+slash_offset = 30 frames (step 46), then the slash state emits one obj_roaringknight_slash per slash_list entry and slash_number is 1; the second slash cannot land before step 82",
     "src": "gml_Object_obj_knight_rotating_slash_Step_0.gml:308"
    },
    {
@@ -683,7 +682,7 @@ window.ATTACK_SPECS = [
     "atFrame": 70,
     "name": "slash_number",
     "eq": 2,
-    "why": "after the first cooldown slash_counter becomes 1 and slash_number = slash_array[1] = 2",
+    "why": "after the first cooldown (step 59) slash_counter becomes 1 and slash_number = slash_array[1] = 2",
     "src": "gml_Object_obj_knight_rotating_slash_Step_0.gml:436"
    },
    {
@@ -703,6 +702,13 @@ window.ATTACK_SPECS = [
     "eq": 17,
     "why": "first cooldown runs slash_base = scr_approach(18, 15, 1) = 17",
     "src": "gml_Object_obj_knight_rotating_slash_Step_0.gml:438"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch 104 pins global.turntimer = 999999 before spawning the slasher, so its own local_turntimer drives the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2121"
    }
   ]
  },
@@ -725,8 +731,14 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 3,
-    "why": "growtangle is spawned at camerax()+320, cameray()+170 and branch 106 pins image_xscale/yscale = 2; spr_battlebg_0 is 75x75 so 75*2 = 150",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2168"
+    "why": "myattackchoice 6 takes the default growtangle at camerax()+320, cameray()+170; maxxscale/maxyscale stay at Create's 2 and branch 106 also pins image_xscale/yscale = 2, over the 75x75 spr_battlebg_0 = 150x150",
+    "src": "gml_Object_obj_knight_enemy_Step_0.gml:363"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "why": "the type==106 branch pins global.turntimer = 999999; the turn ends via obj_knight_weird_bottom_manager's Destroy instead",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2170"
    },
    {
     "kind": "spawns",
@@ -753,7 +765,7 @@ window.ATTACK_SPECS = [
     "name": "center_y",
     "eq": 288,
     "why": "Step recomputes center_y = scr_get_box(3) + 43 every frame; once the box has finished growing (maxtimer 15) at scale 2 that is (170 + 75*2*0.5) + 43 = 288",
-    "src": "gml_Object_obj_knight_weird_bottom_manager_Create_0.gml:18"
+    "src": "gml_Object_obj_knight_weird_bottom_manager_Step_0.gml:8"
    },
    {
     "kind": "ivar",
@@ -789,7 +801,7 @@ window.ATTACK_SPECS = [
     "byFrame": 30,
     "min": 5,
     "max": 5,
-    "why": "alarm[0] = 16 runs Alarm_0, whose repeat(6) creates a circle only while circle_val < 5",
+    "why": "alarm[0] = 16 runs Alarm_0, whose repeat(6) creates a circle only while circle_val < 5, so exactly five are ever made",
     "src": "gml_Object_obj_knight_weird_bottom_manager_Alarm_0.gml:8"
    },
    {
@@ -806,7 +818,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_knight_weird_circle_bullet",
     "byFrame": 70,
     "min": 1,
-    "why": "the manager's Alarm_1 gives circle_list[0] alarm[1] = 18*amount, and that circle's Alarm_1 fires one obj_knight_weird_circle_bullet",
+    "why": "the manager's Alarm_1 gives circle_list[0] alarm[1] = (18*amount) - (4*max(amount-1,0)) = 18 with amount 1, and that circle's Alarm_1 fires one obj_knight_weird_circle_bullet",
     "src": "gml_Object_obj_knight_weird_circle_Alarm_1.gml:6"
    },
    {
@@ -845,6 +857,12 @@ window.ATTACK_SPECS = [
     "max": 1,
     "why": "branch 105 creates one obj_knight_combinations at (0,0) then calls event_user(0) on it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2145"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "why": "the type==105 branch pins global.turntimer = 999999 after the enemy's scr_turntimer(270), and scr_turntimer only raises so it cannot lower it back",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2144"
    },
    {
     "kind": "count",
@@ -914,7 +932,7 @@ window.ATTACK_SPECS = [
     "byFrame": 40,
     "min": 6,
     "max": 8,
-    "why": "one sword per countdown expiry (countdown = 5 - irandom(1)) while local_turntimer >= turn_time (40), starting from local_turntimer 70",
+    "why": "one sword per countdown expiry (countdown = 5 - irandom(1)) while local_turntimer >= turn_time (40), starting from local_turntimer 70: first at step 2, last possible at step 30",
     "src": "gml_Object_obj_knight_swordfall_Step_0.gml:60"
    },
    {
@@ -948,7 +966,7 @@ window.ATTACK_SPECS = [
     "atFrame": 50,
     "name": "slash_number",
     "eq": 3,
-    "why": "the hand-off never assigns difficulty, so the follow-up keeps Create's difficulty = 2 and event_user(0) sets slash_number = 3",
+    "why": "scr_bullet_inherit does not copy difficulty, so the follow-up keeps Create's difficulty = 2 and event_user(0) sets slash_number = 3; it only becomes slash_array[1] after the first cooldown ends, 40 frames after creation",
     "src": "gml_Object_obj_knight_rotating_slash_Other_10.gml:16"
    }
   ]
@@ -1037,7 +1055,7 @@ window.ATTACK_SPECS = [
     "byFrame": 20,
     "min": 1,
     "max": 1,
-    "why": "alarm[5]=4 fires at ~f4 and sets alarm[0]=8, whose handler creates the single big opening sword at ~f12; the countdown-driven swords cannot start before countdown 45 elapses",
+    "why": "alarm[5]=4 fires at ~f4 and sets alarm[0]=8, whose handler creates the single big opening sword at ~f12; the countdown-driven swords cannot start before countdown 45 elapses (Step exits early while alarm[0] runs, pushing it to ~f52)",
     "src": "gml_Object_obj_knight_swordfall_Alarm_0.gml:1"
    },
    {
@@ -1045,7 +1063,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_fallingsword",
     "byFrame": 70,
     "min": 2,
-    "why": "Step's countdown block spawns a second sword once countdown hits 0 (~f53) since local_turntimer is still >= turn_time (160)",
+    "why": "Step's countdown block spawns a second sword once countdown hits 0 (~f52) since local_turntimer is still >= turn_time (160)",
     "src": "gml_Object_obj_knight_swordfall_Step_0.gml:60"
    },
    {
@@ -1054,7 +1072,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "name": "damage",
     "eq": 206,
-    "why": "obj_fallingsword Create pins damage=206",
+    "why": "obj_fallingsword Create pins damage=206 and Alarm_0's with-block never overrides it",
     "src": "gml_Object_obj_fallingsword_Create_0.gml:4"
    },
    {
@@ -1095,7 +1113,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 0,
     "tol": 2,
-    "why": "obj_growtangle.x = camerax()+320 = 320 for myattackchoice 11, and cameray() = 0",
+    "why": "obj_growtangle.x = camerax()+320 = 320 for myattackchoice 11, and cameray() = 0; the manager never moves on either axis",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2913"
    },
    {
@@ -1140,7 +1158,7 @@ window.ATTACK_SPECS = [
     "atFrame": 15,
     "name": "rate",
     "eq": 28,
-    "why": "after the first sword (timer starts at rate-5 = 27, fires at f5) Step does rate -= ratedecay: 32-4 = 28",
+    "why": "after the first sword (timer starts at rate-5 = 27, fires at f5) Step does rate -= ratedecay: 32-4 = 28; the next fire is 28 frames later",
     "src": "gml_Object_obj_tracking_swords_manager_Step_0.gml:71"
    },
    {
@@ -1205,7 +1223,7 @@ window.ATTACK_SPECS = [
    {
     "kind": "turntimer",
     "eq": 292,
-    "why": "myattackchoice 11 with difficulty 0 calls scr_turntimer(292)",
+    "why": "myattackchoice 11 is only reached at phase 1 phaseturn 2, where obj_knight_enemy.difficulty = 0, so scr_turntimer(292)",
     "src": "gml_Object_obj_knight_enemy_Step_0.gml:584"
    }
   ]
@@ -1239,7 +1257,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "bulletcount",
     "eq": 24,
-    "why": "Create sets bulletcount=24, the number of bullets per wave",
+    "why": "Create sets bulletcount=24, the number of bullets per wave; branch 152 never calls event_user(0) so no init can overwrite it",
     "src": "gml_Object_obj_diagonal_bullet_manager_Create_0.gml:17"
    },
    {
@@ -1266,7 +1284,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "verticalspeed",
     "eq": 6,
-    "why": "Create sets verticalspeed=6; the wave uses choose(6, -6)",
+    "why": "Create sets verticalspeed=6 and nothing reassigns it; the wave's choose(verticalspeed, -verticalspeed) writes only the local _vspeed",
     "src": "gml_Object_obj_diagonal_bullet_manager_Create_0.gml:14"
    },
    {
@@ -1293,7 +1311,7 @@ window.ATTACK_SPECS = [
     "byFrame": 50,
     "min": 48,
     "max": 48,
-    "why": "second wave fires 40 frames after the first (rate decayed 44 -> 40), totalling 2 x 24",
+    "why": "second wave fires 40 frames after the first (rate decayed 44 -> 40), totalling 2 x 24; the third is 36 frames later at ~f76",
     "src": "gml_Object_obj_diagonal_bullet_manager_Step_0.gml:3"
    },
    {
@@ -1302,7 +1320,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "hspeed",
     "eq": -5,
-    "why": "each spawned bullet gets inst.hspeed = horizontalspeed = -5",
+    "why": "each spawned bullet gets inst.hspeed = horizontalspeed = -5 and its Step never changes it",
     "src": "gml_Object_obj_diagonal_bullet_manager_Step_0.gml:11"
    },
    {
@@ -1349,7 +1367,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "image_xscale",
     "eq": 2,
-    "why": "Create sets image_xscale=2",
+    "why": "Create sets image_xscale=2 and nothing (Step, Draw, scr_bullet_inherit) writes it again",
     "src": "gml_Object_obj_knight_tunnel_slasher_Create_0.gml:3"
    },
    {
@@ -1358,7 +1376,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "image_yscale",
     "eq": 2,
-    "why": "Create sets image_yscale=2",
+    "why": "Create sets image_yscale=2 and nothing writes it again",
     "src": "gml_Object_obj_knight_tunnel_slasher_Create_0.gml:4"
    },
    {
@@ -1395,7 +1413,7 @@ window.ATTACK_SPECS = [
     "byFrame": 60,
     "min": 11,
     "max": 11,
-    "why": "one slash on every even timer below 24, i.e. timer 2,4,...,22 = 11 slashes total",
+    "why": "one slash on every even timer below 24, i.e. timer 2,4,...,22 = 11 slashes total (last at ~f45)",
     "src": "gml_Object_obj_knight_tunnel_slasher_Step_0.gml:41"
    },
    {
@@ -1404,7 +1422,7 @@ window.ATTACK_SPECS = [
     "byFrame": 60,
     "min": 11,
     "max": 11,
-    "why": "each obj_roaringknight_slash fires exactly one obj_bullet_knight_tunnelslash via scr_fire_bullet",
+    "why": "each obj_roaringknight_slash fires exactly one obj_bullet_knight_tunnelslash via scr_fire_bullet; choose() only picks the direction, never the count",
     "src": "gml_Object_obj_knight_tunnel_slasher_Step_0.gml:51"
    },
    {
@@ -1429,14 +1447,14 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_roaringknight_slash_tunnel",
     "byFrame": 40,
-    "why": "scr_fire_bullet is passed spr_roaringknight_slash_tunnel as the tunnelslash bullet's sprite",
+    "why": "scr_fire_bullet is passed spr_roaringknight_slash_tunnel as the tunnelslash bullet's sprite, and the bullet's Draw draws sprite_index unconditionally",
     "src": "gml_Object_obj_knight_tunnel_slasher_Step_0.gml:51"
    },
    {
     "kind": "sprite",
     "name": "spr_roaringknight_point_ol",
     "byFrame": 60,
-    "why": "at slash timer 24 (~f47) the slasher switches sprite_index to spr_roaringknight_point_ol, which Draw renders",
+    "why": "at slash timer 24 (~f47) the slasher switches sprite_index to spr_roaringknight_point_ol, which its Draw renders",
     "src": "gml_Object_obj_knight_tunnel_slasher_Step_0.gml:64"
    },
    {
@@ -1445,7 +1463,7 @@ window.ATTACK_SPECS = [
     "w": 187.5,
     "h": 150,
     "tol": 4,
-    "why": "branch widens obj_growtangle to image_xscale 2.5 over the 75px spr_battlebg_0 (187.5 wide) while yscale stays 2 (150 tall); y stays the default camera+170 apart from the slash shake of +-2",
+    "why": "myattackchoice 20 falls to the default growtangle site (camerax()+320, cameray()+170) with maxxscale/maxyscale 2; the branch then widens image_xscale to 2.5 over the 75px spr_battlebg_0 = 187.5 wide while yscale stays 2 = 150 tall. x is omitted: the branch moves the box to 250 but obj_roaringknight_slash's End Step snaps it back to xstart+choose(-2..2) from ~f25 on",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2074"
    },
    {
@@ -1473,11 +1491,11 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_sword_tunnel_manager",
     "atFrame": 1,
-    "x": 320,
+    "x": 300,
     "y": 0,
     "tol": 1,
-    "why": "instance_create(obj_growtangle.x, cameray()); growtangle is made at camerax()+320 (gml_Object_obj_baseenemy_Step_0.gml:46) so x=320, cameray()=0",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2940"
+    "why": "instance_create(obj_growtangle.x, cameray()) (Step_0.gml:2940); obj_knight_enemy has obj_monsterparent as its parent and never calls event_inherited, so obj_baseenemy's growtangle site never runs — the Knight's own Step makes the box at camerax()+300 for myattackchoice 13 (the only path that sets type 153). cameray()=0 and the manager never writes x/y",
+    "src": "gml_Object_obj_knight_enemy_Step_0.gml:359"
    },
    {
     "kind": "spawns",
@@ -1492,7 +1510,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_roaringknight_point_ol",
     "byFrame": 5,
-    "why": "swordtunnelanim Create pins sprite_index and its Draw is draw_self()",
+    "why": "swordtunnelanim Create pins sprite_index after scr_darksize() and its Draw is draw_self()",
     "src": "gml_Object_obj_knight_swordtunnelanim_Create_0.gml:6"
    },
    {
@@ -1509,9 +1527,9 @@ window.ATTACK_SPECS = [
     "obj": "obj_sword_tunnel_manager",
     "atFrame": 2,
     "name": "swordy",
-    "eq": 170,
-    "why": "swordy = obj_growtangle.y = cameray() + 170",
-    "src": "gml_Object_obj_sword_tunnel_manager_Create_0.gml:10"
+    "eq": 190,
+    "why": "swordy = obj_growtangle.y (Create_0.gml:10); for myattackchoice 13 the Knight's own Step creates the growtangle at cameray()+190, not the usual +170. No volley has fired by f2 so swordy is still its initial value",
+    "src": "gml_Object_obj_knight_enemy_Step_0.gml:359"
    },
    {
     "kind": "ivar",
@@ -1519,7 +1537,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "finishtimermax",
     "eq": 230,
-    "why": "230 unless obj_knight_enemy.difficulty == 3; dispatcher passes the boss's non-literal difficulty so it is 0",
+    "why": "230 unless obj_knight_enemy.difficulty == 3; the dispatcher passes the boss's non-literal difficulty so it is 0",
     "src": "gml_Object_obj_sword_tunnel_manager_Create_0.gml:3"
    },
    {
@@ -1563,7 +1581,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sword_tunnel_sword",
     "atFrame": 25,
     "max": 0,
-    "why": "timer starts at -40+irandom(10) so it cannot reach rate=4 before ~35 frames; no sword may exist at frame 25",
+    "why": "timer starts at -40+irandom(10) (worst case -31) so it cannot reach rate=4 before manager step 35; no sword may exist at frame 25",
     "src": "gml_Object_obj_sword_tunnel_manager_Create_0.gml:1"
    },
    {
@@ -1571,7 +1589,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sword_tunnel_sword",
     "byFrame": 55,
     "min": 2,
-    "why": "tobymode 0 fires a pair (angle 270 above, angle 90 below) once timer reaches rate; latest possible first volley is ~frame 45",
+    "why": "tobymode 0 fires a pair (angle 270 above, angle 90 below) once timer reaches rate; latest possible first volley is manager step 44",
     "src": "gml_Object_obj_sword_tunnel_manager_Step_0.gml:24"
    },
    {
@@ -1580,7 +1598,7 @@ window.ATTACK_SPECS = [
     "byFrame": 90,
     "min": 18,
     "max": 30,
-    "why": "2 swords every rate=4 frames after the first volley (frames 35-45), giving 12-14 volleys by frame 90",
+    "why": "2 swords every rate=4 frames after a first volley at step 35-44, giving 12-14 volleys (24-28 swords) by frame 90; con never flips before finishtimermax=230",
     "src": "gml_Object_obj_sword_tunnel_manager_Step_0.gml:27"
    },
    {
@@ -1589,7 +1607,7 @@ window.ATTACK_SPECS = [
     "atFrame": 60,
     "name": "damage",
     "eq": 62,
-    "why": "manager passes sword.damage = damage, and the dispatcher pins dc.damage = 62 (gml_Object_obj_knight_enemy_Step_0.gml:515)",
+    "why": "manager passes sword.damage = damage, and the dispatcher pins dc.damage = 62 (gml_Object_obj_knight_enemy_Step_0.gml:515); the sword's own damage = 160 only lands at con==1, i.e. after finishtimer 230",
     "src": "gml_Object_obj_sword_tunnel_manager_Step_0.gml:26"
    }
   ]
@@ -1614,7 +1632,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 0,
     "tol": 1,
-    "why": "instance_create(obj_growtangle.x, cameray()); growtangle sits at camerax()+320 and cameray() is 0; the manager never moves",
+    "why": "instance_create(obj_growtangle.x, cameray()); myattackchoice 15 takes the empty branch and falls to the default growtangle site camerax()+320 (gml_Object_obj_knight_enemy_Step_0.gml:363), cameray() is 0, and the manager never writes x/y",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2956"
    },
    {
@@ -1623,7 +1641,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "variant",
     "eq": 3,
-    "why": "Create pins variant = 3 before the init blocks, and the dispatcher's dc.difficulty = 3 literal keeps it 3",
+    "why": "Create pins variant = 3 before the init blocks, and the dispatcher's dc.difficulty = 3 literal (gml_Object_obj_knight_enemy_Step_0.gml:532) keeps it 3",
     "src": "gml_Object_obj_sword_vortex_manager_Create_0.gml:4"
    },
    {
@@ -1676,7 +1694,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sword_vortex",
     "byFrame": 12,
     "min": 1,
-    "why": "timer starts at rate-5 = 6 and fires at timer == rate == 11, so the first sword appears ~5 manager steps in",
+    "why": "timer starts at rate-5 = 6 and fires at timer == rate == 11, so the first sword appears on the manager's 5th step",
     "src": "gml_Object_obj_sword_vortex_manager_Create_0.gml:108"
    },
    {
@@ -1685,7 +1703,7 @@ window.ATTACK_SPECS = [
     "byFrame": 60,
     "min": 6,
     "max": 6,
-    "why": "maxswords=6 with multiswordmax=2 pairs at timer 11 then 1: exactly 6 swords ever, all by manager step 30",
+    "why": "maxswords=6 with multiswordmax=2 pairs at manager steps 5/6, 17/18, 29/30; afterwards timer==rate is blocked by swordcount<maxswords and timer never re-equals rate, so exactly 6 swords ever",
     "src": "gml_Object_obj_sword_vortex_manager_Step_0.gml:4"
    },
    {
@@ -1703,7 +1721,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "name": "damage",
     "eq": 206,
-    "why": "inst.damage = damage and the dispatcher pins dc.damage = 206 (gml_Object_obj_knight_enemy_Step_0.gml:533)",
+    "why": "inst.damage = damage overwrites the sword's Create default of 10, and the dispatcher pins dc.damage = 206 (gml_Object_obj_knight_enemy_Step_0.gml:533)",
     "src": "gml_Object_obj_sword_vortex_manager_Step_0.gml:14"
    },
    {
@@ -1713,14 +1731,14 @@ window.ATTACK_SPECS = [
     "name": "swordcirclecenterx",
     "min": 259,
     "max": 381,
-    "why": "centre lerps between obj_growtangle.x (320) and (320-60)+irandom(120), so it can never leave 260..380",
+    "why": "centre lerps between its current value and (obj_growtangle.x - 60) + irandom(120); with the box at 320 every endpoint lies in 260..380, so the lerp can never leave that band",
     "src": "gml_Object_obj_sword_vortex_manager_Step_0.gml:55"
    },
    {
     "kind": "sprite",
     "name": "spr_roaringknight_sword_ol",
     "byFrame": 20,
-    "why": "obj_sword_vortex draws itself and its object sprite is spr_roaringknight_sword_ol",
+    "why": "obj_sword_vortex's Draw is draw_self() and its object sprite is spr_roaringknight_sword_ol",
     "src": "gml_Object_obj_sword_vortex_Draw_0.gml:1"
    }
   ]
@@ -1750,7 +1768,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "fake_x",
     "eq": 320,
-    "why": "fake_x = camerawidth() * 0.5 = 640 * 0.5",
+    "why": "fake_x = camerawidth() * 0.5 = 640 * 0.5, and nothing ever writes it again",
     "src": "gml_Object_obj_knight_roaring2_Create_0.gml:12"
    },
    {
@@ -1797,7 +1815,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "rand_dist",
     "eq": 320,
-    "why": "Create seeds rand_dist = 320 before Step overwrites it",
+    "why": "Create seeds rand_dist = 320 before the attack_timer==4 block overwrites it",
     "src": "gml_Object_obj_knight_roaring2_Create_0.gml:16"
    },
    {
@@ -1806,7 +1824,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "boundaryup",
     "eq": 160,
-    "why": "roaring2's Create raises the soul's upper boundary to 160",
+    "why": "roaring2's Create raises the soul's upper boundary from obj_heart's Create default of 0 to 160; obj_heart's Step only reads it",
     "src": "gml_Object_obj_knight_roaring2_Create_0.gml:45"
    },
    {
@@ -1823,7 +1841,7 @@ window.ATTACK_SPECS = [
     "byFrame": 140,
     "min": 6,
     "max": 6,
-    "why": "first volley at timer 132 (attack_timer hits 4) takes the intensity < 2.7 branch: repeat(6) stars, 60 degrees apart; next volley is not until timer 144",
+    "why": "first volley at timer 132 (attack_timer hits 4, starcount_p1 becomes 1) takes the intensity < 2.7 branch: repeat(6) stars 60 degrees apart; star_angle1..3 are then forced to -1 so no extra stars fire, and starcount_p1 must reach 1 again, which is not until timer 144",
     "src": "gml_Object_obj_knight_roaring2_Step_0.gml:216"
    },
    {
@@ -1839,7 +1857,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_knight_bullet_star",
     "byFrame": 145,
-    "why": "scr_fire_bullet is passed spr_knight_bullet_star for every roaring star",
+    "why": "scr_fire_bullet is passed spr_knight_bullet_star for every roaring star; the stars are visible=false but roaring2's own Draw runs event_user(0) on them, which draw_sprite_ext's sprite_index",
     "src": "gml_Object_obj_knight_roaring2_Step_0.gml:220"
    },
    {
@@ -1849,7 +1867,7 @@ window.ATTACK_SPECS = [
     "w": 1280,
     "h": 960,
     "tol": 4,
-    "why": "at timer 30 the growtangle lerps image_xscale to 2560/sprite_width and yscale to 1920/sprite_height; with spr_battlebg_0 (75x75) at scale 2 that is 17.0667 and 12.8, i.e. 1280x960 centred on the box's (320,170)",
+    "why": "myattackchoice 9 falls to the default growtangle site (camerax()+320, cameray()+170) with maxxscale/maxyscale 2; at timer 30 the growtangle lerps image_xscale to 2560/sprite_width and yscale to 1920/sprite_height, and with spr_battlebg_0 (75x75) already at scale 2 that is 17.0667 and 12.8, i.e. 1280x960",
     "src": "gml_Object_obj_knight_roaring2_Step_0.gml:30"
    }
   ]
@@ -1887,9 +1905,8 @@ window.ATTACK_SPECS = [
    },
    {
     "kind": "turntimer",
-    "min": 240,
-    "max": 260,
-    "why": "controller pins global.turntimer = 240 at difficulty 0; the dispatcher's scr_turntimer(260) is the only other writer",
+    "eq": 240,
+    "why": "the type 0 init block pins global.turntimer = 240 at difficulty 0, and it runs after the dispatcher's scr_turntimer(260) — the 260 never survives an observable frame",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:36"
    },
    {
@@ -1906,7 +1923,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 4,
     "max": 4,
-    "why": "type 1 row is choose(0,1) so exactly one head spawns at timer 5, 10, 15 and 20; none has left the -200..1000 x band yet",
+    "why": "type 1 row is choose(0,1) and both rows spawn exactly one head, at timer 5, 10, 15 and 20; none has left the -200..1000 x band yet",
     "src": "gml_Object_obj_sneo_guymaker_Step_0.gml:71"
    },
    {
@@ -2320,7 +2337,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_mmx_spreadshot",
     "byFrame": 45,
     "min": 1,
-    "why": "at difficulty 0 threshold is 20, so the master's first shot lands ~20 frames after its frame-16 spawn",
+    "why": "at difficulty 0 threshold is 20 and the shot is also gated on image_alpha >= 1 (0.1 per Draw from frame 17), so the master's first shot lands on frame 35",
     "src": "gml_Object_obj_sneo_phonehand_master_Step_0.gml:68"
    },
    {
@@ -2433,7 +2450,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "wallspeed",
     "eq": -7,
-    "why": "wallbullet Create pins wallspeed = -7",
+    "why": "wallbullet Create pins wallspeed = -7 and only the controller's wallspeed[] array is ever lerped",
     "src": "gml_Object_obj_sneo_wallbullet_new_Create_0.gml:17"
    },
    {
@@ -2479,7 +2496,7 @@ window.ATTACK_SPECS = [
     "w": 250,
     "h": 172,
     "tol": 3,
-    "why": "growtangle at (245,170) shifted +58 in x, maxxscale 3.3333 and maxyscale 2.3 over the 75x75 spr_battlebg_0",
+    "why": "growtangle at (245,170) shifted +58 in x, maxxscale 3.3333 and maxyscale 2.3 (rounded to 86/37.5) over the 75x75 spr_battlebg_0",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:764"
    }
   ]
@@ -2491,7 +2508,7 @@ window.ATTACK_SPECS = [
    {
     "kind": "turntimer",
     "eq": 300,
-    "why": "rr==7 dispatcher calls scr_turntimer(300)",
+    "why": "rr==7 dispatcher calls scr_turntimer(300); the type 12 branch only overrides it to 170 when facebroken==2, and facebroken starts at 0",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:916"
    },
    {
@@ -2499,7 +2516,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_faceattack",
     "atFrame": 15,
     "max": 0,
-    "why": "the face is not created until atimer==20, so nothing exists at frame 15",
+    "why": "atimer++ once per frame, the face is only created at atimer==20 (frame 20), so nothing exists at frame 15",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:982"
    },
    {
@@ -2508,7 +2525,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 4,
     "max": 4,
-    "why": "the master face plus eyes/nose/mouth spawned by its event_user(0) = 4 instances",
+    "why": "the master face plus the eyes/nose/mouth its event_user(0) creates = 4 instances, none destroyed by frame 30",
     "src": "gml_Object_obj_sneo_faceattack_Other_10.gml:25"
    },
    {
@@ -2517,7 +2534,7 @@ window.ATTACK_SPECS = [
     "atFrame": 25,
     "y": 100,
     "tol": 2,
-    "why": "cameray() + 100 = 100; the face never changes y",
+    "why": "cameray() + 100 = 100; nothing in the face's Step or Step_2 ever writes y (only x moves, during the first_time slam-in)",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:984"
    },
    {
@@ -2526,7 +2543,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "name": "xstart",
     "eq": 424,
-    "why": "the face is created at camerax() + 424 = 424",
+    "why": "the face is created at camerax() + 424 = 424, and the first_time init block re-pins xstart = x before moving x to 730",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:984"
    },
    {
@@ -2535,14 +2552,14 @@ window.ATTACK_SPECS = [
     "byFrame": 90,
     "min": 3,
     "max": 3,
-    "why": "event_user(2) makes one target for each of the three non-zero types",
+    "why": "event_user(2) makes one target for each of the three non-zero types; it runs once per instance whether or not first_time is set",
     "src": "gml_Object_obj_sneo_faceattack_Other_12.gml:24"
    },
    {
     "kind": "sprite",
     "name": "spr_spamtonneo_faceAttack_face",
     "byFrame": 60,
-    "why": "type 0 sets sprite_index = spr_spamtonneo_faceAttack_face in its init",
+    "why": "type 0 sets sprite_index = spr_spamtonneo_faceAttack_face in its init and Draw calls draw_self()",
     "src": "gml_Object_obj_sneo_faceattack_Step_0.gml:4"
    },
    {
@@ -2571,7 +2588,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_regularbullet",
     "byFrame": 90,
     "min": 1,
-    "why": "the mouth (type 3) emits a wisp bullet every 6 frames once its timer reaches 10",
+    "why": "the mouth (type 3) emits a wisp bullet every 6 frames once its timer reaches 10; the slam-in ends about frame 45 so the first wisp lands around frame 56",
     "src": "gml_Object_obj_sneo_faceattack_Step_0.gml:239"
    },
    {
@@ -2586,7 +2603,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_werewire_bullet_lasercircle",
     "byFrame": 140,
     "min": 1,
-    "why": "the eyes (type 1) fire a lasercircle every 3 frames once timer >= 30",
+    "why": "the eyes (type 1) fire a lasercircle every 3 frames once timer >= 30 and global.turntimer > 21; first shot around frame 74",
     "src": "gml_Object_obj_sneo_faceattack_Step_0.gml:165"
    },
    {
@@ -2596,7 +2613,7 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 3,
-    "why": "growtangle at (245,170) shifted +15 in x with maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
+    "why": "growtangle created at (view+245, view+170) then rr==7 does x += 15, with maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:739"
    }
   ]
@@ -2608,7 +2625,7 @@ window.ATTACK_SPECS = [
    {
     "kind": "turntimer",
     "eq": 1200,
-    "why": "the type 9 init block sets global.turntimer = 1200",
+    "why": "the type 9 init block sets global.turntimer = 1200 on the controller's first Step, after the dispatcher's scr_turntimer(260)",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:811"
    },
    {
@@ -2617,7 +2634,7 @@ window.ATTACK_SPECS = [
     "byFrame": 3,
     "min": 1,
     "max": 1,
-    "why": "exactly one finale growtangle is created in the type 9 init block",
+    "why": "exactly one finale growtangle is created in the type 9 init block on frame 1",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:812"
    },
    {
@@ -2627,7 +2644,7 @@ window.ATTACK_SPECS = [
     "x": 245,
     "y": 180,
     "tol": 2,
-    "why": "created at obj_growtangle's (245, 170+10) for rr==9 and it never moves",
+    "why": "created at obj_growtangle's position, which rr==9 leaves at x=245 and moves to y=170+10=180; its Step only changes scale/angle/alpha, never x or y",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:812"
    },
    {
@@ -2635,7 +2652,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_final_forme",
     "atFrame": 40,
     "max": 0,
-    "why": "the final forme only appears when btimer reaches 45, i.e. frame 46",
+    "why": "btimer is reset to 0 on frame 1 and the final forme only appears when it reaches 45, i.e. frame 46",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:819"
    },
    {
@@ -2662,7 +2679,7 @@ window.ATTACK_SPECS = [
     "atFrame": 55,
     "name": "intro",
     "eq": -1,
-    "why": "Create sets intro = 0 and the controller overwrites it with -1 so the Step does not early-exit",
+    "why": "Create sets intro = 0 and the controller overwrites it with -1; nothing in the forme's Step writes intro again",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:824"
    },
    {
@@ -2671,7 +2688,7 @@ window.ATTACK_SPECS = [
     "atFrame": 55,
     "name": "mouthx",
     "eq": 90,
-    "why": "final forme Create pins mouthx = 90",
+    "why": "final forme Create pins mouthx = 90 and only reads it thereafter",
     "src": "gml_Object_obj_sneo_final_forme_Create_0.gml:20"
    },
    {
@@ -2680,7 +2697,7 @@ window.ATTACK_SPECS = [
     "atFrame": 55,
     "name": "mouthy",
     "eq": 142,
-    "why": "final forme Create pins mouthy = 142",
+    "why": "final forme Create pins mouthy = 142 and only reads it thereafter",
     "src": "gml_Object_obj_sneo_final_forme_Create_0.gml:21"
    },
    {
@@ -2689,7 +2706,7 @@ window.ATTACK_SPECS = [
     "atFrame": 55,
     "name": "grazepoints",
     "eq": 4,
-    "why": "final forme Create pins grazepoints = 4",
+    "why": "final forme Create pins grazepoints = 4 after event_inherited()",
     "src": "gml_Object_obj_sneo_final_forme_Create_0.gml:10"
    },
    {
@@ -2713,7 +2730,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_dollar",
     "atFrame": 110,
     "max": 0,
-    "why": "dollars only start once special reaches 3, which needs another 70 btimer frames after frame 46",
+    "why": "special reaches 3 only when btimer hits 70 after the frame-46 reset, i.e. frame 116; at frame 110 btimer is only 64",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:833"
    },
    {
@@ -2721,7 +2738,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_dollar",
     "byFrame": 140,
     "min": 1,
-    "why": "the first dollar spawns the frame special becomes 3 (btimer 70 after the frame-46 reset), then every 7 frames",
+    "why": "btimer is not reset when special becomes 3, so the special==3 && btimer>=10 branch fires the same frame (116), then every 7 frames via btimer = 3",
     "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:848"
    }
   ]
@@ -2733,7 +2750,7 @@ window.ATTACK_SPECS = [
    {
     "kind": "turntimer",
     "eq": 430,
-    "why": "the phonecall Step pins global.turntimer = 430 every frame while state < 7 (difficulty is 0, not 3)",
+    "why": "the phonecall Step pins global.turntimer = 430 every frame while state < 7 (difficulty is 0, not 3), overriding the dispatcher's scr_turntimer(260)",
     "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:10"
    },
    {
@@ -2742,7 +2759,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 1,
     "max": 1,
-    "why": "the dispatcher creates exactly one obj_sneo_phonecall for rr==8",
+    "why": "the dispatcher creates exactly one obj_sneo_phonecall for rr==8 and nothing destroys it",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:852"
    },
    {
@@ -2760,7 +2777,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "skipintro",
     "eq": 0,
-    "why": "phoneevent starts at 0 so the skipintro branch does not run on the first phonecall",
+    "why": "obj_spamton_neo_enemy Create sets phoneevent = 0, so the phoneevent >= 1 skipintro branch does not run on the first phonecall",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:863"
    },
    {
@@ -2778,7 +2795,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "talkmax",
     "eq": 45,
-    "why": "Create pins talkmax = 45, the length of each dialogue beat",
+    "why": "Create pins talkmax = 45, the length of each dialogue beat, and nothing reassigns it",
     "src": "gml_Object_obj_sneo_phonecall_Create_0.gml:7"
    },
    {
@@ -2787,7 +2804,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "resumeinterval",
     "eq": 1.715,
-    "why": "Create pins resumeinterval = 1.715",
+    "why": "Create pins resumeinterval = 1.715 and nothing reassigns it",
     "src": "gml_Object_obj_sneo_phonecall_Create_0.gml:11"
    },
    {
@@ -2796,7 +2813,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "textboxdistance",
     "eq": 20,
-    "why": "Create pins textboxdistance = 20 before state 5 raises it to 40",
+    "why": "Create pins textboxdistance = 20; only the state 5 branch (frame ~151) raises it to 40",
     "src": "gml_Object_obj_sneo_phonecall_Create_0.gml:24"
    },
    {
@@ -2805,7 +2822,7 @@ window.ATTACK_SPECS = [
     "atFrame": 5,
     "name": "state",
     "eq": 0,
-    "why": "talktimer starts at -15 and only counts up, so state stays 0 for the first 15 frames",
+    "why": "talktimer starts at -15 and only counts up, so state stays 0 until frame 16",
     "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:84"
    },
    {
@@ -2813,16 +2830,15 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_phonecall",
     "atFrame": 30,
     "name": "state",
-    "min": 1,
-    "max": 2,
-    "why": "state 1 at frame 16 (talktimer -15 elapses) and state 2 at frame 27 (talktimer -10 elapses)",
-    "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:94"
+    "eq": 2,
+    "why": "state 1 at frame 16 (talktimer -15 elapses), state 2 at frame 27 (talktimer -10 elapses), and state 3 not until the frame-38 line finishes talking at frame 83",
+    "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:98"
    },
    {
     "kind": "absent",
     "obj": "obj_sneo_phonecall_pipis_stream",
     "byFrame": 430,
-    "why": "the pipis stream only spawns on difficulty 3; difficulty is 0",
+    "why": "the pipis stream only spawns on difficulty 3; obj_spamton_neo_enemy Create pins difficulty = 0",
     "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:61"
    },
    {
@@ -2830,7 +2846,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_bulletcontroller",
     "byFrame": 300,
     "min": 1,
-    "why": "at state 6 the phonecall hands off to a type 1 FootballPipis bulletcontroller",
+    "why": "at state 6 the phonecall hands off to a type 1 FootballPipis bulletcontroller (reached about frame 197; player skip can only make it earlier)",
     "src": "gml_Object_obj_sneo_phonecall_Step_0.gml:71"
    },
    {
@@ -2840,7 +2856,7 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 3,
-    "why": "rr==8 leaves obj_growtangle at its default (245,170) with maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
+    "why": "rr==8 leaves obj_growtangle at its creation point (view+245, view+170) with Create's maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:693"
    }
   ]
@@ -2932,7 +2948,7 @@ window.ATTACK_SPECS = [
     "atFrame": 60,
     "name": "damage",
     "eq": 16,
-    "why": "the bullet's Create overrides scr_bullet_init's damage 10 with 16 and nothing rewrites it",
+    "why": "the bullet's Create overrides scr_bullet_init's damage 10 with 16 and its Step is a bare exit",
     "src": "gml_Object_obj_sneo_weird_end_pipis_bullet_Create_0.gml:6"
    },
    {
@@ -3001,7 +3017,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 120,
     "max": 520,
-    "why": "choose(320-100-random(100), 320+100+random(100)) about obj_battlesolid.x = 320",
+    "why": "choose(320-100-random(100), 320+100+random(100)) about obj_battlesolid.x = 320; the clone never writes x",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1345"
    },
    {
@@ -3011,7 +3027,7 @@ window.ATTACK_SPECS = [
     "name": "y",
     "min": 70,
     "max": 270,
-    "why": "choose(170-random(100), 170+random(100)) about obj_battlesolid.y = 170",
+    "why": "choose(170-random(100), 170+random(100)) about obj_battlesolid.y = 170; the clone never writes y",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1346"
    },
    {
@@ -3029,7 +3045,7 @@ window.ATTACK_SPECS = [
     "atFrame": 25,
     "min": 5,
     "max": 5,
-    "why": "the type-1 clone throws exactly 5 bullets in one loop at con==1 timer>=8 (~frame 14); clone 2 does not fire until ~frame 34",
+    "why": "the type-1 clone throws exactly 5 bullets in one loop at con==1 timer>=8 (~frame 13); clone 2 does not fire until ~frame 33",
     "src": "gml_Object_obj_joker_teleport_Step_0.gml:58"
    },
    {
@@ -3058,6 +3074,13 @@ window.ATTACK_SPECS = [
     "byFrame": 30,
     "why": "the type-1 fan sets bullet.sprite_index = spr_spadebullet",
     "src": "gml_Object_obj_joker_teleport_Step_0.gml:61"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "tol": 1,
+    "why": "joker Step pins global.turntimer = 240 before event_user(5); jattack==0 (type 70) never overrides it",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    }
   ]
  },
@@ -3081,7 +3104,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 170,
     "tol": 2,
-    "why": "created at obj_battlesolid.x/y, i.e. obj_growtangle at view+320, view+170 with the view at the origin",
+    "why": "created at obj_battlesolid.x/y, i.e. obj_growtangle at view+320, view+170 with the view at the origin; the ring never moves",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1291"
    },
    {
@@ -3164,7 +3187,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 1,
     "max": 1,
-    "why": "btimer>=60 means no second ring before frame 61, and the first ring lives to t~55",
+    "why": "btimer>=60 means no second ring before frame 61, and the first ring only self-destroys after its 10th launch (~frame 55)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1289"
    },
    {
@@ -3183,6 +3206,13 @@ window.ATTACK_SPECS = [
     "tol": 4,
     "why": "obj_growtangle is made at view+320, view+170 and grows spr_battlebg_0 (75x75) to image_xscale/yscale 2",
     "src": "gml_Object_obj_joker_Step_0.gml:257"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "tol": 1,
+    "why": "joker Step pins global.turntimer = 240 before event_user(5); jattack==1 (type 65) never overrides it",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    }
   ]
  },
@@ -3225,7 +3255,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 40,
     "max": 600,
-    "why": "idealx = 320 -180-random(100) or 320 +180+random(100) about obj_growtangle.x = 320",
+    "why": "idealx = 320 -180-random(100) or 320 +180+random(100) about obj_growtangle.x = 320; the bomb has no hspeed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1112"
    },
    {
@@ -3303,6 +3333,13 @@ window.ATTACK_SPECS = [
     "byFrame": 60,
     "why": "the blast's four children use spr_heartbullet",
     "src": "gml_Object_obj_heartbomb_blast_Step_0.gml:6"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "tol": 1,
+    "why": "joker Step pins global.turntimer = 240 before event_user(5); jattack==2 (type 49) never overrides it",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    }
   ]
  },
@@ -3437,6 +3474,13 @@ window.ATTACK_SPECS = [
     "tol": 4,
     "why": "obj_growtangle at view+320, view+170 grows spr_battlebg_0 (75x75) to scale 2",
     "src": "gml_Object_obj_growtangle_Step_0.gml:17"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "tol": 1,
+    "why": "joker Step pins global.turntimer = 240 before event_user(5); jattack==3 (type 75) never overrides it",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    }
   ]
  },
@@ -3505,7 +3549,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "y": 90,
     "tol": 4,
-    "why": "the first horse (i=0) is made at obj_battlesolid.y - 80 = 90; altmode 3 only bobs by sin(vsin/10)*3.5",
+    "why": "the first horse (i=0) is made at obj_battlesolid.y - 80 = 90; altmode 3 only bobs by sin(vsin/10)*3.5, ~1px by frame 2",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1276"
    },
    {
@@ -3543,6 +3587,13 @@ window.ATTACK_SPECS = [
     "tol": 4,
     "why": "obj_growtangle at view+320, view+170 grows spr_battlebg_0 (75x75) to scale 2",
     "src": "gml_Object_obj_joker_Step_0.gml:257"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "tol": 1,
+    "why": "joker Step pins global.turntimer = 240 before event_user(5); jattack==4 (type 62) sets inv and grazepoints but never turntimer",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    }
   ]
  },
@@ -3585,7 +3636,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 40,
     "max": 600,
-    "why": "idealx = 320 -180-random(100) or 320 +180+random(100) about obj_growtangle.x = 320",
+    "why": "idealx = 320 -180-random(100) or 320 +180+random(100) about obj_growtangle.x = 320; the bomb has no hspeed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1135"
    },
    {
@@ -3659,7 +3710,7 @@ window.ATTACK_SPECS = [
     "kind": "turntimer",
     "eq": 300,
     "tol": 2,
-    "why": "the jattack == 5 dispatcher branch pins global.turntimer = 300 for this attack",
+    "why": "the jattack == 5 dispatcher branch pins global.turntimer = 300, overriding the 240 set in joker Step just before event_user(5)",
     "src": "gml_Object_obj_joker_Other_15.gml:75"
    }
   ]
@@ -3700,16 +3751,16 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "y": 270,
     "tol": 3,
-    "why": "spawn y is obj_battlesolid.y + 100 = 170 + 100 = 270 (pinned, not heart-relative); Create's clamps to [20,460] do not trigger",
+    "why": "spawn y is obj_battlesolid.y + 100 = 170 + 100 = 270 (pinned, not heart-relative); Create's clamps to [20,460] do not trigger and vspeed is still 0 on frame 1 because the first Draw is swallowed by dont = 1",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1416"
    },
    {
     "kind": "pos",
     "obj": "obj_dbullet_vert",
     "atFrame": 1,
-    "x": 320,
+    "x": 318,
     "tol": 100,
-    "why": "spawn x is obj_heart.x + 8 + xx; the soul is centred on the box so obj_heart.x + 8 = 320, and xx = -100 + random(200) gives a band of [220,420) randomness cannot leave",
+    "why": "spawn x is obj_heart.x + 8 + xx; obj_moveheart places the soul at view+310 so obj_heart.x + 8 = 318, and xx = -100 + random(200) gives the band [218,418) that randomness cannot leave; obj_dbullet_vert never moves on x",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1408"
    },
    {
@@ -3858,7 +3909,7 @@ window.ATTACK_SPECS = [
     "atFrame": 6,
     "min": 10,
     "max": 10,
-    "why": "the ring's t==0 block loops i<maxspade (10) creating one obj_collidebullet each at radius 300; obj_collidebullet has no Step so none can be destroyed",
+    "why": "the ring's t==0 block loops i<maxspade (10) creating one obj_collidebullet each at radius 300; obj_collidebullet has no Step and at frame 6 they are still ~187px from the soul, so none can be destroyed",
     "src": "gml_Object_obj_spadering_Step_0.gml:15"
    },
    {
@@ -3906,7 +3957,7 @@ window.ATTACK_SPECS = [
     "byFrame": 2,
     "min": 18,
     "max": 18,
-    "why": "nested loops j<3 and i<3 each create two obj_carouselbullet, so 3*3*2 = 18 in a single burst on frame 1 (btimer starts at 99)",
+    "why": "nested loops j<3 and i<3 each create two obj_carouselbullet, so 3*3*2 = 18 in a single burst on frame 1 (btimer starts at 99, made starts at 0)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1233"
    },
    {
@@ -3915,8 +3966,8 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 18,
     "max": 18,
-    "why": "obj_carouselbullet is an obj_regularbullet_permanent and nothing destroys it mid-turn, so all 18 stay live",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1237"
+    "why": "obj_carouselbullet Create sets wall_destroy = 0, it overrides obj_regularbullet's Step, and its inherited Other_15 (obj_regularbullet_permanent) damages without instance_destroy, so all 18 stay live",
+    "src": "gml_Object_obj_carouselbullet_Create_0.gml:26"
    },
    {
     "kind": "count",
@@ -3934,7 +3985,7 @@ window.ATTACK_SPECS = [
     "name": "sinspeed",
     "eq": 1.1,
     "tol": 0.001,
-    "why": "horse1.sinspeed = 1.1 overwrites obj_carouselbullet Create's sinspeed = 1",
+    "why": "horse1.sinspeed = 1.1 is set on both horses of every pair, overwriting obj_carouselbullet Create's sinspeed = 1",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1242"
    },
    {
@@ -3997,7 +4048,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_carousel",
     "byFrame": 40,
-    "why": "obj_carouselbullet's sprite is spr_carousel and image_alpha climbs 0.04 per step until t > 25",
+    "why": "obj_carouselbullet's own sprite is spr_carousel and image_alpha climbs 0.04 per step until t > 25",
     "src": "gml_Object_obj_carouselbullet_Step_0.gml:2"
    }
   ]
@@ -4038,7 +4089,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "y": -80,
     "tol": 11,
-    "why": "instance_create passes y = -20 but obj_suitbomb's Create immediately overwrites it with y = -80 (tol covers one step of vspeed 10)",
+    "why": "instance_create passes y = -20 but obj_suitbomb's Create immediately overwrites it with y = -80 (tol covers the one step of vspeed 10 the creation frame may already apply)",
     "src": "gml_Object_obj_suitbomb_Create_0.gml:3"
    },
    {
@@ -4057,7 +4108,7 @@ window.ATTACK_SPECS = [
     "name": "vspeed",
     "eq": 10,
     "tol": 0.001,
-    "why": "Create sets vspeed = 10, so the bomb falls in from above the screen",
+    "why": "Create sets vspeed = 10 and nothing touches it until con == 2, so the bomb falls in from above the screen",
     "src": "gml_Object_obj_suitbomb_Create_0.gml:9"
    },
    {
@@ -4094,7 +4145,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 40,
     "max": 600,
-    "why": "idealx is basex(=obj_growtangle.x=320) minus 180+random(100) or plus 180+random(100), a band randomness cannot leave",
+    "why": "idealx is basex(=obj_growtangle.x=320) minus 180+random(100) giving (40,140] or plus 180+random(100) giving [500,600); the bomb has no hspeed so x never moves",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1089"
    },
    {
@@ -4110,7 +4161,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_bomb_spade",
     "byFrame": 5,
-    "why": "the bomb's con==0 init assigns sprite_index = spr_bomb_spade for type 0 and sets visible = 1",
+    "why": "the bomb's con==0 init assigns sprite_index = spr_bomb_spade for type 0 and sets visible = 1, and Draw draws self while con < 2",
     "src": "gml_Object_obj_suitbomb_Step_0.gml:4"
    },
    {
@@ -4118,7 +4169,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_regularbullet",
     "byFrame": 60,
     "min": 12,
-    "why": "on detonation the type 0 bomb loops i<12 creating 12 obj_regularbullet at 360/12 degree spacing, speed 8",
+    "why": "maxtimer = 20 + random(16) so con reaches 2 by frame 36 at the latest, and the type 0 bomb then loops i<12 creating 12 obj_regularbullet at 360/12 degree spacing, speed 8",
     "src": "gml_Object_obj_suitbomb_Step_0.gml:49"
    },
    {
@@ -4161,12 +4212,13 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1383"
    },
    {
-    "kind": "pos",
+    "kind": "ivar",
     "obj": "obj_clubsbullet_dark",
     "atFrame": 1,
-    "y": 424.6,
-    "tol": 4,
-    "why": "side starts at 1 so dir is 225 or 315; lengthdir_y(360,dir) = +254.56 either way, and obj_heart.y+8 is the box centre 170, giving 424.56",
+    "name": "y",
+    "min": 408,
+    "max": 423,
+    "why": "side starts at 1 so dir is 225 or 315 and lengthdir_y(360,dir) = +254.56 either way; obj_heart.y+8 = 168 (soul spawns at view+160) puts spawn y at 422.56, and the creation frame may already apply one tick of speed 20 / friction 1 along direction 45 or 135 (-13.4px)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1382"
    },
    {
@@ -4176,7 +4228,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 60,
     "max": 576,
-    "why": "x is obj_heart.x+8 (the box centre, 320) plus lengthdir_x(360, 225 or 315) = -254.56 or +254.56; the choose cannot leave this band",
+    "why": "x is obj_heart.x+8 (= 318, soul spawns at view+310) plus lengthdir_x(360, 225 or 315) = -254.56 or +254.56, i.e. 63.44 or 572.56, moving at most 14px inward on the creation frame",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1381"
    },
    {
@@ -4203,9 +4255,9 @@ window.ATTACK_SPECS = [
     "obj": "obj_clubsbullet_dark",
     "atFrame": 1,
     "name": "speed",
-    "eq": 20,
-    "tol": 0.001,
-    "why": "d.speed = 20 is set at spawn, before friction has been applied",
+    "min": 19,
+    "max": 20,
+    "why": "d.speed = 20 is set at spawn and d.friction = 1 removes exactly one unit per move phase, so frame 1 is 20 (unmoved) or 19 (one tick in)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1385"
    },
    {
@@ -4238,7 +4290,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_clubsbullet_dark",
     "byFrame": 5,
-    "why": "obj_clubsbullet_dark's own sprite is spr_clubsbullet_dark and it is visible from spawn",
+    "why": "obj_clubsbullet_dark's own sprite is spr_clubsbullet_dark, it has no Draw event and is visible from spawn",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1383"
    },
    {
@@ -4286,7 +4338,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "min": 4,
     "max": 4,
-    "why": "special = 1 latches so the btimer>=0 && special==0 gate never fires again, and obj_centerscythe is a permanent bullet",
+    "why": "special = 1 latches so the btimer>=0 && special==0 gate never fires again, wall_destroy = 0 and nothing in its Step destroys it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1462"
    },
    {
@@ -4314,7 +4366,7 @@ window.ATTACK_SPECS = [
     "name": "sinespeed",
     "eq": 1.3,
     "tol": 0.001,
-    "why": "the type == 1 block sets sinespeed = 1.3, overwriting Create's sinespeed = 1.4",
+    "why": "the type == 1 block sets sinespeed = 1.3, overwriting Create's sinespeed = 1.4, and the king broadcasts it to all four",
     "src": "gml_Object_obj_centerscythe_Create_0.gml:50"
    },
    {
@@ -4388,7 +4440,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_joker_teleport",
     "byFrame": 4,
     "min": 1,
-    "why": "Create sets btimer = 99, so btimer >= 9 is already true on the first Step and a teleport is made immediately",
+    "why": "Create sets btimer = 99 and Step's btimer += 1 makes it 100, so btimer >= 9 && global.turntimer >= 20 (240) is true on the first Step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1357"
    },
    {
@@ -4406,7 +4458,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "active",
     "eq": 0,
-    "why": "the branch pins jokern.active = 0 right after creation",
+    "why": "the branch pins jokern.active = 0 right after creation and obj_joker_teleport's Step never writes active",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1363"
    },
    {
@@ -4415,7 +4467,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "grazepoints",
     "eq": 2,
-    "why": "scr_bullet_inherit copies the controller's grazepoints, which the dispatcher set to 2",
+    "why": "scr_bullet_inherit copies the controller's grazepoints, which the dispatcher set to 2, overwriting Create's 4",
     "src": "gml_Object_obj_joker_Other_15.gml:149"
    },
    {
@@ -4425,7 +4477,7 @@ window.ATTACK_SPECS = [
     "name": "image_xscale",
     "min": 0,
     "max": 0.45,
-    "why": "Create sets image_xscale = 0 and Step ramps it by 0.4/frame, so frame 1 is 0 or 0.4 — never the sprite's natural 1",
+    "why": "Create sets image_xscale = 0 and the con == 0 block ramps it by 0.4/frame, so frame 1 is 0 or 0.4 — never the sprite's natural 1",
     "src": "gml_Object_obj_joker_teleport_Create_0.gml:4"
    },
    {
@@ -4434,7 +4486,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "image_yscale",
     "eq": 2,
-    "why": "Create pins image_yscale = 2 (only con == 4 grows it later)",
+    "why": "Create pins image_yscale = 2; only the con == 4 shrink phase (frame ~22) grows it",
     "src": "gml_Object_obj_joker_teleport_Create_0.gml:7"
    },
    {
@@ -4444,7 +4496,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 120,
     "max": 520,
-    "why": "jokerx = choose(box.x - 100 - random(100), box.x + 100 + random(100)) with the box at x = 320",
+    "why": "jokerx = choose(box.x - 100 - random(100), box.x + 100 + random(100)) with the box at x = 320; the object never moves in x",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1359"
    },
    {
@@ -4454,7 +4506,7 @@ window.ATTACK_SPECS = [
     "name": "y",
     "min": 70,
     "max": 270,
-    "why": "jokery = choose(box.y - random(100), box.y + random(100)) with the box at y = 170",
+    "why": "jokery = choose(box.y - random(100), box.y + random(100)) with the box at y = 170; the object never moves in y",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1360"
    },
    {
@@ -4463,7 +4515,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "min": 3,
     "max": 3,
-    "why": "cadence btimer >= 9 puts teleports at frames 1, 10 and 19; the con machine keeps each alive ~27 frames so none has expired yet",
+    "why": "cadence btimer >= 9 puts teleports at frames 1, 10 and 19; the con 0->1->2->4 machine keeps each alive to frame 26 (destroy on frame 27) so none has expired",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1357"
    },
    {
@@ -4471,15 +4523,21 @@ window.ATTACK_SPECS = [
     "obj": "obj_collidebullet",
     "byFrame": 30,
     "min": 1,
-    "why": "teleport type 0 fires one obj_collidebullet once con == 1 and timer >= 8 (about frame 13)",
+    "why": "teleport type 0 fires one obj_collidebullet once con == 1 and timer >= 8 (frame 13)",
     "src": "gml_Object_obj_joker_teleport_Step_0.gml:42"
    },
    {
     "kind": "sprite",
     "name": "spr_diamondbullet",
     "byFrame": 30,
-    "why": "the fired bullet's sprite_index is set to spr_diamondbullet",
+    "why": "the fired bullet's sprite_index is set to spr_diamondbullet and obj_collidebullet has no Draw event, so it draw_self()s",
     "src": "gml_Object_obj_joker_teleport_Step_0.gml:43"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "jattack 12 sets no turntimer of its own, so the 240 pinned immediately before event_user(5) in obj_joker's Step stands",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    },
    {
     "kind": "box",
@@ -4502,7 +4560,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_suitbomb",
     "byFrame": 4,
     "min": 1,
-    "why": "Create's btimer = 99 satisfies btimer >= 12 on the first Step",
+    "why": "Create's btimer = 99 (+1 in Step) satisfies btimer >= 12 on the first Step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1031"
    },
    {
@@ -4521,7 +4579,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "vspeed",
     "eq": 10,
-    "why": "Create sets vspeed = 10; the bomb falls at a fixed rate until it arms",
+    "why": "Create sets vspeed = 10; the bomb falls at a fixed rate until timer >= maxtimer zeroes speed",
     "src": "gml_Object_obj_suitbomb_Create_0.gml:9"
    },
    {
@@ -4530,7 +4588,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "image_xscale",
     "eq": 2,
-    "why": "Create sets image_xscale = 2",
+    "why": "Create sets image_xscale = 2 and nothing in Step or Draw changes it",
     "src": "gml_Object_obj_suitbomb_Create_0.gml:4"
    },
    {
@@ -4540,7 +4598,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 40,
     "max": 600,
-    "why": "idealx = basex -/+ (180 + random(100)) with basex = obj_growtangle.x = 320, so 40 < x < 600 and never near the centre",
+    "why": "idealx = basex -/+ (180 + random(100)) with basex = obj_growtangle.x = 320, so x is in [40,140) or [500,600) and the bomb has no hspeed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1040"
    },
    {
@@ -4569,7 +4627,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "visible",
     "eq": 1,
-    "why": "Create sets visible = 0 and the con == 0 block in Step flips it to 1 on the first step — proves Step's init ran",
+    "why": "Create sets visible = 0 and the con == 0 block in Step flips it to 1 on the bomb's first step — proves Step's init ran",
     "src": "gml_Object_obj_suitbomb_Step_0.gml:15"
    },
    {
@@ -4596,7 +4654,7 @@ window.ATTACK_SPECS = [
     "atFrame": 48,
     "min": 4,
     "max": 4,
-    "why": "btimer >= 12 puts bombs at frames 1, 13, 25 and 37; the earliest possible destroy is spawn+20+40 = frame 61",
+    "why": "btimer >= 12 puts bombs at frames 1, 13, 25 and 37 (next at 49); explodedraw only counts up once con >= 2, so the earliest destroy is frame 60",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1031"
    },
    {
@@ -4626,7 +4684,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_dbullet_vert",
     "byFrame": 4,
     "min": 1,
-    "why": "Create's btimer = 99 satisfies btimer >= 9 on the first Step",
+    "why": "Create's btimer = 99 (+1 in Step) satisfies btimer >= 9 on the first Step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1430"
    },
    {
@@ -4635,7 +4693,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "min": 3,
     "max": 3,
-    "why": "cadence btimer >= 9 puts bullets at frames 1, 10 and 19, and none is near the off-screen destroy bounds yet",
+    "why": "cadence btimer >= 9 puts bullets at frames 1, 10 and 19; none moves before frame 12 and none is near the Draw destroy bounds",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1430"
    },
    {
@@ -4680,7 +4738,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "active",
     "eq": 0,
-    "why": "Create sets active = 0; the bullet only arms after its fade-in finishes",
+    "why": "Create sets active = 0; Draw only flips it after the fade-in finishes (frame 12)",
     "src": "gml_Object_obj_dbullet_vert_Create_0.gml:17"
    },
    {
@@ -4690,7 +4748,7 @@ window.ATTACK_SPECS = [
     "name": "image_alpha",
     "min": 0,
     "max": 0.15,
-    "why": "Create sets image_alpha = 0 and Draw's dont = 1 latch delays the first +0.1, so frame 1 is still transparent",
+    "why": "Create sets image_alpha = 0 and Draw's dont = 1 latch skips the whole block on the first Draw, so frame 1 is still transparent",
     "src": "gml_Object_obj_dbullet_vert_Create_0.gml:18"
    },
    {
@@ -4699,7 +4757,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "name": "active",
     "eq": 1,
-    "why": "Draw adds 0.1 alpha per frame and flips active = 1 once alpha reaches 1 (about frame 12)",
+    "why": "Draw adds 0.1 alpha per frame from frame 2 and takes the else branch (active = 1) once alpha reaches 1, at frame 12",
     "src": "gml_Object_obj_dbullet_vert_Draw_0.gml:33"
    },
    {
@@ -4709,7 +4767,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 218,
     "max": 422,
-    "why": "x = obj_heart.x + 8 + xx with xx = -100 + random(200) and the soul centred on the box at 320",
+    "why": "x = obj_heart.x + 8 + xx with xx = -100 + random(200) and the soul parked at 310 (obj_moveheart's default view+310) — the bullet has no hspeed ever",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1441"
    },
    {
@@ -4719,8 +4777,14 @@ window.ATTACK_SPECS = [
     "name": "y",
     "min": 305,
     "max": 355,
-    "why": "yy = (140 + random(40)) * side and type 74 NEVER flips side, so with Create's side = 1 every bullet spawns 140-180px BELOW the soul",
+    "why": "yy = (140 + random(40)) * side and type 74 NEVER flips side, so with Create's side = 1 every bullet spawns 140-180px BELOW the soul (y = 160+8+yy); y is unmoved until frame 12",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1434"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "jattack 14 sets no turntimer of its own, so the 240 pinned immediately before event_user(5) in obj_joker's Step stands",
+    "src": "gml_Object_obj_joker_Step_0.gml:267"
    },
    {
     "kind": "box",
@@ -4743,7 +4807,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_suitbomb",
     "byFrame": 4,
     "min": 1,
-    "why": "Create's btimer = 99 satisfies btimer >= 12 on the first Step",
+    "why": "Create's btimer = 99 (+1 in Step) satisfies btimer >= 12 on the first Step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1057"
    },
    {
@@ -4759,7 +4823,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_bomb_diamond",
     "byFrame": 30,
-    "why": "type 1 selects spr_bomb_diamond in the con == 0 block and Draw draws it while con < 2",
+    "why": "type 1 selects spr_bomb_diamond in the con == 0 block and Draw draw_self()s it while con < 2",
     "src": "gml_Object_obj_suitbomb_Step_0.gml:7"
    },
    {
@@ -4788,7 +4852,7 @@ window.ATTACK_SPECS = [
     "name": "x",
     "min": 40,
     "max": 600,
-    "why": "idealx = basex -/+ (180 + random(100)) with basex = obj_growtangle.x = 320",
+    "why": "idealx = basex -/+ (180 + random(100)) with basex = obj_growtangle.x = 320; the bomb has no hspeed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1066"
    },
    {
@@ -4825,7 +4889,7 @@ window.ATTACK_SPECS = [
     "atFrame": 48,
     "min": 4,
     "max": 4,
-    "why": "btimer >= 12 puts bombs at frames 1, 13, 25 and 37; earliest destroy is spawn+20+40 = frame 61",
+    "why": "btimer >= 12 puts bombs at frames 1, 13, 25 and 37 (next at 49); explodedraw only counts up once con >= 2, so the earliest destroy is frame 60",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1057"
    },
    {
@@ -4833,7 +4897,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_regularbullet",
     "byFrame": 48,
     "min": 1,
-    "why": "a type-1 bomb bursts into 3 obj_regularbullet aimed at the soul once timer >= maxtimer (by frame 37 at the latest)",
+    "why": "a type-1 bomb bursts into 3 obj_regularbullet aimed at the soul once timer >= maxtimer, and maxtimer < 36 so the first bomb bursts by frame 36",
     "src": "gml_Object_obj_suitbomb_Step_0.gml:67"
    },
    {
@@ -4870,7 +4934,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_regularbullet",
     "byFrame": 4,
     "min": 1,
-    "why": "bmax = 4 for type 25 and Create's btimer = 99 fires the first spade on the first Step",
+    "why": "bmax = 4 for type 25 and Create's btimer = 99 (+1 in Step) fires the first spade on the first Step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
    },
    {
@@ -4879,7 +4943,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "x": 560,
     "tol": 8,
-    "why": "Create sets side = 1, so the first spade takes radius = 560 at view.x + radius = 560 (it has already moved at most one 5px step)",
+    "why": "Create sets side = 1, so the first spade takes radius = 560 at view.x + radius = 560 (it has moved at most one 5.1px step)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:404"
    },
    {
@@ -4888,7 +4952,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "name": "image_angle",
     "eq": 180,
-    "why": "side == 1 sets direction = 180 and image_angle = direction, so the first spade flies right-to-left",
+    "why": "side == 1 sets direction = 180 and the with block copies image_angle = direction, so the first spade flies right-to-left",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:412"
    },
    {
@@ -4898,7 +4962,7 @@ window.ATTACK_SPECS = [
     "name": "y",
     "min": 95,
     "max": 245,
-    "why": "y = growtangle.y - sprite_height/2 + random(sprite_height); with the box centred at 170 and at most 150 tall, every spade lands inside the box's vertical span",
+    "why": "y = growtangle.y - sprite_height/2 + random(sprite_height); with the box centred at 170 and at most 150 tall every spade lands inside the box's vertical span, and direction 180 gives it no vspeed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:406"
    },
    {
@@ -4908,7 +4972,7 @@ window.ATTACK_SPECS = [
     "name": "image_alpha",
     "min": 0,
     "max": 0.05,
-    "why": "the branch overwrites Create's image_alpha = 1 with 0 and the with(obj_regularbullet) +0.2 ramp runs BEFORE the spawn, so frame 1 is fully transparent",
+    "why": "the branch overwrites Create's image_alpha = 1 with 0 and the with(obj_regularbullet) +0.2 ramp runs BEFORE the spawn block, so frame 1 is fully transparent",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:414"
    },
    {
@@ -4927,7 +4991,7 @@ window.ATTACK_SPECS = [
     "name": "speed",
     "min": 6,
     "max": 8,
-    "why": "speed starts at 5 and negative friction adds 0.1 per step, so ~6.9 after 19 frames",
+    "why": "speed starts at 5 and negative friction adds 0.1 per step, so ~6.9-7.0 by frame 20",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:421"
    },
    {
@@ -4936,7 +5000,7 @@ window.ATTACK_SPECS = [
     "atFrame": 10,
     "name": "grazepoints",
     "eq": 5,
-    "why": "type 25 never calls scr_bullet_inherit, so Create's grazepoints = 5 stands",
+    "why": "type 25 never calls scr_bullet_inherit (it copies only damage and target), so Create's grazepoints = 5 stands",
     "src": "gml_Object_obj_regularbullet_Create_0.gml:2"
    },
    {
@@ -4945,14 +5009,14 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "min": 5,
     "max": 5,
-    "why": "bmax = 4 puts spades at frames 1, 5, 9, 13 and 17; none has crossed the 600px to the off-screen destroy bound yet",
+    "why": "bmax = 4 puts spades at frames 1, 5, 9, 13 and 17 (next at 21); the oldest has only travelled ~120px of the 600 to the off-screen destroy bound",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
    },
    {
     "kind": "sprite",
     "name": "spr_spadebullet",
     "byFrame": 10,
-    "why": "the with block sets sprite_index = spr_spadebullet on every side bullet",
+    "why": "the with block sets sprite_index = spr_spadebullet on every side bullet and obj_regularbullet has no Draw event",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
    },
    {
@@ -4992,7 +5056,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": -10,
     "tol": 2,
-    "why": "scr_dark_marker is called at view.x + 320, view.y - 10 and obj_marker has no events to move it",
+    "why": "scr_dark_marker is called at view.x + 320, view.y - 10 and obj_marker has no events at all to move it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1484"
    },
    {
@@ -5028,7 +5092,7 @@ window.ATTACK_SPECS = [
     "atFrame": 8,
     "name": "rank",
     "eq": 16,
-    "why": "the init sets rank = 16 and it only starts decrementing once realtimer >= 60",
+    "why": "the init sets rank = 16 and it only starts decrementing inside the realtimer >= 60 loop",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1478"
    },
    {
@@ -5037,7 +5101,7 @@ window.ATTACK_SPECS = [
     "atFrame": 8,
     "name": "boundaryup",
     "eq": 160,
-    "why": "while realtimer < 10 the branch pushes the soul down 16px a frame and raises its floor to boundaryup = 160",
+    "why": "while realtimer < 10 the branch pushes the soul down 16px a frame and raises its floor to boundaryup = 160; obj_heart's own Step only reads boundaryup, never writes it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1507"
    },
    {
@@ -5046,7 +5110,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "min": 0,
     "max": 0,
-    "why": "at realtimer == 10 (frame 11) the branch does with(obj_battlesolid) instance_destroy(), and obj_growtangle is a child of obj_battlesolid — the box is deliberately deleted",
+    "why": "at realtimer == 10 (frame 11) the branch does with(obj_battlesolid) instance_destroy(), and objects.tsv gives obj_growtangle the parent obj_battlesolid — the box is deliberately deleted and obj_joker's one-shot mnfight==1 block never remakes it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1513"
    },
    {
@@ -5063,7 +5127,7 @@ window.ATTACK_SPECS = [
     "atFrame": 24,
     "x": 40,
     "tol": 3,
-    "why": "the first scythe is made at view.x + 40 and has no horizontal speed, only vspeed/gravity",
+    "why": "the first scythe is made at view.x + 40 and Create gives it only vspeed 5 / gravity 1 — x never changes",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1518"
    },
    {
@@ -5072,7 +5136,7 @@ window.ATTACK_SPECS = [
     "atFrame": 45,
     "min": 2,
     "max": 2,
-    "why": "exactly two scripted scythes exist before the rank loop opens at realtimer >= 60: view.x+40 at frame 21 and view.x+570 at frame 41",
+    "why": "exactly two scripted scythes exist before the rank loop opens at realtimer >= 60 (frame 61): view.x+40 at frame 21 and view.x+570 at frame 41, and neither has finished its explode shrink",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1521"
    },
    {
@@ -5090,7 +5154,7 @@ window.ATTACK_SPECS = [
     "atFrame": 24,
     "name": "grazepoints",
     "eq": 15,
-    "why": "obj_laserscythe Create sets grazepoints = 15",
+    "why": "obj_laserscythe Create sets grazepoints = 15 and the type-77 branch never calls scr_bullet_inherit on scythes",
     "src": "gml_Object_obj_laserscythe_Create_0.gml:2"
    },
    {
@@ -5121,7 +5185,7 @@ window.ATTACK_SPECS = [
     "x": 520,
     "y": 170,
     "tol": 2,
-    "why": "spawned at growtangle.x+200, growtangle.y; the box is made at __view_get(XView)+320, +170 = (320,170)",
+    "why": "spawned at growtangle.x+200, growtangle.y; the box is made at __view_get(XView)+320, +170 = (320,170), and mode 1 leaves x/y frozen until air_time hits 0 (~frame 18) — only Draw lerps the arc",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1658"
    },
    {
@@ -5139,7 +5203,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "dest_y",
     "eq": 52,
-    "why": "dest_y = other.y - 118 = 170 - 118",
+    "why": "dest_y = other.y - 118 = 170 - 118; the trailing dest_y += _box_movement is 0 until the ball lands",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1665"
    },
    {
@@ -5183,7 +5247,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_pinkcatbullet",
     "atFrame": 20,
     "min": 1,
-    "why": "first shot fires once btimer >= btimer_start + 15, i.e. frame 16; the difficulty-0 list's first entry is lane 0 which is < 3 so it is a catbullet",
+    "why": "first shot fires once btimer >= btimer_start + 15 = 115, i.e. frame 16; the difficulty-0 list's first entry is lane 0 which is < 3 so it is a catbullet, and wall_destroy cannot fire at x = 736 < view+760",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1784"
    },
    {
@@ -5192,14 +5256,14 @@ window.ATTACK_SPECS = [
     "atFrame": 17,
     "y": 114,
     "tol": 3,
-    "why": "_box_y + floor(lane - 1) * 56 with _box_y = scr_get_box(5) = 170 and lane 0 gives 170 - 56; the bullet's direction is 180 so y never changes before Pink lands",
+    "why": "_box_y + floor(lane - 1) * 56 with _box_y = scr_get_box(5) = 170 and lane 0 gives 170 - 56; direction is 180 and spin_radius stays 0 (speed 0.75 < 1.5), so y never changes",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1793"
    },
    {
     "kind": "spawns",
     "obj": "obj_dokiheart",
     "byFrame": 112,
-    "why": "the difficulty-0 list's 6th group is lane 7, which takes the 6..8 branch and fires a dokiheart instead of a catbullet",
+    "why": "the difficulty-0 list's 6th group is lane 7, which takes the 6..8 branch; the first five intervals cost 12+12+12+12+40 frames after frame 16, so it fires on frame 104",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1813"
    },
    {
@@ -5239,7 +5303,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "lane_x",
     "eq": 0,
-    "why": "lane_x = 0 overwrites obj_purplecontrols Create's lane_x = 1",
+    "why": "lane_x = 0 overwrites obj_purplecontrols Create's lane_x = 1, and mode 2 only changes it on buffered input",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3108"
    },
    {
@@ -5257,7 +5321,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "grid_x",
     "eq": 3,
-    "why": "the init block seeds the bomb grid at grid_x = 3",
+    "why": "the init block seeds the bomb grid at grid_x = 3, and the RNG that re-rolls it only runs after the first bomb drops on frame 7",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3093"
    },
    {
@@ -5285,7 +5349,7 @@ window.ATTACK_SPECS = [
     "x": 480,
     "y": 160,
     "tol": 2,
-    "why": "obj_fusebomb's Create throws away the spawn coordinates and parks the bomb at camerax()+480, cameray()+160 for the toss arc",
+    "why": "obj_fusebomb's Create throws away the spawn coordinates and parks the bomb at camerax()+480, cameray()+160; x/y only move to dest when air_time (air_height 120, ~24 frames) runs out",
     "src": "gml_Object_obj_fusebomb_Create_0.gml:23"
    },
    {
@@ -5321,21 +5385,21 @@ window.ATTACK_SPECS = [
     "atFrame": 12,
     "name": "grid_x",
     "eq": 3,
-    "why": "_bomb.grid_x = grid_x carries the controller's seed onto the bomb",
+    "why": "_bomb.grid_x = grid_x carries the controller's seed onto the bomb; the made==0 relocation block needs an overlapping dokiheart or bomb, and there is neither",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3130"
    },
    {
     "kind": "spawns",
     "obj": "obj_pinkbombexplosion",
     "byFrame": 60,
-    "why": "the bomb's air_time (air_height 120) runs out after ~24 frames, mode 2 sets fuse_time = 10, and fuse_time <= 0 detonates",
+    "why": "air_time (air_height 120) runs out on frame 30, mode 2 sets fuse_time = 10, and fuse_time-- reaches 0 on frame 39",
     "src": "gml_Object_obj_fusebomb_Step_0.gml:411"
    },
    {
     "kind": "sprite",
     "name": "spr_fusebomb",
     "byFrame": 12,
-    "why": "obj_fusebomb's Draw draws sprite_index (spr_fusebomb) with image_xscale * grow",
+    "why": "obj_fusebomb's default sprite is spr_fusebomb and its Draw draws sprite_index with image_xscale * grow",
     "src": "gml_Object_obj_fusebomb_Draw_0.gml:106"
    },
    {
@@ -5345,7 +5409,7 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 2,
-    "why": "the bomb turn never rescales obj_growtangle, so it stays 2x2 on spr_battlebg_0 (75x75) at the creation point (320,170), and no obj_pink_battlemovement lands on it to push it down",
+    "why": "the bomb turn never rescales obj_growtangle, so it stays 2x2 on spr_battlebg_0 (75x75) at the creation point (320,170); purplecontrols mode 2 never touches the growtangle and no obj_pink_battlemovement lands on it",
     "src": "gml_Object_obj_pink_enemy_Step_0.gml:1688"
    }
   ]
@@ -5376,7 +5440,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "lane_x",
     "eq": 0,
-    "why": "lane_x = 0 overwrites obj_purplecontrols Create's lane_x = 1",
+    "why": "lane_x = 0 overwrites obj_purplecontrols Create's lane_x = 1; mode 3 only rewrites lane_x when rotate_travel lands, which needs input",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1995"
    },
    {
@@ -5394,7 +5458,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "name": "can_spin",
     "eq": 0,
-    "why": "case 0 sets can_spin = false, overwriting Create's can_spin = true, and nothing turns it back on because no obj_pink_battlemovement lands this turn",
+    "why": "case 0 sets can_spin = false, overwriting Create's can_spin = true, and the only writer of true (a landing obj_pink_battlemovement) never exists this turn",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2035"
    },
    {
@@ -5403,7 +5467,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "btimer2",
     "eq": -210,
-    "why": "the init block sets btimer2 = -210 and only the unrelated btimer is incremented per Step",
+    "why": "the init block sets btimer2 = -210 and nothing else in the type-202 path writes it",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2016"
    },
    {
@@ -5435,7 +5499,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_pinklanebullet",
     "atFrame": 20,
     "min": 1,
-    "why": "difficulty 0 sets btimer = 32, so btimer >= 40 first trips on frame 9 and fires the list's first entry (lane 2)",
+    "why": "difficulty 0 sets btimer = 32, so btimer >= 40 first trips on frame 9 and fires the list's first entry (lane 2); wall_destroy = 0 and life_time limit 80 keep it alive",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2299"
    },
    {
@@ -5452,7 +5516,7 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 3,
-    "why": "box stays 2x2 on spr_battlebg_0 (150x150), but the difficulty != 1 branch pushes obj_growtangle y += 8 for its first 8 frames: 170 + 64",
+    "why": "box stays 2x2 on spr_battlebg_0 (150x150), but the difficulty != 1 branch pushes obj_growtangle and obj_purplecontrols y += 8 for life_time 1..8: 170 + 64 (mode 3 then re-pins growtangle.y to purplecontrols.y, which carries the same offset via tire_y)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2394"
    }
   ]
@@ -5485,7 +5549,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "rotate_speed",
     "eq": 12,
-    "why": "the mode-7 made block sets rotate_speed = 12, overwriting Create's rotate_speed = 0",
+    "why": "the mode-7 made block sets rotate_speed = 12, overwriting Create's rotate_speed = 0; it is only re-clamped while rotate_travel != 0, which needs input",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:1222"
    },
    {
@@ -5494,7 +5558,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "heart_angle",
     "eq": 270,
-    "why": "the mode-7 made block sets heart_angle = 270, overwriting Create's heart_angle = 0",
+    "why": "the mode-7 made block sets heart_angle = 270, overwriting Create's heart_angle = 0, and _rotation_to_go = 270 - heart_angle = 0 keeps it there",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:1224"
    },
    {
@@ -5504,7 +5568,7 @@ window.ATTACK_SPECS = [
     "name": "maxxscale",
     "min": 3.7,
     "max": 3.8,
-    "why": "the dispatcher sets maxxscale = 3.75 (the growtangle's custom-box init may re-quantise it to 141/37.5 = 3.76)",
+    "why": "the dispatcher sets maxxscale = 3.75 and the growtangle's custom-box init may re-quantise it to round(3.75*37.5)/37.5 = 141/37.5 = 3.76",
     "src": "gml_Object_obj_pink_enemy_Step_0.gml:1739"
    },
    {
@@ -5524,21 +5588,21 @@ window.ATTACK_SPECS = [
     "w": 281,
     "h": 281,
     "tol": 4,
-    "why": "spr_battlebg_0 is 75x75 and mode 7 pins image_xscale to 3.75 - min(...) = 3.75 once the box has finished growing: 75 * 3.75 = 281.25, at the creation point (320,170)",
+    "why": "spr_battlebg_0/spr_battlebg_stretch_hitbox are 75x75 and mode 7 pins image_xscale to 3.75 - min(...), which is 3.75 while tunnel_lifetime is 0: 75 * 3.75 = 281.25 at the creation point (320,170); mode 7 never moves the growtangle",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:1212"
    },
    {
     "kind": "absent",
     "obj": "obj_pink_battlemovement",
     "byFrame": 20,
-    "why": "the type-208 branch is the only pink attack of this set that never creates the Pink ball",
+    "why": "neither the myattackchoice == 4 dispatcher branch nor the type-208 branch ever creates the Pink ball",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3200"
    },
    {
     "kind": "spawns",
     "obj": "obj_pink3durgenter",
     "byFrame": 320,
-    "why": "mode 7 spawns the tunnel generator once tunnel_lifetime >= 1, and at difficulty 0 tutorial_time = 300 holds tunnel_lifetime at 0 for 300 frames first",
+    "why": "mode 7 spawns the tunnel generator once tunnel_lifetime >= 1; at difficulty 0 tutorial_time = 300 blocks the increment for 300 frames, so tunnel_lifetime first reads 1 at the top of frame 302",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:1239"
    },
    {
@@ -5546,9 +5610,10 @@ window.ATTACK_SPECS = [
     "obj": "obj_pink3durgenter",
     "atFrame": 320,
     "name": "radius",
-    "eq": 128,
-    "why": "the tunnel generator's Create sets radius = 128",
-    "src": "gml_Object_obj_pink3durgenter_Create_0.gml:14"
+    "min": 135,
+    "max": 139,
+    "why": "Create's radius = 128 is overwritten on the generator's very first frame — mode 7 re-pins radius = 37 * obj_growtangle.image_xscale every step, and image_xscale = 3.75 - min(tunnel_lifetime*0.0025, ...) is still ~3.70 this early, giving 37 * 3.70 = 137",
+    "src": "gml_Object_obj_purplecontrols_Step_0.gml:2033"
    },
    {
     "kind": "ivar",
@@ -5556,7 +5621,7 @@ window.ATTACK_SPECS = [
     "atFrame": 320,
     "name": "dir_add",
     "eq": 12,
-    "why": "the tunnel generator's Create sets dir_add = 12, giving ceil(360/12) = 30 ring segments",
+    "why": "the tunnel generator's Create sets dir_add = 12, giving ceil(360/12) = 30 ring segments, and nothing ever rewrites it",
     "src": "gml_Object_obj_pink3durgenter_Create_0.gml:15"
    }
   ]
@@ -5581,7 +5646,7 @@ window.ATTACK_SPECS = [
     "x": 520,
     "y": 170,
     "tol": 2,
-    "why": "spawned at growtangle.x + 200, growtangle.y with the box made at (320,170)",
+    "why": "spawned at growtangle.x + 200, growtangle.y with the box made (or re-made at the same coords) at (320,170); mode 1 leaves x/y frozen until air_time hits 0 near frame 18",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3260"
    },
    {
@@ -5608,7 +5673,7 @@ window.ATTACK_SPECS = [
     "atFrame": 40,
     "name": "mode",
     "eq": 7,
-    "why": "air_height 90 runs the arc out in ~18 frames and, because obj_pink_curtains exists, landing switches to spr_pink_sing and mode = 7 instead of idle mode 0",
+    "why": "air_height 90 runs the arc out on frame 18 and, because obj_pink_curtains exists, landing switches to spr_pink_sing and mode = 7 instead of idle mode 0; phase 0 lasts until pattern_time reaches 35 (frame 73)",
     "src": "gml_Object_obj_pink_battlemovement_Step_0.gml:68"
    },
    {
@@ -5627,7 +5692,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 82,
     "tol": 2,
-    "why": "created at growtangle x, y - 88 = (320, 170 - 88); the curtains never move",
+    "why": "created at growtangle x, y - 88 = (320, 170 - 88); its Step only moves the audience hitboxes, never its own x/y",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3271"
    },
    {
@@ -5655,7 +5720,7 @@ window.ATTACK_SPECS = [
     "name": "maxxscale",
     "eq": 4.8,
     "tol": 0.05,
-    "why": "maxxscale = 2 * _box_xscale = 2 * 2.4, overwriting Create's maxxscale = 2",
+    "why": "maxxscale = 2 * _box_xscale = 2 * 2.4, overwriting Create's maxxscale = 2; the custom-box re-quantise round(4.8*37.5)/37.5 = 180/37.5 leaves it exactly 4.8",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3257"
    },
    {
@@ -5665,7 +5730,7 @@ window.ATTACK_SPECS = [
     "name": "maxyscale",
     "min": 2.49,
     "max": 2.51,
-    "why": "maxyscale = 2 * _box_yscale = 2 * 1.249 (the custom-box init may re-quantise to 94/37.5 = 2.5067)",
+    "why": "maxyscale = 2 * _box_yscale = 2 * 1.249 = 2.498 (the custom-box init may re-quantise to 94/37.5 = 2.5067)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3258"
    },
    {
@@ -5674,7 +5739,7 @@ window.ATTACK_SPECS = [
     "w": 360,
     "h": 187,
     "tol": 3,
-    "why": "spr_battlebg_0 is 75x75, so the stage box grows to 75*4.8 = 360 wide by 75*2.498 = 187.35 tall about x = 320 (y drifts down once Pink lands on it)",
+    "why": "spr_battlebg_0 / spr_battlebg_stretch_hitbox are 75x75, so the stage box grows to 75*4.8 = 360 wide by 75*2.498..2.5067 = 187.4..188 tall about x = 320 (y drifts down once Pink lands on it)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3237"
    },
    {
@@ -5688,7 +5753,7 @@ window.ATTACK_SPECS = [
     "kind": "sprite",
     "name": "spr_pink_ball",
     "byFrame": 8,
-    "why": "the freshly spawned obj_pink_battlemovement is given spr_pink_ball for the hop onto the stage",
+    "why": "the freshly spawned obj_pink_battlemovement is given spr_pink_ball for the hop onto the stage and its Draw draws sprite_index",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3264"
    }
   ]
@@ -5722,7 +5787,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 170,
     "tol": 2,
-    "why": "created inside with(obj_growtangle) at the box's x,y; Pink's box block puts the box at view+320, view+170",
+    "why": "created inside with(obj_growtangle) at the box's x,y and re-snapped to it every step (Step_0:2726); the canonical box is view+320, view+170",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1615"
    },
    {
@@ -5731,7 +5796,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "lane_y",
     "eq": 1,
-    "why": "Create leaves lane_y = 1 and mode 1 keys its y target off it",
+    "why": "Create leaves lane_y = 1 and mode 1 only changes it on buffer_u/buffer_d",
     "src": "gml_Object_obj_purplecontrols_Create_0.gml:20"
    },
    {
@@ -5761,15 +5826,15 @@ window.ATTACK_SPECS = [
     "name": "bg_y",
     "eq": -15,
     "tol": 2,
-    "why": "Create sets bg_y = -27 and mode 1 scrolls it +1.5 per step: -27 + 8*1.5 = -15",
+    "why": "Create sets bg_y = -27 and mode 1 scrolls it +1.5 per step: -27 + 8*1.5 = -15 (wrap at 78 never reached)",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:234"
    },
    {
     "kind": "sprite",
     "name": "spr_purpleheart",
     "byFrame": 3,
-    "why": "the branch swaps obj_heart to spr_purpleheart and obj_purplecontrols draws the soul itself",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1608"
+    "why": "the branch swaps obj_heart to spr_purpleheart and obj_purplecontrols' Draw draws the soul itself",
+    "src": "gml_Object_obj_purplecontrols_Draw_0.gml:536"
    },
    {
     "kind": "sprite",
@@ -5824,8 +5889,8 @@ window.ATTACK_SPECS = [
     "x": 520,
     "y": 170,
     "tol": 2,
-    "why": "created at (growtangle.x + 200, growtangle.y - 32) after growtangle.y += 32, i.e. (320+200, 202-32)",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2522"
+    "why": "created at (growtangle.x + 200, growtangle.y - 32) after growtangle.y += 32, i.e. (320+200, 202-32); mode 5 never moves x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2524"
    },
    {
     "kind": "ivar",
@@ -5842,7 +5907,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "name": "ammo_max",
     "eq": 1,
-    "why": "the difficulty-0 list's first pair has interval 1.05, so only ONE bomb is queued before the 48-frame gap",
+    "why": "the difficulty-0 list's first pair has interval 1.05 -> round(0.5+45*1.05) = 48 frames, so only ONE bomb is queued before the gap",
     "src": "gml_Object_obj_pink_battlemovement_Step_0.gml:540"
    },
    {
@@ -5851,7 +5916,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "mode",
     "eq": 2,
-    "why": "Pink's dispatcher pins obj_purplecontrols.mode = 2 (the 4x4 bomb grid) before spawning the controller",
+    "why": "Pink's dispatcher pins obj_purplecontrols.mode = 2 (the 4x4 bomb grid); the type-203 branch pins it too at Step_0.gml:2519",
     "src": "gml_Object_obj_pink_enemy_Step_0.gml:1788"
    },
    {
@@ -5871,7 +5936,7 @@ window.ATTACK_SPECS = [
     "name": "x_ongrid",
     "eq": -20,
     "tol": 0.01,
-    "why": "mode 2 target is (lane_x - 1.5) * 40 with Create's lane_x = 1, i.e. -20",
+    "why": "mode 2 target is (lane_x - 1.5) * 40 with Create's lane_x = 1, i.e. -20, reached in one step at 22/frame",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:257"
    },
    {
@@ -5881,7 +5946,7 @@ window.ATTACK_SPECS = [
     "w": 150,
     "h": 150,
     "tol": 2,
-    "why": "the branch only shifts the box down 32; scale stays maxxscale/maxyscale = 2 on 75x75",
+    "why": "the branch only shifts the box down 32 (and pink_battlemovement re-pins y = box_y_original + box_pushdown_real = 202 + 0); scale stays maxxscale/maxyscale = 2 on 75x75",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2522"
    },
    {
@@ -5889,7 +5954,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_fusebomb",
     "byFrame": 20,
     "min": 1,
-    "why": "the throw animation runs spr_pink_throw_bomb 0->5 and releases a bomb around frame 13",
+    "why": "the throw animation runs spr_pink_throw_bomb 0->5 (1,0.5,0.5,1,0.5,0.5 then +0.167 x6) and releases a bomb on frame ~12",
     "src": "gml_Object_obj_pink_battlemovement_Step_0.gml:854"
    },
    {
@@ -5899,7 +5964,7 @@ window.ATTACK_SPECS = [
     "name": "dest_x",
     "min": 260,
     "max": 380,
-    "why": "target cell is (box_x - 40*1.5) + grid_x*40 with grid_x in 0..3: 260..380 — a band RNG cannot leave",
+    "why": "Create captures dest_x = x from the create call (box_x - 40*1.5) + grid_x*40 with grid_x in 0..3: 260..380 — a band RNG cannot leave",
     "src": "gml_Object_obj_pink_battlemovement_Step_0.gml:854"
    },
    {
@@ -5909,7 +5974,7 @@ window.ATTACK_SPECS = [
     "name": "dest_y",
     "min": 142,
     "max": 262,
-    "why": "target cell is (box_y - 60) + grid_y*40 with box_y = 202 and grid_y in 0..3: 142..262",
+    "why": "Create captures dest_y = (box_y - 60) + grid_y*40 with box_y = scr_get_box(5) = 202 and grid_y in 0..3: 142..262",
     "src": "gml_Object_obj_pink_battlemovement_Step_0.gml:854"
    },
    {
@@ -5917,7 +5982,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_pinkbombexplosion",
     "byFrame": 150,
     "min": 1,
-    "why": "fuse_time = (55 + ammo*2) - pattern_repeat*2 = 55 and is held >= 1 only while airborne, so it must detonate",
+    "why": "fuse_time = (55 + ammo*2) - pattern_repeat*2 = 55 (ammo is decremented to 0 before the throw) and is only held >= 1 while airborne, so it must detonate",
     "src": "gml_Object_obj_fusebomb_Step_0.gml:411"
    },
    {
@@ -5948,7 +6013,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "x": 257,
     "tol": 2,
-    "why": "scr_get_box(4) - 63 = growtangle.x - 63 = 320 - 63; it holds position through phase 0 (life_time starts at -15)",
+    "why": "scr_get_box(4) - 63 = growtangle.x - 63 = 320 - 63; speed is 0 and phase 0 lasts 50 steps (life_time starts at -15), so x never changes",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2787"
    },
    {
@@ -5976,7 +6041,7 @@ window.ATTACK_SPECS = [
     "name": "x_ongrid",
     "eq": -63,
     "tol": 0.01,
-    "why": "mode 4/5 target is floor(0.5 + (lane_x - 0.5) * 126) = -63, reached at 24/frame",
+    "why": "mode 4/5 target is floor(0.5 + (lane_x - 0.5) * 126) = floor(-62.5) = -63, reached in 3 steps at 24/frame",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:821"
    },
    {
@@ -5986,7 +6051,7 @@ window.ATTACK_SPECS = [
     "name": "y_ongrid",
     "eq": 0,
     "tol": 0.01,
-    "why": "mode 4 only moves y on press_u/press_d — unlike mode 5 it never auto-scrolls",
+    "why": "mode 4 always takes the press_u/press_d branch — unlike mode 5 it never auto-scrolls at lane_scroll_speed",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:883"
    },
    {
@@ -5995,7 +6060,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "min": 3,
     "max": 3,
-    "why": "btimer_array primed to b_interval - 2 for all three lanes, so all three fire on the first step",
+    "why": "btimer_array primed to b_interval - 2 for all three lanes, so all three hit (btimer % interval) == interval-1 on the first step",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2779"
    },
    {
@@ -6004,7 +6069,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "min": 6,
     "max": 6,
-    "why": "difficulty-0 cadence 7/10/36 with counts 3/2/1 gives lane fires at 1,8,15 + 1,11 + 1 = 6 by frame 20",
+    "why": "difficulty-0 cadence 7/10/36 with counts 3/2/1 gives lane fires at 1,8,15 + 1,11 + 1 = 6 by frame 20; none reach life_time 30 to fade out",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2764"
    },
    {
@@ -6013,7 +6078,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "x": 292,
     "tol": 2,
-    "why": "lane 0 fires first, at scr_get_box(4) - 28 = 320 - 28",
+    "why": "lane 0 fires first, at scr_get_box(4) - 28 = 320 - 28; mode 2's sway is only 0.25*cos(float_dir), under 0.5px by frame 2",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2824"
    },
    {
@@ -6023,7 +6088,7 @@ window.ATTACK_SPECS = [
     "name": "speed",
     "eq": 3.2,
     "tol": 0.01,
-    "why": "b_speed[0] = 3.2 and difficulty 0 sets _pattern_speed_modifier = 1",
+    "why": "b_speed[0] = 3.2 and difficulty 0 sets _pattern_speed_modifier = 1; mode 2 nudges x directly and never touches speed",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2767"
    },
    {
@@ -6036,10 +6101,16 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2825"
    },
    {
+    "kind": "turntimer",
+    "eq": 390,
+    "why": "the type 204 made == 0 block pins global.turntimer = 390",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2757"
+   },
+   {
     "kind": "sprite",
     "name": "spr_bullet_roundbell",
     "byFrame": 5,
-    "why": "the round bell is this attack's signature object and draws itself every step",
+    "why": "obj_roundbellbullet's default sprite; phase 0 draws it with draw_self() every step",
     "src": "gml_Object_obj_roundbellbullet_Draw_0.gml:10"
    },
    {
@@ -6080,7 +6151,7 @@ window.ATTACK_SPECS = [
     "name": "y_ongrid",
     "eq": -80,
     "tol": 0.01,
-    "why": "branch does y_ongrid -= 80 from Create's 0; mode 5 only starts scrolling once x_ongrid reaches its lane",
+    "why": "branch does y_ongrid -= 80 from Create's 0; mode 5 only scrolls once _on_lane is true, which needs x_ongrid to already equal -63 (frame 4)",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2927"
    },
    {
@@ -6090,7 +6161,7 @@ window.ATTACK_SPECS = [
     "name": "x_ongrid",
     "eq": -63,
     "tol": 0.01,
-    "why": "mode 4/5 target is floor(0.5 + (lane_x - 0.5) * 126) = -63, reached at 24/frame",
+    "why": "mode 4/5 target is floor(0.5 + (lane_x - 0.5) * 126) = floor(-62.5) = -63, reached in 3 steps at 24/frame",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:821"
    },
    {
@@ -6126,7 +6197,7 @@ window.ATTACK_SPECS = [
     "atFrame": 2,
     "x": 257,
     "tol": 2,
-    "why": "the first corner bullet is fired at scr_get_box(4) - 63 = 320 - 63 with speed 0, so it never moves",
+    "why": "the first corner bullet is fired at scr_get_box(4) - 63 = 320 - 63 with speed 0 and Create's mode 0, so it never moves",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2940"
    },
    {
@@ -6147,6 +6218,12 @@ window.ATTACK_SPECS = [
     "eq": 0,
     "why": "corner bullets set destroyonhit = 0, overwriting scr_bullet_init's default of 1",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2944"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "the type 205 made == 0 block pins global.turntimer = 300",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2932"
    },
    {
     "kind": "absent",
@@ -6219,7 +6296,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 360,
     "tol": 2,
-    "why": "root node at camerax()+320, cameray()+360; difficulty 0 never gives nodes speed so it never moves",
+    "why": "root node at camerax()+320, cameray()+360; obj_pinknode only steers when speed > 0 and difficulty 0 never gives nodes speed",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:2154"
    },
    {
@@ -6228,7 +6305,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "name": "checkpoint",
     "eq": 2,
-    "why": "the root node is flagged checkpoint = 2 (the respawn point), overwriting Create's 0",
+    "why": "the root node (created first) is flagged checkpoint = 2, overwriting Create's 0",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:2159"
    },
    {
@@ -6246,7 +6323,7 @@ window.ATTACK_SPECS = [
     "atFrame": 3,
     "min": 3,
     "max": 3,
-    "why": "difficulty 0 places exactly three acts, on nodes 4, 5 and 7",
+    "why": "difficulty 0 places exactly three acts, on _li_nodes 4, 5 and 7",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:2180"
    },
    {
@@ -6256,7 +6333,7 @@ window.ATTACK_SPECS = [
     "x": 320,
     "y": 414,
     "tol": 2,
-    "why": "the first act sits on node 4 = fnc_make_node(3, 54) off the root: (320, 360 + 54)",
+    "why": "the first act sits on node 4 = fnc_make_node(3, 54) off the root: lengthdir at 3*90 = 270 gives (320, 360 + 54); mother is never set so End Step never moves it",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:2181"
    },
    {
@@ -6269,11 +6346,17 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_pinknodeact_Create_0.gml:4"
    },
    {
+    "kind": "turntimer",
+    "eq": 1000,
+    "why": "the type 210 made == 0 block pins global.turntimer = 1000",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3326"
+   },
+   {
     "kind": "spawns",
     "obj": "obj_dokiheart",
     "byFrame": 80,
     "min": 1,
-    "why": "one randomly chosen node gets doki_delay = 45, which counts down and spawns a dokiheart",
+    "why": "choose(2,6,8) only picks WHICH node gets doki_delay = 45; one node always gets it, and it counts down to a dokiheart ~45 frames later",
     "src": "gml_Object_obj_purplecontrols_Step_0.gml:2193"
    }
   ]
@@ -6346,7 +6429,7 @@ window.ATTACK_SPECS = [
     "atFrame": 20,
     "name": "image_yscale",
     "eq": 2,
-    "why": "obj_gerson_box_hit's Create scales itself 2x",
+    "why": "obj_gerson_box_hit's Create scales itself 2x, and the alarm only ever overrides image_xscale",
     "src": "obj_gerson_box_hit_Create_0.gml:4"
    },
    {
@@ -6393,7 +6476,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "x": 85,
     "tol": 2,
-    "why": "first bell is obj_growtangle.x - 175 - 60 = 320 - 235 = 85 (box centred on x = 320)",
+    "why": "first bell is obj_growtangle.x - 175 - 60 = 320 - 235 = 85 (box centred on x = 320); obj_gerson_bell's Step never moves it",
     "src": "obj_gerson_bell_attack_controller_Create_0.gml:3"
    },
    {
@@ -6420,7 +6503,7 @@ window.ATTACK_SPECS = [
     "atFrame": 1,
     "x": -20,
     "tol": 2,
-    "why": "leftgerson is obj_growtangle.x - 280 - 60 = 320 - 340 = -20, off the left edge",
+    "why": "leftgerson is obj_growtangle.x - 280 - 60 = 320 - 340 = -20, off the left edge; obj_gerson_teleport's Step is a bare `exit`",
     "src": "obj_gerson_bell_attack_controller_Create_0.gml:5"
    },
    {
@@ -6462,7 +6545,7 @@ window.ATTACK_SPECS = [
     "atFrame": 8,
     "name": "image_yscale",
     "eq": 2,
-    "why": "obj_gerson_bell_hit's Create scales itself 2x",
+    "why": "obj_gerson_bell_hit's Create scales itself 2x and only image_xscale is ever overridden",
     "src": "obj_gerson_bell_hit_Create_0.gml:3"
    },
    {
@@ -6479,7 +6562,7 @@ window.ATTACK_SPECS = [
     "atFrame": 18,
     "min": 7,
     "max": 11,
-    "why": "only the first ringer has fired by then; its two choose(0,1) branches emit 7 or 11 notes, a band randomness cannot leave",
+    "why": "only the first ringer has fired by then (the other was seeded timer = -15); its image_xscale = -2 takes the else branch, whose two choose(0,1) arms emit 7 or 11 notes, a band randomness cannot leave",
     "src": "obj_gerson_bell_hit_Step_0.gml:80,99"
    }
   ]
@@ -6798,7 +6881,7 @@ window.ATTACK_SPECS = [
     "atFrame": 60,
     "name": "hspeed",
     "eq": -15,
-    "why": "the bouncing hammer is launched at a flat hspeed = -15 until it hits the left wall",
+    "why": "the bouncing hammer is launched at a flat hspeed = -15 until it hits the left wall (still ~230px away at frame 60)",
     "src": "obj_hammer_bounce_controller_Step_0.gml:81"
    },
    {
@@ -6853,7 +6936,7 @@ window.ATTACK_SPECS = [
     "atFrame": 5,
     "name": "full_timer",
     "eq": 999,
-    "why": "Create parks full_timer at 999 and it only counts down once the shell sets it to 80",
+    "why": "Create parks full_timer at 999 and the `if (full_timer < 999)` guard keeps it there until the shell sets it to 80",
     "src": "obj_gerson_shell_kick_controller_Create_0.gml:2"
    },
    {
@@ -6886,7 +6969,7 @@ window.ATTACK_SPECS = [
     "obj": "obj_oflash",
     "byFrame": 20,
     "min": 1,
-    "why": "the appearance at timer 12 makes a flash, and another every third frame to timer 24",
+    "why": "the appearance at timer 12 calls scr_oflash(), and another every third frame to timer 24",
     "src": "obj_gerson_shell_kick_controller_Step_0.gml:26,32"
    },
    {
@@ -6913,7 +6996,7 @@ window.ATTACK_SPECS = [
     "name": "speed",
     "eq": 12,
     "tol": 0.5,
-    "why": "the kick sets speed = 12; nothing changes it until the shell reaches a wall",
+    "why": "the kick sets speed = 12; the only rewrite is left_timer/right_timer case 7, which cannot fire within two frames of the kick",
     "src": "obj_gerson_shell_kick_controller_Step_0.gml:54"
    },
    {
@@ -6996,14 +7079,14 @@ window.ATTACK_SPECS = [
     "obj": "obj_oflash",
     "byFrame": 10,
     "min": 1,
-    "why": "Create makes the black entry flash and phase 0 adds a lime one every third frame",
+    "why": "Create makes the black entry flash via scr_oflash() and phase 0 adds a lime one every third frame",
     "src": "obj_gerson_box_rumble_controller_Create_0.gml:17"
    },
    {
     "kind": "sprite",
     "name": "spr_gerson_swing",
     "byFrame": 10,
-    "why": "Create pins spr_gerson_swing, which the flash copies and draws",
+    "why": "Create pins spr_gerson_swing; the controller itself is visible = false, but obj_oflash's Draw copies target.sprite_index and draws it",
     "src": "obj_gerson_box_rumble_controller_Create_0.gml:9"
    },
    {
@@ -7039,7 +7122,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "x": 380,
     "tol": 2,
-    "why": "box_bonk(-1) puts him at obj_growtangle.x - (120 * -1) = 440, then the arg0 == -1 branch pulls back 60 → 380",
+    "why": "box_bonk(-1) puts him at obj_growtangle.x - (120 * -1) = 440, then the arg0 == -1 branch pulls back 60 → 380; only y is lerped afterwards",
     "src": "obj_gerson_box_rumble_controller_Create_0.gml:33,41"
    },
    {
@@ -7062,7 +7145,6 @@ window.ATTACK_SPECS = [
    },
    {
     "kind": "box",
-    "x": 320,
     "w": 150,
     "h": 150,
     "tol": 2,
@@ -16028,7 +16110,8 @@ window.ATTACK_SPECS = [
     "xscale": 2,
     "yscale": 2,
     "alpha": 0,
-    "why": "row 0's telegraph sits at obj_growtangle.x+lengthdir_x(130,0)=450, obj_growtangle.y+20+lengthdir_y(130,0)=260, at 2x and image_alpha 0",
+    "tol": 1,
+    "why": "row 0's telegraph sits at obj_growtangle.x+lengthdir_x(130,0)=450, obj_growtangle.y+20+lengthdir_y(130,0)=260, at the Create-pinned 2x with image_alpha 0; obj_gerson_teleport's Step is a bare exit, so neither axis moves",
     "src": "gml_GlobalScript_scr_spearshot.gml:82,86"
    },
    {
@@ -16056,7 +16139,7 @@ window.ATTACK_SPECS = [
     "name": "timetoswing",
     "eq": 999,
     "why": "swingdowntype -3 parks the hammers indefinitely until the timer==34 broadcast releases all of them together",
-    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:21"
+    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:23"
    },
    {
     "kind": "ivar",
@@ -16076,7 +16159,7 @@ window.ATTACK_SPECS = [
     "yscale": 2,
     "minCalls": 8,
     "maxCalls": 8,
-    "why": "all 8 ring hammers are alive and drawn at the Create-pinned 2x before any of them swings or spawns afterimages",
+    "why": "all 8 ring hammers are alive and drawn once each by draw_self at the Create-pinned 2x; eye_con is still 0 at frame 35 so no afterimages exist yet",
     "src": "gml_Object_obj_gerson_swing_down_Create_0.gml:18"
    },
    {
@@ -16114,10 +16197,9 @@ window.ATTACK_SPECS = [
     "obj": "",
     "name": "spr_gerson_swing",
     "atFrame": 3,
-    "x": 455,
     "xscale": 2,
     "yscale": 2,
-    "why": "the switch spawns at gerson.x - 5 = 460-5 and its Create pins image_xscale/yscale = 2; only its y lerps, so x is the assertable axis",
+    "why": "obj_gerson_green_switch's sprite is spr_gerson_swing and its Create pins image_xscale/image_yscale = 2 before draw_self runs",
     "src": "gml_Object_obj_gerson_green_switch_Create_0.gml:4"
    },
    {
@@ -16142,8 +16224,8 @@ window.ATTACK_SPECS = [
     "atFrame": 90,
     "name": "diagonal_enabled",
     "eq": 1,
-    "why": "row 1 is opcode 3; it fires ~19 frames before the shield exists, so the with() is a no-op and Create picks the flag up from the enemy instead",
-    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+    "why": "row 1's opcode 3 raises the ENEMY's diagonal_enabled; the shield's Create then only sets diagonal_transform = 1, and it is the shield's own Draw that finally sets diagonal_enabled = 1",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
    },
    {
     "kind": "ivar",
@@ -16174,7 +16256,8 @@ window.ATTACK_SPECS = [
     "xscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "the shield is pinned to obj_heart.x+10,y+10 (= growtangle 320,240) plus the constant +1 shake offset, and settles at idealdir 90 with no input",
+    "tol": 1,
+    "why": "the shield is pinned to obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 shake offset, and settles at idealdir 90 with no input",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -16192,7 +16275,7 @@ window.ATTACK_SPECS = [
     "atFrame": 60,
     "min": 6,
     "max": 12,
-    "why": "rows 3-18 are 16 plain spears on a 3-frame cadence with 30-frame leads, so ten are in flight around frame 60",
+    "why": "rows 3-18 are 16 plain spears on a 3-frame cadence with 30-frame leads, so about ten are in flight around frame 60",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1863"
    },
    {
@@ -16222,13 +16305,13 @@ window.ATTACK_SPECS = [
     "src": "gml_GlobalScript_scr_spearshot.gml:9"
    },
    {
-    "kind": "count",
-    "obj": "obj_spearblocker",
-    "atFrame": 300,
-    "min": 3,
-    "max": 3,
-    "why": "the chart holds five special==1 rows and the chevron's shield create is unguarded, so shields accumulate — three exist by the third switch (rows 0, 21, 24)",
-    "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
+    "kind": "ivar",
+    "obj": "obj_giant_hammer",
+    "atFrame": 95,
+    "name": "dir",
+    "eq": 270,
+    "why": "opcode 2 copies arg0 onto ham.dir and row 19 passes arg0 = 270; nothing in the hammer's Step ever writes dir",
+    "src": "gml_GlobalScript_scr_spearshot.gml:11"
    }
   ]
  },
@@ -16271,7 +16354,7 @@ window.ATTACK_SPECS = [
     "atFrame": 4,
     "name": "type",
     "eq": 5,
-    "why": "opcode 13 stamps type = 5 on the squisher",
+    "why": "opcode 13 stamps type = 5 on the squisher and nothing in its Step ever rewrites it",
     "src": "gml_GlobalScript_scr_spearshot.gml:232"
    },
    {
@@ -16289,7 +16372,7 @@ window.ATTACK_SPECS = [
     "atFrame": 250,
     "y": 145,
     "tol": 2,
-    "why": "every one of the 53 opcode-4 rows passes arg1 = 145, so all telegraphs land on cameray()+145; only arg0 (x) varies row to row",
+    "why": "every one of the 53 opcode-4 rows passes arg1 = 145 and arg2 of -1/-2 falls to the generic branch, so all telegraphs land on cameray()+145; only arg0 (x) varies row to row",
     "src": "gml_GlobalScript_scr_spearshot.gml:160"
    },
    {
@@ -16309,7 +16392,8 @@ window.ATTACK_SPECS = [
     "xscale": 2,
     "yscale": 2,
     "alpha": 0,
-    "why": "the generic opcode-4 branch draws the telegraph at 2x with image_alpha 0 — it is a silent spawner, not a visible flash",
+    "tol": 2,
+    "why": "the generic opcode-4 branch draws the telegraph at the Create-pinned 2x with image_alpha 0 — it is a silent spawner, not a visible flash",
     "src": "gml_GlobalScript_scr_spearshot.gml:160,163"
    },
    {
@@ -16327,7 +16411,7 @@ window.ATTACK_SPECS = [
     "atFrame": 250,
     "xscale": -2,
     "yscale": 2,
-    "why": "a hammer created left of obj_growtangle.x is mirrored: image_xscale = -2 and x += 124; rows 29-34 use arg0 100..350, all left of centre",
+    "why": "a hammer whose telegraph sits left of obj_growtangle.x (320) is mirrored to image_xscale = -2 with x += 124; rows 29-33 use arg0 100..300, all left of centre",
     "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:66"
    },
    {
@@ -16373,8 +16457,8 @@ window.ATTACK_SPECS = [
     "atFrame": 90,
     "name": "diagonal_enabled",
     "eq": 0,
-    "why": "this chart has NO opcode-3 row, so the shield stays cardinal-only — unlike patterns 46/49/50/51/53",
-    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1963"
+    "why": "this chart has NO opcode-3 row, so diagonal_transform is never raised and the shield keeps its Create-time value — cardinal blocking only, unlike patterns 46/49/50/51/53",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
    },
    {
     "kind": "ivar",
@@ -16396,7 +16480,8 @@ window.ATTACK_SPECS = [
     "yscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "shield pinned to obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, unsquashed at yscale 1, resting at idealdir 90",
+    "tol": 1,
+    "why": "shield pinned to obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 offset, unsquashed at yscale 1, resting at idealdir 90",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -16429,7 +16514,7 @@ window.ATTACK_SPECS = [
     "atFrame": 14,
     "name": "swingdowntype",
     "eq": 60,
-    "why": "arg2 = 60 is stored on the telegraph and forwarded to the hammer",
+    "why": "arg2 = 60 hits the generic branch, is stored on the telegraph and forwarded to the hammer",
     "src": "gml_GlobalScript_scr_spearshot.gml:162"
    },
    {
@@ -16439,7 +16524,7 @@ window.ATTACK_SPECS = [
     "name": "timetoswing",
     "eq": 22,
     "why": "swingdowntype >= 11 selects the 22-frame telegraph window",
-    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:49"
+    "src": "gml_Object_obj_gerson_swing_down_Other_10.gml:51"
    },
    {
     "kind": "draw",
@@ -16450,7 +16535,7 @@ window.ATTACK_SPECS = [
     "yscale": 2,
     "minCalls": 3,
     "maxCalls": 3,
-    "why": "three hammers, each at the Create-pinned 2x, all still in their pre-swing telegraph",
+    "why": "three hammers, each drawn once by draw_self at the Create-pinned 2x, all still in their pre-swing telegraph (eye_con only fires at timer 10)",
     "src": "gml_Object_obj_gerson_swing_down_Create_0.gml:18"
    },
    {
@@ -16485,51 +16570,10 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_gerson_green_chevron_Draw_0.gml:9"
    },
    {
-    "kind": "ivar",
-    "obj": "obj_spearblocker",
-    "atFrame": 90,
-    "name": "diagonal_enabled",
-    "eq": 1,
-    "why": "row 1 is opcode 3; it fires long before the shield exists, so the flag reaches the shield through its Create instead",
-    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
-   },
-   {
-    "kind": "ivar",
-    "obj": "obj_spearblocker",
-    "atFrame": 90,
-    "name": "radius",
-    "eq": 35,
-    "why": "the diagonal transform lerps radius 30 toward 35 and clamps on the 8th Draw",
-    "src": "gml_Object_obj_spearblocker_Draw_0.gml:104"
-   },
-   {
-    "kind": "ivar",
-    "obj": "obj_spearblocker",
-    "atFrame": 90,
-    "name": "image_yscale",
-    "eq": 0.667,
-    "tol": 0.01,
-    "why": "radius crosses 34 before yscale crosses 0.62, clearing diagonal_transform and freezing yscale at 0.6+0.4*0.8^8",
-    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
-   },
-   {
-    "kind": "draw",
-    "obj": "",
-    "name": "spr_spearblocker",
-    "atFrame": 90,
-    "x": 321,
-    "y": 241,
-    "xscale": 1,
-    "angle": 90,
-    "alpha": 1,
-    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
-    "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
-   },
-   {
     "kind": "absent",
     "obj": "obj_spearshot",
     "byFrame": 300,
-    "why": "the four rows are opcodes 1, 3, 2 and 5 — none of them is a spear",
+    "why": "the four rows are opcodes 1, 3, 2 and 5 — none of them is a spear, and neither the giant hammer nor the box-hit controller creates one",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1974"
    },
    {
@@ -16546,7 +16590,7 @@ window.ATTACK_SPECS = [
     "atFrame": 8,
     "name": "dir",
     "eq": 0,
-    "why": "opcode 2 copies arg0 onto ham.dir, and row 2 passes arg0 = 0 (the left-side swing arc)",
+    "why": "opcode 2 copies arg0 onto ham.dir, and row 2 passes arg0 = 0 (the left-side swing arc); the hammer's Step only reads dir, never writes it",
     "src": "gml_GlobalScript_scr_spearshot.gml:11"
    },
    {
@@ -16556,7 +16600,7 @@ window.ATTACK_SPECS = [
     "x": 0,
     "y": 5,
     "tol": 1,
-    "why": "opcode 5 creates the controller at the raw arg0,arg1 the chart passes — literally (0, 5) — and the controller never moves",
+    "why": "opcode 5 creates the controller at the raw arg0,arg1 the chart passes — literally (0, 5), with no camera offset — and its Step never touches x or y",
     "src": "gml_GlobalScript_scr_spearshot.gml:168"
    },
    {
@@ -16565,7 +16609,7 @@ window.ATTACK_SPECS = [
     "atFrame": 8,
     "name": "count",
     "eq": 7,
-    "why": "the controller's Create fixes seven box hits before the turn hands back",
+    "why": "the controller's Create fixes seven box hits; count only starts decrementing at its internal timer == 25, which is ~frame 13",
     "src": "gml_Object_obj_gerson_box_hit_controller_Create_0.gml:3"
    },
    {
@@ -16573,15 +16617,8 @@ window.ATTACK_SPECS = [
     "obj": "obj_gerson_box_hit",
     "byFrame": 30,
     "min": 1,
-    "why": "the controller's first side teleport (timer == 25) resolves into a swinging Gerson 70px inward",
-    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:10"
-   },
-   {
-    "kind": "sprite",
-    "name": "spr_greenheart",
-    "byFrame": 60,
-    "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
-    "src": "gml_Object_obj_heart_Step_0.gml:27"
+    "why": "the controller's first side teleport (timer == 25) resolves into a swinging Gerson 70px inward on whichever side con picked",
+    "src": "gml_Object_obj_gerson_teleport_Alarm_0.gml:10,17"
    }
   ]
  },
@@ -16619,8 +16656,8 @@ window.ATTACK_SPECS = [
     "atFrame": 90,
     "name": "diagonal_enabled",
     "eq": 1,
-    "why": "row 1 is opcode 3, which the shield picks up through its Create because it fires before the shield exists — the pattern needs it for the 225/315/135/45 rows",
-    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+    "why": "row 1's opcode 3 raises the enemy flag, the shield's Create turns that into diagonal_transform = 1, and the shield's own Draw sets diagonal_enabled — the pattern needs it for the 225/315/135/45 rows",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
    },
    {
     "kind": "ivar",
@@ -16642,7 +16679,8 @@ window.ATTACK_SPECS = [
     "xscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "shield sits on obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
+    "tol": 1,
+    "why": "shield sits on obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -16660,7 +16698,7 @@ window.ATTACK_SPECS = [
     "atFrame": 100,
     "name": "image_angle",
     "eq": 270,
-    "why": "the oldest live spear here is the row-8 arg0 = 270 shot, and a plain spear's image_angle is its direction",
+    "why": "the oldest live spear here is the row-8 arg0 = 270 shot, and a plain spear's image_angle is its direction and is never rewritten in its Step",
     "src": "gml_GlobalScript_scr_spearshot.gml:722,725"
    },
    {
@@ -16669,7 +16707,7 @@ window.ATTACK_SPECS = [
     "atFrame": 100,
     "name": "fakespeed",
     "eq": 8,
-    "why": "every 270 row in this chart passes arg1 = 8, and fakespeed is copied verbatim",
+    "why": "every 270 row in this chart passes arg1 = 8, fakespeed is copied verbatim, and grav is 0 so it never drifts",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:1990"
    },
    {
@@ -16702,7 +16740,7 @@ window.ATTACK_SPECS = [
     "name": "spr_greenheart",
     "byFrame": 60,
     "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
-    "src": "gml_Object_obj_heart_Step_0.gml:27"
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
    }
   ]
  },
@@ -16740,8 +16778,8 @@ window.ATTACK_SPECS = [
     "atFrame": 90,
     "name": "diagonal_enabled",
     "eq": 1,
-    "why": "row 1 is opcode 3 — mandatory here, since the ring includes 315/45/135/225 bearings",
-    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+    "why": "row 1's opcode 3 reaches the shield via Create's diagonal_transform and the shield's Draw — mandatory here, since the ring includes 315/45/135/225 bearings",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
    },
    {
     "kind": "ivar",
@@ -16762,7 +16800,8 @@ window.ATTACK_SPECS = [
     "xscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
+    "tol": 1,
+    "why": "shield tracks obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -16833,7 +16872,7 @@ window.ATTACK_SPECS = [
     "name": "spr_greenheart",
     "byFrame": 60,
     "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
-    "src": "gml_Object_obj_heart_Step_0.gml:27"
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
    }
   ]
  },
@@ -16863,8 +16902,8 @@ window.ATTACK_SPECS = [
     "atFrame": 55,
     "name": "diagonal_enabled",
     "eq": 0,
-    "why": "the chart has no opcode-3 row, so diagonal blocking is never unlocked even though all three spears end on diagonal bearings",
-    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2020"
+    "why": "the chart has no opcode-3 row, so diagonal_transform is never raised and the shield keeps its Create value even though all three spears end on diagonal bearings",
+    "src": "gml_Object_obj_spearblocker_Create_0.gml:8"
    },
    {
     "kind": "ivar",
@@ -16886,7 +16925,8 @@ window.ATTACK_SPECS = [
     "yscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "unsquashed shield on obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
+    "tol": 1,
+    "why": "unsquashed shield on obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 offset, resting at idealdir 90",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -16913,7 +16953,7 @@ window.ATTACK_SPECS = [
     "atFrame": 75,
     "name": "special",
     "eq": 315,
-    "why": "arg3 = 315 is not a known opcode, so it falls through to the default branch and becomes the spear's curve target",
+    "why": "arg3 = 315 is not a known opcode, so it falls through to the default branch and becomes the spear's curve target; special only clears once len drops to the 90 rotate radius",
     "src": "gml_GlobalScript_scr_spearshot.gml:721"
    },
    {
@@ -16931,7 +16971,7 @@ window.ATTACK_SPECS = [
     "atFrame": 75,
     "name": "fakespeed",
     "eq": 8,
-    "why": "row 1 passes arg1 = 8, copied verbatim to fakespeed",
+    "why": "row 1 passes arg1 = 8, copied verbatim to fakespeed, and grav is 0",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2023"
    },
    {
@@ -16949,7 +16989,7 @@ window.ATTACK_SPECS = [
     "atFrame": 120,
     "min": 1,
     "max": 1,
-    "why": "row 2 fires 45 frames after row 1 and row 3 a further 40, so the second spear also flies alone",
+    "why": "row 2 fires 45 frames after row 1 and row 3 a further 40, and row 1's spear has already curved in and resolved, so the second spear also flies alone",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2024"
    },
    {
@@ -16966,7 +17006,7 @@ window.ATTACK_SPECS = [
     "name": "spr_greenheart",
     "byFrame": 55,
     "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
-    "src": "gml_Object_obj_heart_Step_0.gml:27"
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
    }
   ]
  },
@@ -17004,8 +17044,8 @@ window.ATTACK_SPECS = [
     "atFrame": 91,
     "name": "diagonal_enabled",
     "eq": 1,
-    "why": "row 1 is the first of five opcode-3 rows; the spiral steps in 45 degree increments so diagonal blocking is required",
-    "src": "gml_Object_obj_spearblocker_Create_0.gml:40"
+    "why": "row 1 is the first of five opcode-3 rows; it reaches the shield through Create's diagonal_transform and the shield's Draw, and the spiral steps in 45 degree increments so diagonal blocking is required",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:78"
    },
    {
     "kind": "ivar",
@@ -17036,7 +17076,8 @@ window.ATTACK_SPECS = [
     "xscale": 1,
     "angle": 90,
     "alpha": 1,
-    "why": "shield tracks obj_heart.x+10,y+10 (growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
+    "tol": 1,
+    "why": "shield tracks obj_heart.x+10,y+10 (heart lerped to growtangle 320,240) plus the constant +1 offset and rests at idealdir 90",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:180,287,302"
    },
    {
@@ -17045,7 +17086,7 @@ window.ATTACK_SPECS = [
     "atFrame": 91,
     "min": 4,
     "max": 8,
-    "why": "beat = 4 with heartframes = 40 means roughly ten leads overlap; the third five-row sweep plus the start of the eleven-row sweep are in flight",
+    "why": "beat = 4 with heartframes = 40 means several leads overlap; the third five-row sweep plus the start of the eleven-row sweep are in flight",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:2032"
    },
    {
@@ -17096,7 +17137,38 @@ window.ATTACK_SPECS = [
     "name": "spr_greenheart",
     "byFrame": 60,
     "why": "the soul turns green for as long as a non-vanishing obj_spearblocker exists",
-    "src": "gml_Object_obj_heart_Step_0.gml:27"
+    "src": "gml_Object_obj_heart_Step_0.gml:28"
+   }
+  ]
+ },
+ {
+  "id": "spamton_neo_sneo_bulletcontroller",
+  "name": "UnspecifiedSneoAttack",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_sneo_bulletcontroller",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "the fallback dispatcher branch spawns exactly one obj_sneo_bulletcontroller",
+    "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:892"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "scr_turntimer(260) is the unconditional dispatcher default and every override (rr 1/2/5/6/7) belongs to an rr value that has its own branch, so none can apply in the else branch",
+    "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:898"
+   },
+   {
+    "kind": "box",
+    "x": 245,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "every growtangle reshaping block is keyed to rr 0/3/4/6/7/8/8.5/9, all of which have their own dispatcher branch, so the else branch always leaves the default (view+245, view+170) at maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_growtangle_Create_0.gml:13"
    }
   ]
  }
