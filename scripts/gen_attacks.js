@@ -505,16 +505,21 @@ for (const boss of BOSSES) {
     const cfg = rosterConfigs.find(c => c.id === boss.id);
     let d = 0;
     for (const r of (cfg && cfg.real) || []) {
-      if (!r.controller) continue;
+      // Not every real turn goes through a bullet controller. Orange & Green's
+      // HEALING EGG replaces the turn outright — no controller, no box, no soul
+      // — so requiring `controller` dropped it from the roster entirely. Fall
+      // back to the object the row says the attack actually creates.
+      const cell = parseControllerCell(r.controller || r.attackObject);
+      if (!cell.name) continue;
       roster.push({
         boss: boss.id, bossLabel: boss.label, chapter: boss.chapter,
         enemy: boss.enemy,
         selector: (cfg.selectorVar && typeof r.choice === 'number') ? cfg.selectorVar : null,
         choice: typeof r.choice === 'number' ? r.choice : null,
         name: r.name || `${boss.label} attack`,
-        controller: r.controller,
-        type: r.type === undefined ? null : r.type,
-        set: r.set || null,
+        controller: cell.name,
+        type: typeof r.type === 'number' ? Math.floor(r.type) : (r.type === undefined ? null : r.type),
+        set: Object.assign({}, cell.set, r.set || null),
         turntimerHint: r.turntimer === undefined ? null : r.turntimer,
         usesDifficulty: false, difficultyLiteral: null, extraFields: [],
         setup: null, declared: true,
@@ -675,37 +680,134 @@ for (const boss of BOSSES) {
 // incidental effect, not the attack. The roster JSON records the real controller
 // (its .md documents this exact caveat), so where it declares one for a choice,
 // it wins. The scan's verbatim `setup` block is kept either way.
+/**
+ * A roster row's controller cell may carry the seed values alongside the name:
+ *   "obj_rhythmgame (tenna_boss = true, turn_length = 360)"
+ * Those annotations are exactly the fields the attack needs to launch, so parse
+ * them rather than dropping them with the parenthetical.
+ */
+function parseControllerCell(cell) {
+  if (typeof cell !== 'string') return { name: null, set: {} };
+  const m = cell.match(/^\s*([A-Za-z_]\w*)\s*(?:\((.*)\))?/);
+  if (!m) return { name: null, set: {} };
+  const set = {};
+  if (m[2]) {
+    for (const kv of m[2].split(',')) {
+      const p = kv.match(/^\s*([A-Za-z_]\w*)\s*=\s*(.+?)\s*$/);
+      if (!p) continue;
+      const raw = p[2];
+      if (/^-?\d+(\.\d+)?$/.test(raw)) set[p[1]] = Number(raw);
+      else if (raw === 'true' || raw === 'false') set[p[1]] = raw === 'true';
+    }
+  }
+  return { name: m[1], set };
+}
+
+/**
+ * Fold a roster row's declared values onto a generated attack entry.
+ *
+ * A fractional `type` (2.1, 6.1) is the roster's shorthand for "same controller
+ * type, next step along the difficulty axis" — the real GML type is the integer
+ * part, and the variant comes from `difficulty`. Passing 2.1 through as the type
+ * would land on no case at all and the attack would spawn nothing.
+ */
+function applyRosterRow(a, r, selectorVar) {
+  const ctl = parseControllerCell(r.controller);
+  if (ctl.name && ctl.name !== a.controller) a.controller = ctl.name;
+  if (typeof r.type === 'number') a.type = Math.floor(r.type);
+  else if (r.type !== undefined && r.type !== null) a.type = r.type;
+  if (r.name) a.name = r.name;
+
+  const set = Object.assign({}, ctl.set, r.set || {}, a.set || {});
+  // `difficulty` is a number only when the roster pins one; several rosters use
+  // that cell for prose describing how the fight derives it, which must not be
+  // written onto the controller.
+  if (typeof r.difficulty === 'number') {
+    a.difficultyLiteral = r.difficulty;
+    set.difficulty = r.difficulty;
+  }
+  if (typeof r.special === 'number') set.special = r.special;
+  if (typeof r.turnOverride === 'number') a.turnTimer = r.turnOverride;
+  else if (typeof r.turn === 'number') a.turnTimer = r.turn;
+  if (Object.keys(set).length) a.set = set;
+
+  // No `type` means the selector itself is the payload: the boss creates the
+  // object and writes the selector onto it (leap.leapmode = 2).
+  if ((r.type === undefined || r.type === null) && !a.set && typeof a.choice === 'number') {
+    a.set = { [selectorVar]: Number(a.choice) };
+  }
+}
+
+// A choice can legitimately cover SEVERAL playable attacks: Queen's `case 2`
+// dispatches Wine at three tilt speeds, and Tenna's `case 3` covers every
+// PHYSICAL CHALLENGE minigame. The scan sees one branch and emits one entry, so
+// those variants used to be dropped (27 attacks across Queen, Tenna, Berdly,
+// Tasque Manager and Orange & Green). Fan the entry out into one attack per
+// roster row instead — the rows carry the type/difficulty/special that
+// distinguish them, and the scan's verbatim `setup` block is shared by all.
 for (const j of rosterConfigs) {
   if (!j.selectorVar || !Array.isArray(j.real)) continue;
-  // ONLY where the mapping is unambiguous. A choice can legitimately cover
-  // several attacks — Queen's `case 2` dispatches types 2, 2.1 and 2.2, and a
-  // turn-repeated attack appears once per turn in the derivation — and forcing
-  // one roster row's name onto all of them made them look identical, so the
-  // dedupe collapsed real attacks away (Queen 15 entries -> 10, Titan 21 -> 17).
-  // When a choice maps to more than one row, the scan already knows more than
-  // the reconciliation does: leave it alone.
   const grouped = new Map();
   for (const r of j.real) {
     if (typeof r.choice !== 'number') continue;
     if (!grouped.has(r.choice)) grouped.set(r.choice, []);
     grouped.get(r.choice).push(r);
   }
-  const byChoice = new Map();
-  for (const [choice, rows] of grouped) if (rows.length === 1) byChoice.set(choice, rows[0]);
-  if (!byChoice.size) continue;
-  for (const a of roster) {
+  // Names repeat across variant axes (Berdly fights Tornado in both of his
+  // fights). Disambiguate with whatever actually differs, so the dedupe below
+  // sees distinct attacks and the dropdown reads unambiguously.
+  const nameCount = new Map();
+  for (const r of j.real) nameCount.set(r.name, (nameCount.get(r.name) || 0) + 1);
+  const suffixFor = r => {
+    if ((nameCount.get(r.name) || 0) < 2) return '';
+    const bits = [];
+    if (r.fight !== undefined) bits.push(`fight ${r.fight}`);
+    if (typeof r.difficulty === 'number') bits.push(`difficulty ${r.difficulty}`);
+    if (typeof r.special === 'number') bits.push(`special ${r.special}`);
+    if (!bits.length && r.minigametype) bits.push(String(r.minigametype));
+    return bits.length ? ` (${bits.join(', ')})` : '';
+  };
+
+  const expanded = [];
+  for (let i = 0; i < roster.length; i++) {
+    const a = roster[i];
     if (a.boss !== j.id) continue;
-    const r = byChoice.get(Number(a.choice));
-    if (!r) continue;
-    if (r.controller && r.controller !== a.controller) a.controller = r.controller;
-    if (r.type !== undefined && r.type !== null) a.type = r.type;
-    if (r.name) a.name = r.name;
-    if (r.set) a.set = Object.assign({}, r.set, a.set || {});
-    // No `type` means the selector itself is the payload: the boss creates the
-    // object and writes the selector onto it (leap.leapmode = 2).
-    if ((r.type === undefined || r.type === null) && !a.set) {
-      a.set = { [j.selectorVar]: Number(a.choice) };
+    const rows = grouped.get(Number(a.choice));
+    if (!rows || !rows.length) continue;
+    if (rows.length === 1) { applyRosterRow(a, rows[0], j.selectorVar); continue; }
+    for (const r of rows) {
+      const clone = Object.assign({}, a, { set: a.set ? Object.assign({}, a.set) : undefined });
+      applyRosterRow(clone, r, j.selectorVar);
+      clone.name = (r.name || clone.name) + suffixFor(r);
+      clone.variantOf = a.name;
+      expanded.push(clone);
     }
+    roster[i] = null; // the un-fanned entry is replaced by its variants
+  }
+  if (expanded.length) {
+    for (let i = roster.length - 1; i >= 0; i--) if (roster[i] === null) roster.splice(i, 1);
+    roster.push(...expanded);
+  }
+
+  // Rows whose choice the scan never reached at all (Orange & Green's HEALING
+  // EGG replaces the whole turn, so no dispatcher branch creates a controller).
+  const covered = new Set(roster.filter(a => a.boss === j.id).map(a => a.name));
+  for (const r of j.real) {
+    const nm = (r.name || '') + suffixFor(r);
+    if (!r.name || covered.has(nm) || covered.has(r.name)) continue;
+    const base = roster.find(a => a.boss === j.id);
+    if (!base) continue;
+    const entry = {
+      boss: j.id, bossLabel: j.label, chapter: j.chapter, enemy: j.enemy,
+      selector: j.selectorVar, choice: r.choice, name: nm,
+      controller: null, type: null, usesDifficulty: false, difficultyLiteral: null,
+      extraFields: [], setup: base.setup || null,
+      source: `rosters/${j.id}.json (row not reached by scan)`,
+    };
+    applyRosterRow(entry, r, j.selectorVar);
+    entry.name = nm;
+    roster.push(entry);
+    covered.add(nm);
   }
 }
 
@@ -745,6 +847,14 @@ for (const a of roster) {
   }
   usedIds.add(a.id);
   seen.set(key, a);
+  // The studio seeds the controller from `controllerSet`. A roster row's own
+  // values arrive as `set`, so fold them in here rather than teaching the
+  // launcher about a second field that means the same thing. Attack-level wins:
+  // the boss-level entry is a blanket default (`joker: 1`).
+  if (a.set) {
+    a.controllerSet = Object.assign({}, a.controllerSet || {}, a.set);
+    delete a.set;
+  }
   final.push(a);
 }
 
@@ -788,9 +898,14 @@ const REAL = {
 // generator will end up naming the entry.
 for (const j of rosterConfigs) {
   if (REAL[j.id]) continue;                      // hand-written filter wins
-  const realTypes = new Set((j.real || []).filter(r => r.type !== undefined && r.type !== null).map(r => Number(r.type)));
-  const realChoices = new Set((j.real || []).filter(r => r.choice !== undefined && r.choice !== null).map(r => Number(r.choice)));
-  const realControllers = new Set((j.real || []).map(r => r.controller).filter(Boolean));
+  // Types are floored to match the entries: a roster's 2.1 is type 2 at the
+  // next difficulty, not a distinct controller case.
+  const realTypes = new Set((j.real || []).filter(r => r.type !== undefined && r.type !== null).map(r => Math.floor(Number(r.type))));
+  const realChoices = new Set((j.real || []).filter(r => typeof r.choice === 'number').map(r => Number(r.choice)));
+  // `attackObject` too, for the turns that create an object without a bullet
+  // controller — otherwise they generate and are then judged cut.
+  const realControllers = new Set((j.real || [])
+    .map(r => parseControllerCell(r.controller || r.attackObject).name).filter(Boolean));
   REAL[j.id] = a => {
     if (a.type !== null && a.type !== undefined && realTypes.size) return realTypes.has(Number(a.type));
     if (a.choice !== null && a.choice !== undefined && realChoices.size) return realChoices.has(Number(a.choice));

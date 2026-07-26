@@ -1490,6 +1490,26 @@
   global.bm_add = 1;
   global.bm_normal = 0;
 
+  // Virtual key codes — the Windows VK_* values GameMaker exposes verbatim.
+  // keyboard_check* take these, and the corpus also compares them against
+  // `keyboard_key` / `keyboard_lastkey` directly, so the numbers have to be the
+  // real ones rather than arbitrary tokens.
+  Object.assign(global, {
+    vk_nokey: 0, vk_anykey: 1,
+    vk_backspace: 8, vk_tab: 9, vk_enter: 13, vk_shift: 16, vk_control: 17,
+    vk_alt: 18, vk_pause: 19, vk_escape: 27, vk_space: 32,
+    vk_pageup: 33, vk_pagedown: 34, vk_end: 35, vk_home: 36,
+    vk_left: 37, vk_up: 38, vk_right: 39, vk_down: 40,
+    vk_printscreen: 44, vk_insert: 45, vk_delete: 46,
+    vk_numpad0: 96, vk_numpad1: 97, vk_numpad2: 98, vk_numpad3: 99, vk_numpad4: 100,
+    vk_numpad5: 101, vk_numpad6: 102, vk_numpad7: 103, vk_numpad8: 104, vk_numpad9: 105,
+    vk_multiply: 106, vk_add: 107, vk_subtract: 109, vk_decimal: 110, vk_divide: 111,
+    vk_f1: 112, vk_f2: 113, vk_f3: 114, vk_f4: 115, vk_f5: 116, vk_f6: 117,
+    vk_f7: 118, vk_f8: 119, vk_f9: 120, vk_f10: 121, vk_f11: 122, vk_f12: 123,
+    vk_lshift: 160, vk_rshift: 161, vk_lcontrol: 162, vk_rcontrol: 163,
+    vk_lalt: 164, vk_ralt: 165,
+  });
+
   global.instance_create_depth = instance_create_depth;
   global.mean = mean;
   global.scr_approach = scr_approach;

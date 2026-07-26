@@ -607,7 +607,8 @@
       // A draw event threw between set_target and reset_target.
       const base = surfaceStack[0];
       surfaceStack.length = 0;
-      if (base && global.setActiveCtx) global.setActiveCtx(base);
+      global.$gmlSurfaceTarget = -1;
+      if (base && base.ctx && global.setActiveCtx) global.setActiveCtx(base.ctx);
     }
   }
 
@@ -2502,6 +2503,12 @@
     // Text drawing was entirely absent; several attacks draw counters and labels.
     def('draw_set_halign', function (a) { global.$gmlHalign = a; });
     def('draw_set_valign', function (a) { global.$gmlValign = a; });
+    // The save/restore idiom around a text draw: read the current alignment,
+    // change it, put it back. Returning 0 for the read (the unimplemented-stub
+    // default) made every such restore reset alignment to fa_left/fa_top
+    // instead of what the caller had.
+    def('draw_get_halign', () => (global.$gmlHalign === undefined ? 0 : global.$gmlHalign));
+    def('draw_get_valign', () => (global.$gmlValign === undefined ? 0 : global.$gmlValign));
     def('draw_text', function (x, y, s) {
       const ctx = global.$gmlActiveCtx;
       if (!ctx) return;
@@ -2695,6 +2702,60 @@
     global.path_set_closed = (id, closed) => { const p = PATHS.get(num(id)); if (p) p.closed = bool(closed); };
     global.path_delete = id => { PATHS.delete(num(id)); };
     global.path_exists = id => PATHS.has(num(id));
+    // kind 0 = straight, 1 = smooth (curved). Recorded rather than emulated:
+    // the corpus uses smooth paths for gentle drift, and the visible difference
+    // from the straight polyline is a few pixels of corner rounding.
+    global.path_set_kind = (id, kind) => { const p = PATHS.get(num(id)); if (p) p.kind = num(kind); };
+    global.path_set_precision = (id, prec) => { const p = PATHS.get(num(id)); if (p) p.precision = num(prec); };
+    global.path_clear_points = id => { const p = PATHS.get(num(id)); if (p) p.points = []; };
+    global.path_get_number = id => { const p = PATHS.get(num(id)); return p ? p.points.length : 0; };
+    global.path_get_point_x = (id, n) => { const p = PATHS.get(num(id)); const pt = p && p.points[num(n)]; return pt ? pt.x : 0; };
+    global.path_get_point_y = (id, n) => { const p = PATHS.get(num(id)); const pt = p && p.points[num(n)]; return pt ? pt.y : 0; };
+    global.path_get_point_speed = (id, n) => { const p = PATHS.get(num(id)); const pt = p && p.points[num(n)]; return pt ? pt.s : 100; };
+    /**
+     * Point at normalised position 0..1 along a path — the same interpolation
+     * path following uses, so a query and a follow agree.
+     *
+     * GameMaker measures by arc length, not by point index: a long segment
+     * occupies proportionally more of the 0..1 range. Interpolating on index
+     * (the naive version) makes anything reading path_get_x/y to place an
+     * object drift away from where the follower actually is.
+     */
+    function pathPointAt(id, pos) {
+      const p = PATHS.get(num(id));
+      if (!p || !p.points.length) return null;
+      const pts = p.closed ? p.points.concat([p.points[0]]) : p.points;
+      if (pts.length === 1) return { x: pts[0].x, y: pts[0].y };
+      const segs = [];
+      let total = 0;
+      for (let i = 0; i + 1 < pts.length; i++) {
+        const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y);
+        segs.push(d); total += d;
+      }
+      if (total <= 0) return { x: pts[0].x, y: pts[0].y };
+      let want = Math.max(0, Math.min(1, num(pos))) * total;
+      for (let i = 0; i < segs.length; i++) {
+        if (want <= segs[i] || i === segs.length - 1) {
+          const t = segs[i] > 0 ? want / segs[i] : 0;
+          return {
+            x: pts[i].x + (pts[i + 1].x - pts[i].x) * t,
+            y: pts[i].y + (pts[i + 1].y - pts[i].y) * t,
+          };
+        }
+        want -= segs[i];
+      }
+      return { x: pts[pts.length - 1].x, y: pts[pts.length - 1].y };
+    }
+    global.path_get_x = (id, pos) => { const p = pathPointAt(id, pos); return p ? p.x : 0; };
+    global.path_get_y = (id, pos) => { const p = pathPointAt(id, pos); return p ? p.y : 0; };
+    global.path_get_length = id => {
+      const p = PATHS.get(num(id));
+      if (!p || p.points.length < 2) return 0;
+      const pts = p.closed ? p.points.concat([p.points[0]]) : p.points;
+      let total = 0;
+      for (let i = 0; i + 1 < pts.length; i++) total += Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y);
+      return total;
+    };
     global.path_action_stop = 0; global.path_action_restart = 1;
     global.path_action_continue = 2; global.path_action_reverse = 3;
     global.path_start = function (pathRef, speed, endaction, absolute) {
@@ -2760,6 +2821,23 @@
     };
     global.surface_exists = id => SURFACES.has(num(id));
     global.surface_free = id => { SURFACES.delete(num(id)); };
+    /**
+     * Drop every surface. GameMaker invalidates the whole surface pool on a room
+     * change, and objects re-create theirs on demand because a surface can vanish
+     * at any time (that is why the corpus guards every use with surface_exists).
+     *
+     * The studio relaunches attacks without a room change, so nothing ever
+     * triggered that flush: each launch of Flowery's tower left ~31 offscreen
+     * canvases behind, and by the 7th launch the same attack took 22s instead of
+     * 3.9s. Relaunch is our room change.
+     */
+    global.GML_HELPERS.freeAllSurfaces = function () {
+      const n = SURFACES.size;
+      SURFACES.clear();
+      surfaceStack.length = 0;
+      global.$gmlSurfaceTarget = -1;
+      return n;
+    };
     global.surface_get_width = id => { const c = SURFACES.get(num(id)); return c ? c.width : 0; };
     global.surface_get_height = id => { const c = SURFACES.get(num(id)); return c ? c.height : 0; };
     global.surface_resize = (id, w, h) => {
@@ -2795,18 +2873,30 @@
     global.surface_copy_part = (dest, x, y, src, sx, sy, sw, sh) =>
       surfBlit(dest, x, y, src, sx, sy, sw, sh);
 
+    // Which surface is currently being drawn into, or -1 for the screen.
+    // Tracked alongside the context stack because the context alone can't be
+    // mapped back to a surface id, and callers branch on `!= -1` to decide
+    // whether they must set a target before drawing.
+    global.$gmlSurfaceTarget = -1;
     global.surface_set_target = id => {
       const c = SURFACES.get(num(id));
       if (!c) return false;
-      surfaceStack.push(global.$gmlActiveCtx || null);
+      surfaceStack.push({ ctx: global.$gmlActiveCtx || null, surf: global.$gmlSurfaceTarget });
+      global.$gmlSurfaceTarget = num(id);
       global.setActiveCtx(c.getContext('2d'));
       return true;
     };
     global.surface_reset_target = () => {
       const prev = surfaceStack.pop();
-      if (prev) global.setActiveCtx(prev);
+      if (prev) {
+        if (prev.ctx) global.setActiveCtx(prev.ctx);
+        global.$gmlSurfaceTarget = prev.surf;
+      } else {
+        global.$gmlSurfaceTarget = -1;
+      }
       return true;
     };
+    global.surface_get_target = () => global.$gmlSurfaceTarget;
     global.draw_surface = (id, x, y) => {
       const ctx = global.$gmlActiveCtx, c = SURFACES.get(num(id));
       if (ctx && c) ctx.drawImage(c, num(x), num(y));
@@ -3107,6 +3197,37 @@
         return !!(gi.pressed || {})[num(key)];
       };
     }
+    /**
+     * keyboard_check — the HELD test, and by far the most-used of the family
+     * (561 call sites against 884 for _pressed). It was the only one missing,
+     * so every event that tested a held key threw ReferenceError and died,
+     * taking the rest of that event with it.
+     *
+     * vk_anykey / vk_nokey are the two wildcards: they ask whether ANY key is
+     * down, or whether none is, rather than testing a specific code.
+     */
+    if (typeof global.keyboard_check !== 'function') {
+      global.keyboard_check = function (key) {
+        const gi = global.$gmlInput || {};
+        const held = gi.held || {};
+        const k = num(key);
+        if (k === 1) return Object.keys(held).some(c => held[c]);      // vk_anykey
+        if (k === 0) return !Object.keys(held).some(c => held[c]);     // vk_nokey
+        return !!held[k];
+      };
+    }
+    // No OS-level key filtering in the browser, so "direct" is the same read.
+    global.keyboard_check_direct = key => global.keyboard_check(key);
+    global.keyboard_clear = function (key) {
+      const gi = global.$gmlInput;
+      if (!gi) return false;
+      const k = num(key);
+      const was = !!(gi.held && gi.held[k]);
+      if (gi.held) delete gi.held[k];
+      if (gi.pressed) delete gi.pressed[k];
+      if (gi.released) delete gi.released[k];
+      return was;
+    };
 
     global.variable_struct_set = (st, name, val) => { if (st && typeof st === 'object') st[String(name)] = val; };
     global.variable_struct_get = (st, name) => (st && typeof st === 'object' ? st[String(name)] : undefined);
@@ -4219,18 +4340,37 @@
     const w = img.naturalWidth || img.width || 0;
     const h = img.naturalHeight || img.height || 0;
     if (!(w > 0) || !(h > 0)) return;
-    const key = w + 'x' + h;
-    let buf = tintCache.get(key);
-    if (!buf) {
-      buf = document.createElement('canvas');
-      buf.width = w; buf.height = h;
-      tintCache.set(key, buf);
-    } else if (buf.width !== w || buf.height !== h) {
-      buf.width = w; buf.height = h;
+    ctx.drawImage(tintedCopy(img, w, h, ch), dx, dy);
+  }
+
+  /**
+   * A tinted copy of `img`, cached per (image, colour).
+   *
+   * Building one means writing an offscreen canvas and immediately reading it
+   * back as a draw source, which stalls the GPU pipeline: measured at 5.0ms per
+   * call against 0.004ms for the same sprite drawn untinted. Flowery's tower
+   * puts 50 tinted decorations on screen twice each, so a frame cost 144ms and
+   * the studio looked hung.
+   *
+   * Caching is exact, not quantised — the tint colours here come from
+   * merge_color driven by an oscillating sine, so the same values recur every
+   * cycle and the cache converges after one period. Keys live in a WeakMap on
+   * the image, so entries die with the sprite; the per-image budget bounds the
+   * pathological case of a colour that never repeats.
+   */
+  const TINTED = new WeakMap();
+  const TINT_BUDGET = 96;          // distinct colours cached per sprite frame
+  const TINT_MAX_AREA = 512 * 512; // don't cache full-screen layers
+  function tintedCopy(img, w, h, ch) {
+    const key = ch[0] + ',' + ch[1] + ',' + ch[2];
+    let perImg = TINTED.get(img);
+    if (perImg) {
+      const hit = perImg.get(key);
+      if (hit) return hit;
     }
+    const buf = document.createElement('canvas');
+    buf.width = w; buf.height = h;
     const bctx = buf.getContext('2d');
-    bctx.clearRect(0, 0, w, h);
-    bctx.globalCompositeOperation = 'source-over';
     bctx.drawImage(img, 0, 0);
     bctx.globalCompositeOperation = 'multiply';
     bctx.fillStyle = `rgb(${ch[0]},${ch[1]},${ch[2]})`;
@@ -4238,28 +4378,42 @@
     // Restore the sprite's own alpha, which `multiply` over a filled rect loses.
     bctx.globalCompositeOperation = 'destination-in';
     bctx.drawImage(img, 0, 0);
-    ctx.drawImage(buf, dx, dy);
+    if (w * h <= TINT_MAX_AREA) {
+      if (!perImg) { perImg = new Map(); TINTED.set(img, perImg); }
+      // Oldest-first eviction: Map preserves insertion order.
+      if (perImg.size >= TINT_BUDGET) perImg.delete(perImg.keys().next().value);
+      perImg.set(key, buf);
+    }
+    return buf;
   }
 
-  /** Solid-colour silhouette of a sprite — the shape with every pixel `color`. */
-  function drawSilhouette(ctx, img, dx, dy, color) {
-    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
-    if (!w || !h) return;
-    const key = 'sil:' + w + 'x' + h;
-    let buf = tintCache.get(key);
-    if (!buf) {
-      buf = document.createElement('canvas');
-      buf.width = w; buf.height = h;
-      tintCache.set(key, buf);
-    } else if (buf.width !== w || buf.height !== h) { buf.width = w; buf.height = h; }
+  /**
+   * Solid-colour silhouette of a sprite — the shape with every pixel `color`.
+   * Cached exactly like the tint path, and for the same reason: fog and the
+   * white-flash shader run this on every affected sprite, every frame.
+   */
+  const SILHOUETTES = new WeakMap();
+  function silhouetteCopy(img, w, h, color) {
+    let perImg = SILHOUETTES.get(img);
+    if (perImg) { const hit = perImg.get(color); if (hit) return hit; }
+    const buf = document.createElement('canvas');
+    buf.width = w; buf.height = h;
     const bctx = buf.getContext('2d');
-    bctx.clearRect(0, 0, w, h);
-    bctx.globalCompositeOperation = 'source-over';
     bctx.drawImage(img, 0, 0);
     bctx.globalCompositeOperation = 'source-in';
     bctx.fillStyle = color;
     bctx.fillRect(0, 0, w, h);
-    ctx.drawImage(buf, dx, dy);
+    if (w * h <= TINT_MAX_AREA) {
+      if (!perImg) { perImg = new Map(); SILHOUETTES.set(img, perImg); }
+      if (perImg.size >= TINT_BUDGET) perImg.delete(perImg.keys().next().value);
+      perImg.set(color, buf);
+    }
+    return buf;
+  }
+  function drawSilhouette(ctx, img, dx, dy, color) {
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    if (!w || !h) return;
+    ctx.drawImage(silhouetteCopy(img, w, h, String(color)), dx, dy);
   }
 
   // ═══════════════════════════════════════════════════════════════════════

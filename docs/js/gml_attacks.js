@@ -3220,84 +3220,6 @@ window.GML_ATTACKS = [
   "chapter": "ch5",
   "enemy": "obj_aqua_enemy",
   "selector": "myattackchoice",
-  "choice": 0,
-  "name": "KnifeChain",
-  "controller": "obj_dbulletcontroller",
-  "type": 308,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
-  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
-  "alsoChoices": [
-   0
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type308",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
-  "choice": 1,
-  "name": "FanOfKnives",
-  "controller": "obj_dbulletcontroller",
-  "type": 309,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"FanOfKnives\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 309;\n                    scr_turntimer(240);",
-  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
-  "alsoChoices": [
-   1
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type309",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
-  "choice": 2,
-  "name": "KnifePetal",
-  "controller": "obj_dbulletcontroller",
-  "type": 310,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"KnifePetal\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 310;\n                    scr_turntimer(240);",
-  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
-  "alsoChoices": [
-   2
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type310",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
   "choice": 3,
   "name": "OmegaKnife",
   "controller": "obj_dbulletcontroller",
@@ -3364,170 +3286,6 @@ window.GML_ATTACKS = [
   "monsterType": 112,
   "extraEnemies": [
    "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
-  "choice": 0,
-  "name": "SupportFire",
-  "controller": "obj_dbulletcontroller",
-  "type": 313,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"SupportFire\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 313;",
-  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type313",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
-  "choice": 1,
-  "name": "OmegaBook",
-  "controller": "obj_dbulletcontroller",
-  "type": 306,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"OmegaBook\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 306;\n                    scr_turntimer(300);",
-  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type306",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "aqua_seth",
-  "bossLabel": "Aqua & Seth",
-  "chapter": "ch5",
-  "enemy": "obj_aqua_enemy",
-  "selector": "myattackchoice",
-  "choice": 2,
-  "name": "OmegaBookEx",
-  "controller": "obj_dbulletcontroller",
-  "type": 306,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "omega_ex_mode"
-  ],
-  "setup": "global.monsterattackname[myself] = \"OmegaBookEx\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 306;\n                    dc.omega_ex_mode = true;\n                    scr_turntimer(480);",
-  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "aqua_seth_type306_omegabookex",
-  "inFight": true,
-  "monsterType": 112,
-  "extraEnemies": [
-   "obj_purple_enemy"
-  ]
- },
- {
-  "boss": "berdly",
-  "bossLabel": "Berdly",
-  "chapter": "ch2",
-  "enemy": "obj_berdlyb_enemy",
-  "selector": "chosenattack",
-  "choice": 0,
-  "name": "Tornado",
-  "controller": "obj_dbulletcontroller",
-  "type": 8,
-  "usesDifficulty": true,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
-  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
-  "alsoChoices": [
-   0,
-   null
-  ],
-  "hasSpecial": false,
-  "id": "berdly_type8",
-  "inFight": true,
-  "monsterType": 43,
-  "extraEnemies": [
-   "obj_berdlyb2_enemy",
-   "obj_werewire_enemy"
-  ]
- },
- {
-  "boss": "berdly",
-  "bossLabel": "Berdly",
-  "chapter": "ch2",
-  "enemy": "obj_berdlyb_enemy",
-  "selector": "chosenattack",
-  "choice": 1,
-  "name": "SpearBlast",
-  "controller": "obj_dbulletcontroller",
-  "type": 9,
-  "usesDifficulty": true,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
-  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
-  "alsoChoices": [
-   1,
-   null
-  ],
-  "hasSpecial": false,
-  "id": "berdly_type9",
-  "inFight": true,
-  "monsterType": 43,
-  "extraEnemies": [
-   "obj_berdlyb2_enemy",
-   "obj_werewire_enemy"
-  ]
- },
- {
-  "boss": "berdly",
-  "bossLabel": "Berdly",
-  "chapter": "ch2",
-  "enemy": "obj_berdlyb_enemy",
-  "selector": null,
-  "choice": null,
-  "name": "Chirashi",
-  "controller": "obj_dbulletcontroller",
-  "type": 10,
-  "usesDifficulty": true,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Chirashi\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 10;\n                dc.difficulty = difficulty;",
-  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
-  "alsoChoices": [
-   null,
-   null
-  ],
-  "hasSpecial": false,
-  "id": "berdly_type10",
-  "inFight": true,
-  "monsterType": 43,
-  "extraEnemies": [
-   "obj_berdlyb2_enemy",
-   "obj_werewire_enemy"
   ]
  },
  {
@@ -3760,6 +3518,491 @@ window.GML_ATTACKS = [
   "id": "chaosking_type2_final_chain_dr",
   "inFight": true,
   "monsterType": 25
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "introtimer",
+  "choice": 21,
+  "name": "FloweryDashTutorial",
+  "controller": "obj_dbulletcontroller",
+  "type": 637,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDashTutorial\";\n        dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n        dc.type = 637;\n        scr_turntimer(9999999);\n        introcon = 2;\n        \n        with (obj_battlecontroller)\n            noreturn = 1;",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [
+   17
+  ],
+  "hasSpecial": false,
+  "id": "flowery_type637",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "FloweryDeflect1",
+  "controller": "obj_dbulletcontroller",
+  "type": 620,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDeflect1\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 620;\n                scr_turntimer(3200);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type620",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "FloweryDeflect2",
+  "controller": "obj_dbulletcontroller",
+  "type": 621,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDeflect2\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 621;\n                scr_turntimer(3200);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type621",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "FloweryDeflect3",
+  "controller": "obj_dbulletcontroller",
+  "type": 634,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDeflect3\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 634;\n                scr_turntimer(3200);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type634",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "FloweryWallsTutorial",
+  "controller": "obj_dbulletcontroller",
+  "type": 623,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryWallsTutorial\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 623;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type623",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 4,
+  "name": "FloweryChase",
+  "controller": "obj_dbulletcontroller",
+  "type": 624,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChase\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 624;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type624",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 5,
+  "name": "FloweryChase2",
+  "controller": "obj_dbulletcontroller",
+  "type": 625,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChase2\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 625;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type625",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 6,
+  "name": "FloweryChase2Harder",
+  "controller": "obj_dbulletcontroller",
+  "type": 626,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChase2Harder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 626;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type626",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 7,
+  "name": "FloweryBulletsFistEasy",
+  "controller": "obj_dbulletcontroller",
+  "type": 627,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryBulletsFistEasy\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 627;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type627",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 8,
+  "name": "FloweryBulletsFistMedium",
+  "controller": "obj_dbulletcontroller",
+  "type": 628,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryBulletsFistMedium\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 628;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type628",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 9,
+  "name": "FloweryBulletsFistHard",
+  "controller": "obj_dbulletcontroller",
+  "type": 629,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryBulletsFistHard\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 629;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type629",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "FloweryBoxesEasy",
+  "controller": "obj_dbulletcontroller",
+  "type": 630,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryBoxesEasy\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 630;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type630",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 11,
+  "name": "FloweryBoxesMedium",
+  "controller": "obj_dbulletcontroller",
+  "type": 631,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryBoxesMedium\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 631;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type631",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 12,
+  "name": "FloweryChase2Random",
+  "controller": "obj_dbulletcontroller",
+  "type": 632,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChase2Random\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 632;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type632",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 13,
+  "name": "FloweryChaseWithBullets",
+  "controller": "obj_dbulletcontroller",
+  "type": 633,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChaseWithBullets\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 633;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type633",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 14,
+  "name": "FloweryDeflect2point5",
+  "controller": "obj_dbulletcontroller",
+  "type": 622,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDeflect2point5\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 622;\n                scr_turntimer(3200);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type622",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 15,
+  "name": "FloweryChaseBlueYellow",
+  "controller": "obj_dbulletcontroller",
+  "type": 635,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryChaseBlueYellow\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 635;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type635",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 16,
+  "name": "FloweryDeflectOrange",
+  "controller": "obj_dbulletcontroller",
+  "type": 636,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FloweryDeflectOrange\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 636;\n                scr_turntimer(3200);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type636",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 18,
+  "name": "JustKidding",
+  "controller": "obj_dbulletcontroller",
+  "type": 638,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"JustKidding\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 638;\n                scr_turntimer(3800);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type638",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 19,
+  "name": "SuperJarona",
+  "controller": "obj_dbulletcontroller",
+  "type": 639,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SuperJarona\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 639;\n                scr_turntimer(9999);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type639",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 20,
+  "name": "BlueChase",
+  "controller": "obj_dbulletcontroller",
+  "type": 640,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BlueChase\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 640;\n                scr_turntimer(380);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type640",
+  "inFight": false,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 21,
+  "name": "AquaKnives",
+  "controller": "obj_dbulletcontroller",
+  "type": 641,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"AquaKnives\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 641;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type641",
+  "inFight": true,
+  "monsterType": 119
+ },
+ {
+  "boss": "flowery",
+  "bossLabel": "Flowery",
+  "chapter": "ch5",
+  "enemy": "obj_flowery_enemy",
+  "selector": "myattackchoice",
+  "choice": 22,
+  "name": "OrbitStars",
+  "controller": "obj_dbulletcontroller",
+  "type": 647,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"OrbitStars\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 647;\n                scr_turntimer(320);",
+  "source": "gml_Object_obj_flowery_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "flowery_type647",
+  "inFight": false,
+  "monsterType": 119
  },
  {
   "boss": "jackenstein",
@@ -4037,12 +4280,12 @@ window.GML_ATTACKS = [
   "controller": "obj_checkers_leap",
   "type": null,
   "usesDifficulty": false,
-  "controllerSet": null,
-  "extraFields": [],
-  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
-  "set": {
+  "controllerSet": {
    "leapmode": 0
   },
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "turnTimer": 170,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "kround_checkers_leap",
@@ -4061,12 +4304,12 @@ window.GML_ATTACKS = [
   "controller": "obj_checkers_leap",
   "type": null,
   "usesDifficulty": false,
-  "controllerSet": null,
-  "extraFields": [],
-  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
-  "set": {
+  "controllerSet": {
    "leapmode": 1
   },
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "turnTimer": 175,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "kround_checkers_leap_leapmode_1_sla",
@@ -4085,12 +4328,12 @@ window.GML_ATTACKS = [
   "controller": "obj_checkers_leap",
   "type": null,
   "usesDifficulty": false,
-  "controllerSet": null,
-  "extraFields": [],
-  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
-  "set": {
+  "controllerSet": {
    "leapmode": 2
   },
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "turnTimer": 125,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "kround_checkers_leap_leapmode_2_mag",
@@ -4109,12 +4352,12 @@ window.GML_ATTACKS = [
   "controller": "obj_checkers_leap",
   "type": null,
   "usesDifficulty": false,
-  "controllerSet": null,
-  "extraFields": [],
-  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
-  "set": {
+  "controllerSet": {
    "leapmode": 3
   },
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "turnTimer": 155,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "kround_checkers_leap_leapmode_3_leg",
@@ -4131,9 +4374,6 @@ window.GML_ATTACKS = [
   "name": "Bike Race — honk, then drive-by across the screen",
   "controller": "obj_lancerbike",
   "type": null,
-  "set": {
-   "racecon": 1
-  },
   "turntimerHint": 999,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4144,6 +4384,9 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_lancerbike",
+  "controllerSet": {
+   "racecon": 1
+  },
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4162,9 +4405,6 @@ window.GML_ATTACKS = [
   "name": "Bike Loop — loop-de-loop around the view, trailing spades",
   "controller": "obj_lancerbike",
   "type": null,
-  "set": {
-   "lcon": 1
-  },
   "turntimerHint": 999,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4175,6 +4415,9 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_lancerbike_bike_loop_loop",
+  "controllerSet": {
+   "lcon": 1
+  },
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4193,7 +4436,6 @@ window.GML_ATTACKS = [
   "name": "Falling Spades",
   "controller": "obj_dbulletcontroller",
   "type": 20,
-  "set": null,
   "turntimerHint": 180,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4204,6 +4446,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_type20",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4222,7 +4465,6 @@ window.GML_ATTACKS = [
   "name": "Side Spades — alternating left/right lanes",
   "controller": "obj_dbulletcontroller",
   "type": 21,
-  "set": null,
   "turntimerHint": 180,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4233,6 +4475,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_type21",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4251,7 +4494,6 @@ window.GML_ATTACKS = [
   "name": "Homing Falling Spades",
   "controller": "obj_dbulletcontroller",
   "type": 24,
-  "set": null,
   "turntimerHint": 140,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4262,6 +4504,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_type24",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4280,7 +4523,6 @@ window.GML_ATTACKS = [
   "name": "Susie's Axes — Lancer cheers from the sideline",
   "controller": "obj_dbulletcontroller",
   "type": 85,
-  "set": null,
   "turntimerHint": 180,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4291,6 +4533,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_type85",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4309,7 +4552,6 @@ window.GML_ATTACKS = [
   "name": "Susie rides the bike — axe barrage from Lancer's bike",
   "controller": "obj_lancerbike_neo",
   "type": null,
-  "set": null,
   "turntimerHint": 999,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4320,6 +4562,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lancer_lancerbike_neo",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 2,
   "extraEnemies": [
@@ -4338,12 +4581,6 @@ window.GML_ATTACKS = [
   "name": "Weather Report — twin mascots, opposing bullets KISS on contact",
   "controller": "obj_dbulletcontroller",
   "type": 130,
-  "set": {
-   "type": 130,
-   "special": 0,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
-   "difficulty": 0
-  },
   "turntimerHint": 260,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4354,6 +4591,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lanino_elnina_type130",
+  "controllerSet": {
+   "type": 130,
+   "special": 0,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 61,
   "extraEnemies": [
@@ -4371,12 +4614,6 @@ window.GML_ATTACKS = [
   "name": "The favored one grows — 2.25x mascot holds still, partner keeps drifting",
   "controller": "obj_dbulletcontroller",
   "type": 130,
-  "set": {
-   "type": 130,
-   "special": 1,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
-   "difficulty": 0
-  },
   "turntimerHint": 260,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4387,6 +4624,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lanino_elnina_type130_the_favored_on",
+  "controllerSet": {
+   "type": 130,
+   "special": 1,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 61,
   "extraEnemies": [
@@ -4404,12 +4647,6 @@ window.GML_ATTACKS = [
   "name": "Smug vs. Scared — favored mascot big and fast, partner shrinking away",
   "controller": "obj_dbulletcontroller",
   "type": 130,
-  "set": {
-   "type": 130,
-   "special": 2,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
-   "difficulty": 0
-  },
   "turntimerHint": 260,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4420,6 +4657,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lanino_elnina_type130_smug_vs_scared",
+  "controllerSet": {
+   "type": 130,
+   "special": 2,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 61,
   "extraEnemies": [
@@ -4437,12 +4680,6 @@ window.GML_ATTACKS = [
   "name": "Chase — both mascots fly and ricochet inside the box, bullets aimed at centre",
   "controller": "obj_dbulletcontroller",
   "type": 130,
-  "set": {
-   "type": 130,
-   "special": 3,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
-   "difficulty": 0
-  },
   "turntimerHint": 275,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4453,6 +4690,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lanino_elnina_type130_chase_both_mas",
+  "controllerSet": {
+   "type": 130,
+   "special": 3,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 61,
   "extraEnemies": [
@@ -4470,12 +4713,6 @@ window.GML_ATTACKS = [
   "name": "FINAL ATTACK — the partner is erased, the favored mascot fills the box",
   "controller": "obj_dbulletcontroller",
   "type": 130,
-  "set": {
-   "type": 130,
-   "special": 4,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
-   "difficulty": 0
-  },
   "turntimerHint": 850,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4486,6 +4723,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "lanino_elnina_type130_final_attack_t",
+  "controllerSet": {
+   "type": 130,
+   "special": 4,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 61,
   "extraEnemies": [
@@ -4503,13 +4746,6 @@ window.GML_ATTACKS = [
   "name": "COOKING TIME — Green's FAST FOOD (falling food to catch + green flame bullets)",
   "controller": "obj_dbulletcontroller",
   "type": 131,
-  "set": {
-   "type": 131,
-   "creator": "obj_green_enemy.myself",
-   "creatorid": "obj_green_enemy.id",
-   "target": "obj_green_enemy.mytarget",
-   "damage": "global.monsterat[green] * 5 = 80"
-  },
   "turntimerHint": 270,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4520,6 +4756,13 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "orange_green_type131",
+  "controllerSet": {
+   "type": 131,
+   "creator": "obj_green_enemy.myself",
+   "creatorid": "obj_green_enemy.id",
+   "target": "obj_green_enemy.mytarget",
+   "damage": "global.monsterat[green] * 5 = 80"
+  },
   "inFight": true,
   "monsterType": 113,
   "extraEnemies": [
@@ -4537,14 +4780,6 @@ window.GML_ATTACKS = [
   "name": "OMEGA-3 uppercut — Orange leaps the box and slams down expanding glove rings",
   "controller": "obj_dbulletcontroller",
   "type": 314,
-  "set": {
-   "type": 314,
-   "difficulty": 8,
-   "creator": "obj_orange_enemy.myself",
-   "creatorid": "obj_orange_enemy.id",
-   "target": "obj_orange_enemy.mytarget",
-   "damage": "global.monsterat[orange] * 5 = 80"
-  },
   "turntimerHint": 360,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4555,6 +4790,14 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "orange_green_type314",
+  "controllerSet": {
+   "type": 314,
+   "difficulty": 8,
+   "creator": "obj_orange_enemy.myself",
+   "creatorid": "obj_orange_enemy.id",
+   "target": "obj_orange_enemy.mytarget",
+   "damage": "global.monsterat[orange] * 5 = 80"
+  },
   "inFight": true,
   "monsterType": 113,
   "extraEnemies": [
@@ -4572,12 +4815,6 @@ window.GML_ATTACKS = [
   "name": "OMEGA-3 SUPER ATTACK — Orange's finale (condescend / Orange-mercy ending)",
   "controller": "obj_dbulletcontroller",
   "type": 132,
-  "set": {
-   "type": 132,
-   "creator": "obj_orange_enemy.myself",
-   "creatorid": "obj_orange_enemy.id",
-   "target": "obj_orange_enemy.mytarget"
-  },
   "turntimerHint": 615,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4588,6 +4825,12 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "orange_green_type132",
+  "controllerSet": {
+   "type": 132,
+   "creator": "obj_orange_enemy.myself",
+   "creatorid": "obj_orange_enemy.id",
+   "target": "obj_orange_enemy.mytarget"
+  },
   "inFight": true,
   "monsterType": 113,
   "extraEnemies": [
@@ -4605,13 +4848,6 @@ window.GML_ATTACKS = [
   "name": "OMEGA PAN — Green's finale: three orbiting pans firing flame fans (admire / Green-mercy ending)",
   "controller": "obj_dbulletcontroller",
   "type": 307,
-  "set": {
-   "type": 307,
-   "creator": "obj_green_enemy.myself",
-   "creatorid": "obj_green_enemy.id",
-   "damage": 92,
-   "target": 4
-  },
   "turntimerHint": 500,
   "usesDifficulty": false,
   "difficultyLiteral": null,
@@ -4622,6 +4858,41 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "orange_green_type307",
+  "controllerSet": {
+   "type": 307,
+   "creator": "obj_green_enemy.myself",
+   "creatorid": "obj_green_enemy.id",
+   "damage": 92,
+   "target": 4
+  },
+  "inFight": true,
+  "monsterType": 113,
+  "extraEnemies": [
+   "obj_orange_enemy",
+   "obj_green_enemy"
+  ]
+ },
+ {
+  "boss": "orange_green",
+  "bossLabel": "Orange & Green",
+  "chapter": "ch5",
+  "enemy": "obj_orange_green_controller",
+  "selector": null,
+  "choice": null,
+  "name": "HEALING EGG — turn REPLACEMENT: no controller, no bullets, no box, no soul",
+  "controller": "obj_green_egg_heal",
+  "type": null,
+  "turntimerHint": 999,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/orange_green.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "orange_green_green_egg_heal",
+  "controllerSet": {},
   "inFight": true,
   "monsterType": 113,
   "extraEnemies": [
@@ -4678,7 +4949,7 @@ window.GML_ATTACKS = [
   "controller": "obj_queen_bulletcontroller",
   "type": 1,
   "usesDifficulty": false,
-  "difficultyLiteral": null,
+  "difficultyLiteral": 0,
   "extraFields": [
    "bufferattack",
    "bufferattack",
@@ -4694,6 +4965,7 @@ window.GML_ATTACKS = [
   ],
   "setup": "global.monsterattackname[myself] = \"QueenUltimate\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 1;\n                    \n                    if (ultimateattackused == 0)\n                        scr_turntimer(371);\n                    \n                    if (ultimateattackused == 1)\n                        scr_turntimer(311);",
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 371,
   "alsoChoices": [
    1,
    1,
@@ -4701,146 +4973,9 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": true,
   "id": "queen_type1",
-  "inFight": true,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
-  "choice": 2,
-  "name": "Stomp",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 3,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "target",
-   "special",
-   "bufferattack",
-   "bufferattack"
-  ],
-  "setup": null,
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [
-   3
-  ],
-  "hasSpecial": true,
-  "id": "queen_type3",
-  "inFight": true,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
-  "choice": 4,
-  "name": "NewSocialMedia",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 106,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "target",
-   "special",
-   "bufferattack",
-   "bufferattack"
-  ],
-  "setup": null,
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": true,
-  "id": "queen_type106",
-  "inFight": true,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
-  "choice": 2,
-  "name": "Bufferbullet",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 5,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "target",
-   "special",
-   "bufferattack",
-   "bufferattack"
-  ],
-  "setup": null,
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": true,
-  "id": "queen_type5",
-  "inFight": false,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "rr",
-  "choice": 6,
-  "name": "Explosion",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 6,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "bufferattack",
-   "bufferattack",
-   "bufferattack",
-   "target",
-   "special",
-   "bufferattack",
-   "bufferattack"
-  ],
-  "setup": "global.monsterattackname[myself] = \"Explosion\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 6;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 6.1;\n                    \n                    scr_turntimer(300);",
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": true,
-  "id": "queen_type6",
+  "controllerSet": {
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 48,
   "extraEnemies": [
@@ -4879,50 +5014,22 @@ window.GML_ATTACKS = [
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
   "selector": "difficulty",
-  "choice": 2,
-  "name": "BerdlyFeather",
+  "choice": 3,
+  "name": "Stomp",
   "controller": "obj_queen_bulletcontroller",
-  "type": 7,
+  "type": 3,
   "usesDifficulty": false,
-  "difficultyLiteral": null,
+  "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"BerdlyFeather\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 7;",
+  "setup": "global.monsterattackname[myself] = \"BerdlyFeather\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 7.5;",
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 240,
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "queen_type7",
-  "inFight": false,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "rr",
-  "choice": 8,
-  "name": "QueenLaser",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 100,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "bufferattack",
-   "bufferattack",
-   "target",
-   "special",
-   "bufferattack",
-   "bufferattack"
-  ],
-  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": true,
-  "id": "queen_type100",
+  "id": "queen_type3",
+  "controllerSet": {
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 48,
   "extraEnemies": [
@@ -4994,112 +5101,6 @@ window.GML_ATTACKS = [
   "chapter": "ch2",
   "enemy": "obj_tasque_manager_enemy",
   "selector": "rr",
-  "choice": 0,
-  "name": "YarnBalls",
-  "controller": "obj_dbulletcontroller",
-  "type": 2,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [
-   "element"
-  ],
-  "setup": "global.monsterattackname[myself] = \"YarnBalls\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 2;\n                dc.element = 6;",
-  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "tasque_manager_type2",
-  "inFight": true,
-  "monsterType": 42,
-  "extraEnemies": [
-   "obj_tasque_enemy"
-  ]
- },
- {
-  "boss": "tasque_manager",
-  "bossLabel": "Tasque Manager",
-  "chapter": "ch2",
-  "enemy": "obj_tasque_manager_enemy",
-  "selector": "rr",
-  "choice": 0,
-  "name": "MeowWow",
-  "controller": "obj_dbulletcontroller",
-  "type": 3,
-  "usesDifficulty": true,
-  "difficultyLiteral": 1,
-  "extraFields": [
-   "element"
-  ],
-  "setup": null,
-  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "tasque_manager_type3",
-  "inFight": true,
-  "monsterType": 42,
-  "extraEnemies": [
-   "obj_tasque_enemy"
-  ]
- },
- {
-  "boss": "tasque_manager",
-  "bossLabel": "Tasque Manager",
-  "chapter": "ch2",
-  "enemy": "obj_tasque_manager_enemy",
-  "selector": "rr",
-  "choice": 0,
-  "name": "WhipAttack",
-  "controller": "obj_dbulletcontroller",
-  "type": 20,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"WhipAttack\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 20;",
-  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
-  "alsoChoices": [
-   0
-  ],
-  "hasSpecial": false,
-  "id": "tasque_manager_type20",
-  "inFight": true,
-  "monsterType": 42,
-  "extraEnemies": [
-   "obj_tasque_enemy"
-  ]
- },
- {
-  "boss": "tasque_manager",
-  "bossLabel": "Tasque Manager",
-  "chapter": "ch2",
-  "enemy": "obj_tasque_manager_enemy",
-  "selector": "rr",
-  "choice": 1,
-  "name": "RisingDiamonds",
-  "controller": "obj_dbulletcontroller",
-  "type": 1,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
-  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "tasque_manager_type1",
-  "inFight": false,
-  "monsterType": 42,
-  "extraEnemies": [
-   "obj_tasque_enemy"
-  ]
- },
- {
-  "boss": "tasque_manager",
-  "bossLabel": "Tasque Manager",
-  "chapter": "ch2",
-  "enemy": "obj_tasque_manager_enemy",
-  "selector": "rr",
   "choice": 2,
   "name": "QuizAttack",
   "controller": "obj_dbulletcontroller",
@@ -5110,6 +5111,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"QuizAttack\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 32;\n                dc.difficulty = quizDifficulty;",
   "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
   "alsoChoices": [
+   1,
    1
   ],
   "hasSpecial": false,
@@ -5219,30 +5221,6 @@ window.GML_ATTACKS = [
   "chapter": "ch4",
   "enemy": "obj_titan_enemy",
   "selector": "myattackchoice",
-  "choice": 0,
-  "name": "darkshapeswithred",
-  "controller": "obj_dbulletcontroller",
-  "type": 461,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 461;\n                scr_turntimer(420);",
-  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "titan_type461",
-  "inFight": true,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": "myattackchoice",
   "choice": 1,
   "name": "darkshapescentipedeharder",
   "controller": "obj_dbulletcontroller",
@@ -5279,8 +5257,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesbigshot\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 452;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   2,
-   null
+   2
   ],
   "hasSpecial": false,
   "id": "titan_type452",
@@ -5306,8 +5283,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesbigshotdesperation\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 453;\n                scr_turntimer(430);",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   3,
-   null
+   3
   ],
   "hasSpecial": false,
   "id": "titan_type453",
@@ -5333,8 +5309,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesbigshotaimed\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 454;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   4,
-   null
+   4
   ],
   "hasSpecial": false,
   "id": "titan_type454",
@@ -5386,8 +5361,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesintro\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 456;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   6,
-   null
+   6
   ],
   "hasSpecial": false,
   "id": "titan_type456",
@@ -5413,8 +5387,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapescentipedeintro\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 457;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   7,
-   null
+   7
   ],
   "hasSpecial": false,
   "id": "titan_type457",
@@ -5440,8 +5413,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesmine\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 458;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   8,
-   null
+   8
   ],
   "hasSpecial": false,
   "id": "titan_type458",
@@ -5467,35 +5439,10 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"thehands\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 459;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
-   9,
-   null
+   9
   ],
   "hasSpecial": false,
   "id": "titan_type459",
-  "inFight": true,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": "myattackchoice",
-  "choice": 10,
-  "name": "thehandsfast",
-  "controller": "obj_dbulletcontroller",
-  "type": 462,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"thehandsfast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 462;",
-  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "titan_type462",
   "inFight": true,
   "monsterType": 108,
   "extraEnemies": [
@@ -5647,106 +5594,6 @@ window.GML_ATTACKS = [
   ]
  },
  {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": "myattackchoice",
-  "choice": 0,
-  "name": "darkshapeswithred",
-  "controller": "obj_dbulletcontroller",
-  "type": 450,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 450;",
-  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "titan_type450",
-  "inFight": true,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": "myattackchoice",
-  "choice": 10,
-  "name": "darkshapesspeedup",
-  "controller": "obj_dbulletcontroller",
-  "type": 460,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"darkshapesspeedup\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 460;",
-  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
-  "alsoChoices": [
-   null
-  ],
-  "hasSpecial": false,
-  "id": "titan_type460",
-  "inFight": true,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": null,
-  "choice": null,
-  "name": "darkshapescentipede",
-  "controller": "obj_dbulletcontroller",
-  "type": 451,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": null,
-  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "titan_type451_darkshapescent",
-  "inFight": true,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
-  "boss": "titan",
-  "bossLabel": "The Titan",
-  "chapter": "ch4",
-  "enemy": "obj_titan_enemy",
-  "selector": null,
-  "choice": null,
-  "name": "darkshapescentipedehard",
-  "controller": "obj_dbulletcontroller",
-  "type": 455,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": null,
-  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "titan_type455",
-  "inFight": false,
-  "monsterType": 108,
-  "extraEnemies": [
-   "obj_titan_spawn_enemy"
-  ]
- },
- {
   "boss": "watercooler",
   "bossLabel": "Watercooler",
   "chapter": "ch3",
@@ -5868,6 +5715,1484 @@ window.GML_ATTACKS = [
   "extraEnemies": [
    "obj_yellow_enemy"
   ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "KnifeChain",
+  "controller": "obj_dbulletcontroller",
+  "type": 308,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "KnifeChain",
+  "alsoChoices": [
+   0,
+   0,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type308",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "SupportFire",
+  "controller": "obj_dbulletcontroller",
+  "type": 313,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "KnifeChain",
+  "alsoChoices": [
+   0,
+   0,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type313",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "FanOfKnives",
+  "controller": "obj_dbulletcontroller",
+  "type": 309,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FanOfKnives\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 309;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "FanOfKnives",
+  "alsoChoices": [
+   1,
+   1
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type309",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "OmegaBook",
+  "controller": "obj_dbulletcontroller",
+  "type": 306,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FanOfKnives\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 309;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "FanOfKnives",
+  "alsoChoices": [
+   1,
+   1
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type306",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "KnifePetal",
+  "controller": "obj_dbulletcontroller",
+  "type": 310,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifePetal\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 310;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "KnifePetal",
+  "alsoChoices": [
+   2,
+   2
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type310",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "OmegaBookEx",
+  "controller": "obj_dbulletcontroller",
+  "type": 306,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifePetal\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 310;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "variantOf": "KnifePetal",
+  "alsoChoices": [
+   2,
+   2
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type306_omegabookex",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 0,
+  "name": "Tornado (fight 1, difficulty 0)",
+  "controller": "obj_dbulletcontroller",
+  "type": 8,
+  "usesDifficulty": true,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 210,
+  "variantOf": "Tornado",
+  "alsoChoices": [
+   null,
+   0,
+   null,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type8",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 0,
+  "name": "Tornado (fight 2, difficulty 1)",
+  "controller": "obj_dbulletcontroller",
+  "type": 8,
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 200,
+  "variantOf": "Tornado",
+  "alsoChoices": [
+   null,
+   0,
+   null,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type8_tornado_fight",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 0,
+  "name": "Tornado (fight 2, difficulty 0)",
+  "controller": "obj_dbulletcontroller",
+  "type": 8,
+  "usesDifficulty": true,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 260,
+  "variantOf": "Tornado",
+  "alsoChoices": [
+   null,
+   0,
+   null,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type8_tornado_fight2",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 1,
+  "name": "SpearBlast (fight 1, difficulty 1)",
+  "controller": "obj_dbulletcontroller",
+  "type": 9,
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 200,
+  "variantOf": "SpearBlast",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type9",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 1,
+  "name": "Chirashi (fight 2, difficulty 1)",
+  "controller": "obj_dbulletcontroller",
+  "type": 10,
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 260,
+  "variantOf": "SpearBlast",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type10",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 1,
+  "name": "Chirashi (fight 2, difficulty 0)",
+  "controller": "obj_dbulletcontroller",
+  "type": 10,
+  "usesDifficulty": true,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "turnTimer": 260,
+  "variantOf": "SpearBlast",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type10_chirashi_fight",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "rr",
+  "choice": 2,
+  "name": "Chirashi (fight 1, difficulty 2)",
+  "controller": "obj_dbulletcontroller",
+  "type": 10,
+  "usesDifficulty": false,
+  "difficultyLiteral": 2,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "rosters/berdly.json (row not reached by scan)",
+  "turnTimer": 180,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "berdly_type10_chirashi_fight2",
+  "controllerSet": {
+   "difficulty": 2
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "rr",
+  "choice": 2,
+  "name": "SpearBlast (fight 2, difficulty 1)",
+  "controller": "obj_dbulletcontroller",
+  "type": 9,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "rosters/berdly.json (row not reached by scan)",
+  "turnTimer": 260,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "berdly_type9_spearblast_fig",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "rr",
+  "choice": 2,
+  "name": "SpearBlast (fight 2, difficulty 0)",
+  "controller": "obj_dbulletcontroller",
+  "type": 9,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "rosters/berdly.json (row not reached by scan)",
+  "turnTimer": 260,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "berdly_type9_spearblast_fig2",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "rr",
+  "choice": 2,
+  "name": "SpearBlast (Weird Route)",
+  "controller": "obj_dbulletcontroller",
+  "type": 9,
+  "usesDifficulty": false,
+  "difficultyLiteral": 2,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "rosters/berdly.json (row not reached by scan)",
+  "turnTimer": 260,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "berdly_type9_spearblast_wei",
+  "controllerSet": {
+   "difficulty": 2
+  },
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "Wine",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 400,
+  "variantOf": "Stomp",
+  "alsoChoices": [
+   2,
+   2
+  ],
+  "hasSpecial": true,
+  "id": "queen_type2",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "Wine (tilting glass)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 400,
+  "variantOf": "Stomp",
+  "alsoChoices": [
+   2,
+   2
+  ],
+  "hasSpecial": true,
+  "id": "queen_type2_wine_tilting_g",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "Wine (fast tilt)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": 2,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 400,
+  "variantOf": "Stomp",
+  "alsoChoices": [
+   2,
+   2
+  ],
+  "hasSpecial": true,
+  "id": "queen_type2_wine_fast_tilt",
+  "controllerSet": {
+   "difficulty": 2
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 4,
+  "name": "NewSocialMedia",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 106,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 250,
+  "variantOf": "NewSocialMedia",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type106",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 4,
+  "name": "NewSocialMedia (hard)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 107,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 300,
+  "variantOf": "NewSocialMedia",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type107",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 6,
+  "name": "Explosion",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 6,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Explosion\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 6;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 6.1;\n                    \n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 300,
+  "variantOf": "Explosion",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type6",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 6,
+  "name": "Explosion (slow cadence)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 6,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Explosion\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 6;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 6.1;\n                    \n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 300,
+  "variantOf": "Explosion",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type6_explosion_slow",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 8,
+  "name": "QueenLaser",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 100,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 245,
+  "variantOf": "QueenLaser",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type100",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 8,
+  "name": "QueenLaser + legs",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 115,
+  "usesDifficulty": false,
+  "difficultyLiteral": 4,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 245,
+  "variantOf": "QueenLaser",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type115",
+  "controllerSet": {
+   "difficulty": 4
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 8,
+  "name": "QueenLaser + legs + heads",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 116,
+  "usesDifficulty": false,
+  "difficultyLiteral": 5,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 245,
+  "variantOf": "QueenLaser",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type116",
+  "controllerSet": {
+   "difficulty": 5
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 7,
+  "name": "BerdlyTornado (hard)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 113,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": null,
+  "source": "rosters/queen.json (row not reached by scan)",
+  "turnTimer": 266,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type113",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 9,
+  "name": "Plug (hard)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 111,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": null,
+  "source": "rosters/queen.json (row not reached by scan)",
+  "turnTimer": 300,
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type111",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 0,
+  "name": "WhipAttack",
+  "controller": "obj_dbulletcontroller",
+  "type": 20,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "element"
+  ],
+  "setup": "global.monsterattackname[myself] = \"YarnBalls\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 2;\n                dc.element = 6;",
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "variantOf": "YarnBalls",
+  "alsoChoices": [
+   0,
+   0,
+   0,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type20",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 0,
+  "name": "YarnBalls",
+  "controller": "obj_dbulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "element"
+  ],
+  "setup": "global.monsterattackname[myself] = \"YarnBalls\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 2;\n                dc.element = 6;",
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "variantOf": "YarnBalls",
+  "alsoChoices": [
+   0,
+   0,
+   0,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type2",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 1,
+  "name": "QuizAttack — dojo \"Tasque Manager Says\" (special = 1, difficulty 4+)",
+  "controller": "obj_dbulletcontroller",
+  "type": 32,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
+  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
+  "variantOf": "RisingDiamonds",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type32_quizattack_doj",
+  "controllerSet": {
+   "special": 1
+  },
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 1,
+  "name": "MeowWow",
+  "controller": "obj_dbulletcontroller",
+  "type": 3,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
+  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
+  "variantOf": "RisingDiamonds",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type3",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — music / PERFORM!",
+  "controller": "obj_rhythmgame",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_rhythmgame",
+  "controllerSet": {
+   "tenna_boss": true,
+   "turn_length": 360,
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — cooking / DODGE FIRE!",
+  "controller": "obj_chefs_init",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_chefs_init",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — cowboy / SHOOT!",
+  "controller": "obj_shootout_controller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_shootout_controller",
+  "controllerSet": {
+   "shootout_type": 2,
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — cowboy / DODGE!",
+  "controller": "obj_shootout_controller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_shootout_controller_physical_chall",
+  "controllerSet": {
+   "shootout_type": 3,
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — battle d1 / SHOOT THE TARGETS! (sharpshoot test)",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type150_physical_chall",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — battle d2 / BOUNCE THE BALL!",
+  "controller": "obj_elnina_umbrella",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 2,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_elnina_umbrella",
+  "controllerSet": {
+   "difficulty": 2
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "LIGHT 'EM UP (the ultimate / final attack)",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": 3,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type150_light_em_up_th",
+  "controllerSet": {
+   "difficulty": 3
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — susiezilla d2 / PROTECT RALSEI!",
+  "controller": "obj_susiezilla_gamecontroller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 2,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_susiezilla_gamecontroller",
+  "controllerSet": {
+   "difficulty": 2
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — susiezilla d3 / FIGHT...?",
+  "controller": "obj_susiezilla_gamecontroller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 3,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_susiezilla_gamecontroller_physical_chall",
+  "controllerSet": {
+   "difficulty": 3
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "PHYSICAL CHALLENGE — susiezilla d4 / FIGHT...? (giant Tenna variant)",
+  "controller": "obj_susiezilla_gamecontroller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": 4,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "rosters/tenna.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_susiezilla_gamecontroller_physical_chall2",
+  "controllerSet": {
+   "difficulty": 4
+  },
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "darkshapeswithred",
+  "controller": "obj_dbulletcontroller",
+  "type": 461,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 461;\n                scr_turntimer(420);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "variantOf": "darkshapeswithred",
+  "alsoChoices": [
+   0,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type461",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "darkshapeswithred (spawn — pattern_default)",
+  "controller": "obj_dbulletcontroller",
+  "type": 450,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 461;\n                scr_turntimer(420);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "variantOf": "darkshapeswithred",
+  "alsoChoices": [
+   0,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type450",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "thehandsfast",
+  "controller": "obj_dbulletcontroller",
+  "type": 462,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"thehandsfast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 462;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "variantOf": "thehandsfast",
+  "alsoChoices": [
+   10
+  ],
+  "hasSpecial": false,
+  "id": "titan_type462",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "darkshapesspeedup",
+  "controller": "obj_dbulletcontroller",
+  "type": 460,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"thehandsfast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 462;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "variantOf": "thehandsfast",
+  "alsoChoices": [
+   10
+  ],
+  "hasSpecial": false,
+  "id": "titan_type460",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 20,
+  "name": "the Titan regenerates (turn replacement — no bullets)",
+  "controller": "obj_titan_heal",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedeharder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 451;",
+  "source": "rosters/titan.json (row not reached by scan)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_titan_heal",
+  "controllerSet": {
+   "myattackchoice": 20
+  },
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
  }
 ];
 
@@ -5879,6 +7204,7 @@ window.GML_ATTACKS_BOXSETUP = {
  "pink": "if (myattackchoice == 2 || myattackchoice == 3 || myattackchoice == 4 || myattackchoice == 5 || myattackchoice == 6)\n            {\n            }\n            else\n            {\n                if (!instance_exists(obj_growtangle))\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                \n                with (obj_growtangle)\n                {\n                    if (!instance_exists(obj_moveheart))\n                        scr_moveheart();\n                }\n                \n                if (myattackchoice != 3)\n                {\n                    with (obj_growtangle)\n                        instance_create_depth(x, y, 4, obj_purplecontrols);\n                }\n            }",
  "aqua_seth": "if (!instance_exists(obj_growtangle))\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n        \n        if (myattackchoice == 3)\n        {\n            with (obj_growtangle)\n            {\n                maxxscale = 3;\n                maxyscale = 3;\n            }\n        }",
  "berdly": "if (!instance_exists(obj_moveheart) && !instance_exists(obj_heart))\n                    scr_moveheart();\n                \n                if (!instance_exists(obj_growtangle))\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                \n                if (difficulty == 1 && rr == 0)\n                    obj_growtangle.target_angle += 45;",
+ "flowery": "if (global.mnfight == 1.5 && endcon == 0 && phasetransition_con == 0 && healingscenecon == 0 && flowery_blowkiss_scene_con == 0)\n    {\n        if (!instance_exists(obj_growtangle))\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n        \n        with (obj_growtangle)\n        {\n            maxxscale = camerawidth() / 70;\n            maxyscale = 0.6779661016949152;\n            x -= 5;\n            \n            if (other.myattackchoice == 17)\n                visible = false;\n        }\n        \n        if (myattackchoice == 0 || myattackchoice == 1 || myattackchoice == 2 || myattackchoice == 16 || myattackchoice == 18 || myattackchoice == 19 || myattackchoice == 7 || myattackchoice == 8 || myattackchoice == 9)\n        {\n            var _jarona = instance_create(x, y, obj_orangeheart_floweryjarona);\n            \n            if (myattackchoice == 18)\n                _jarona.can_kidding = true;\n            \n            if (myattackchoice == 19)\n            {\n                _jarona.visible = false;\n                depth = obj_growtangle.depth + 1;\n            }\n            else\n            {\n                visible = false;\n            }\n        }\n        else\n        {\n            depth = obj_growtangle.depth + 1;\n        }\n        \n        if (myattackchoice == 8 || myattackchoice == 16)\n        {\n            with (orange_marker)\n            {\n                visible = false;\n                \n                with (instance_create(x, y, obj_marker))\n                {\n                    sprite_index = spr_orange_base;\n                    scr_darksize();\n                    depth = obj_growtangle.depth - 1;\n                    scr_lerpvar(\"x\", x, camerax() + 530, 15);\n                    scr_lerpvar(\"y\", y, cameray() + 224, 15);\n                    scr_doom(id, 15);\n                }\n            }\n        }\n        \n        if (!instance_exists(obj_moveheart))\n        {\n            with (scr_moveheart())\n            {\n                distx = (obj_growtangle.x - 10 - 75) + 10;\n                disty = (obj_growtangle.y - 10) + 10;\n                dist = point_distance(x, y, distx, disty);\n                move_towards_point(distx, disty, dist / 12);\n                alarm[0] = 12;\n            }\n        }\n        \n        global.mnfight = 2;\n        scr_turntimer(90);\n        \n        if (!instance_exists(obj_moveheart))\n        {\n            with (scr_moveheart())\n            {\n                distx = (obj_growtangle.x - 10 - 75) + 10;\n                disty = (obj_growtangle.y - 10) + 10;\n                dist = point_distance(x, y, distx, disty);\n                move_towards_point(distx, disty, dist / 12);\n                alarm[0] = 12;\n            }\n        }\n        \n        global.mnfight = 2;\n        scr_turntimer(90);\n    }",
  "jackenstein": "if (!instance_exists(obj_growtangle))\n        {\n            if (myattackchoice == 0)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 112, __view_get(e__VW.YView, 0) + 170 + 21, obj_growtangle);\n            \n            if (myattackchoice == 1)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 92, __view_get(e__VW.YView, 0) + 170 + 28, obj_growtangle);\n            \n            if (myattackchoice == 2)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 5, (__view_get(e__VW.YView, 0) + 170) - 5, obj_growtangle);\n            \n            if (myattackchoice == 3)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 92, __view_get(e__VW.YView, 0) + 170 + 64, obj_growtangle);\n            \n            if (myattackchoice == 4)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 5, __view_get(e__VW.YView, 0) + 170 + 90, obj_growtangle);\n            \n            if (myattackchoice == 5)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 109, __view_get(e__VW.YView, 0) + 170 + 83, obj_growtangle);\n            \n            if (myattackchoice == 6)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 70, __view_get(e__VW.YView, 0) + 170 + 61, obj_growtangle);\n            \n            if (myattackchoice == 7)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 95, __view_get(e__VW.YView, 0) + 170 + 55, obj_growtangle);\n            \n            if (myattackchoice == 8)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 161, __view_get(e__VW.YView, 0) + 170 + 101, obj_growtangle);\n            \n            if (myattackchoice == 9)\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170 + 90, obj_growtangle);\n            \n            if (myattackchoice == 10)\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170 + 24, obj_growtangle);\n        }\n        \n        with (obj_growtangle)\n        {\n            visible = false;\n            image_xscale = 2;\n            image_yscale = 2;\n            image_alpha = 1;\n            depth = 15;\n            timer = 15;\n        }\n        \n        instance_create_depth(0, 0, -15, obj_ghosthouse_fadein);\n        obj_growtangle.visible = false;\n        \n        if (!instance_exists(obj_moveheart) && !i_ex(obj_heart))\n            scr_moveheart();\n        \n        with (obj_growtangle)\n        {\n            image_xscale = 2;\n            image_yscale = 2;\n            timer = maxtimer;\n            x = __view_get(e__VW.XView, 0) + 320;\n            y = __view_get(e__VW.YView, 0) + 170;\n        }",
  "kround": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
  "lancer": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
@@ -5898,6 +7224,7 @@ window.GML_ATTACKS_TURNSETUP = {
  "jevil": "global.turntimer = 240;",
  "aqua_seth": "scr_turntimer(90);",
  "chaosking": "global.turntimer = 180;",
+ "flowery": "scr_turntimer(90);",
  "jackenstein": "scr_turntimer(200);",
  "kround": "global.turntimer = 999;",
  "lancer": "global.turntimer = 999;",

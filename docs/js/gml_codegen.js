@@ -40,6 +40,20 @@
     'bm_dest_colour', 'bm_dest_color', 'bm_inv_dest_colour', 'bm_inv_dest_color',
     'bm_src_alpha_sat', 'bm_complex', 'bm_normal_alpha',
     'pi', 'infinity', 'NaN', 'undefined', 'pointer_null',
+    // Virtual key codes. Unlisted, each compiled to an INSTANCE variable read,
+    // which threw ReferenceError out of whatever event touched it — Flowery's
+    // parkour section checks vk_space in its Draw, so obj_flowery_towery died
+    // on every single frame and the tower never rendered.
+    'vk_nokey', 'vk_anykey', 'vk_left', 'vk_right', 'vk_up', 'vk_down',
+    'vk_enter', 'vk_escape', 'vk_space', 'vk_shift', 'vk_control', 'vk_alt',
+    'vk_backspace', 'vk_tab', 'vk_home', 'vk_end', 'vk_delete', 'vk_insert',
+    'vk_pageup', 'vk_pagedown', 'vk_pause', 'vk_printscreen',
+    'vk_lshift', 'vk_lcontrol', 'vk_lalt', 'vk_rshift', 'vk_rcontrol', 'vk_ralt',
+    'vk_f1', 'vk_f2', 'vk_f3', 'vk_f4', 'vk_f5', 'vk_f6',
+    'vk_f7', 'vk_f8', 'vk_f9', 'vk_f10', 'vk_f11', 'vk_f12',
+    'vk_numpad0', 'vk_numpad1', 'vk_numpad2', 'vk_numpad3', 'vk_numpad4',
+    'vk_numpad5', 'vk_numpad6', 'vk_numpad7', 'vk_numpad8', 'vk_numpad9',
+    'vk_multiply', 'vk_divide', 'vk_add', 'vk_subtract', 'vk_decimal',
     'fa_left', 'fa_center', 'fa_right', 'fa_top', 'fa_middle', 'fa_bottom',
     'pr_trianglelist', 'pr_trianglestrip', 'pr_trianglefan', 'pr_linelist', 'pr_linestrip', 'pr_pointlist',
     'e__VW', 'e__BG',
@@ -479,13 +493,21 @@
             : '';
           const body = this.genBody(node.body);
           this.popScope();
-          return `${p}for (${init}; ${test}; ${upd}) ${body}`;
+          // Guarded like `while`. A `for` whose update never reaches the test —
+          // easy to produce when a call the engine is missing returns 0 instead
+          // of advancing an index — wedges the whole tab with no way back.
+          const g = this.tmp('lg');
+          const site = `${this.objectName || 'gml'}.${this.eventName || 'event'}`;
+          return `${p}{ let ${g} = 0; for (${init}; (${test || 'true'}) && $R.spin(${g}++, ${JSON.stringify(site)}); ${upd}) ${body} }`;
         }
 
         case 'Repeat': {
           const k = this.tmp('r');
           const n = this.tmp('n');
-          return `${p}for (let ${k} = 0, ${n} = ${this.genExpr(node.count)}; ${k} < ${n}; ${k}++) ${this.genBody(node.body)}`;
+          // `repeat` evaluates its count once, so a garbage count (NaN reads as
+          // 0, but a bad expression can yield millions) is the failure mode.
+          const site = `${this.objectName || 'gml'}.${this.eventName || 'event'}`;
+          return `${p}for (let ${k} = 0, ${n} = ${this.genExpr(node.count)}; ${k} < ${n} && $R.spin(${k}, ${JSON.stringify(site)}); ${k}++) ${this.genBody(node.body)}`;
         }
 
         case 'Switch': {
@@ -929,12 +951,22 @@ ${p}}`;
       const callee = node.callee;
       const args = node.arguments;
 
+      // `arr[i](...)` — an array of method values, called by index. This must
+      // read the ELEMENT and call that; routing it through mcall with an empty
+      // property name hands mcall the array itself, which isn't a function, so
+      // the call silently evaluates to 0. obj_dw_fcastle_trainroom drives the
+      // whole Orange & Green fight through `orangeBehaviors[n]()`, so a silent
+      // no-op here costs the entire fight with no error anywhere.
+      if (callee.type === 'Index') {
+        return `$R.vcall(${this.genExpr(callee)}, [${args.map(a => this.genExpr(a)).join(', ')}], ${this.self})`;
+      }
+
       // Method / struct call: leave the receiver in place.
-      if (callee.type === 'Member' || callee.type === 'Index') {
-        if (callee.type === 'Member' && callee.object.type === 'Identifier' && callee.object.name === 'global') {
+      if (callee.type === 'Member') {
+        if (callee.object.type === 'Identifier' && callee.object.name === 'global') {
           return `$G.${callee.property}(${args.map(a => this.genExpr(a)).join(', ')})`;
         }
-        return `$R.mcall(${this.genExpr(callee.object)}, ${JSON.stringify(callee.type === 'Member' ? callee.property : '')}, [${args.map(a => this.genExpr(a)).join(', ')}], ${this.self})`;
+        return `$R.mcall(${this.genExpr(callee.object)}, ${JSON.stringify(callee.property)}, [${args.map(a => this.genExpr(a)).join(', ')}], ${this.self})`;
       }
 
       if (callee.type !== 'Identifier') {
