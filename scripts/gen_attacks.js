@@ -518,8 +518,11 @@ for (const boss of BOSSES) {
         choice: typeof r.choice === 'number' ? r.choice : null,
         name: r.name || `${boss.label} attack`,
         controller: cell.name,
-        type: typeof r.type === 'number' ? Math.floor(r.type) : (r.type === undefined ? null : r.type),
-        set: Object.assign({}, cell.set, r.set || null),
+        type: r.type === undefined ? null : r.type,
+        // Numbers/booleans only — see applyRosterRow. A prose value here lands
+        // on the live controller and breaks the game's own comparisons.
+        set: Object.assign({}, cell.set, Object.fromEntries(
+          Object.entries(r.set || {}).filter(([, v]) => typeof v === 'number' || typeof v === 'boolean'))),
         turntimerHint: r.turntimer === undefined ? null : r.turntimer,
         usesDifficulty: false, difficultyLiteral: null, extraFields: [],
         setup: null, declared: true,
@@ -706,19 +709,35 @@ function parseControllerCell(cell) {
 /**
  * Fold a roster row's declared values onto a generated attack entry.
  *
- * A fractional `type` (2.1, 6.1) is the roster's shorthand for "same controller
- * type, next step along the difficulty axis" — the real GML type is the integer
- * part, and the variant comes from `difficulty`. Passing 2.1 through as the type
- * would land on no case at all and the attack would spawn nothing.
+ * A fractional `type` is REAL, not roster shorthand. Queen's controller tests
+ * `type == 2.1`, `2.2`, `3.1`..`3.4` and `6.1` literally
+ * (gml_Object_obj_queen_bulletcontroller_Step_0.gml:345, 355, 363, 467, 705,
+ * 739), and flooring them collapsed Wine (tilting glass) and Wine (fast tilt)
+ * into byte-identical copies of plain Wine — the glass never tilted. The type
+ * goes through verbatim.
  */
 function applyRosterRow(a, r, selectorVar) {
   const ctl = parseControllerCell(r.controller);
   if (ctl.name && ctl.name !== a.controller) a.controller = ctl.name;
-  if (typeof r.type === 'number') a.type = Math.floor(r.type);
-  else if (r.type !== undefined && r.type !== null) a.type = r.type;
+  if (r.type !== undefined && r.type !== null) a.type = r.type;
   if (r.name) a.name = r.name;
 
-  const set = Object.assign({}, ctl.set, r.set || {}, a.set || {});
+  // Only NUMBERS and BOOLEANS may reach a live controller. A roster row's `set`
+  // often carries prose describing how the fight derives a field, and
+  // Object.assign'ing that onto the instance makes the game compare against a
+  // sentence: `_mascot_attack.favored = side` with a string `side` breaks every
+  // `favored == i` test in obj_elnina_mascotattack, so neither mascot is ever
+  // the favoured one. parseControllerCell already filters this way; apply the
+  // same rule to the row's own `set`.
+  const numericOnly = src => {
+    const out = {};
+    for (const [k, v] of Object.entries(src || {})) {
+      if (typeof v === 'number' || typeof v === 'boolean') out[k] = v;
+      else notes.push(`${a.boss || '?'}: dropped non-numeric set.${k} on "${r.name || a.name}"`);
+    }
+    return out;
+  };
+  const set = Object.assign({}, ctl.set, numericOnly(r.set), a.set || {});
   // `difficulty` is a number only when the roster pins one; several rosters use
   // that cell for prose describing how the fight derives it, which must not be
   // written onto the controller.
@@ -780,6 +799,15 @@ for (const j of rosterConfigs) {
       applyRosterRow(clone, r, j.selectorVar);
       clone.name = (r.name || clone.name) + suffixFor(r);
       clone.variantOf = a.name;
+      // The scanned `setup` is the dispatcher branch for the ORIGINAL row. The
+      // studio replays it verbatim and then adopts whatever instance matches
+      // `controller`, so a clone that inherits it launches the attack the branch
+      // dispatches, NOT the one this entry names — the entry's own type is dead
+      // data whenever the replay succeeds. Berdly's Chirashi never played at all
+      // because all three of its entries inherited a Tornado/SpearBlast branch.
+      // Dropping it makes the launcher fall back to spawning the controller and
+      // writing this entry's own type, which is what the name promises.
+      if (clone.type !== a.type || clone.controller !== a.controller) clone.setup = null;
       expanded.push(clone);
     }
     roster[i] = null; // the un-fanned entry is replaced by its variants
@@ -795,13 +823,18 @@ for (const j of rosterConfigs) {
   for (const r of j.real) {
     const nm = (r.name || '') + suffixFor(r);
     if (!r.name || covered.has(nm) || covered.has(r.name)) continue;
-    const base = roster.find(a => a.boss === j.id);
-    if (!base) continue;
+    // NO borrowed `setup`. Grafting some other choice's dispatcher branch onto a
+    // row the scan never reached launches that other attack underneath this one:
+    // all ten Tenna PHYSICAL CHALLENGE rows inherited the choice-0 branch and so
+    // ran a live "all star cast" bullet controller (damage 65) beneath the
+    // minigame, and titan_titan_heal — documented as a turn replacement with no
+    // bullets — fired darkshapescentipedeharder. The launcher's own
+    // spawn-controller-and-set-type path is correct for these.
     const entry = {
       boss: j.id, bossLabel: j.label, chapter: j.chapter, enemy: j.enemy,
       selector: j.selectorVar, choice: r.choice, name: nm,
       controller: null, type: null, usesDifficulty: false, difficultyLiteral: null,
-      extraFields: [], setup: base.setup || null,
+      extraFields: [], setup: null,
       source: `rosters/${j.id}.json (row not reached by scan)`,
     };
     applyRosterRow(entry, r, j.selectorVar);
@@ -898,9 +931,9 @@ const REAL = {
 // generator will end up naming the entry.
 for (const j of rosterConfigs) {
   if (REAL[j.id]) continue;                      // hand-written filter wins
-  // Types are floored to match the entries: a roster's 2.1 is type 2 at the
-  // next difficulty, not a distinct controller case.
-  const realTypes = new Set((j.real || []).filter(r => r.type !== undefined && r.type !== null).map(r => Math.floor(Number(r.type))));
+  // Fractional types are distinct controller cases (Queen tests type == 2.1
+  // literally), so they are compared verbatim rather than floored.
+  const realTypes = new Set((j.real || []).filter(r => r.type !== undefined && r.type !== null).map(r => Number(r.type)));
   const realChoices = new Set((j.real || []).filter(r => typeof r.choice === 'number').map(r => Number(r.choice)));
   // `attackObject` too, for the turns that create an object without a bullet
   // controller — otherwise they generate and are then judged cut.

@@ -773,8 +773,14 @@
         const name = objectNameOf(objArg) || (typeof objArg === 'string' ? objArg : null);
         if (!name) return null;
         if (H.creationBudgetExhausted(name)) return null;
-        const inst = runtime.createInstance(name, num(x), num(y));
-        if (inst && depth !== undefined && depth !== null) inst.depth = num(depth);
+        // The depth argument is the instance's depth WHEN CREATE RUNS, so it
+        // must be stamped before the event, not after. Applying it afterwards
+        // silently discarded any depth the object sets in its own Create:
+        // obj_darkness_overlay is made with `instance_create_depth(x, y,
+        // depth + 5, obj_darkness_overlay)` and then re-depths itself in Create,
+        // and that self-assignment was being overwritten every time.
+        const inst = runtime.createInstance(name, num(x), num(y),
+          (depth === undefined || depth === null) ? undefined : num(depth));
         return inst;
       },
 
@@ -1523,7 +1529,19 @@
       }
       soul.sprite_index = 'spr_heart';
       soul.mask_index = 'spr_dodgeheartmask';
-      soul.depth = -100;
+      // obj_heart's real depth is 1 in every chapter's __global_object_depths
+      // table, and it never assigns depth in any event. The soul is built with
+      // `new cls(...)` rather than createInstance, so it misses the depth stamp
+      // and used to get a hard-coded -100 — which put it IN FRONT of every
+      // bullet (obj_bulletparent is 0, obj_regularbullet -10), the opposite of
+      // the game. It also skewed the 139 corpus sites that compute
+      // `obj_heart.depth ± k`: obj_heart_follower landed at -105 instead of -4,
+      // and Spamton NEO's mouth_back at -99 instead of 2.
+      {
+        const dt = global.GML_OBJECT_DEPTHS && global.GML_OBJECT_DEPTHS[runtime.$chapter || 'ch3'];
+        const d = dt && dt.obj_heart;
+        soul.depth = (typeof d === 'number') ? d : 1;
+      }
       // The real obj_heart defaults to movable; purple mode (ch5 type 199) sets
       // canmove = 0 and hands movement to obj_purplecontrols. Defaulting it here
       // lets hosts honour that handoff without guessing.
@@ -2031,7 +2049,15 @@
       os_windows: 0, os_macosx: 1, os_linux: 2, os_ios: 3, os_android: 4,
       os_ps3: 5, os_ps4: 6, os_ps5: 7, os_psvita: 8, os_xboxone: 9,
       os_xboxseriesxs: 10, os_switch: 11, os_uwp: 12, os_unknown: -1,
+      // ch5 adds os_switch2. Any platform name left undefined reintroduces the
+      // bug the comment above describes, because undefined == undefined is true.
+      os_switch2: 13, os_tvos: 14, os_winphone: 15, os_win8native: 16,
+      os_operagx: 17, os_gxgames: 18,
       browser_not_a_browser: 0, os_browser: 0,
+      // Path end-actions, GameMaker's real numbering. tickPath already keys on
+      // 1 (restart) and 3 (reverse); these names are what the corpus passes.
+      path_action_stop: 0, path_action_restart: 1,
+      path_action_continue: 2, path_action_reverse: 3,
       gamemaker_pro: true, pointer_null: null,
       // obj_lerpvar checks `global.interact != 0` to pause tweens; undefined
       // compared != 0 is true, which froze every respect-interact lerp.
@@ -2377,6 +2403,31 @@
     def('ds_list_delete', (l, i) => { if (Array.isArray(l)) l.splice(num(i), 1); });
     def('ds_list_find_index', (l, v) => (Array.isArray(l) ? l.indexOf(v) : -1));
     def('ds_list_replace', (l, i, v) => { if (Array.isArray(l)) l[num(i)] = v; });
+    // ds_list_set is the accessor form (`list[| i] = v`). Unlike ds_list_replace
+    // it GROWS the list to reach the index. Pink's bomb records each scorched
+    // grid cell with it, and without it list_burnt stayed empty so no scorch
+    // mark ever appeared.
+    def('ds_list_set', (l, i, v) => {
+      if (!Array.isArray(l)) return;
+      const idx = num(i);
+      if (idx < 0) return;
+      while (l.length < idx) l.push(0);
+      l[idx] = v;
+    });
+
+    // array_get / array_set are the accessor forms of `arr[i]`. Both were on the
+    // codegen's builtin whitelist with NO implementation behind them, so every
+    // one of the 122 array_get call sites returned the unimplemented-stub 0 —
+    // Aqua's KnifeChain read its whole afterimage trail as zeroes and drew every
+    // segment at 0,0 with zero scale.
+    def('array_get', (a, i) => (Array.isArray(a) ? a[num(i)] : undefined));
+    def('array_set', (a, i, v) => {
+      if (!Array.isArray(a)) return;
+      const idx = num(i);
+      if (idx < 0) return;
+      while (a.length < idx) a.push(0);
+      a[idx] = v;
+    });
     def('ds_map_create', () => new Map());
     def('ds_map_destroy', () => {});
     def('ds_map_add', (m, k, v) => { if (m instanceof Map) m.set(k, v); });

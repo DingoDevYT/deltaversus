@@ -32,7 +32,12 @@
    *  gml_runtime.js stays the single source of truth for their values. */
   const BUILTIN_CONSTS = new Set([
     'c_white', 'c_black', 'c_red', 'c_green', 'c_blue', 'c_yellow', 'c_gray',
-    'c_grey', 'c_orange', 'c_purple', 'c_aqua', 'c_lime', 'c_pink', 'c_fuchsia',
+    // NOTE: no 'c_pink'. GameMaker has no such constant — the corpus DECLARES it
+    // as an instance variable (`c_pink = make_color_rgb(248, 173, 227)`,
+    // obj_round_evaluation_Create_0.gml:159), and whitelisting it sent that
+    // assignment to a window global while every read still looked at the
+    // instance, so anything tinted with it drew white.
+    'c_grey', 'c_orange', 'c_purple', 'c_aqua', 'c_lime', 'c_fuchsia',
     'c_maroon', 'c_navy', 'c_olive', 'c_silver', 'c_teal', 'c_dkgray', 'c_ltgray', 'c_dkgrey', 'c_ltgrey',
     'bm_add', 'bm_normal', 'bm_subtract', 'bm_max', 'bm_zero', 'bm_one',
     'bm_src_colour', 'bm_src_color', 'bm_inv_src_colour', 'bm_inv_src_color',
@@ -75,6 +80,21 @@
     'ev_user0', 'ev_user1', 'ev_user2', 'ev_user3', 'ev_user4', 'ev_user5',
     'ev_user6', 'ev_user7', 'ev_user8', 'ev_user9', 'ev_user10', 'ev_user11',
     'ev_user12', 'ev_user13', 'ev_user14', 'ev_user15',
+    // Path end-actions. Missing, these read as an auto-array that coerces to 0 —
+    // which IS path_action_stop, so every looping path silently became a
+    // one-shot: Jackenstein's obj_gh_fireball_square traversed its square once
+    // and then froze in place for the rest of the attack.
+    'path_action_stop', 'path_action_restart', 'path_action_continue', 'path_action_reverse',
+    // The os_* family. `os_type` is a real global (0 = Windows) but the
+    // PLATFORM names were not whitelisted, so each read as an auto-array
+    // coercing to 0 and `os_type == os_ps4` was TRUE — as was every other
+    // platform test. That put ossafe_shapes on its console branch (a 1px offset
+    // under every d_* shape) and made scr_is_switch_os() true, so every button
+    // prompt drew the Switch glyph.
+    'os_unknown', 'os_windows', 'os_macosx', 'os_linux', 'os_ios', 'os_android',
+    'os_ps3', 'os_ps4', 'os_ps5', 'os_psvita', 'os_xboxone', 'os_xboxseriesxs',
+    'os_switch', 'os_switch2', 'os_uwp', 'os_tvos', 'os_winphone', 'os_win8native',
+    'os_operagx', 'os_gxgames', 'os_browser', 'browser_not_a_browser',
     'fa_left', 'fa_center', 'fa_right', 'fa_top', 'fa_middle', 'fa_bottom',
     'pr_trianglelist', 'pr_trianglestrip', 'pr_trianglefan', 'pr_linelist', 'pr_linestrip', 'pr_pointlist',
     'e__VW', 'e__BG',

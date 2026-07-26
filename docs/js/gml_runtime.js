@@ -447,7 +447,7 @@
       }
     }
 
-    createInstance(objType, x, y) {
+    createInstance(objType, x, y, explicitDepth) {
       // Clean objType
       if (objType && typeof objType === 'object' && objType.object_name) {
         objType = objType.object_name;
@@ -518,6 +518,11 @@
         && global.GML_OBJECT_DEPTHS[this.$chapter || 'ch3'];
       if (depthTable && Object.prototype.hasOwnProperty.call(depthTable, objType)) {
         inst.depth = depthTable[objType];
+      }
+      // An explicit instance_create_depth() depth overrides the table, and must
+      // be in place BEFORE Create runs so the object can read or replace it.
+      if (explicitDepth !== undefined && explicitDepth !== null && isFinite(explicitDepth)) {
+        inst.depth = explicitDepth;
       }
 
       this.instances.push(inst);
@@ -897,13 +902,16 @@
   function instance_create_depth(x, y, depth, objType) {
     const rt = global.activeGMLRuntime;
     if (!rt) return null;
-    const inst = rt.createInstance(objType, x, y);
     // The whole point of this call is the EXPLICIT depth, which overrides the
-    // object's table depth. Dropping it (the previous behaviour) silently
-    // relayered everything created this way — e.g. Pink's
-    // `instance_create_depth(x, y, 4, obj_purplecontrols)`, whose lane arena is
-    // designed to sit in front of the depth-5 battle box.
-    if (inst && depth !== undefined && depth !== null && isFinite(Number(depth))) {
+    // object's table depth. Dropping it silently relayered everything created
+    // this way — e.g. Pink's `instance_create_depth(x, y, 4,
+    // obj_purplecontrols)`, whose lane arena is designed to sit in front of the
+    // depth-5 battle box. It is passed INTO createInstance so it is stamped
+    // before the Create event, which is when GameMaker applies it; setting it
+    // afterwards discarded any depth the object assigns to itself in Create.
+    const hasDepth = depth !== undefined && depth !== null && isFinite(Number(depth));
+    const inst = rt.createInstance(objType, x, y, hasDepth ? Number(depth) : undefined);
+    if (inst && hasDepth) {
       inst.depth = Number(depth);
     }
     return inst;

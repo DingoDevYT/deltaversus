@@ -345,15 +345,15 @@
 <script src="js/sprite_trims.js?v=d44f25ce"></script>
 <script src="js/gml_object_index.js?v=cdc111fc"></script>
 <script src="js/gml_asset_db.js?v=5a83a304"></script>
-<script src="js/gml_runtime.js?v=9612745e"></script>
-<script src="js/gml_helpers.js?v=163bb854"></script>
+<script src="js/gml_runtime.js?v=4c82073b"></script>
+<script src="js/gml_helpers.js?v=bbc551c1"></script>
 <script src="js/gml_compiler.js?v=c32f64c8"></script>
-<script src="js/gml_codegen.js?v=d52e5d0c"></script>
+<script src="js/gml_codegen.js?v=03beba16"></script>
 <script src="js/gml_translator.js?v=2a034754"></script>
 <script src="js/gml_presets.js?v=cc81e393"></script>
 <script src="js/gml_scripts.js?v=2a51c899"></script>
 <script src="js/gml_objects.js?v=66796a6c"></script>
-<script src="js/gml_attacks.js?v=fef818f1"></script>
+<script src="js/gml_attacks.js?v=5ce9f7ed"></script>
 <script src="js/gml_sounds.js?v=21214418"></script>
 <script src="js/gml_audio.js?v=8295f2d0"></script>
 <script src="js/sprite_indices.js?v=eea73030"></script>
@@ -1113,6 +1113,19 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     const purple = runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_purplecontrols');
     if (dating && !purple) return;
 
+    // Honour the game HIDING the heart. Real instances are visibility-filtered
+    // in the draw pipeline; the soul is an overlay and was exempt, so when the
+    // game swaps it for another soul object it drew both. ch5's
+    // obj_dbulletcontroller does `obj_heart.visible = false` right after
+    // spawning obj_orangeheart in 23 places, covering 13 of Flowery's 14
+    // attacks — the player saw two hearts, one of which did not respond to
+    // input.
+    if (runtime.soul && runtime.soul.visible === false) return;
+    const soulAlpha = runtime.soul && runtime.soul.image_alpha !== undefined
+      ? Math.max(0, Math.min(1, Number(runtime.soul.image_alpha)))
+      : 1;
+    if (!(soulAlpha > 0)) return;
+
     const assets = window.gmlAssets;
     let spr = soulMode === 'yellow' ? 'spr_yellowheart' : 'spr_heart';
     // The game may retint the heart itself — purple mode does
@@ -1149,12 +1162,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     // whole spear ring sat +10,+10 off. It also disagreed with our OWN collision
     // mask, which honours the origin correctly.
     const orig = (window.GML_SPRITE_ORIGINS || {})[spr] || [0, 0];
+    const prevAlpha = c.globalAlpha;
+    if (soulAlpha < 1) c.globalAlpha = prevAlpha * soulAlpha;
     if (img && img.complete && img.naturalWidth > 0) {
       c.drawImage(img, sx - Math.floor(Number(orig[0]) || 0), sy - Math.floor(Number(orig[1]) || 0));
     } else {
       c.fillStyle = soulMode === 'yellow' ? '#ffe100' : '#ff0000';
       c.beginPath(); c.arc(sx + 8, sy + 8, 6, 0, Math.PI * 2); c.fill();
     }
+    c.globalAlpha = prevAlpha;
     if (soulMode === 'yellow' && yCharging) {
       // Transcribed from obj_heart_Draw_0.gml:1-27 (color == 1) — the REAL
       // charge visuals, replacing an invented canvas circle.

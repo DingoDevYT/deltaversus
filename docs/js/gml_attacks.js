@@ -4594,7 +4594,6 @@ window.GML_ATTACKS = [
   "controllerSet": {
    "type": 130,
    "special": 0,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
    "difficulty": 0
   },
   "inFight": true,
@@ -4627,7 +4626,6 @@ window.GML_ATTACKS = [
   "controllerSet": {
    "type": 130,
    "special": 1,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
    "difficulty": 0
   },
   "inFight": true,
@@ -4660,7 +4658,6 @@ window.GML_ATTACKS = [
   "controllerSet": {
    "type": 130,
    "special": 2,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
    "difficulty": 0
   },
   "inFight": true,
@@ -4693,7 +4690,6 @@ window.GML_ATTACKS = [
   "controllerSet": {
    "type": 130,
    "special": 3,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
    "difficulty": 0
   },
   "inFight": true,
@@ -4726,7 +4722,6 @@ window.GML_ATTACKS = [
   "controllerSet": {
    "type": 130,
    "special": 4,
-   "side": "0 = Lanino favored, 1 = Elnina favored",
    "difficulty": 0
   },
   "inFight": true,
@@ -4757,11 +4752,7 @@ window.GML_ATTACKS = [
   "hasSpecial": false,
   "id": "orange_green_type131",
   "controllerSet": {
-   "type": 131,
-   "creator": "obj_green_enemy.myself",
-   "creatorid": "obj_green_enemy.id",
-   "target": "obj_green_enemy.mytarget",
-   "damage": "global.monsterat[green] * 5 = 80"
+   "type": 131
   },
   "inFight": true,
   "monsterType": 113,
@@ -4792,11 +4783,7 @@ window.GML_ATTACKS = [
   "id": "orange_green_type314",
   "controllerSet": {
    "type": 314,
-   "difficulty": 8,
-   "creator": "obj_orange_enemy.myself",
-   "creatorid": "obj_orange_enemy.id",
-   "target": "obj_orange_enemy.mytarget",
-   "damage": "global.monsterat[orange] * 5 = 80"
+   "difficulty": 8
   },
   "inFight": true,
   "monsterType": 113,
@@ -4826,10 +4813,7 @@ window.GML_ATTACKS = [
   "hasSpecial": false,
   "id": "orange_green_type132",
   "controllerSet": {
-   "type": 132,
-   "creator": "obj_orange_enemy.myself",
-   "creatorid": "obj_orange_enemy.id",
-   "target": "obj_orange_enemy.mytarget"
+   "type": 132
   },
   "inFight": true,
   "monsterType": 113,
@@ -4860,8 +4844,6 @@ window.GML_ATTACKS = [
   "id": "orange_green_type307",
   "controllerSet": {
    "type": 307,
-   "creator": "obj_green_enemy.myself",
-   "creatorid": "obj_green_enemy.id",
    "damage": 92,
    "target": 4
   },
@@ -5760,7 +5742,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
+  "setup": null,
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifeChain",
   "alsoChoices": [
@@ -5819,7 +5801,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"FanOfKnives\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 309;\n                    scr_turntimer(240);",
+  "setup": null,
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "FanOfKnives",
   "alsoChoices": [
@@ -5875,7 +5857,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"KnifePetal\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 310;\n                    scr_turntimer(240);",
+  "setup": null,
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifePetal",
   "alsoChoices": [
@@ -6046,7 +6028,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": true,
   "difficultyLiteral": 1,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "setup": null,
   "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
   "turnTimer": 260,
   "variantOf": "SpearBlast",
@@ -6078,7 +6060,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": true,
   "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "setup": null,
   "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
   "turnTimer": 260,
   "variantOf": "SpearBlast",
@@ -6110,7 +6092,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "setup": null,
   "source": "rosters/berdly.json (row not reached by scan)",
   "turnTimer": 180,
   "alsoChoices": [],
@@ -6139,7 +6121,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "setup": null,
   "source": "rosters/berdly.json (row not reached by scan)",
   "turnTimer": 260,
   "alsoChoices": [],
@@ -6168,7 +6150,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "setup": null,
   "source": "rosters/berdly.json (row not reached by scan)",
   "turnTimer": 260,
   "alsoChoices": [],
@@ -6197,7 +6179,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "setup": null,
   "source": "rosters/berdly.json (row not reached by scan)",
   "turnTimer": 260,
   "alsoChoices": [],
@@ -6266,7 +6248,7 @@ window.GML_ATTACKS = [
   "choice": 2,
   "name": "Wine (tilting glass)",
   "controller": "obj_queen_bulletcontroller",
-  "type": 2,
+  "type": 2.1,
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [
@@ -6290,7 +6272,7 @@ window.GML_ATTACKS = [
    2
   ],
   "hasSpecial": true,
-  "id": "queen_type2_wine_tilting_g",
+  "id": "queen_type2_1",
   "controllerSet": {
    "difficulty": 1
   },
@@ -6310,7 +6292,7 @@ window.GML_ATTACKS = [
   "choice": 2,
   "name": "Wine (fast tilt)",
   "controller": "obj_queen_bulletcontroller",
-  "type": 2,
+  "type": 2.2,
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [
@@ -6334,7 +6316,7 @@ window.GML_ATTACKS = [
    2
   ],
   "hasSpecial": true,
-  "id": "queen_type2_wine_fast_tilt",
+  "id": "queen_type2_2",
   "controllerSet": {
    "difficulty": 2
   },
@@ -6472,7 +6454,7 @@ window.GML_ATTACKS = [
   "choice": 6,
   "name": "Explosion (slow cadence)",
   "controller": "obj_queen_bulletcontroller",
-  "type": 6,
+  "type": 6.1,
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [
@@ -6484,13 +6466,13 @@ window.GML_ATTACKS = [
    "bufferattack",
    "bufferattack"
   ],
-  "setup": "global.monsterattackname[myself] = \"Explosion\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 6;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 6.1;\n                    \n                    scr_turntimer(300);",
+  "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 300,
   "variantOf": "Explosion",
   "alsoChoices": [],
   "hasSpecial": true,
-  "id": "queen_type6_explosion_slow",
+  "id": "queen_type6_1",
   "controllerSet": {
    "difficulty": 1
   },
@@ -6558,7 +6540,7 @@ window.GML_ATTACKS = [
    "bufferattack",
    "bufferattack"
   ],
-  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 245,
   "variantOf": "QueenLaser",
@@ -6595,7 +6577,7 @@ window.GML_ATTACKS = [
    "bufferattack",
    "bufferattack"
   ],
-  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 245,
   "variantOf": "QueenLaser",
@@ -6685,7 +6667,7 @@ window.GML_ATTACKS = [
   "extraFields": [
    "element"
   ],
-  "setup": "global.monsterattackname[myself] = \"YarnBalls\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 2;\n                dc.element = 6;",
+  "setup": null,
   "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
   "variantOf": "YarnBalls",
   "alsoChoices": [
@@ -6749,7 +6731,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
+  "setup": null,
   "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
   "variantOf": "RisingDiamonds",
   "alsoChoices": [
@@ -6779,7 +6761,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
+  "setup": null,
   "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
   "variantOf": "RisingDiamonds",
   "alsoChoices": [
@@ -6806,7 +6788,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6832,7 +6814,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6856,7 +6838,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 0,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6881,7 +6863,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6906,7 +6888,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6930,7 +6912,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6954,7 +6936,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 3,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -6978,7 +6960,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -7002,7 +6984,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 3,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -7026,7 +7008,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 4,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -7088,7 +7070,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 461;\n                scr_turntimer(420);",
+  "setup": null,
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "darkshapeswithred",
   "alsoChoices": [
@@ -7153,7 +7135,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"thehandsfast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 462;",
+  "setup": null,
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "thehandsfast",
   "alsoChoices": [
@@ -7180,7 +7162,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"darkshapescentipedeharder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 451;",
+  "setup": null,
   "source": "rosters/titan.json (row not reached by scan)",
   "alsoChoices": [],
   "hasSpecial": false,

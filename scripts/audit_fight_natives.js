@@ -172,7 +172,9 @@ function callNames(src) {
 // 3. Type slicing for the shared attack controllers.
 // ───────────────────────────────────────────────────────────────────────────
 /** The controller objects whose whole behaviour is one big `type` switch. */
-const TYPED_CONTROLLERS = new Set(ATTACKS.map(a => a.controller).filter(Boolean));
+const TYPED_CONTROLLERS = process.argv.includes('--noslice')
+  ? new Set()
+  : new Set(ATTACKS.map(a => a.controller).filter(Boolean));
 
 /**
  * Keep only the parts of `src` a fight with these `type` values can enter.
@@ -546,4 +548,21 @@ if (process.argv.includes('--json')) {
   const p = path.join(__dirname, '..', 'docs', 'js', 'fight_native_gaps.json');
   fs.writeFileSync(p, JSON.stringify(out, null, 1));
   console.log(`\nwrote ${p}`);
+}
+
+// --callers NAME : which reachable objects/scripts call NAME (for verification)
+if (process.argv.includes('--callers')) {
+  const target = process.argv[process.argv.indexOf('--callers') + 1];
+  const re = new RegExp('(?:^|[^.\\w])' + target + '\\s*\\(');
+  for (const [chapter, r] of Object.entries(results)) {
+    const objTable = OBJ_EVENTS[chapter] || {}, scrTable = SCRIPTS[chapter] || {};
+    for (const n of r.seenObj.keys()) {
+      const b = objTable[n]; if (!b) continue;
+      for (const [ev, src] of Object.entries(b)) if (typeof src === 'string' && re.test(strip(src))) console.log(`${chapter}  ${n}.${ev}`);
+    }
+    for (const f of r.seenScr.keys()) {
+      const src = scrTable[f];
+      if (typeof src === 'string' && re.test(strip(src))) console.log(`${chapter}  scr:${f}`);
+    }
+  }
 }
