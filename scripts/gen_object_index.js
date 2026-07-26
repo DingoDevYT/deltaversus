@@ -182,7 +182,7 @@ out += `
       out.parent = (own && own.p) || null;
       // GameMaker falls back to the sprite for the collision mask.
       // GameMaker leaves an unset mask at -1 ("same as sprite"). Copying the
-      // SPRITE NAME in here made `mask_index != -1` TRUE for every maskless
+      // SPRITE NAME in here made \`mask_index != -1\` TRUE for every maskless
       // object — obj_pinklanebullet's Draw branches on exactly that, so its
       // lane bullets drew the fade-in ANIMATION sprite forever and
       // spr_pinklanebullet_lane never appeared. Collisions resolve -1 back to

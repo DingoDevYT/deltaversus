@@ -667,6 +667,48 @@ for (const boss of BOSSES) {
   }
 }
 
+// RECONCILE against the roster's own derivation. A generic scan can find the
+// right BRANCH and still name the wrong controller: K. Round's dispatch is
+// `leap = instance_create(...obj_checkers_leap); leap.leapmode = N`, and
+// scanning leapmode inside obj_checkers_leap's Step matches each branch body,
+// whose first instance_create is an obj_shake or an obj_regularbullet — an
+// incidental effect, not the attack. The roster JSON records the real controller
+// (its .md documents this exact caveat), so where it declares one for a choice,
+// it wins. The scan's verbatim `setup` block is kept either way.
+for (const j of rosterConfigs) {
+  if (!j.selectorVar || !Array.isArray(j.real)) continue;
+  // ONLY where the mapping is unambiguous. A choice can legitimately cover
+  // several attacks — Queen's `case 2` dispatches types 2, 2.1 and 2.2, and a
+  // turn-repeated attack appears once per turn in the derivation — and forcing
+  // one roster row's name onto all of them made them look identical, so the
+  // dedupe collapsed real attacks away (Queen 15 entries -> 10, Titan 21 -> 17).
+  // When a choice maps to more than one row, the scan already knows more than
+  // the reconciliation does: leave it alone.
+  const grouped = new Map();
+  for (const r of j.real) {
+    if (typeof r.choice !== 'number') continue;
+    if (!grouped.has(r.choice)) grouped.set(r.choice, []);
+    grouped.get(r.choice).push(r);
+  }
+  const byChoice = new Map();
+  for (const [choice, rows] of grouped) if (rows.length === 1) byChoice.set(choice, rows[0]);
+  if (!byChoice.size) continue;
+  for (const a of roster) {
+    if (a.boss !== j.id) continue;
+    const r = byChoice.get(Number(a.choice));
+    if (!r) continue;
+    if (r.controller && r.controller !== a.controller) a.controller = r.controller;
+    if (r.type !== undefined && r.type !== null) a.type = r.type;
+    if (r.name) a.name = r.name;
+    if (r.set) a.set = Object.assign({}, r.set, a.set || {});
+    // No `type` means the selector itself is the payload: the boss creates the
+    // object and writes the selector onto it (leap.leapmode = 2).
+    if ((r.type === undefined || r.type === null) && !a.set) {
+      a.set = { [j.selectorVar]: Number(a.choice) };
+    }
+  }
+}
+
 // De-duplicate: the same (controller, type) can be dispatched from more than one
 // branch (difficulty variants). Keep the first, record the alternatives.
 const seen = new Map();
@@ -694,7 +736,8 @@ for (const a of roster) {
   // dropdown, SPEC_CHECK, the visual baseline — so make them unique by
   // appending a slug of the announcement rather than a bare counter.
   if (usedIds.has(a.id)) {
-    const slug = String(a.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24);
+    const slug = String(a.name || '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 14).replace(/_$/, '');
     let candidate = `${a.id}_${slug || 'alt'}`;
     let n = 2;
     while (usedIds.has(candidate)) candidate = `${a.id}_${slug || 'alt'}${n++}`;
