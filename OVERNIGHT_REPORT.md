@@ -182,6 +182,32 @@ All verified against source, all with the full battery green afterwards.
 
 ---
 
+## Five checker bugs, found by the checker's own failures
+
+Worth reading before trusting any spec-suite number. Each of these made a
+CORRECT engine look wrong, and each was verified by hand before anything was
+changed:
+
+1. **Spawns inferred from live instances.** `obj_knight_warp` lives four frames
+   (`alarm[1] = 4`) and was invisible between samples — reported "never
+   created" on an engine creating it correctly.
+2. **`maxCalls: 0` treated as a miss.** That is the NEGATIVE form of a draw
+   assertion ("must not be drawn"); zero calls is the pass.
+3. **`turntimer` sampled at launch, then only at marks.** Attacks that pin
+   their duration inside the CONTROLLER's Step (`global.turntimer = 999999`)
+   read the boss's 240 at launch, and a peak first read at frame 8 gave 999991.
+4. **Snapshots stored instance REFERENCES.** The big one — every `ivar` and
+   `pos` assertion was evaluated against the instance's state at the LAST
+   sampled frame. Jevil's obj_suitbomb asserted at frame 2 read 250, where the
+   bomb had landed by frame 60, instead of the −60 it genuinely holds.
+5. **Censusing the helper's `drawSelf`, not the instance's.** `draw_self()`
+   compiles to `this.drawSelf(ctx)`, so every object drawing that way was
+   invisible: 10 assertions reported `spr_gerson_swing` "not drawn" while the
+   switch was alive, visible, at xscale 2, holding that very sprite.
+
+> **A young spec suite mostly measures itself.** Its early failure list is a
+> to-do list for the harness, not for the engine. Suspect the suite first.
+
 ## The ranked fix list (start here)
 
 Failures cluster into a few causes, not 176 separate bugs. Counts are attacks
