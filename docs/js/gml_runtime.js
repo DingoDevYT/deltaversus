@@ -853,8 +853,20 @@
   }
 
   // Color helpers
+  //
+  // GameMaker packs colours as BGR (0xBBGGRR), and toCSSColor decodes them that
+  // way. gml_helpers.js overrides `global.make_color_rgb` with the correct
+  // packing — but this is a module-LOCAL function, and `make_color_hsv` below
+  // closes over it rather than the global, so that fix never reached it. Every
+  // colour produced by make_color_hsv came out with red and blue swapped.
+  //
+  // The Roaring Knight is where it shows: its Draw tints the full-screen ball
+  // surface with `make_color_hsv(hsv % 255, 255, 255)` where hsv sweeps
+  // 128..288, which should run cyan -> blue -> magenta -> red. Swapped, hue 128
+  // packed as 0x00FCFF and decoded to RGB(255,252,0) — the flat YELLOW wash
+  // Landon reported as "a visual problem with the background colors".
   function make_color_rgb(r, g, b) {
-    return ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
+    return ((b & 255) << 16) | ((g & 255) << 8) | (r & 255);
   }
   function make_colour_rgb(r, g, b) { return make_color_rgb(r, g, b); }
   function make_color_hsv(h, s, v) {
