@@ -2755,6 +2755,12 @@
     function surfacePart(id, l, t, w, h, x, y, xs, ys, rot, alpha, blend) {
       const ctx = global.$gmlActiveCtx, c = SURFACES.get(num(id));
       if (!ctx || !c) return;
+      // Surface blits participate in the alpha-mask idiom too
+      // (scr_draw_in_box_* draws whole surfaces through dest-alpha masks).
+      if (AMASK.tracked && (ctx.globalCompositeOperation === 'source-atop'
+          || ctx.globalCompositeOperation === 'destination-in')) {
+        return withAlphaMask(ctx, () => surfacePart(id, l, t, w, h, x, y, xs, ys, rot, alpha, blend));
+      }
       let sl = num(l), st = num(t), sw = num(w), sh = num(h);
       if (!(sw > 0) || !(sh > 0)) return;
       // Clamp the source rect into the surface, carrying the offset to the dest.
@@ -2774,7 +2780,7 @@
         const ch = channels(blend);
         if (!(ch[0] === 255 && ch[1] === 255 && ch[2] === 255)) src = tintedSurface(num(id), c, blend);
       }
-      const a = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
+      const a = (alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)))) * MASK_MUL;
       const rt = num(rot), sxv = num(xs) || 1, syv = num(ys) || 1;
 
       // FAST PATH: unrotated, unscaled. `save`/`restore` and the transform
@@ -2849,10 +2855,62 @@
       ctx.strokeStyle = DRAWSTATE.color;
       ctx.globalAlpha = Math.max(0, Math.min(1, num(DRAWSTATE.alpha)));
     }
+    // ── Alpha-channel mask emulation (gpu_set_colorwriteenable) ──────────
+    // Deltarune's clip-to-the-box idiom paints the screen's ALPHA CHANNEL and
+    // then draws through (bm_dest_alpha, bm_inv_dest_alpha):
+    //   gpu_set_colorwriteenable(false, false, false, true);  // alpha only
+    //   draw_set_alpha(0); fill(whole screen);                // clear mask
+    //   draw_set_alpha(a); fill(box interior);                // mask = box
+    //   gpu_set_colorwriteenable(true, true, true, true);
+    //   gpu_set_blendmode_ext(bm_dest_alpha, bm_inv_dest_alpha);
+    //   <sprite/surface draws>                                // clipped
+    // Canvas has no alpha-only writes, so the idiom is modelled directly:
+    // rect fills with RGB writes off become a tracked CLIP REGION, and
+    // dest-alpha composites clip to it. Measured case:
+    // obj_gerson_growtangle_telegraph_new — without this its telegraph column
+    // drew unclipped and IMMORTAL (a floating white rectangle above the box,
+    // still there at image_alpha -2.2, which in-game means an empty mask).
+    const CW = { rgb: true, alpha: true };
+    const AMASK = { tracked: false, alpha: 1, rects: [] };
+    let MASK_MUL = 1;
+    global.gpu_set_colorwriteenable = (r, g, b, a) => {
+      CW.rgb = bool(r) || bool(g) || bool(b);
+      CW.alpha = a === undefined ? true : bool(a);
+    };
+    global.gpu_set_colourwriteenable = global.gpu_set_colorwriteenable;
+    function maskRect(x1, y1, x2, y2) {
+      AMASK.tracked = true;
+      const a = num(DRAWSTATE.alpha);
+      const w = Math.abs(num(x2) - num(x1)), h = Math.abs(num(y2) - num(y1));
+      if (a <= 0) {
+        // The idiom's zero-alpha fill covers the whole view to blank the mask.
+        if (w >= 600 && h >= 400) AMASK.rects = [];
+        return;
+      }
+      AMASK.alpha = Math.min(1, a);
+      AMASK.rects.push([Math.min(num(x1), num(x2)), Math.min(num(y1), num(y2)), w, h]);
+    }
+    /** Wrap a draw so dest-alpha composites honour the tracked mask. */
+    function withAlphaMask(ctx, fn) {
+      const op = ctx.globalCompositeOperation;
+      if (!AMASK.tracked || (op !== 'source-atop' && op !== 'destination-in')) { fn(); return; }
+      if (!AMASK.rects.length) return;          // empty mask: nothing shows
+      ctx.save();
+      ctx.beginPath();
+      for (const r of AMASK.rects) ctx.rect(r[0], r[1], r[2], r[3]);
+      ctx.clip();
+      ctx.globalCompositeOperation = 'source-over';
+      MASK_MUL = AMASK.alpha;
+      try { fn(); } finally { MASK_MUL = 1; ctx.restore(); }
+    }
+
     /** Run `fn` with the current GML draw state applied, then restore. */
     function shape(fn) {
       const ctx = global.$gmlActiveCtx;
       if (!ctx) return;
+      // Colour writes disabled: geometry only feeds the alpha mask (rects are
+      // recorded by draw_rectangle itself); nothing may touch the pixels.
+      if (!CW.rgb) return;
       ctx.save();
       applyDrawState(ctx);
       try { fn(ctx); } finally { ctx.restore(); }
@@ -2980,11 +3038,16 @@
       ctx.lineWidth = Math.max(1, num(w));
       ctx.beginPath(); ctx.moveTo(num(x1), num(y1)); ctx.lineTo(num(x2), num(y2)); ctx.stroke();
     });
-    global.draw_rectangle = (x1, y1, x2, y2, outline) => shape(ctx => {
-      const x = Math.min(num(x1), num(x2)), y = Math.min(num(y1), num(y2));
-      const w = Math.abs(num(x2) - num(x1)), h = Math.abs(num(y2) - num(y1));
-      if (bool(outline)) ctx.strokeRect(x, y, w, h); else ctx.fillRect(x, y, w, h);
-    });
+    global.draw_rectangle = (x1, y1, x2, y2, outline) => {
+      // RGB writes off + alpha on = this fill defines the alpha MASK, not
+      // pixels (see the colorwriteenable block above).
+      if (!CW.rgb) { if (CW.alpha && !bool(outline)) maskRect(x1, y1, x2, y2); return; }
+      return shape(ctx => {
+        const x = Math.min(num(x1), num(x2)), y = Math.min(num(y1), num(y2));
+        const w = Math.abs(num(x2) - num(x1)), h = Math.abs(num(y2) - num(y1));
+        if (bool(outline)) ctx.strokeRect(x, y, w, h); else ctx.fillRect(x, y, w, h);
+      });
+    };
     global.draw_circle = (x, y, r, outline) => shape(ctx => {
       ctx.beginPath(); ctx.arc(num(x), num(y), Math.abs(num(r)), 0, Math.PI * 2);
       strokeOrFill(ctx, outline);
@@ -3803,22 +3866,24 @@
       const ctx = global.$gmlActiveCtx;
       spr = sprAlias(spr);
       if (!ctx || !spr || typeof spr !== 'string') return;
-      const s = spriteDraw(spr, subimg);
-      ctx.save();
-      ctx.translate(num(x), num(y));
-      const r = num(rot);
-      if (r) ctx.rotate(-r * Math.PI / 180);
-      const sx = xscale === undefined ? 1 : num(xscale);
-      const sy = yscale === undefined ? 1 : num(yscale);
-      if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
-      ctx.globalAlpha = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
-      if (s.img && s.img.complete && s.img.naturalWidth > 0) {
-        drawTinted(ctx, s.img, -s.ox, -s.oy, color);
-      } else {
-        ctx.fillStyle = global.toCSSColor(color || '#ffffff');
-        ctx.fillRect(-s.ox, -s.oy, s.w || 16, s.h || 16);
-      }
-      ctx.restore();
+      withAlphaMask(ctx, () => {
+        const s = spriteDraw(spr, subimg);
+        ctx.save();
+        ctx.translate(num(x), num(y));
+        const r = num(rot);
+        if (r) ctx.rotate(-r * Math.PI / 180);
+        const sx = xscale === undefined ? 1 : num(xscale);
+        const sy = yscale === undefined ? 1 : num(yscale);
+        if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
+        ctx.globalAlpha = (alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)))) * MASK_MUL;
+        if (s.img && s.img.complete && s.img.naturalWidth > 0) {
+          drawTinted(ctx, s.img, -s.ox, -s.oy, color);
+        } else {
+          ctx.fillStyle = global.toCSSColor(color || '#ffffff');
+          ctx.fillRect(-s.ox, -s.oy, s.w || 16, s.h || 16);
+        }
+        ctx.restore();
+      });
     };
     global.draw_sprite = function (spr, subimg, x, y) {
       global.draw_sprite_ext(spr, subimg, x, y, 1, 1, 0, undefined, 1);
