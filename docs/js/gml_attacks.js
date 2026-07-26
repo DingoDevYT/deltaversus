@@ -31,7 +31,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type109"
+  "id": "knight_type109",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -50,7 +51,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type98"
+  "id": "knight_type98",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -69,7 +71,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type99"
+  "id": "knight_type99",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -88,7 +91,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type102"
+  "id": "knight_type102",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -107,7 +111,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type103"
+  "id": "knight_type103",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -128,7 +133,8 @@ window.GML_ATTACKS = [
    16
   ],
   "hasSpecial": false,
-  "id": "knight_type104"
+  "id": "knight_type104",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -147,7 +153,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type106"
+  "id": "knight_type106",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -166,7 +173,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type105"
+  "id": "knight_type105",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -185,7 +193,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type107"
+  "id": "knight_type107",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -204,7 +213,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type108"
+  "id": "knight_type108",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -230,7 +240,8 @@ window.GML_ATTACKS = [
    17
   ],
   "hasSpecial": false,
-  "id": "knight_type151"
+  "id": "knight_type151",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -249,7 +260,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type152"
+  "id": "knight_type152",
+  "inFight": false
  },
  {
   "boss": "knight",
@@ -270,7 +282,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type153"
+  "id": "knight_type153",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -292,7 +305,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type154"
+  "id": "knight_type154",
+  "inFight": true
  },
  {
   "boss": "knight",
@@ -311,7 +325,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "knight_type101"
+  "id": "knight_type101",
+  "inFight": false
  },
  {
   "boss": "spamton_neo",
@@ -330,7 +345,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type0"
+  "id": "spamton_neo_type0",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -351,7 +367,8 @@ window.GML_ATTACKS = [
    3
   ],
   "hasSpecial": false,
-  "id": "spamton_neo_type1"
+  "id": "spamton_neo_type1",
+  "inFight": false
  },
  {
   "boss": "spamton_neo",
@@ -372,7 +389,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": true,
-  "id": "spamton_neo_type1_5"
+  "id": "spamton_neo_type1_5",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -393,7 +411,8 @@ window.GML_ATTACKS = [
    8.5
   ],
   "hasSpecial": false,
-  "id": "spamton_neo_type8_5"
+  "id": "spamton_neo_type8_5",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -415,7 +434,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type51"
+  "id": "spamton_neo_type51",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -434,7 +454,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type6"
+  "id": "spamton_neo_type6",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -455,7 +476,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": true,
-  "id": "spamton_neo_type12"
+  "id": "spamton_neo_type12",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -478,7 +500,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_sneo_phonecall"
+  "id": "spamton_neo_sneo_phonecall",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -499,7 +522,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type9"
+  "id": "spamton_neo_type9",
+  "inFight": true
  },
  {
   "boss": "spamton_neo",
@@ -520,7 +544,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type1"
+  "id": "spamton_neo_type1",
+  "inFight": false
  },
  {
   "boss": "spamton_neo",
@@ -539,7 +564,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_sneo_bulletcontroller"
+  "id": "spamton_neo_sneo_bulletcontroller",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -558,7 +584,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green0"
+  "id": "gerson_green0",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -577,7 +604,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green1"
+  "id": "gerson_green1",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -596,7 +624,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green2"
+  "id": "gerson_green2",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -615,7 +644,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green3"
+  "id": "gerson_green3",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -634,7 +664,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green4"
+  "id": "gerson_green4",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -653,7 +684,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green5"
+  "id": "gerson_green5",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -672,7 +704,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green6"
+  "id": "gerson_green6",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -691,7 +724,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green7"
+  "id": "gerson_green7",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -710,7 +744,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green8"
+  "id": "gerson_green8",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -729,7 +764,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green9"
+  "id": "gerson_green9",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -748,7 +784,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green10"
+  "id": "gerson_green10",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -767,7 +804,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green11"
+  "id": "gerson_green11",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -786,7 +824,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green12"
+  "id": "gerson_green12",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -805,7 +844,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green13"
+  "id": "gerson_green13",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -824,7 +864,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green14"
+  "id": "gerson_green14",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -843,7 +884,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green15"
+  "id": "gerson_green15",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -862,7 +904,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green16"
+  "id": "gerson_green16",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -881,7 +924,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green17"
+  "id": "gerson_green17",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -900,7 +944,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green18"
+  "id": "gerson_green18",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -919,7 +964,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green19"
+  "id": "gerson_green19",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -938,7 +984,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green20"
+  "id": "gerson_green20",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -957,7 +1004,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green21"
+  "id": "gerson_green21",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -976,7 +1024,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green22"
+  "id": "gerson_green22",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -995,7 +1044,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green23"
+  "id": "gerson_green23",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1014,7 +1064,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green24"
+  "id": "gerson_green24",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1033,7 +1084,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green25"
+  "id": "gerson_green25",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1052,7 +1104,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green26"
+  "id": "gerson_green26",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1071,7 +1124,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green27"
+  "id": "gerson_green27",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1090,7 +1144,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green28"
+  "id": "gerson_green28",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1109,7 +1164,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green29"
+  "id": "gerson_green29",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1128,7 +1184,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green30"
+  "id": "gerson_green30",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1147,7 +1204,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green31"
+  "id": "gerson_green31",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1166,7 +1224,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green32"
+  "id": "gerson_green32",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1185,7 +1244,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green33"
+  "id": "gerson_green33",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1204,7 +1264,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green34"
+  "id": "gerson_green34",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1223,7 +1284,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green35"
+  "id": "gerson_green35",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1242,7 +1304,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green36"
+  "id": "gerson_green36",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1261,7 +1324,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green37"
+  "id": "gerson_green37",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1280,7 +1344,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green38"
+  "id": "gerson_green38",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1299,7 +1364,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green39"
+  "id": "gerson_green39",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1318,7 +1384,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green40"
+  "id": "gerson_green40",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1337,7 +1404,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green41"
+  "id": "gerson_green41",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1356,7 +1424,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green42"
+  "id": "gerson_green42",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1375,7 +1444,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green43"
+  "id": "gerson_green43",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1394,7 +1464,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green44"
+  "id": "gerson_green44",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1413,7 +1484,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green45"
+  "id": "gerson_green45",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1432,7 +1504,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green46"
+  "id": "gerson_green46",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1451,7 +1524,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green47"
+  "id": "gerson_green47",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1470,7 +1544,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green48"
+  "id": "gerson_green48",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1489,7 +1564,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green49"
+  "id": "gerson_green49",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1508,7 +1584,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green50"
+  "id": "gerson_green50",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1527,7 +1604,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green51"
+  "id": "gerson_green51",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1546,7 +1624,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green52"
+  "id": "gerson_green52",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1565,7 +1644,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green53"
+  "id": "gerson_green53",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1584,7 +1664,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green54"
+  "id": "gerson_green54",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1603,7 +1684,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green55"
+  "id": "gerson_green55",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1622,7 +1704,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green56"
+  "id": "gerson_green56",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1641,7 +1724,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green57"
+  "id": "gerson_green57",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1660,7 +1744,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green58"
+  "id": "gerson_green58",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1679,7 +1764,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green70"
+  "id": "gerson_green70",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1698,7 +1784,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green71"
+  "id": "gerson_green71",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1717,7 +1804,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green72"
+  "id": "gerson_green72",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -1736,7 +1824,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green73"
+  "id": "gerson_green73",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1755,7 +1844,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green100"
+  "id": "gerson_green100",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1774,7 +1864,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green101"
+  "id": "gerson_green101",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1793,7 +1884,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green110"
+  "id": "gerson_green110",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1812,7 +1904,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green111"
+  "id": "gerson_green111",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1831,7 +1924,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green112"
+  "id": "gerson_green112",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1850,7 +1944,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green120"
+  "id": "gerson_green120",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1869,7 +1964,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green140"
+  "id": "gerson_green140",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1888,7 +1984,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green150"
+  "id": "gerson_green150",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1907,7 +2004,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green160"
+  "id": "gerson_green160",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1926,7 +2024,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green170"
+  "id": "gerson_green170",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1945,7 +2044,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green180"
+  "id": "gerson_green180",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1964,7 +2064,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green200"
+  "id": "gerson_green200",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -1983,7 +2084,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green210"
+  "id": "gerson_green210",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2002,7 +2104,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green211"
+  "id": "gerson_green211",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2021,7 +2124,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green212"
+  "id": "gerson_green212",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2040,7 +2144,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green213"
+  "id": "gerson_green213",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2059,7 +2164,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green220"
+  "id": "gerson_green220",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -2078,7 +2184,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green230"
+  "id": "gerson_green230",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2097,7 +2204,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_green240"
+  "id": "gerson_green240",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2112,7 +2220,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==5",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_gerson_box_hit_controller"
+  "id": "gerson_gerson_box_hit_controller",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2127,7 +2236,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==6",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_gerson_bell_attack_controller"
+  "id": "gerson_gerson_bell_attack_controller",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2142,7 +2252,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==7",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_gerson_hammer_bro_attack_controller"
+  "id": "gerson_gerson_hammer_bro_attack_controller",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2157,7 +2268,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==50",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_box_throw_controller"
+  "id": "gerson_box_throw_controller",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -2172,7 +2284,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==51",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_hammer_bounce_controller"
+  "id": "gerson_hammer_bounce_controller",
+  "inFight": false
  },
  {
   "boss": "gerson",
@@ -2187,7 +2300,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==52",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_gerson_shell_kick_controller"
+  "id": "gerson_gerson_shell_kick_controller",
+  "inFight": true
  },
  {
   "boss": "gerson",
@@ -2202,7 +2316,8 @@ window.GML_ATTACKS = [
   "source": "scr_spearshot arg3==53",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "gerson_gerson_box_rumble_controller"
+  "id": "gerson_gerson_box_rumble_controller",
+  "inFight": false
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 70;\n        dc.target = mytarget;\n        dc.grazepoints = 2;\n        dc.damage = global.monsterat[myself] * 5;\n        \n        with (body)\n            condition = 2;",
@@ -2227,7 +2342,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type70"
+  "id": "jevil_type70",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 65;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2252,7 +2368,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type65"
+  "id": "jevil_type65",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 49;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 3;\n        \n        with (body)\n            condition = 2;",
@@ -2277,7 +2394,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type49"
+  "id": "jevil_type49",
+  "inFight": true
  },
  {
   "setup": "if (body.condition < 4)\n            body.condition = 5;\n        \n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 75;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 6;",
@@ -2302,7 +2420,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type75"
+  "id": "jevil_type75",
+  "inFight": true
  },
  {
   "setup": "snd_play(scr_84_get_sound(\"snd_joker_anything\"));\n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 62;\n        dc.target = mytarget;\n        dc.inv = 20;\n        dc.damage = global.monsterat[myself] * 5;\n        dc.grazepoints = 2;",
@@ -2328,7 +2447,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type62"
+  "id": "jevil_type62",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 50;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;\n        \n        with (body)\n            condition = 2;",
@@ -2353,7 +2473,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type50"
+  "id": "jevil_type50",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 73;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2377,7 +2498,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type73"
+  "id": "jevil_type73",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 68;\n        dc.target = mytarget;\n        dc.grazepoints = 2;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2402,7 +2524,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type68"
+  "id": "jevil_type68",
+  "inFight": true
  },
  {
   "setup": "snd_play(scr_84_get_sound(\"snd_joker_anything\"));\n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.inv = 20;\n        dc.type = 61;\n        dc.target = mytarget;\n        dc.grazepoints = 3;\n        dc.damage = global.monsterat[myself] * 5;\n        global.turntimer = 240;",
@@ -2428,7 +2551,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type61"
+  "id": "jevil_type61",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 48;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 4;\n        global.turntimer = 270;\n        \n        with (body)\n            condition = 2;",
@@ -2453,7 +2577,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type48"
+  "id": "jevil_type48",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 72;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2477,7 +2602,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type72"
+  "id": "jevil_type72",
+  "inFight": true
  },
  {
   "setup": "if (body.condition < 4)\n            body.condition = 5;\n        \n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 76;\n        dc.target = mytarget;\n        dc.grazepoints = 3;\n        dc.damage = global.monsterat[myself] * 6;",
@@ -2502,7 +2628,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type76"
+  "id": "jevil_type76",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 71;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;\n        dc.grazepoints = 2;\n        \n        with (body)\n            condition = 2;",
@@ -2527,7 +2654,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type71"
+  "id": "jevil_type71",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 46;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 4;\n        global.turntimer = 330;\n        \n        with (body)\n            condition = 2;",
@@ -2552,7 +2680,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type46"
+  "id": "jevil_type46",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 74;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;",
@@ -2576,7 +2705,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type74"
+  "id": "jevil_type74",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 77;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 1500;\n        \n        if (body.condition < 4)\n            body.condition = 5;",
@@ -2600,7 +2730,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type77"
+  "id": "jevil_type77",
+  "inFight": true
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 47;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;\n        \n        with (body)\n            condition = 2;",
@@ -2624,7 +2755,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type47"
+  "id": "jevil_type47",
+  "inFight": false
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 25;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;",
@@ -2648,7 +2780,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_joker_Other_15.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "jevil_type25"
+  "id": "jevil_type25",
+  "inFight": false
  },
  {
   "boss": "pink",
@@ -2667,7 +2800,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type200"
+  "id": "pink_type200",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2686,7 +2820,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type206"
+  "id": "pink_type206",
+  "inFight": false
  },
  {
   "boss": "pink",
@@ -2705,7 +2840,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type202"
+  "id": "pink_type202",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2724,7 +2860,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type208"
+  "id": "pink_type208",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2743,7 +2880,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type209"
+  "id": "pink_type209",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2762,7 +2900,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type203"
+  "id": "pink_type203",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2781,7 +2920,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type204"
+  "id": "pink_type204",
+  "inFight": false
  },
  {
   "boss": "pink",
@@ -2800,7 +2940,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type205"
+  "id": "pink_type205",
+  "inFight": false
  },
  {
   "boss": "pink",
@@ -2819,7 +2960,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_pink_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type199"
+  "id": "pink_type199",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2838,7 +2980,8 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_date_controller_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_type210"
+  "id": "pink_type210",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2858,7 +3001,8 @@ window.GML_ATTACKS = [
   "source": "obj_pink_enemy_Step_0.gml (datecount++ / obj_date_controller)",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_date1"
+  "id": "pink_date1",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2878,7 +3022,8 @@ window.GML_ATTACKS = [
   "source": "obj_pink_enemy_Step_0.gml (datecount++ / obj_date_controller)",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_date2"
+  "id": "pink_date2",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2898,7 +3043,8 @@ window.GML_ATTACKS = [
   "source": "obj_pink_enemy_Step_0.gml (datecount++ / obj_date_controller)",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_date3"
+  "id": "pink_date3",
+  "inFight": true
  },
  {
   "boss": "pink",
@@ -2918,7 +3064,8 @@ window.GML_ATTACKS = [
   "source": "obj_pink_enemy_Step_0.gml (datecount++ / obj_date_controller)",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "pink_date4"
+  "id": "pink_date4",
+  "inFight": true
  }
 ];
 

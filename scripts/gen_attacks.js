@@ -526,8 +526,47 @@ for (const a of roster) {
   final.push(a);
 }
 
+// ── Which entries the REAL fights actually play ────────────────────────────
+//
+// The roster above inventories every dispatcher branch, but the dispatchers
+// are full of cut content nothing ever selects. This table is derived from the
+// code that ASSIGNS each selector — the choosers — documented with line-level
+// evidence in REAL_FIGHT_ROSTERS.md. Landon called this out: he recognised the
+// roster as mostly unused attacks and put Gerson at ~21 real entries, and the
+// choosers agree exactly.
+//
+//   knight  obj_knight_enemy Other_10: phases use choices {1,2,5,9,11,13,14,15,-1};
+//           the chooser runs before EVERY attack, so Create's choice 0
+//           (Swordslash!) never plays. Phase-1 turns 6-9 are dead code.
+//   sneo    Other_10 ladder: rr {0,2,6,7,8,8.5,9} + weird-route 5. The
+//           trailing `rr = choose(0,1,2,3)` in Step is overwritten by
+//           event_user(0) before it is ever read.
+//   jevil   jturn progression + pools reach jattack 0-15; 99/999 have no writer.
+//   gerson  Other_10 ladder trueturn 0-20: greens {0,1,2,3,4,6,7,9,12,13,14,
+//           19,47,53,55,56,220} + wrappers 70 (box throw) / 72 (shell kick).
+//           No used chart fires specials 5/6/7, so bell/box_hit/hammer_bro
+//           are cut. The 100+ charts are NOT the statue fight's (it has its
+//           own Other_10) — plain leftovers.
+//   pink    Other_10 assigns {1,3,4,5,6} → types 200/202/208/209/203; purple
+//           intro, finale 210 and the four dates are event-driven and real.
+const REAL = {
+  knight: a => [98, 99, 104, 151, 153, 154, 107].includes(a.type),
+  spamton_neo: a => ['spamton_neo_type0', 'spamton_neo_type1_5', 'spamton_neo_type51',
+    'spamton_neo_type6', 'spamton_neo_type12', 'spamton_neo_sneo_phonecall',
+    'spamton_neo_type8_5', 'spamton_neo_type9'].includes(a.id),
+  jevil: a => a.choice >= 0 && a.choice <= 15,
+  gerson: a => a.launch === 'gerson-green'
+    ? [0, 1, 2, 3, 4, 6, 7, 9, 12, 13, 14, 19, 47, 53, 55, 56, 70, 72, 220].includes(a.pattern)
+    : ['obj_box_throw_controller', 'obj_gerson_shell_kick_controller'].includes(a.controller),
+  pink: a => a.launch === 'pink-date' || [200, 202, 208, 209, 203, 199, 210].includes(a.type),
+};
+for (const a of final) {
+  const judge = REAL[a.boss];
+  a.inFight = judge ? !!judge(a) : true;
+}
+
 console.log(notes.join('\n'));
-console.log(`\nreal attacks: ${final.length}`);
+console.log(`\nreal attacks: ${final.length} (${final.filter(a => a.inFight).length} in real fights, ${final.filter(a => !a.inFight).length} cut)`);
 for (const boss of BOSSES) {
   const mine = final.filter(a => a.boss === boss.id);
   console.log(`\n${boss.label} (${mine.length}):`);

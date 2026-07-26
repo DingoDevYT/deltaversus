@@ -392,19 +392,27 @@ if (typeof window !== 'undefined' && typeof global === 'undefined') window.globa
   // boss's dispatcher. Everything below is raw objects, useful for isolating a
   // single bullet but NOT an attack.
   if (window.GML_ATTACKS && window.GML_ATTACKS.length) {
+    // Split by whether the attack appears in the REAL fight (see
+    // REAL_FIGHT_ROSTERS.md — derived from the choosers, not the dispatchers).
+    // Cut content stays launchable, just labelled and listed after.
     const byBoss = {};
     for (const a of window.GML_ATTACKS) (byBoss[a.bossLabel] = byBoss[a.bossLabel] || []).push(a);
-    for (const [bossLabel, list] of Object.entries(byBoss)) {
+    const emit = (bossLabel, list, real) => {
+      const subset = list.filter(a => (a.inFight !== false) === real);
+      if (!subset.length) return;
       const g = document.createElement('optgroup');
-      g.label = `★ ${bossLabel} — real attacks (${list.length})`;
-      for (const a of list) {
+      g.label = real ? `★ ${bossLabel} — real fight (${subset.length})`
+                     : `✂ ${bossLabel} — cut / unused (${subset.length})`;
+      for (const a of subset) {
         const opt = document.createElement('option');
         opt.value = 'attack:' + a.id;
-        opt.textContent = `${a.name}${a.type !== null && a.type !== undefined ? '  (type ' + a.type + ')' : ''}`;
+        opt.textContent = `${real ? '' : '[cut] '}${a.name}${a.type !== null && a.type !== undefined ? '  (type ' + a.type + ')' : ''}`;
         g.appendChild(opt);
       }
       presetSelect.appendChild(g);
-    }
+    };
+    for (const [bossLabel, list] of Object.entries(byBoss)) emit(bossLabel, list, true);
+    for (const [bossLabel, list] of Object.entries(byBoss)) emit(bossLabel, list, false);
   }
 
   if (window.GML_MASTER_PRESETS) {
