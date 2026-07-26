@@ -340,28 +340,28 @@
   </div>
 </main>
 
-<script src="js/sprite_manifest.js"></script>
-<script src="js/sprite_origins.js"></script>
-<script src="js/sprite_trims.js"></script>
-<script src="js/gml_object_index.js"></script>
-<script src="js/gml_asset_db.js"></script>
-<script src="js/gml_runtime.js"></script>
-<script src="js/gml_helpers.js"></script>
-<script src="js/gml_compiler.js"></script>
-<script src="js/gml_codegen.js"></script>
-<script src="js/gml_translator.js"></script>
-<script src="js/gml_presets.js"></script>
-<script src="js/gml_scripts.js"></script>
-<script src="js/gml_objects.js"></script>
-<script src="js/gml_attacks.js"></script>
-<script src="js/gml_sounds.js"></script>
-<script src="js/gml_audio.js"></script>
-<script src="js/sprite_indices.js"></script>
-<script src="js/gml_object_depths.js"></script>
-<script src="js/visual_probe.js"></script>
-<script src="js/flight_recorder.js"></script>
-<script src="js/spec_check.js"></script>
-<script src="js/attack_specs.js"></script>
+<script src="js/sprite_manifest.js?v=5d594ec0"></script>
+<script src="js/sprite_origins.js?v=28f6bcad"></script>
+<script src="js/sprite_trims.js?v=d44f25ce"></script>
+<script src="js/gml_object_index.js?v=cdc111fc"></script>
+<script src="js/gml_asset_db.js?v=5a83a304"></script>
+<script src="js/gml_runtime.js?v=9612745e"></script>
+<script src="js/gml_helpers.js?v=163bb854"></script>
+<script src="js/gml_compiler.js?v=c32f64c8"></script>
+<script src="js/gml_codegen.js?v=d52e5d0c"></script>
+<script src="js/gml_translator.js?v=2a034754"></script>
+<script src="js/gml_presets.js?v=cc81e393"></script>
+<script src="js/gml_scripts.js?v=2a51c899"></script>
+<script src="js/gml_objects.js?v=66796a6c"></script>
+<script src="js/gml_attacks.js?v=fef818f1"></script>
+<script src="js/gml_sounds.js?v=21214418"></script>
+<script src="js/gml_audio.js?v=8295f2d0"></script>
+<script src="js/sprite_indices.js?v=eea73030"></script>
+<script src="js/gml_object_depths.js?v=9b65b77a"></script>
+<script src="js/visual_probe.js?v=2fd2fb52"></script>
+<script src="js/flight_recorder.js?v=9b65ba26"></script>
+<script src="js/spec_check.js?v=724be859"></script>
+<script src="js/attack_specs.js?v=0b093520"></script>
 <script>
 if (typeof window !== 'undefined' && typeof global === 'undefined') window.global = window;
 (function() {
@@ -1381,7 +1381,12 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
 
     document.getElementById('jsResult').textContent = compiled.code;
 
-    if (compiled.errors.length > 0) {
+    // Defensive: a browser holding a STALE cached gml_translator.js alongside
+    // fresh HTML returns a differently-shaped result, and reading .length off it
+    // threw before anything could run. Cache-busted asset URLs (see
+    // scripts/stamp_assets.js) prevent the mix, but a page that survives it is
+    // still better than one that dies on load.
+    if (compiled && compiled.errors && compiled.errors.length > 0) {
       logError('Transpiler warnings:\n' + compiled.errors.join('\n'));
     }
 
@@ -2042,7 +2047,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     }
 
     // Update sprite status
-    if (gmlAssets) {
+    if (gmlAssets && typeof gmlAssets.getLoadStatus === 'function') {
       const st = gmlAssets.getLoadStatus();
       if (st.requested > 0) {
         document.getElementById('spriteStatus').textContent =

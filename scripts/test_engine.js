@@ -1,11 +1,49 @@
 const fs = require('fs');
 
+// The engine modules and the code they generate both target a browser: they
+// read `window` for GML's `global` namespace, and gml_helpers.js allocates
+// offscreen canvases. Node has neither, so shim both before anything is
+// evaluated. (scripts/test_runtime.js is the fuller headless harness — it runs
+// EVERY preset in a vm sandbox. This file is the single-snippet smoke test that
+// predates it, and had rotted: it still loaded only gml_translator.js, from
+// before the compiler and codegen were split out of it.)
+if (typeof globalThis.window === 'undefined') globalThis.window = globalThis;
+if (typeof globalThis.document === 'undefined') {
+  const noop = () => {};
+  const fakeCtx = () => ({
+    save: noop, restore: noop, translate: noop, rotate: noop, scale: noop,
+    drawImage: noop, fillRect: noop, strokeRect: noop, clearRect: noop,
+    beginPath: noop, closePath: noop, moveTo: noop, lineTo: noop, arc: noop,
+    fill: noop, stroke: noop, clip: noop, fillText: noop, strokeText: noop,
+    measureText: () => ({ width: 8 }),
+    createLinearGradient: () => ({ addColorStop: noop }),
+    setTransform: noop, transform: noop, rect: noop, ellipse: noop,
+    quadraticCurveTo: noop, putImageData: noop,
+    getImageData: () => ({ data: new Uint8Array(4) }),
+    globalAlpha: 1, globalCompositeOperation: 'source-over',
+    fillStyle: '#fff', strokeStyle: '#fff', lineWidth: 1,
+    font: '', textAlign: '', textBaseline: '',
+  });
+  globalThis.document = {
+    createElement: () => ({ getContext: fakeCtx, width: 0, height: 0 }),
+    getElementById: () => null,
+  };
+  globalThis.Image = function () { this.complete = false; this.naturalWidth = 0; this.naturalHeight = 0; };
+}
+
 // Load modules
 const dbCode = fs.readFileSync('docs/js/gml_asset_db.js', 'utf8');
 const runtimeCode = fs.readFileSync('docs/js/gml_runtime.js', 'utf8');
 const translatorCode = fs.readFileSync('docs/js/gml_translator.js', 'utf8');
+// The compiler and codegen were split out of gml_translator.js; this harness
+// still loaded only the translator, so GMLCodegen was undefined and every run
+// died on `new global.GMLCodegen(...)` before testing anything.
+const compilerCode = fs.readFileSync('docs/js/gml_compiler.js', 'utf8');
+const codegenCode = fs.readFileSync('docs/js/gml_codegen.js', 'utf8');
+const helpersCode = fs.readFileSync('docs/js/gml_helpers.js', 'utf8');
 
-eval(dbCode); eval(runtimeCode); eval(translatorCode);
+eval(dbCode); eval(runtimeCode); eval(helpersCode);
+eval(compilerCode); eval(codegenCode); eval(translatorCode);
 
 const translator = new GMLTranslator();
 const gmlCreate = `direction = point_direction(x, y, obj_heart.x, obj_heart.y);

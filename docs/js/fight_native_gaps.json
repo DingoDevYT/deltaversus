@@ -1,0 +1,1435 @@
+[
+ {
+  "name": "scr_text",
+  "calls": 27,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_gameover_susiezilla",
+   "ch3:scr:scr_iteminfo",
+   "ch3:scr:scr_cutscene_commands",
+   "ch4:scr:scr_iteminfo",
+   "ch5:scr:scr_iteminfo",
+   "ch5:scr:scr_cutscene_commands"
+  ]
+ },
+ {
+  "name": "array_get",
+  "calls": 19,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_attack_knifechain_manager2",
+   "ch5:obj_parallax_cliffs_moving_layers",
+   "ch5:obj_parallax_cliffs_sunlayer",
+   "ch5:obj_parallax_cliffs_moving_layers_back",
+   "ch5:obj_endbattle",
+   "ch5:obj_plat_camera",
+   "ch5:obj_plat_hbx",
+   "ch5:obj_jump_to_point",
+   "ch5:scr:scr_charbox"
+  ]
+ },
+ {
+  "name": "camera_set_view_border",
+  "calls": 13,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:obj_plat_camera",
+   "ch5:obj_platswap",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_set_view_target",
+  "calls": 11,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:obj_plat_camera",
+   "ch5:obj_platswap",
+   "ch5:obj_platswap_prop",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_get_view_border_x",
+  "calls": 10,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_get",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_get",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_get",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_get",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_get_view_border_y",
+  "calls": 10,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_get",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_get",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_get",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_get",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_get_view_speed_x",
+  "calls": 10,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_get",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_get",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_get",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_get",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_get_view_speed_y",
+  "calls": 10,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_get",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_get",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_get",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_get",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "camera_set_view_speed",
+  "calls": 10,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "sprite_get_name",
+  "calls": 9,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_funnytext_init",
+   "ch5:scr:scr_selfshadow",
+   "ch5:scr:findsprite",
+   "ch5:scr:scr_animate_complex"
+  ]
+ },
+ {
+  "name": "animcurve_get_channel",
+  "calls": 9,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_ripples"
+  ]
+ },
+ {
+  "name": "shader_get_sampler_index",
+  "calls": 8,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:obj_parallax_cliffs_moving_layers",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "vertex_colour",
+  "calls": 8,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_position",
+  "calls": 8,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_normal",
+  "calls": 8,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "sprite_get_texture",
+  "calls": 7,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch3:scr:scr_draw_sprite_pos_fixed",
+   "ch5:obj_parallax_cliffs_moving_layers",
+   "ch5:obj_plat_player",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "room_restart",
+  "calls": 6,
+  "kind": "stub",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_susiezilla_gamecontroller",
+   "ch3:obj_chefs_game",
+   "ch3:obj_gameover_minigame",
+   "ch5:obj_flowery_towery",
+   "ch5:obj_plat_player"
+  ]
+ },
+ {
+  "name": "sprite_get_uvs",
+  "calls": 6,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch3:scr:scr_draw_sprite_pos_fixed",
+   "ch5:obj_parallax_cliffs_moving_layers",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "texture_set_stage",
+  "calls": 6,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:obj_parallax_cliffs_moving_layers",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "texture_get_texel_width",
+  "calls": 6,
+  "kind": "stub",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:obj_plat_player",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "texture_get_texel_height",
+  "calls": 6,
+  "kind": "stub",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_screen_channel_change",
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:obj_plat_player",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "ds_priority_destroy",
+  "calls": 6,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:obj_ds_lifetime_manager",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "ds_priority_clear",
+  "calls": 6,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "draw_text_colour",
+  "calls": 5,
+  "kind": "stub",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_battlecontroller",
+   "ch4:obj_battlecontroller",
+   "ch2:obj_battlecontroller",
+   "ch1:obj_battlecontroller",
+   "ch5:obj_battlecontroller"
+  ]
+ },
+ {
+  "name": "camera_get_view_angle",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "camera_get_view_target",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_visible",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_xport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_yport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_wport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_hport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "view_get_surface_id",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_get",
+   "ch4:scr:__view_get",
+   "ch2:scr:__view_get",
+   "ch1:scr:__view_get",
+   "ch5:scr:__view_get"
+  ]
+ },
+ {
+  "name": "ds_priority_create",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_ds_manager"
+  ]
+ },
+ {
+  "name": "camera_set_view_angle",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_visible",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_xport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_yport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_wport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_hport",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_camera",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "view_set_surface_id",
+  "calls": 5,
+  "kind": "miss",
+  "chapters": [
+   "ch1",
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:__view_set_internal",
+   "ch4:scr:__view_set_internal",
+   "ch2:scr:__view_set_internal",
+   "ch1:scr:__view_set_internal",
+   "ch5:scr:__view_set_internal"
+  ]
+ },
+ {
+  "name": "audio_is_paused",
+  "calls": 4,
+  "kind": "miss",
+  "chapters": [
+   "ch2",
+   "ch3",
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_tvturnoff_manager",
+   "ch4:obj_battlecontroller",
+   "ch2:obj_battlecontroller",
+   "ch5:obj_battlecontroller"
+  ]
+ },
+ {
+  "name": "ds_priority_add",
+  "calls": 4,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "variable_instance_get_names",
+  "calls": 4,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_cutscene_savestate",
+   "ch3:scr:scr_instance_save_local_vars",
+   "ch5:scr:scr_cutscene_savestate",
+   "ch5:scr:scr_instance_save_local_vars"
+  ]
+ },
+ {
+  "name": "method",
+  "calls": 4,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:scr_selfshadow",
+   "ch5:scr:scr_cutscene_commands"
+  ]
+ },
+ {
+  "name": "audio_destroy_stream",
+  "calls": 3,
+  "kind": "miss",
+  "chapters": [
+   "ch2",
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:obj_astream",
+   "ch2:obj_astream",
+   "ch5:obj_astream"
+  ]
+ },
+ {
+  "name": "audio_create_stream",
+  "calls": 3,
+  "kind": "miss",
+  "chapters": [
+   "ch2",
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:snd_init",
+   "ch2:scr:snd_init",
+   "ch5:scr:snd_init"
+  ]
+ },
+ {
+  "name": "surface_get_texture",
+  "calls": 3,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch3:scr:scr_draw_sprite_pos_fixed",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "array_set",
+  "calls": 3,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_attack_knifechain_manager2"
+  ]
+ },
+ {
+  "name": "sprite_get_bbox_right",
+  "calls": 3,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:findsprite"
+  ]
+ },
+ {
+  "name": "sprite_get_bbox_bottom",
+  "calls": 3,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:findsprite"
+  ]
+ },
+ {
+  "name": "shader_current",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "layer_script_begin",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "ds_priority_delete_min",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "layer_script_end",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "ds_priority_empty",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "ds_priority_copy",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "show_message",
+  "calls": 2,
+  "kind": "stub",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_retro_pal_swapper",
+   "ch5:scr:scr_retro_pal_swapper"
+  ]
+ },
+ {
+  "name": "vertex_create_buffer",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_begin",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_end",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_submit",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "vertex_delete_buffer",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_draw_sprite_pos_fixed"
+  ]
+ },
+ {
+  "name": "variable_global_set",
+  "calls": 2,
+  "kind": "stub",
+  "chapters": [
+   "ch3",
+   "ch5"
+  ],
+  "where": [
+   "ch3:scr:scr_cutscene_commands",
+   "ch5:scr:scr_cutscene_commands"
+  ]
+ },
+ {
+  "name": "draw_set_circle_precision",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4"
+  ],
+  "where": [
+   "ch4:obj_church_ripple"
+  ]
+ },
+ {
+  "name": "draw_arrow",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_point_color",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_point_colour",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_roundrect_color",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_roundrect_colour",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_roundrect_color_ext",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_roundrect_colour_ext",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "draw_path",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch4",
+   "ch5"
+  ],
+  "where": [
+   "ch4:scr:ossafe_shapes",
+   "ch5:scr:ossafe_shapes"
+  ]
+ },
+ {
+  "name": "array_sort",
+  "calls": 2,
+  "kind": "stub",
+  "chapters": [
+   "ch4"
+  ],
+  "where": [
+   "ch4:scr:scr_sort_by_depth"
+  ]
+ },
+ {
+  "name": "custom_state",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_plat_follower",
+   "ch5:obj_plat_npc"
+  ]
+ },
+ {
+  "name": "ds_stack_destroy",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_ds_lifetime_manager"
+  ]
+ },
+ {
+  "name": "ds_queue_destroy",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_ds_lifetime_manager"
+  ]
+ },
+ {
+  "name": "ds_grid_destroy",
+  "calls": 2,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_ds_lifetime_manager"
+  ]
+ },
+ {
+  "name": "shader_replace_simple_sync",
+  "calls": 2,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:shader_replace_simple_macros"
+  ]
+ },
+ {
+  "name": "os_get_region",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:obj_elnina_lanino_controller"
+  ]
+ },
+ {
+  "name": "instance_deactivate_layer",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:obj_gameover_minigame"
+  ]
+ },
+ {
+  "name": "object_get_sprite",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch3"
+  ],
+  "where": [
+   "ch3:scr:scr_battle"
+  ]
+ },
+ {
+  "name": "draw_tilemap",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch4"
+  ],
+  "where": [
+   "ch4:obj_darkness_overlay"
+  ]
+ },
+ {
+  "name": "pattern_to_use",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch4"
+  ],
+  "where": [
+   "ch4:obj_darkshape_manager"
+  ]
+ },
+ {
+  "name": "randomize",
+  "calls": 1,
+  "kind": "stub",
+  "chapters": [
+   "ch2"
+  ],
+  "where": [
+   "ch2:o_boxingqueen"
+  ]
+ },
+ {
+  "name": "scr_saveprocess",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch2"
+  ],
+  "where": [
+   "ch2:scr:scr_tempsave"
+  ]
+ },
+ {
+  "name": "freezegame",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_heart"
+  ]
+ },
+ {
+  "name": "ds_list_set",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_pink_battlemovement"
+  ]
+ },
+ {
+  "name": "collision_ellipse",
+  "calls": 1,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_orangeheart_wall"
+  ]
+ },
+ {
+  "name": "room_get_name",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_mainchara"
+  ]
+ },
+ {
+  "name": "special_reticle_draw_function",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_wateringcan"
+  ]
+ },
+ {
+  "name": "on_collide",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_plat_hbx"
+  ]
+ },
+ {
+  "name": "animcurve_channel_evaluate",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_ripples"
+  ]
+ },
+ {
+  "name": "scr_board_marker",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:obj_jump_to_point"
+  ]
+ },
+ {
+  "name": "audio_get_name",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:snd_play_flowery"
+  ]
+ },
+ {
+  "name": "alarm_set",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:scr_lerp_imageblend"
+  ]
+ },
+ {
+  "name": "sprite_get_speed_type",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:findsprite"
+  ]
+ },
+ {
+  "name": "ds_stack_create",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:scr_ds_manager"
+  ]
+ },
+ {
+  "name": "ds_queue_create",
+  "calls": 1,
+  "kind": "miss",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:scr_ds_manager"
+  ]
+ },
+ {
+  "name": "ds_grid_create",
+  "calls": 1,
+  "kind": "stub",
+  "chapters": [
+   "ch5"
+  ],
+  "where": [
+   "ch5:scr:scr_ds_manager"
+  ]
+ }
+]

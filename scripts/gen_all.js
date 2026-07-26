@@ -65,5 +65,12 @@ for (let round = 1; round <= 4; round++) {
 run('gen_object_index.js');
 run('sync_sprites.js');
 
+// LAST: re-hash the asset URLs in docs/*.html. Every generated table above is
+// loaded by a <script src>, and GitHub Pages caches HTML and JS independently
+// for ten minutes — so without this a visitor can hold new HTML against the
+// previous build's JS and the studio throws on load. Must run after everything
+// that writes into docs/.
+run('stamp_assets.js');
+
 console.log('\nAll tables regenerated. Verify with:');
 console.log('  node scripts/test_semantics.js && node scripts/test_compiler.js && node scripts/test_runtime.js');
