@@ -240,6 +240,41 @@ changed:
 > **A young spec suite mostly measures itself.** Its early failure list is a
 > to-do list for the harness, not for the engine. Suspect the suite first.
 
+## The exact 22 that remain (confirmed by a full sweep)
+
+Measured per boss after every fix. **123/142 clean, 1824/1846 assertions.**
+Grouped by what they actually are, because several are SPEC errors and
+"fixing" the engine to satisfy them would break correct code.
+
+### Almost certainly SPEC errors — do not change the engine for these
+
+| attack | assertion | got | why the engine is right |
+|---|---|---|---|
+| `spamton_neo_type0` | `turntimer eq 240` | 260 | `scr_turntimer` only RAISES. After the 260 default, 240 is a no-op. |
+| `spamton_neo_type51` | `turntimer eq 90` | 260 | Same — 90 < 260, no-op. |
+| `spamton_neo_sneo_bulletcontroller` | `turntimer eq 260`, `box 245,170` | 239, `320,170 10x10` | This is the "unspecified" fallback entry whose `type` IS `rr`; the branch leaves it indeterminate. Triage already dropped its behavioural assertions — these two should go too. |
+
+### Real, small, and worth a look
+
+| attack | assertion | got |
+|---|---|---|
+| `gerson_green70` / `green71` | `obj_growtangle.y eq 190` | 240 |
+| `gerson_green12` / `15` / `17` | `draw spr_spearblocker yscale 0.6` | 0.643 |
+| `gerson_green53` | `obj_spearblocker.image_yscale` | 0.6429 |
+| `gerson_green18` | `obj_spearblocker` diagonal_enabled / radius | no instance |
+| `gerson_gerson_bell_attack_controller` | bell x 85, teleport x −20 | 25, −80 (both 60px off) |
+| `gerson_gerson_box_rumble_controller` | `anchor_x eq 320` | 260 (60px off) |
+| `knight_type109` | `shootrate` | 20 (vs 15 — `damagereduction == 0.04` branch) |
+| `knight_type99` | `obj_roaringknight_splitslash` pos | 0,0 |
+| `knight_type101` | box w 187.5 | 150 |
+| `knight_type154` | `obj_sword_vortex.damage eq 206` | 0 |
+| `knight_type107` | box 1280x960 | 1190x895 |
+| `spamton_neo_type1_5` | `obj_sneo_wireheart.image_xscale` | 1.0145 |
+| `pink_type202` | `spr_pinklanebullet_lane` drawn | never |
+
+The two 60px-off Gerson controllers look like one shared cause, as do the four
+`spearblocker` yscale values clustering at 0.643 against an asserted 0.6.
+
 ## The ranked fix list (start here)
 
 Failures cluster into a few causes, not 176 separate bugs. Counts are attacks
