@@ -275,7 +275,7 @@ Each is pinned to a line.
 | Compile | **154/154** (0 GML parse, 0 JS syntax) |
 | Visual probe | **146/147 clean** (was 145) |
 | Runtime | **154/154** clean, 0 errors, 0 hard failures |
-| Spec suite | **1796/1846** assertions (97.3%), **99 of 142** attacks fully clean |
+| Spec suite | **1824/1846** assertions (98.8%), **123 of 142** attacks fully clean |
 | Native call-site coverage | 99.27% |
 
 Spec suite progression through the night, each step a real fix:
@@ -296,13 +296,14 @@ Spec suite progression through the night, each step a real fix:
 
 The value-snapshot fix was the largest single win. Per boss, before → after:
 
-| boss | attacks | clean | failures |
+| boss | attacks | clean (start → now) | failures |
 |---|---|---|---|
-| Knight | 15 | 2 → **6** | 37 → **10** |
+| Knight | 15 | 2 → **10** | 37 → **5** |
 | Spamton NEO | 10 | 4 → **6** | 9 → **5** |
-| Jevil | 18 | 1 → **12** | 28 → **7** |
+| Jevil | 18 | 1 → **18** | 28 → **0** |
 | Pink | 10 | 3 → **9** | 15 → **1** |
-| **non-Gerson total** | **53** | **15 → 33** | **89 → 23** |
+| Gerson | 89 | 42 → **80** | 87 → **11** |
+| **TOTAL** | **142** | **57 → 123** | **176 → 22** |
 
 Per-kind, current: `spawns` **394/394**, `count` **148/148**, `absent`
 **122/122**, `sprite` 110/111, `box` 47/50, `draw` 164/183, `ivar` 608/734,
