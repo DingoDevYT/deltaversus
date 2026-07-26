@@ -551,5 +551,66 @@
       .sort((a, b) => b.calls - a.calls);
   }
 
-  global.SPEC_CHECK = { load, run, runAll, draws, get specs() { return SPECS; } };
+  /**
+   * Difficulty smoke sweep. The numeric specs are authored at difficulty 0,
+   * but the REAL fights run difficulties 0–4 — every ladder raises it as the
+   * fight progresses. This runs every REAL-fight attack at each difficulty
+   * and reports the pairs that error, spawn nothing, or leave the turn at 0.
+   * It is a liveness oracle, not a numbers one: it catches the class of bug
+   * where a difficulty branch references something the engine lacks.
+   *
+   *   await SPEC_CHECK.diffSmoke()            // whole real roster × d0..d4
+   *   await SPEC_CHECK.diffSmoke('gerson', 2) // one boss, frames budget ×2
+   */
+  async function diffSmoke(filter, frames) {
+    const F = frames || 100;
+    const sel = document.getElementById('presetSelect');
+    const diffSel = document.getElementById('diffSelect');
+    const errEl = document.getElementById('errCount');
+    const attacks = (global.GML_ATTACKS || []).filter(a =>
+      a.inFight !== false && (!filter || a.id.includes(filter)));
+    const bad = [];
+    let done = 0;
+    const savedDiff = diffSel ? diffSel.value : '0';
+    for (const a of attacks) {
+      for (let d = 0; d <= 4; d++) {
+        if (diffSel) diffSel.value = String(d);
+        const errBefore = errEl ? Number(errEl.textContent) || 0 : 0;
+        const opt = [...sel.options].find(o => o.value === 'attack:' + a.id);
+        if (!opt) { bad.push(a.id + ' d' + d + ': not in roster'); continue; }
+        sel.value = opt.value;
+        sel.dispatchEvent(new Event('change'));
+        const btn = document.getElementById('btnTranslate');
+        if (btn) btn.click();
+        if (global.GML_STUDIO_SET_PAUSED) global.GML_STUDIO_SET_PAUSED(true);
+        await new Promise(r => setTimeout(r, 250));
+        const rt = global.activeGMLRuntime;
+        const before = rt ? rt.instances.filter(i => i && !i.destroyed).length : 0;
+        let peak = 0;
+        for (let f = 0; f < F; f++) {
+          try { rt.step(); } catch (e) {}
+          if (global.GML_STUDIO_TICK_TURN) { try { global.GML_STUDIO_TICK_TURN(); } catch (e) {} }
+          const t = Number(global.turntimer);
+          if (isFinite(t) && t > peak) peak = t;
+        }
+        const after = rt ? rt.instances.filter(i => i && !i.destroyed).length : 0;
+        const errAfter = errEl ? Number(errEl.textContent) || 0 : 0;
+        const newErrs = errAfter - errBefore;
+        // A live attack either has MORE instances than the furniture baseline
+        // (it spawned things that survived) or ran a real turn clock. Dates
+        // replace the clock; bullet turns replace the census — require one.
+        if (newErrs > 0 || (after <= before && peak < 60)) {
+          bad.push(`${a.id} d${d}: errs=${newErrs} inst ${before}->${after} peak=${peak}`);
+        }
+        done++;
+      }
+    }
+    if (diffSel) diffSel.value = savedDiff;
+    // The per-run freeze must not outlive the sweep — a paused studio makes
+    // the visual probe capture nothing (147 empty results read as "clean").
+    if (global.GML_STUDIO_SET_PAUSED) global.GML_STUDIO_SET_PAUSED(false);
+    return { ran: done, attacks: attacks.length, bad };
+  }
+
+  global.SPEC_CHECK = { load, run, runAll, draws, diffSmoke, get specs() { return SPECS; } };
 })(window);

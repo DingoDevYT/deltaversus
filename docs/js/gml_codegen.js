@@ -45,6 +45,14 @@
     'e__VW', 'e__BG',
     'room_speed', 'fps', 'fps_real', 'delta_time', 'current_time',
     'room_width', 'room_height', 'room', 'view_current',
+    // View arrays. Unlisted, `view_wport[0]` compiled to an INSTANCE variable
+    // and the auto-array proxy answered 0 — the date backgrounds tile to
+    // `camx + view_wport[0]`, so their whole tiled layer collapsed into a
+    // single strip bouncing at the left edge of the screen. The globals are
+    // seeded (640/480) by gml_helpers.
+    'view_wport', 'view_hport', 'view_xport', 'view_yport',
+    'view_wview', 'view_hview', 'view_xview', 'view_yview',
+    'view_camera', 'view_visible', 'view_enabled',
     'mouse_x', 'mouse_y', 'mouse_button', 'mouse_check_button',
     'button1', 'button1_p', 'button1_h', 'button2', 'button2_p', 'button2_h',
     'button3', 'button3_p', 'button3_h',

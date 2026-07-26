@@ -115,7 +115,13 @@
   }
 
   function launch(attackId) {
-    const sel = document.getElementById('rosterSelect') || document.querySelector('select');
+    // presetSelect BY ID: the toolbar now has cascade pickers (chapterSelect
+    // is the document's first <select>), and the old querySelector fallback
+    // grabbed it — every launch then silently failed as "not in roster" and
+    // the probe returned 147 captureless results that diffed as vacuously
+    // clean.
+    const sel = document.getElementById('presetSelect')
+      || document.getElementById('rosterSelect') || document.querySelector('select');
     const opt = [...sel.options].find(o => o.value === attackId || o.value.includes(attackId));
     if (!opt) return false;
     sel.value = opt.value;

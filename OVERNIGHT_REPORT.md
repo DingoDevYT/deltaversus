@@ -561,6 +561,44 @@ browser-pane tab and timers throttle to ~1 Hz** — an unfronted studio shows
 "Running, FPS 1, frozen canvas" and every draw-path hook reads zero. Front the
 tab before concluding anything about the render loop.
 
+## Post-lunch testing feedback: four bugs, all root-caused engine holes
+
+1. **Shell kick not bouncing** → TWO stacked engine holes. (a) `instance_exists`
+   didn't understand raw instance IDS (>= 100000), and obj_script_delayed gates
+   its whole payload on `i_ex(target)` where target = id — every
+   scr_script_delayed payload silently skipped, so the shell's "restore
+   -vspeed in 6 frames" never ran and it froze on its first floor squash.
+   (b) Scripts passed as VALUES (`scr_script_delayed(scr_var, ...)` emits
+   `$R.scr["scr_var"]`) bypassed the JIT, which only ran on scrCall — the
+   registry now JIT-compiles on property READ too, with cross-chapter fallback
+   (ch1/ch2/ch5 extractions lack shared scripts like scr_var; a per-chapter
+   miss must not poison the chapters that have them). Verified: full
+   kick-ladder trace (counter 0→7, floor/ceiling squash-and-release bounces,
+   slam, finale) and clean teardown.
+2. **Big shot** → spawn literals corrected against the source's big branch
+   (flat `hspeed = 9`, not 4*f; `image_index = 0`; damage 4). Step evolution
+   (xscale 0.1→1, yscale 2→1, alpha ramp — including GM's float-drift
+   endpoints) verified frame-by-frame; sprite placement pixel-exact vs the
+   45×28 canvas with origin (32,14).
+3. **Date tile-scrolling "bouncing at the left edge"** → `view_wport` (and the
+   whole view_* array family) wasn't in codegen's builtin-consts, so
+   `camx + view_wport[0]` compiled to an INSTANCE variable and the auto-array
+   answered 0 — the tiled area's right edge collapsed to the screen's left,
+   leaving one strip oscillating with bg_speed. Routed to seeded globals
+   (640/480); tiling now spans 640/640 columns and the scroll offset advances.
+4. **Date 3 "not working"** → same two roots as #1 and #3 (ch5 lacks scr_var
+   in its extraction; the timeline is scr_lerpvar/scr_script_delayed-driven).
+   Verified end to end: portrait panic → "I... hate... dating..." →
+   "I.. love... dating..." → white flash → "GO... AWAY...!" → finalattackcon
+   → type-210 finale with the purple-lane node maze built (9 nodes + 3
+   activators), zero errors.
+
+Also this session: cascading **chapter → enemy → attack** pickers (the flat
+select stays, hidden, as the launch mechanism so SPEC_CHECK/probe paths are
+untouched), an **AUTO** checkbox that advances to the next attack when the
+status reads finished, DIFF 0–4 in the toolbar, and `SPEC_CHECK.diffSmoke()` —
+a liveness sweep of every real-fight attack at difficulties 0–4.
+
 ## What still needs your eyes
 
 Nothing here is verifiable from source alone:

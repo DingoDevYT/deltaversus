@@ -79,6 +79,8 @@
   const OBJNAMES = new WeakMap();
   const STATICS = Object.create(null);
   const MISSING_WARNED = new Set();
+  /** Script names the JIT already failed to find — stops per-read re-attempts. */
+  const SCR_JIT_MISS = new Set();
   // Warnings dedupe for the whole session, which is right for a human reading
   // the console but wrong for per-attack diagnostics: a missing native would be
   // attributed only to the FIRST attack that hit it. The flight recorder clears
@@ -1298,8 +1300,44 @@
         if (runtime.log) runtime.log(`${method} error [${objectName}]: ${err && err.message}`);
       },
 
-      /** Script table, filled by GMLTranslator.compileScripts(). */
-      scr: Object.create(null),
+      /**
+       * Script table, filled by GMLTranslator.compileScripts(). It is a Proxy
+       * so scripts JIT-compile on property READ, not just on scrCall: compiled
+       * GML passes scripts as VALUES — `scr_script_delayed(scr_var, 6, ...)`
+       * emits `$R.scr["scr_var"]` in argument position — and before this an
+       * uncompiled name yielded undefined, obj_script_delayed stored it, and
+       * script_execute(undefined) made the whole delayed payload a silent
+       * no-op (the shell-kick shell froze on its first floor squash because
+       * its "restore -vspeed in 6 frames" never ran).
+       */
+      scr: new Proxy(Object.create(null), {
+        get(store, name) {
+          if (typeof name !== 'string') return store[name];
+          let fn = store[name];
+          if (fn === undefined && !SCR_JIT_MISS.has(name) && global.GML_SCRIPT_SOURCES_BY_CHAPTER) {
+            // Not every chapter's extraction has every shared script —
+            // scr_var/scr_get_box are absent from ch1/ch2 sources but ch2
+            // (SNEO) code still calls into shared helpers. Try the runtime's
+            // chapter first, then every other chapter: the corpus versions
+            // are the same engine scripts. Only a name missing EVERYWHERE
+            // goes in the miss cache (a per-chapter miss must not poison the
+            // chapters that do have it).
+            const t = global.__jitTranslator || (global.__jitTranslator = new global.GMLTranslator(null));
+            const tried = new Set();
+            for (const ch of [runtime.$chapter || 'ch3', 'ch4', 'ch3', 'ch5', 'ch2', 'ch1']) {
+              if (tried.has(ch)) continue;
+              tried.add(ch);
+              try {
+                const code = t.compileSingleScript(ch, name);
+                if (code) { new Function('runtime', code)(runtime); fn = store[name]; }
+              } catch (e) { /* try the next chapter */ }
+              if (fn !== undefined) break;
+            }
+            if (fn === undefined) SCR_JIT_MISS.add(name);
+          }
+          return fn;
+        },
+      }),
 
       /**
        * Compile a class for `objectName` on first use — parents first, so
@@ -2017,6 +2055,32 @@
         default: return e.cx;
       }
     };
+    // ── instance_exists with GameMaker's full argument semantics ───────
+    // The runtime version only understood object NAMES. But GML also passes:
+    //   • raw instance IDS (>= 100000) — obj_script_delayed stores `target = id`
+    //     and gates its whole payload on `i_ex(target)`. With a number it
+    //     returned false, so every scr_script_delayed payload silently
+    //     SKIPPED — the shell-kick shell froze on its first floor squash
+    //     because the delayed "restore -vspeed" never ran.
+    //   • object ASSET INDICES (< 100000) — decompiler-baked object refs.
+    global.instance_exists = function (v) {
+      const rt = global.activeGMLRuntime;
+      if (!rt) return false;
+      if (v === undefined || v === null || v === -4) return false;
+      if (typeof v === 'object') return !v.destroyed;
+      if (typeof v === 'number') {
+        if (v >= 100000) {
+          for (const i of rt.instances) if (i && !i.destroyed && num(i.id) === v) return true;
+          return false;
+        }
+        if (v < 0) return false;
+        const nm = OI() && OI().objectName(v, rt.$chapter || 'ch3');
+        return !!nm && rt.getInstances(nm).length > 0;
+      }
+      return rt.getInstances(v).length > 0;
+    };
+    global.i_ex = global.instance_exists;
+
     global.gt_minx = () => boxEdges().l;
     global.gt_maxx = () => boxEdges().r;
     global.gt_miny = () => boxEdges().t;
@@ -3224,6 +3288,12 @@
     if (!Array.isArray(global.view_xport)) global.view_xport = new Array(8).fill(0);
     if (!Array.isArray(global.view_yport)) global.view_yport = new Array(8).fill(0);
     if (!Array.isArray(global.view_visible)) global.view_visible = new Array(8).fill(true);
+    if (!Array.isArray(global.view_wview)) global.view_wview = new Array(8).fill(640);
+    if (!Array.isArray(global.view_hview)) global.view_hview = new Array(8).fill(480);
+    if (!Array.isArray(global.view_xview)) global.view_xview = new Array(8).fill(0);
+    if (!Array.isArray(global.view_yview)) global.view_yview = new Array(8).fill(0);
+    if (!Array.isArray(global.view_enabled)) global.view_enabled = new Array(8).fill(true);
+    if (!Array.isArray(global.view_camera)) global.view_camera = new Array(8).fill(0);
 
     // ── Room layers ──────────────────────────────────────────────────────
     // The single largest unresolved call cluster in the shipped GML (~850

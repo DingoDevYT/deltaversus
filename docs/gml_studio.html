@@ -251,7 +251,14 @@
 <header>
   <h1>DELTAVERSUS <span class="tag">GML Translator Studio v2</span></h1>
   <div class="controls-bar">
-    <select id="presetSelect">
+    <select id="chapterSelect" title="Chapter"></select>
+    <select id="enemySelect" title="Enemy"></select>
+    <select id="attackSelect" title="Attack"></select>
+    <label class="volwrap" title="When the attack finishes, advance to the next one and play it"><input type="checkbox" id="autoChk">AUTO</label>
+    <!-- The flat select stays as the LAUNCH MECHANISM (SPEC_CHECK, the visual
+         probe and the cascade all drive it programmatically) but is hidden
+         from the toolbar. -->
+    <select id="presetSelect" style="display:none">
       <option value="">-- Load GML Object Preset --</option>
       <option value="knight_star">Knight — Pointing Star (Stars Attack)</option>
       <option value="knight_tunnel">Knight — Sword Tunnel</option>
@@ -272,6 +279,8 @@
       <option value="0" selected>DIFF 0</option>
       <option value="1">DIFF 1</option>
       <option value="2">DIFF 2</option>
+      <option value="3">DIFF 3</option>
+      <option value="4">DIFF 4</option>
     </select>
     <label class="volwrap" id="hellWrap" style="display:none" title="Spamton NEO hellmode (dc.special)"><input type="checkbox" id="hellChk">HELL</label>
     <label class="volwrap" title="Sound volume">🔊<input type="range" id="volSlider" min="0" max="100" step="1"></label>
@@ -427,6 +436,118 @@ if (typeof window !== 'undefined' && typeof global === 'undefined') window.globa
     }
     presetSelect.appendChild(groupObjects);
   }
+
+  // ── Cascading pickers: chapter → enemy → attack, plus autoplay ─────────
+  // These are the visible UI; they drive the hidden flat presetSelect, so
+  // every existing launch path (SPEC_CHECK, the visual probe, hand launches
+  // from the console) keeps working unchanged.
+  (function buildCascade() {
+    const chSel = document.getElementById('chapterSelect');
+    const enSel = document.getElementById('enemySelect');
+    const atSel = document.getElementById('attackSelect');
+    if (!chSel || !enSel || !atSel) return;
+
+    const CH_LABEL = { ch1: 'Chapter 1', ch2: 'Chapter 2', ch3: 'Chapter 3', ch4: 'Chapter 4', ch5: 'Chapter 5' };
+    const attacks = window.GML_ATTACKS || [];
+
+    // chapter -> enemyLabel -> [attack entries]
+    const tree = {};
+    for (const a of attacks) {
+      (tree[a.chapter] = tree[a.chapter] || {});
+      (tree[a.chapter][a.bossLabel] = tree[a.chapter][a.bossLabel] || []).push(a);
+    }
+    const OBJECTS_KEY = '__objects__';
+
+    const fill = (sel, entries) => {
+      sel.innerHTML = '';
+      for (const [value, label] of entries) {
+        const o = document.createElement('option');
+        o.value = value; o.textContent = label;
+        sel.appendChild(o);
+      }
+    };
+
+    const chapters = Object.keys(tree).sort();
+    fill(chSel, chapters.map(c => [c, CH_LABEL[c] || c]).concat([[OBJECTS_KEY, '⚙ Objects']]));
+
+    function fillEnemies() {
+      if (chSel.value === OBJECTS_KEY) {
+        fill(enSel, [[OBJECTS_KEY, 'individual objects']]);
+      } else {
+        fill(enSel, Object.keys(tree[chSel.value] || {}).map(b => [b, b]));
+      }
+      fillAttacks();
+    }
+
+    function fillAttacks() {
+      if (chSel.value === OBJECTS_KEY) {
+        fill(atSel, Object.entries(window.GML_MASTER_PRESETS || {}).map(([k, p]) => [k, p.label]));
+        return;
+      }
+      const list = (tree[chSel.value] || {})[enSel.value] || [];
+      const real = list.filter(a => a.inFight !== false);
+      const cut = list.filter(a => a.inFight === false);
+      atSel.innerHTML = '';
+      const grp = (label, subset, mark) => {
+        if (!subset.length) return;
+        const g = document.createElement('optgroup');
+        g.label = label;
+        for (const a of subset) {
+          const o = document.createElement('option');
+          o.value = 'attack:' + a.id;
+          o.textContent = `${mark}${a.name}${a.type !== null && a.type !== undefined ? ' (type ' + a.type + ')' : ''}`;
+          g.appendChild(o);
+        }
+        atSel.appendChild(g);
+      };
+      grp(`★ real fight (${real.length})`, real, '');
+      grp(`✂ cut / unused (${cut.length})`, cut, '[cut] ');
+    }
+
+    function launchSelected() {
+      if (!atSel.value) return;
+      presetSelect.value = atSel.value;
+      presetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    chSel.addEventListener('change', () => { fillEnemies(); launchSelected(); });
+    enSel.addEventListener('change', () => { fillAttacks(); launchSelected(); });
+    atSel.addEventListener('change', launchSelected);
+
+    // ── Autoplay: when the status shows the attack finished, advance to the
+    // next attack in the list (wrapping) and launch it. The latch stops one
+    // finished-state from advancing more than once.
+    const autoChk = document.getElementById('autoChk');
+    const statusEl = document.getElementById('statusText');
+    let advanceLatch = false;
+    setInterval(() => {
+      if (!autoChk || !autoChk.checked || !statusEl) return;
+      const done = /finished|error/i.test(statusEl.textContent);
+      if (!done) { advanceLatch = false; return; }
+      if (advanceLatch) return;
+      advanceLatch = true;
+      const opts = [...atSel.options];
+      if (!opts.length) return;
+      const i = opts.findIndex(o => o.value === atSel.value);
+      const next = opts[(i + 1) % opts.length];
+      atSel.value = next.value;
+      // Small pause so the finished frame is visible before the next launch.
+      setTimeout(launchSelected, 700);
+    }, 400);
+
+    // Sync the cascade when something ELSE drives presetSelect (probe, console).
+    presetSelect.addEventListener('change', () => {
+      const v = presetSelect.value;
+      if (!v || !v.startsWith('attack:')) return;
+      const a = attacks.find(x => 'attack:' + x.id === v);
+      if (!a) return;
+      if (chSel.value !== a.chapter) { chSel.value = a.chapter; fillEnemies(); }
+      if (enSel.value !== a.bossLabel) { enSel.value = a.bossLabel; fillAttacks(); }
+      if (atSel.value !== v) atSel.value = v;
+    });
+
+    fillEnemies();
+  })();
 
   presetSelect.addEventListener('change', (e) => {
     const key = e.target.value;
@@ -936,13 +1057,17 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     try {
       const s = runtime.createInstance('obj_yheart_shot', sx, sy);
       if (s) {
+        // Exact big-branch literals from obj_yheart_shot_Create_0.gml — the
+        // branch OVERRIDES the pellet's `hspeed = 8 * f` with a flat 9.
         s.big = 1;
         s.sprite_index = 'spr_yheart_bigshot';
-        s.hspeed = 4 * 2;          // 4 * f
-        s.friction = -0.2 * 2;     // -0.2 * f
+        s.hspeed = 9;
+        s.friction = -0.4;
         s.image_alpha = 0.5;
         s.image_xscale = 0.1;
         s.image_yscale = 2;
+        s.image_index = 0;
+        s.damage = 4;
       }
       yShotDelay = 5;              // chargeshot_delay = 5
       window.snd_play && window.snd_play('snd_chargeshot_fire');
