@@ -1122,8 +1122,11 @@
       const idx = Math.floor(Math.abs(frameIdx || 0)) % (spr && spr.frames.length ? spr.frames.length : 1);
       const img = spr && spr.frames ? spr.frames[idx] : null;
 
-      const ox = orig ? orig[0] : (img && img.naturalWidth ? 0 : 0);
-      const oy = orig ? orig[1] : (img && img.naturalHeight ? 0 : 0);
+      // Trimmed export art: origins are canvas-space, so the blit shifts by the
+      // trim offset (where the surviving pixels sat in the true canvas).
+      const t = global.$gmlTrimOf ? global.$gmlTrimOf(spriteName, idx) : null;
+      const ox = (orig ? orig[0] : 0) - (t ? t[0] : 0);
+      const oy = (orig ? orig[1] : 0) - (t ? t[1] : 0);
 
       if (!img || !img.complete || img.naturalWidth === 0) {
         ctx.save();
@@ -1153,6 +1156,20 @@
       };
     }
   }
+
+  /**
+   * Per-frame trim offset for sprites whose export art lost its transparent
+   * margins (see scripts/gen_sprite_trims.js). Returns [dx, dy] — where the
+   * trimmed art's top-left sits inside the sprite's true canvas — or null.
+   * Draw AND collision both route through this so they shift together.
+   */
+  global.$gmlTrimOf = function (spr, idx) {
+    const tr = global.GML_SPRITE_TRIMS && global.GML_SPRITE_TRIMS[spr];
+    if (!tr || !tr.length) return null;
+    let i = Math.floor(Math.abs(idx || 0)) % tr.length;
+    const t = tr[i];
+    return (t && (t[0] || t[1])) ? t : null;
+  };
 
   global.GMLAssetDatabase = GMLAssetDatabase;
   global.gmlAssets = new GMLAssetDatabase();

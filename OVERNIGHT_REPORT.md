@@ -505,6 +505,62 @@ wrong entry in this file:
    paid for itself: it exposed a real O(depth²)-with-allocations walk in the
    new code, now fixed.
 
+## Final state (post-lunch): 142/142 clean + trimmed-sprite placement
+
+- **Full sweep: 142/142 attacks, 1,846 assertions, 0 failures.** Knight 15
+  (205), SNEO 10 (124), Jevil 18 (236), Pink 10 (129), Gerson 89 (1,152).
+- The last holdout, `gerson_green18`, was a spec bug twice over: special 3 sets
+  `diagonal_transform` on the SHIELD and `diagonal_enabled` on the ENEMY (the
+  spec asserted the enemy's flag on the shield), and `diagonal_transform` is a
+  TRANSIENT the shield's Draw self-clears after its ~8-draw lerp (radius>34
+  snap). The durable observables — enemy flag, the shield's latched
+  `diagonal_enabled`, radius 35 — are what the spec now asserts. The shield
+  retiring before the swing barrage is the chart's own design.
+- **Trimmed-sprite placement (task #5) implemented**: the EXPORT art lost its
+  transparent margins, so centred-origin sprites (spr_donut_bullet: 24×25 art
+  on a 48×50 canvas, origin dead-centre) drew hanging up-left and collided the
+  same way. `scripts/gen_sprite_trims.js` reconstructs the offsets for the
+  recoverable class — origin at canvas centre ⇒ symmetric trim — yielding 50
+  sprites / 643 frames (all bullets, sparks, effects). `docs/js/sprite_trims.js`
+  now feeds a single `$gmlTrimOf` used by BOTH `drawSprite`/`drawSelf`/
+  `spriteDraw` (pixels) and `maskGeom`/`localToWorld`/`worldToLocal`
+  (collision), so hitboxes stay glued to the art. Off-centre-origin sprites are
+  left untouched rather than guessed — asymmetric margins are unrecoverable
+  without the original canvases.
+- Verified by pixel probe (donut art bbox centres exactly on the draw origin;
+  instance bbox spans ±12/±13 around the origin to match) and by re-running the
+  full 142 sweep after the collision-path change.
+
+## The Flurry "white sheet" + purple flood: three real bugs, all fixed
+
+Launching Flurry (type 99) and reading obj_bgfountaintest_Draw_0 line by line
+against what actually rendered turned up three independent engine bugs:
+
+1. **Unseeded battle HP → NaN alphas → canvas kept stale alpha.** The knight
+   background computes `battleprog` from `global.monsterhp/monstermaxhp` every
+   frame. The studio never seeded them, `battleprog` went NaN, and a NaN
+   `globalAlpha` is silently IGNORED by canvas — it keeps whatever alpha was
+   set last, so the fountain texture tiles drew at full brightness instead of
+   0.15/0.07: the magenta flood. Fixed by seeding hp === maxhp at launch
+   (battleprog = 0, the true fight-start look) AND hardening the three
+   globalAlpha sinks to normalise non-finite alphas to 1.
+2. **`channels()` couldn't read `merge_color` results → tints dropped.**
+   `merge_color` returns CSS `"rgb(r,g,b)"` strings; `channels()` parsed only
+   numbers and `#hex`, so every sprite tinted with a merge_color result fell
+   through to the white default and drew UNTINTED. The fountain column
+   (spr_cc_fountainbg_white tinted #27293F) rendered as the white sheet.
+   One regex fixes the entire class of merge_color-tinted draws.
+3. **Unmapped dest-alpha blend pairs.** `(bm_dest_alpha, bm_zero)` — the split
+   growtangle's seam-line clip — fell back to source-over (warned in console).
+   Mapped exactly: (7,1)→source-in, (8,1)→source-out, (1,5)→destination-in,
+   (1,1)→destination-out, plus judged mappings for (7,2)/(5,7)→lighter and
+   (5,8)→destination-over, each derived from the blend equation.
+
+Observation trap for future sessions: **rAF does not fire in an unfronted
+browser-pane tab and timers throttle to ~1 Hz** — an unfronted studio shows
+"Running, FPS 1, frozen canvas" and every draw-path hook reads zero. Front the
+tab before concluding anything about the render loop.
+
 ## What still needs your eyes
 
 Nothing here is verifiable from source alone:
@@ -517,8 +573,10 @@ Nothing here is verifiable from source alone:
   correct scripted transition; I could not tell from source.
 - **`knight_type107` (Roaring) drops to 0.15% ink at frame 90** then 99.38% at
   180. Plausibly the documented build-up-then-flood, but worth one look.
-- **Two chevrons and two shields** spawn per Gerson green attack where I'd expect
-  one each. May be correct (the pattern re-arms), may be a double-replay.
+- ~~**Two chevrons and two shields** spawn per Gerson green attack~~ — RESOLVED:
+  this was the double `event_user(0)` chart build (my boxoffset fix pre-called
+  the chart, then the green launcher called it again). The `chartPrebuilt` flag
+  dedupes it; chevron/shield counts and swing beat speeds now match source.
 - **`pink_date1` ink dropped from ~52% to ~26%** after the parent-chain fix.
   The date still renders correctly (portrait, dialogue, HP hearts, timer bar —
   verified by eye earlier), and the likely cause is masking finally clipping the

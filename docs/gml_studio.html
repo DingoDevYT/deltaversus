@@ -333,6 +333,7 @@
 
 <script src="js/sprite_manifest.js"></script>
 <script src="js/sprite_origins.js"></script>
+<script src="js/sprite_trims.js"></script>
 <script src="js/gml_object_index.js"></script>
 <script src="js/gml_asset_db.js"></script>
 <script src="js/gml_runtime.js"></script>
@@ -1439,6 +1440,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       if (!Array.isArray(window.monsterattackname)) window.monsterattackname = [''];
       if (!Array.isArray(window.monsterat)) window.monsterat = [10];
       if (!Array.isArray(window.monster)) window.monster = [1];
+      // obj_bgfountaintest computes battleprog from these each frame. Unseeded
+      // they are the scalar 0, battleprog goes NaN, and a NaN globalAlpha is
+      // IGNORED by canvas (it keeps the previous alpha) — that is exactly the
+      // Flurry full-bright purple flood; NaN-merged tints also washed the
+      // fountain column's pxwhite overlay white (the "white sheet"). Any value
+      // works as long as hp === maxhp: battleprog = 1 - 0.2*5 = 0, the true
+      // full-HP fight-start look.
+      if (!Array.isArray(window.monsterhp)) window.monsterhp = [100, 100, 100];
+      if (!Array.isArray(window.monstermaxhp)) window.monstermaxhp = [100, 100, 100];
       // Pink's date controller reads global.flag[1706..1708] ("have you seen
       // this date before") in its Create; an unseeded global array throws.
       if (!Array.isArray(window.flag)) window.flag = [];

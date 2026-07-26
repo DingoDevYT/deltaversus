@@ -430,10 +430,18 @@
       rect = { l: 0, t: 0, r: size.w, b: size.h };
     }
     const ang = (num(inst.image_angle) * Math.PI) / 180;
+    // Trimmed export art: mask pixels live in TRIMMED-local coords, so the
+    // same trim offset the draw applies must shift the mask, or hitboxes
+    // detach from the pixels the player sees. The declared-size fallback rect
+    // is already CANVAS-space, so trim only applies when real bits back it.
+    const trim = (mask && mask.br >= 0 && global.$gmlTrimOf)
+      ? global.$gmlTrimOf(spr, num(inst.image_index) || 0) : null;
     return {
       x: atX === undefined ? num(inst.x) : num(atX),
       y: atY === undefined ? num(inst.y) : num(atY),
       ox, oy,
+      tx: trim ? trim[0] : 0,
+      ty: trim ? trim[1] : 0,
       sx: num(inst.image_xscale) || 1,
       sy: num(inst.image_yscale) || 1,
       cos: Math.cos(ang), sin: Math.sin(ang),
@@ -444,8 +452,8 @@
 
   /** Local sprite-pixel coords -> world. Matches the draw transform exactly. */
   function localToWorld(g, lx, ly) {
-    const u = (lx - g.ox) * g.sx;
-    const v = (ly - g.oy) * g.sy;
+    const u = (lx + (g.tx || 0) - g.ox) * g.sx;
+    const v = (ly + (g.ty || 0) - g.oy) * g.sy;
     return {
       x: g.x + u * g.cos + v * g.sin,
       y: g.y - u * g.sin + v * g.cos,
@@ -457,7 +465,7 @@
     const dx = wx - g.x, dy = wy - g.y;
     const u = dx * g.cos - dy * g.sin;
     const v = dx * g.sin + dy * g.cos;
-    return { x: u / g.sx + g.ox, y: v / g.sy + g.oy };
+    return { x: u / g.sx + g.ox - (g.tx || 0), y: v / g.sy + g.oy - (g.ty || 0) };
   }
 
   /** The four world-space corners of the transformed mask rect. */
@@ -1854,6 +1862,10 @@
         let frameIdx = Math.floor(Math.abs(num(this.image_index)));
         if (frames > 0) frameIdx = frameIdx % frames;
         const img = global.gmlAssets ? global.gmlAssets.getImage(spr, frameIdx) : null;
+        // Trimmed export art draws shifted by its trim offset (canvas-space origins).
+        const trim = global.$gmlTrimOf ? global.$gmlTrimOf(spr, frameIdx) : null;
+        const tox = ox - (trim ? trim[0] : 0);
+        const toy = oy - (trim ? trim[1] : 0);
 
         ctx.save();
         ctx.translate(num(this.x), num(this.y));
@@ -1862,10 +1874,11 @@
         const sx = num(this.image_xscale) || 0;
         const sy = num(this.image_yscale) || 0;
         if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
-        ctx.globalAlpha = Math.max(0, Math.min(1, num(this.image_alpha)));
+        const selfA = num(this.image_alpha);
+        ctx.globalAlpha = isFinite(selfA) ? Math.max(0, Math.min(1, selfA)) : 1;
 
         if (img && img.complete && img.naturalWidth > 0) {
-          drawTinted(ctx, img, -ox, -oy, this.image_blend);
+          drawTinted(ctx, img, -tox, -toy, this.image_blend);
         } else if (num(this.image_alpha) > 0) {
           // Missing-art placeholder. It must honour the REAL alpha — the old
           // 0.3 floor made intentionally invisible sprites show up as solid
@@ -3655,7 +3668,8 @@
       const startX = ((num(x) % tw) + tw) % tw - tw;
       const startY = ((num(y) % th) + th) % th - th;
       ctx.save();
-      ctx.globalAlpha = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
+      const tA = alpha === undefined ? 1 : num(alpha);
+      ctx.globalAlpha = isFinite(tA) ? Math.max(0, Math.min(1, tA)) : 1;
       const pat = patternFor(ctx, s.img, col);
       if (pat) {
         // The pattern repeats from the LOCAL origin, so translating to the phase
@@ -3747,6 +3761,41 @@
         //         behind the lane grid it just drew — as source-over the field
         //         painted OVER the grid and hid it.
         '8,7': 'destination-over',
+        //
+        //   (7,1) dest_alpha, zero -> src*Ad, dst discarded. EXACTLY Canvas
+        //         'source-in'. obj_knight_split_growtangle draws its seam line
+        //         with this so the line exists only inside the split box's
+        //         silhouette; as source-over the line painted unclipped.
+        '7,1': 'source-in',
+        //
+        //   (8,1) inv_dest_alpha, zero -> src*(1-Ad): draw only where the
+        //         destination is EMPTY, discard it elsewhere = 'source-out'
+        //         (ch4 prophecy overlay).
+        '8,1': 'source-out',
+        //
+        //   (1,5) zero, src_alpha -> dst*As: keep the destination scaled by
+        //         the SOURCE's alpha = 'destination-in' (ch5 foyer darkness).
+        '1,5': 'destination-in',
+        //
+        //   (1,1) zero, zero -> 0 wherever the source has coverage: an eraser.
+        //         'destination-out' is dst*(1-As) — exact for the opaque
+        //         silhouettes obj_following_silhouette punches out.
+        '1,1': 'destination-out',
+        //
+        //   (7,2) dest_alpha, one -> src*Ad + dst: additive clipped to the
+        //         destination's alpha (spotlight backlighting). Over an opaque
+        //         target Ad=1 and this IS plain additive.
+        '7,2': 'lighter',
+        //
+        //   (5,7) src_alpha, dest_alpha -> src*As + dst*Ad: over the opaque
+        //         room the noellehouse overlays draw on, Ad=1 -> additive.
+        '5,7': 'lighter',
+        //
+        //   (5,8) src_alpha, inv_dest_alpha -> src*As + dst*(1-Ad): source
+        //         shows where the destination is empty, destination survives
+        //         where it is opaque — Canvas's 'destination-over' (ch3 room
+        //         spotlights).
+        '5,8': 'destination-over',
       };
       const op = MAP[key];
       if (!op && !MISSING_WARNED.has('bmext:' + key)) {
@@ -3879,7 +3928,12 @@
         const sx = xscale === undefined ? 1 : num(xscale);
         const sy = yscale === undefined ? 1 : num(yscale);
         if (sx !== 1 || sy !== 1) ctx.scale(sx, sy);
-        ctx.globalAlpha = (alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)))) * MASK_MUL;
+        // A NaN globalAlpha is silently IGNORED by canvas — it keeps whatever
+        // alpha was last set, which turns one NaN-poisoned argument into
+        // nondeterministic full-bright draws. Normalise to 1 (GM draws fully
+        // when its alpha maths degenerates, and 1 is at least deterministic).
+        const rawA = alpha === undefined ? 1 : num(alpha);
+        ctx.globalAlpha = (isFinite(rawA) ? Math.max(0, Math.min(1, rawA)) : 1) * MASK_MUL;
         if (s.img && s.img.complete && s.img.naturalWidth > 0) {
           drawTinted(ctx, s.img, -s.ox, -s.oy, color);
         } else {
@@ -3923,8 +3977,14 @@
 
   function channels(c) {
     if (typeof c === 'number') return [c & 255, (c >> 8) & 255, (c >> 16) & 255];
-    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(c));
+    const s = String(c);
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(s);
     if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+    // merge_color returns CSS "rgb(r,g,b)" STRINGS. Unparsed they fell through
+    // to the white default, so every sprite tinted with a merge_color result
+    // drew UNTINTED — the Flurry fountain column rendered as a white sheet.
+    const r = /^rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(s);
+    if (r) return [+r[1], +r[2], +r[3]];
     return [255, 255, 255];
   }
 
@@ -3963,10 +4023,12 @@
     let idx = Math.floor(Math.abs(raw));
     if (frames > 0) idx = ((idx % frames) + frames) % frames;
     const img = global.gmlAssets ? global.gmlAssets.getImage(spr, idx) : null;
+    // Trimmed export art draws shifted by its trim offset (canvas-space origins).
+    const t = global.$gmlTrimOf ? global.$gmlTrimOf(spr, idx) : null;
     return {
       img,
-      ox: info ? num(info.originX) : 0,
-      oy: info ? num(info.originY) : 0,
+      ox: (info ? num(info.originX) : 0) - (t ? t[0] : 0),
+      oy: (info ? num(info.originY) : 0) - (t ? t[1] : 0),
       w: info ? info.width : 16,
       h: info ? info.height : 16,
     };
