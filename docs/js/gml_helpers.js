@@ -2716,11 +2716,6 @@
       sw = Math.min(sw, c.width - sl);
       sh = Math.min(sh, c.height - st);
       if (!(sw > 0) || !(sh > 0)) return;
-      ctx.save();
-      ctx.translate(num(x), num(y));
-      if (num(rot)) ctx.rotate(-num(rot) * Math.PI / 180);
-      ctx.scale(num(xs) || 1, num(ys) || 1);
-      ctx.globalAlpha = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
       // A blend argument on a surface draw is a real tint — Deltarune's outline
       // idiom blits the same surface several times tinted black before the plain
       // pass. The tinted copy is built ONCE PER FRAME, not once per call: the
@@ -2731,6 +2726,31 @@
         const ch = channels(blend);
         if (!(ch[0] === 255 && ch[1] === 255 && ch[2] === 255)) src = tintedSurface(num(id), c, blend);
       }
+      const a = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
+      const rt = num(rot), sxv = num(xs) || 1, syv = num(ys) || 1;
+
+      // FAST PATH: unrotated, unscaled. `save`/`restore` and the transform
+      // updates are the two most expensive things on a 2D context, and this
+      // function is called in tight per-scanline loops — obj_knight_roaring2's
+      // Draw shears the ball surface across 480 rows AND the knight sprite four
+      // more times, well over a thousand calls a frame, every one of them
+      // unrotated at scale 1. Folding the translate into drawImage's
+      // destination is mathematically identical and skips all of it. Measured:
+      // that object's draw was 34ms/frame on its own, the single biggest cost
+      // in the roar's finale.
+      if (!rt && sxv === 1 && syv === 1) {
+        const prevAlpha = ctx.globalAlpha;
+        ctx.globalAlpha = a;
+        try { ctx.drawImage(src, sl, st, sw, sh, num(x) + dx, num(y) + dy, sw, sh); } catch (e) {}
+        ctx.globalAlpha = prevAlpha;
+        return;
+      }
+
+      ctx.save();
+      ctx.translate(num(x), num(y));
+      if (rt) ctx.rotate(-rt * Math.PI / 180);
+      ctx.scale(sxv, syv);
+      ctx.globalAlpha = a;
       try { ctx.drawImage(src, sl, st, sw, sh, dx, dy, sw, sh); } catch (e) {}
       ctx.restore();
     }
