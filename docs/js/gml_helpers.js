@@ -407,7 +407,11 @@
    */
   function maskGeom(inst, atX, atY) {
     // Resolve BEFORE the string guard: a sprite may be a raw asset index.
-    const spr = sprAlias(inst.mask_index || inst.sprite_index);
+    // mask_index -1 means "use the sprite" (GameMaker's unset value). It is
+    // TRUTHY, so `mask_index || sprite_index` would try to alias -1 and come
+    // back null, making every maskless object collisionless.
+    const rawMask = inst.mask_index;
+    const spr = sprAlias((rawMask === -1 || rawMask === '' || rawMask == null) ? inst.sprite_index : rawMask);
     if (!spr || typeof spr !== 'string') return null;
     let ox = 0, oy = 0;
     const orig = global.GML_SPRITE_ORIGINS && global.GML_SPRITE_ORIGINS[spr];
@@ -885,7 +889,7 @@
         // which for the battle box (a HOLLOW frame) means the heart briefly reads
         // as standing inside a solid. Touching the image at spawn closes that
         // window for every instance, not just the box.
-        H.warmSprite(inst.mask_index || inst.sprite_index);
+        H.warmSprite((inst.mask_index === -1 || !inst.mask_index) ? inst.sprite_index : inst.mask_index);
         return inst;
       },
 

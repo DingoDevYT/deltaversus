@@ -175,7 +175,9 @@
 
       // Sprite & drawing
       this.sprite_index = '';
-      this.mask_index = '';
+      // -1 = "use the sprite", GameMaker's unset value. Code branches on it:
+      // obj_pinklanebullet's Draw does `if (mask_index != -1)`.
+      this.mask_index = -1;
       this.image_index = 0;
       this.image_number = 1;
       this.image_speed = 0;

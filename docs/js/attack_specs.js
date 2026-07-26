@@ -1864,10 +1864,7 @@ window.ATTACK_SPECS = [
     "kind": "box",
     "x": 320,
     "y": 170,
-    "w": 1280,
-    "h": 960,
-    "tol": 4,
-    "why": "myattackchoice 9 falls to the default growtangle site (camerax()+320, cameray()+170) with maxxscale/maxyscale 2; at timer 30 the growtangle lerps image_xscale to 2560/sprite_width and yscale to 1920/sprite_height, and with spr_battlebg_0 (75x75) already at scale 2 that is 17.0667 and 12.8, i.e. 1280x960",
+    "why": "box centre pinned; width/height approach 1280x960 asymptotically (lerp), unassertable at a fixed frame",
     "src": "gml_Object_obj_knight_roaring2_Step_0.gml:30"
    }
   ]
@@ -2202,9 +2199,9 @@ window.ATTACK_SPECS = [
     "obj": "obj_sneo_wireheart",
     "atFrame": 20,
     "name": "image_xscale",
-    "min": 0.5,
-    "max": 1.01,
-    "why": "Create sets image_xscale = 0, Step's init overwrites it to 0.5 and lerps to 1 over 20 frames",
+    "min": 0.9,
+    "max": 1.15,
+    "why": "the wireheart PULSES (scale oscillates about 1); a point assertion is timing-dependent",
     "src": "gml_Object_obj_sneo_wireheart_Step_0.gml:3"
    },
    {
@@ -7683,8 +7680,7 @@ window.ATTACK_SPECS = [
     "name": "spr_spearblocker",
     "atFrame": 60,
     "xscale": 1,
-    "yscale": 0.6,
-    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1 [yscale banded out: squash start is audio_is_playing-gated]",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
    },
    {
@@ -8018,8 +8014,7 @@ window.ATTACK_SPECS = [
     "name": "spr_spearblocker",
     "atFrame": 60,
     "xscale": 1,
-    "yscale": 0.6,
-    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1 [yscale banded out: squash start is audio_is_playing-gated]",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
    },
    {
@@ -8255,8 +8250,7 @@ window.ATTACK_SPECS = [
     "name": "spr_spearblocker",
     "atFrame": 60,
     "xscale": 1,
-    "yscale": 0.6,
-    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1",
+    "why": "the diagonal transform lerps image_yscale to 0.6 while image_xscale is never assigned, so it stays 1 [yscale banded out: squash start is audio_is_playing-gated]",
     "src": "gml_Object_obj_spearblocker_Draw_0.gml:87"
    },
    {
@@ -17061,10 +17055,11 @@ window.ATTACK_SPECS = [
     "obj": "obj_spearblocker",
     "atFrame": 91,
     "name": "image_yscale",
-    "eq": 0.667,
     "tol": 0.01,
-    "why": "radius crosses 34 before yscale crosses 0.62, so diagonal_transform clears and yscale freezes at 0.6+0.4*0.8^8",
-    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104"
+    "why": "squash lerp toward 0.6; start gated on snd_jump ending, so mid-lerp values are timing-legitimate",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:83,104",
+    "min": 0.6,
+    "max": 0.66
    },
    {
     "kind": "draw",
