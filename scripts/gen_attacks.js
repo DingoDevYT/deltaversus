@@ -305,7 +305,20 @@ function attackAnnouncements(src) {
     let setup = src.slice(bstart, end).trim();
     // An unbraced branch walks out into some huge enclosing block — a replay
     // of that would re-run half the boss turn. Fall back to manual spawning.
-    if (setup.length > 3500 || (setup.match(/monsterattackname/g) || []).length > 1) setup = null;
+    //
+    // "More than one announcement" is the WRONG test for that: the Knight's
+    // choice 15 is a genuine COMBO branch — sword vortex AND tracking swords,
+    // two announcements, two scr_bulletspawner calls in one branch — and
+    // nulling its setup dropped `dc.difficulty = 3; dc.damage = 206;` and the
+    // whole second controller (the manual fallback spawns one controller with
+    // the studio's difficulty and no damage; measured: every sword at damage 0
+    // against the source's 206). An ESCAPED walk is recognisable differently:
+    // its slice re-tests the selector (`myattackchoice == N)` from sibling
+    // branches), which a real branch body never does.
+    const escaped = cond && new RegExp(
+      cond[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*=='
+    ).test(setup);
+    if (setup.length > 3500 || escaped) setup = null;
 
     out.push({
       name,

@@ -301,7 +301,7 @@ window.GML_ATTACKS = [
    "damage",
    "damage"
   ],
-  "setup": null,
+  "setup": "global.monsterattackname[myself] = \"sword vortex\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 154;\n                dc.difficulty = 3;\n                dc.damage = 206;\n                global.monsterattackname[myself] = \"tracking swords\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 151;\n                dc.difficulty = 0;\n                dc.damage = 206;\n                global.invc = 0.4;",
   "source": "gml_Object_obj_knight_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,

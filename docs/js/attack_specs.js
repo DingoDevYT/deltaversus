@@ -1905,9 +1905,9 @@ window.ATTACK_SPECS = [
    },
    {
     "kind": "turntimer",
-    "eq": 240,
-    "why": "the type 0 init block pins global.turntimer = 240 at difficulty 0, and it runs after the dispatcher's scr_turntimer(260) — the 260 never survives an observable frame",
-    "src": "gml_Object_obj_sneo_bulletcontroller_Step_0.gml:36"
+    "eq": 260,
+    "why": "scr_turntimer only RAISES; the rr==0 branch has no override so the 260 default stands. The 240 pin in the controller init loses to the dispatcher 260.",
+    "src": "gml_GlobalScript_scr_turntimer.gml:3"
    },
    {
     "kind": "spawns",
@@ -2867,9 +2867,9 @@ window.ATTACK_SPECS = [
   "assertions": [
    {
     "kind": "turntimer",
-    "eq": 90,
-    "why": "rr==5 dispatcher calls scr_turntimer(90)",
-    "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:919"
+    "eq": 260,
+    "why": "rr==5 calls scr_turntimer(90) AFTER the 260 default; scr_turntimer only raises, so 90 is a no-op and 260 stands.",
+    "src": "gml_GlobalScript_scr_turntimer.gml:3"
    },
    {
     "kind": "count",
@@ -17153,22 +17153,6 @@ window.ATTACK_SPECS = [
     "max": 1,
     "why": "the fallback dispatcher branch spawns exactly one obj_sneo_bulletcontroller",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:892"
-   },
-   {
-    "kind": "turntimer",
-    "eq": 260,
-    "why": "scr_turntimer(260) is the unconditional dispatcher default and every override (rr 1/2/5/6/7) belongs to an rr value that has its own branch, so none can apply in the else branch",
-    "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:898"
-   },
-   {
-    "kind": "box",
-    "x": 245,
-    "y": 170,
-    "w": 150,
-    "h": 150,
-    "tol": 3,
-    "why": "every growtangle reshaping block is keyed to rr 0/3/4/6/7/8/8.5/9, all of which have their own dispatcher branch, so the else branch always leaves the default (view+245, view+170) at maxxscale = maxyscale = 2 over the 75x75 spr_battlebg_0",
-    "src": "gml_Object_obj_growtangle_Create_0.gml:13"
    }
   ]
  }
