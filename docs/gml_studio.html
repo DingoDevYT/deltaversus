@@ -882,19 +882,26 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
   const keys = {};
   window.addEventListener('keydown', e => {
     keys[e.key] = true;
-    // Yellow soul (Spamton NEO): hold Z to charge, release to fire. Tap = pellet,
-    // a full charge = big shot.
+    // Yellow soul — the REAL contract (obj_heart_Step_0.gml:275-315, color==1):
+    // a PELLET fires on the press itself (`button1_p()`), not on release.
+    // Releases only matter for the 10-39 grace pellet and the >=40 big shot.
     if (soulMode === 'yellow' && (e.key === 'z' || e.key === 'Z') && !e.repeat && !yCharging) {
       yCharging = true;
       yChargeFrames = 0;
+      fireYellowShot(false);
     }
   });
   window.addEventListener('keyup', e => {
     keys[e.key] = false;
     if (soulMode === 'yellow' && (e.key === 'z' || e.key === 'Z') && yCharging) {
-      fireYellowShot(yChargeFrames >= 20);
+      // Source: `z_hold >= 10 && z_hold <= 39 && button1_r()` -> pellet;
+      // `z_hold >= 40 && button1_r()` -> big shot. Nothing between 40 and the
+      // studio's old 20-frame threshold — that number was invented.
+      if (yChargeFrames >= 10 && yChargeFrames <= 39) fireYellowShot(false);
+      else if (yChargeFrames >= 40) fireYellowShot(true);
       yCharging = false;
       yChargeFrames = 0;
+      if (runtime && runtime.soul) runtime.soul.image_index = 0;
     }
   });
 
@@ -906,14 +913,39 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
   let yCharging = false;
   let yChargeFrames = 0;
 
+  let yShotDelay = 0;   // chargeshot_delay: 5 frames after a big shot
   function fireYellowShot(big) {
     if (!runtime) return;
-    const boss = runtime.instances.find(i => i.object_name === 'obj_spamton_neo_enemy');
-    // The big shot IS obj_yheart_shot taking the boss's `upgrade > 0` branch in
-    // its own Create — flip the real flag rather than faking a variant.
-    if (big && boss) boss.upgrade = 1;
-    try { runtime.createInstance('obj_yheart_shot', runtime.soul.x + 10, runtime.soul.y); } catch (e) {}
-    if (big && boss) boss.upgrade = 0;
+    // Everything below is a transcription of obj_heart_Step_0.gml:275-315.
+    // The shot spawns at (x + 10, y + 10) — the SOUL'S CENTRE. The studio was
+    // spawning at (x + 10, y + 0), 10px high: Landon's "fire position is
+    // offset incorrectly".
+    const sx = runtime.soul.x + 10, sy = runtime.soul.y + 10;
+    if (!big) {
+      // `if (instance_number(obj_yheart_shot) < 3 && chargeshot_delay == 0)`
+      const live = runtime.instances.filter(i => !i.destroyed && i.object_name === 'obj_yheart_shot').length;
+      if (live >= 3 || yShotDelay > 0) return;
+      try { runtime.createInstance('obj_yheart_shot', sx, sy); } catch (e) {}
+      try { window.snd_play && window.snd_play('snd_heartshot_dr_b'); } catch (e) {}
+      return;
+    }
+    // Big shot: the source creates a NORMAL shot and overrides its fields —
+    // it does not go through the boss's `upgrade` branch (that branch is the
+    // pipis-powered upgrade, a different mechanic). f = 2 on obj_heart.
+    try {
+      const s = runtime.createInstance('obj_yheart_shot', sx, sy);
+      if (s) {
+        s.big = 1;
+        s.sprite_index = 'spr_yheart_bigshot';
+        s.hspeed = 4 * 2;          // 4 * f
+        s.friction = -0.2 * 2;     // -0.2 * f
+        s.image_alpha = 0.5;
+        s.image_xscale = 0.1;
+        s.image_yscale = 2;
+      }
+      yShotDelay = 5;              // chargeshot_delay = 5
+      window.snd_play && window.snd_play('snd_chargeshot_fire');
+    } catch (e) {}
   }
 
   /**
@@ -964,7 +996,11 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         if (window.GML_SPRITE_MANIFEST[cand]) { spr = cand; break; }
       }
     }
-    const img = assets ? assets.getImage(spr, 0) : null;
+    // The heart's own frame matters: yellow mode sets image_index = 2 while a
+    // big shot is charged (spr_yellowheart has 3 frames), and always drawing
+    // frame 0 hid the charged pose.
+    const soulFrame = Math.floor(Number(runtime.soul.image_index) || 0);
+    const img = assets ? assets.getImage(spr, soulFrame) : null;
     const sx = Math.floor(runtime.soul.x), sy = Math.floor(runtime.soul.y);
     // THE SOUL IS TOP-LEFT ANCHORED, like the real obj_heart.
     //
@@ -986,10 +1022,37 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       c.beginPath(); c.arc(sx + 8, sy + 8, 6, 0, Math.PI * 2); c.fill();
     }
     if (soulMode === 'yellow' && yCharging) {
-      const r = 8 + Math.min(14, yChargeFrames * 0.6);
-      c.strokeStyle = yChargeFrames >= 20 ? '#ffffff' : '#ffe100';
-      c.lineWidth = 2;
-      c.beginPath(); c.arc(sx, sy, r, 0, Math.PI * 2); c.stroke();
+      // Transcribed from obj_heart_Draw_0.gml:1-27 (color == 1) — the REAL
+      // charge visuals, replacing an invented canvas circle.
+      const zHold = yChargeFrames;
+      const drawScaled = (image, px, py, s, alpha) => {
+        if (!image || !image.complete || !image.naturalWidth) return;
+        const pa = c.globalAlpha;
+        c.globalAlpha = Math.max(0, Math.min(1, alpha));
+        c.drawImage(image, px, py, image.naturalWidth * s, image.naturalHeight * s);
+        c.globalAlpha = pa;
+      };
+      // Pulsing enlarged hearts once z_hold - 35 >= 0.
+      const zcn = zHold - 35;
+      if (zcn >= 0 && img) {
+        let s1 = Math.abs(Math.sin(zcn / 10));
+        drawScaled(img, sx - s1 * 10, sy - s1 * 10, 1 + s1, 0.3);
+        let s2 = Math.abs(Math.sin(zcn / 14));
+        drawScaled(img, sx - 2 - s2 * 10, sy - 2 - s2 * 10, 1.2 + s2, 0.3);
+      }
+      // Four sparks spiralling into (x + 9, y + 10) from z_hold >= 15.
+      if (zHold >= 15 && assets) {
+        const zc = Math.min(zHold - 15, 35);
+        const spark = assets.getImage('spr_yheart_charge', 0);
+        const so = (window.GML_SPRITE_ORIGINS || {})['spr_yheart_charge'] || [0, 0];
+        const ss = 4 - ((zc * 2) / 35);
+        for (let i = 0; i < 4; i++) {
+          const rotx = (i * 90 + zc * 5) * Math.PI / 180;
+          const xx = Math.sin(rotx) * (35 - zc);
+          const yy = Math.cos(rotx) * (35 - zc);
+          drawScaled(spark, (sx + 9 - xx) - so[0] * ss, (sy + 10 - yy) - so[1] * ss, ss, zc / 5);
+        }
+      }
     }
     if (green && spr === 'spr_heart') {
       // No green-heart art available — show the mode explicitly.
@@ -1759,7 +1822,12 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           logError('STEP CRASH: ' + e.message);
         }
         try { tickTurnTimer(); } catch(e) { logError('turn timer: ' + e.message); }
-        if (yCharging) yChargeFrames++;   // yellow-soul charge, in game steps
+        if (yCharging) yChargeFrames++;   // z_hold, in game steps
+        if (yShotDelay > 0) yShotDelay--; // chargeshot_delay--
+        // `if (z_hold >= 40) image_index = 2;` — the heart's own charged frame.
+        if (soulMode === 'yellow' && runtime && runtime.soul) {
+          runtime.soul.image_index = (yCharging && yChargeFrames >= 40) ? 2 : 0;
+        }
       }
       lastStepTime = now - (dt % stepInterval);
     }
