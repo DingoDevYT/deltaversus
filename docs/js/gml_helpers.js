@@ -79,6 +79,7 @@
   const OBJNAMES = new WeakMap();
   const STATICS = Object.create(null);
   const MISSING_WARNED = new Set();
+  let SPIN_T0 = 0;   // wall clock at the current compiled loop's first pass
   /** Script names the JIT already failed to find — stops per-read re-attempts. */
   const SCR_JIT_MISS = new Set();
   // Warnings dedupe for the whole session, which is right for a human reading
@@ -1443,11 +1444,22 @@
        * never be met — a hang the browser can't recover from otherwise.
        */
       spin(i, site) {
-        if (i < 500000) return true;
+        // Iteration count alone is not a usable budget: the cost of one pass
+        // varies enormously. obj_darkshape_centipede_head's
+        // `while (speed_remainder >= 1)` does a ds_list_insert plus an inner
+        // delete loop each pass, so 500k passes is minutes of wall clock with
+        // the tab frozen — long enough to look like a crash. Time is what we
+        // actually care about, so bound that directly and keep the count as a
+        // backstop for cheap loops.
+        if (i === 0) SPIN_T0 = performance.now();
+        // Sample the clock every 4096 passes; checking it every pass would cost
+        // more than the loop body in the common case.
+        const overTime = (i & 4095) === 0 && i > 0 && (performance.now() - SPIN_T0) > 250;
+        if (!overTime && i < 500000) return true;
         const key = 'spin:' + site;
         if (!MISSING_WARNED.has(key)) {
           MISSING_WARNED.add(key);
-          console.warn(`[gml] loop in ${site} exceeded 500k iterations — bailing out. Its exit condition is never satisfied.`);
+          console.warn(`[gml] loop in ${site} ran ${i} iterations in ${Math.round(performance.now() - SPIN_T0)}ms — bailing out. Its exit condition is never satisfied; a NaN or Infinity counter is the usual cause.`);
         }
         return false;
       },
@@ -4358,33 +4370,58 @@
    * the image, so entries die with the sprite; the per-image budget bounds the
    * pathological case of a colour that never repeats.
    */
-  const TINTED = new WeakMap();
-  const TINT_BUDGET = 96;          // distinct colours cached per sprite frame
-  const TINT_MAX_AREA = 512 * 512; // don't cache full-screen layers
-  function tintedCopy(img, w, h, ch) {
-    const key = ch[0] + ',' + ch[1] + ',' + ch[2];
-    let perImg = TINTED.get(img);
-    if (perImg) {
-      const hit = perImg.get(key);
-      if (hit) return hit;
+  /**
+   * One global LRU across every cached recolour, bounded by BYTES rather than
+   * entry count. A per-image entry cap is not a real bound: a 512x512 tint is
+   * 1MB, so "96 per image" across a few hundred loaded sprites is gigabytes,
+   * and the resulting GC pressure froze the tab just as badly as the stalls the
+   * cache was added to remove.
+   */
+  const RECOLOUR = new Map();          // key -> canvas, in insertion (LRU) order
+  let recolourBytes = 0;
+  const RECOLOUR_MAX_BYTES = 24 * 1024 * 1024;
+  const RECOLOUR_MAX_AREA = 256 * 256; // bigger than this, draw it fresh
+  let nextImgId = 1;
+  const IMG_IDS = new WeakMap();
+  function imgId(img) {
+    let id = IMG_IDS.get(img);
+    if (!id) { id = nextImgId++; IMG_IDS.set(img, id); }
+    return id;
+  }
+  function recolourCached(img, w, h, tag, paint) {
+    const key = imgId(img) + '|' + w + 'x' + h + '|' + tag;
+    const hit = RECOLOUR.get(key);
+    if (hit) {
+      // Refresh LRU position.
+      RECOLOUR.delete(key);
+      RECOLOUR.set(key, hit);
+      return hit;
     }
     const buf = document.createElement('canvas');
     buf.width = w; buf.height = h;
-    const bctx = buf.getContext('2d');
-    bctx.drawImage(img, 0, 0);
-    bctx.globalCompositeOperation = 'multiply';
-    bctx.fillStyle = `rgb(${ch[0]},${ch[1]},${ch[2]})`;
-    bctx.fillRect(0, 0, w, h);
-    // Restore the sprite's own alpha, which `multiply` over a filled rect loses.
-    bctx.globalCompositeOperation = 'destination-in';
-    bctx.drawImage(img, 0, 0);
-    if (w * h <= TINT_MAX_AREA) {
-      if (!perImg) { perImg = new Map(); TINTED.set(img, perImg); }
-      // Oldest-first eviction: Map preserves insertion order.
-      if (perImg.size >= TINT_BUDGET) perImg.delete(perImg.keys().next().value);
-      perImg.set(key, buf);
+    paint(buf.getContext('2d'));
+    if (w * h <= RECOLOUR_MAX_AREA) {
+      RECOLOUR.set(key, buf);
+      recolourBytes += w * h * 4;
+      while (recolourBytes > RECOLOUR_MAX_BYTES && RECOLOUR.size) {
+        const oldestKey = RECOLOUR.keys().next().value;
+        const oldest = RECOLOUR.get(oldestKey);
+        RECOLOUR.delete(oldestKey);
+        recolourBytes -= oldest.width * oldest.height * 4;
+      }
     }
     return buf;
+  }
+  function tintedCopy(img, w, h, ch) {
+    return recolourCached(img, w, h, 'x' + ch[0] + ',' + ch[1] + ',' + ch[2], bctx => {
+      bctx.drawImage(img, 0, 0);
+      bctx.globalCompositeOperation = 'multiply';
+      bctx.fillStyle = `rgb(${ch[0]},${ch[1]},${ch[2]})`;
+      bctx.fillRect(0, 0, w, h);
+      // Restore the sprite's own alpha, which `multiply` over a filled rect loses.
+      bctx.globalCompositeOperation = 'destination-in';
+      bctx.drawImage(img, 0, 0);
+    });
   }
 
   /**
@@ -4392,28 +4429,16 @@
    * Cached exactly like the tint path, and for the same reason: fog and the
    * white-flash shader run this on every affected sprite, every frame.
    */
-  const SILHOUETTES = new WeakMap();
-  function silhouetteCopy(img, w, h, color) {
-    let perImg = SILHOUETTES.get(img);
-    if (perImg) { const hit = perImg.get(color); if (hit) return hit; }
-    const buf = document.createElement('canvas');
-    buf.width = w; buf.height = h;
-    const bctx = buf.getContext('2d');
-    bctx.drawImage(img, 0, 0);
-    bctx.globalCompositeOperation = 'source-in';
-    bctx.fillStyle = color;
-    bctx.fillRect(0, 0, w, h);
-    if (w * h <= TINT_MAX_AREA) {
-      if (!perImg) { perImg = new Map(); SILHOUETTES.set(img, perImg); }
-      if (perImg.size >= TINT_BUDGET) perImg.delete(perImg.keys().next().value);
-      perImg.set(color, buf);
-    }
-    return buf;
-  }
   function drawSilhouette(ctx, img, dx, dy, color) {
     const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
     if (!w || !h) return;
-    ctx.drawImage(silhouetteCopy(img, w, h, String(color)), dx, dy);
+    const col = String(color);
+    ctx.drawImage(recolourCached(img, w, h, 's' + col, bctx => {
+      bctx.drawImage(img, 0, 0);
+      bctx.globalCompositeOperation = 'source-in';
+      bctx.fillStyle = col;
+      bctx.fillRect(0, 0, w, h);
+    }), dx, dy);
   }
 
   // ═══════════════════════════════════════════════════════════════════════

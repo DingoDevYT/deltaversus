@@ -1375,7 +1375,9 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     if (gmlStep.trim()) mergedEvents.step = gmlStep;
     if (gmlDraw.trim()) mergedEvents.draw = gmlDraw;
     mergedEvents.chapter = chapter;
+    console.log('[launch] compile ' + objName + ' (' + chapter + ')');
     const compiled = translator.compileObject(objName, mergedEvents);
+    console.log('[launch] compiled');
 
     document.getElementById('jsResult').textContent = compiled.code;
 
@@ -1612,7 +1614,9 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           ? pendingAttack.enemy === b.name
           : b.match.some(m => lowerName.includes(m));
         if (!isMine) continue;
+        console.log('[launch] spawn boss ' + b.name);
         const boss = runtime.createInstance(b.name, b.x, b.y);
+        console.log('[launch] boss spawned');
         bossInst = boss;
         objNameOfBoss = b.name;
         if (b.sprite) boss.sprite_index = b.sprite;
@@ -1626,6 +1630,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         if (objName !== b.name) boss.step = null;
         for (const extra of b.also || []) {
           if (objName === extra) continue;
+          console.log('[launch] spawn extra ' + extra);
           const e = runtime.createInstance(extra, b.x, b.y);
           if (e) e.step = null;
         }
@@ -1705,6 +1710,10 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       /** Compile a raw GML fragment and run it with self = `self`. */
       function runSnippet(gml, self, label) {
         if (!gml || !self) return false;
+        // Breadcrumb: these snippets replay real dispatcher code, which can hang
+        // the tab. console survives a blocked main thread, so this is the only
+        // way to learn which phase froze.
+        console.log('[launch] snippet: ' + label);
         try {
           const c = translator.compileObject('__setup_snippet', { chapter, step: gml });
           if (c.errors.length) logError(label + ' warnings:\n' + c.errors.join('\n'));

@@ -795,13 +795,25 @@ ${p}}`;
     }
 
     genBinary(node) {
+      // && and || must generate their operands through genCondition, NOT
+      // genExpr — so generate operands lazily, per branch.
+      //
+      // Generating both eagerly and then discarding them for the boolean cases
+      // made every && / || node emit its children TWICE, once via genExpr and
+      // again via genCondition. That is 2^N for N nested boolean operators, and
+      // obj_elnina_lanino_controller's Step has a condition deep enough that
+      // compiling it never finished: the Lanino & Elnina fight froze the tab on
+      // launch, before a single frame ran.
+      switch (node.operator) {
+        case '&&': return `(${this.genCondition(node.left)} && ${this.genCondition(node.right)})`;
+        case '||': return `(${this.genCondition(node.left)} || ${this.genCondition(node.right)})`;
+        default: break;
+      }
       const a = this.genExpr(node.left);
       const b = this.genExpr(node.right);
       switch (node.operator) {
         case 'div': return `$R.div(${a}, ${b})`;
         case '^^': return `(($R.b(${a})) !== ($R.b(${b})))`;
-        case '&&': return `(${this.genCondition(node.left)} && ${this.genCondition(node.right)})`;
-        case '||': return `(${this.genCondition(node.left)} || ${this.genCondition(node.right)})`;
         case '??': return `(${a} ?? ${b})`;
         case '+': return `$R.add(${a}, ${b})`;
         default: return `(${a} ${node.operator} ${b})`;

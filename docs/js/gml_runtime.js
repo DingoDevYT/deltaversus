@@ -14,6 +14,12 @@
   const DEG2RAD = Math.PI / 180;
   const RAD2DEG = 180 / Math.PI;
 
+  // Live instances a single attack may hold before createInstance starts
+  // refusing. The busiest real attack in the corpus (the Knight's sword tunnel)
+  // peaks around 230, so this is an order of magnitude of headroom and only a
+  // runaway spawner can reach it.
+  const INSTANCE_CEILING = 3000;
+
   function degtorad(d) { return d * DEG2RAD; }
   function radtodeg(r) { return r * RAD2DEG; }
   function dsin(d) { return Math.sin(d * DEG2RAD); }
@@ -448,6 +454,33 @@
       }
       if (typeof objType !== 'string') objType = String(objType);
       objType = objType.replace(/^["']|["']$/g, ''); // strip quotes
+
+      // Runaway-spawn valve. The game's spawn conditions are always eventually
+      // false, but ours can stay true forever when a variable the condition
+      // reads is one the engine gets wrong — and a spawner running every step
+      // then buries the tab with no error and no clue which object did it. No
+      // real attack in this corpus is anywhere near this many instances, so
+      // crossing it always means a bug; refuse, and name the culprit once.
+      // Destroyed instances linger in the array until the next sweep, so the
+      // cheap length test is only a trigger for the real live count.
+      if (this.instances.length > INSTANCE_CEILING) {
+        const hist = {};
+        let live = 0;
+        for (const i of this.instances) {
+          if (i.destroyed) continue;
+          live++;
+          hist[i.object_name] = (hist[i.object_name] || 0) + 1;
+        }
+        if (live > INSTANCE_CEILING) {
+          if (!this.$spawnCapped) {
+            this.$spawnCapped = true;
+            const top = Object.entries(hist).sort((a, b) => b[1] - a[1]).slice(0, 5)
+              .map(e => `${e[0]} x${e[1]}`).join(', ');
+            console.warn(`[gml] instance ceiling (${INSTANCE_CEILING}) hit creating ${objType} — refusing further spawns. Most numerous: ${top}`);
+          }
+          return null;
+        }
+      }
 
       const id = ++this.nextId;
       let inst;
