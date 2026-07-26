@@ -8,6 +8,37 @@ separate commit you can revert individually.
 
 ---
 
+## The afternoon session (Fable): real rosters + five more engine systems
+
+**The roster was the headline.** Landon recognised the 147-entry roster as
+mostly cut content and put Gerson at ~21 real attacks. Reading the CHOOSERS
+(the code that assigns each selector) instead of the dispatchers confirms it
+exactly: **63 entries appear in real fights, 84 are cut** — including
+Swordslash (type 109), the studio's long-time demo attack, which the Knight's
+chooser can never select. Full line-level derivation in REAL_FIGHT_ROSTERS.md;
+the dropdown now lists real fights first and prefixes cut content with [cut].
+
+Engine systems fixed this session, each measured before/after:
+
+1. **Clean Up events now dispatch** (349 handlers were dead code) — the Flurry
+   marker leak.
+2. **Baked object-index literals resolve** (`growtangle = 1517` is
+   `growtangle = obj_growtangle`) — Flurry's box-split gimmick, Stars'
+   heart-follower targeting, bullethell aiming.
+3. **draw_circle_color is a radial gradient** — the roar's darkening rings and
+   vignette existed for the first time.
+4. **Alpha-channel mask emulation** (gpu_set_colorwriteenable + dest-alpha
+   clipping) — Gerson's telegraph idiom, scr_draw_in_box.
+5. **mask_index unset is -1, not the sprite name** — Pink's lane bullets
+   finally show their lane sprite; GML that branches on `mask_index != -1`
+   now takes the right path corpus-wide.
+6. **Combo dispatcher branches keep their setup** — the Knight's real
+   vortex+tracking double turn, with its d3/damage-206 fields.
+7. **Yellow soul rebuilt to source** — pellets on press at the soul's centre,
+   big shot at hold>=40 with the exact field overrides, real charge visuals.
+
+---
+
 ## The headline
 
 **The measurement harness was lying, and it had been lying for several rounds.**

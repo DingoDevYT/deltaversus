@@ -1499,6 +1499,9 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       const bossDispatched = !!(pendingAttack && pendingAttack.selector !== null
         && pendingAttack.selector !== undefined);
 
+      // Set when the chart boss's event_user(0) already ran before the box
+      // replay; the chart-launch path must not run it a second time.
+      let chartPrebuilt = false;
       if (pendingAttack && bossInst && !isDate && bossDispatched) {
         const boxGML = (window.GML_ATTACKS_BOXSETUP || {})[pendingAttack.boss];
         if (boxGML) {
@@ -1515,8 +1518,18 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           // (the trap this block already guards against by stubbing eventUser).
           if (pendingAttack.selector === 'attackpattern') {
             try {
-              bossInst.attackpattern = pendingAttack.choice;
+              // Full green-boss prep, ONCE. The chart-launch path below used
+              // to fire event_user(0) again, and Other_10 is not idempotent:
+              // swingdownbeatspeed decrements at the end of a branch (23 -> 21
+              // instead of 22 on green10), and shield-mode rows duplicated —
+              // green18's shield was dead by frame 100 because special-35
+              // swaps ran twice.
+              bossInst.attackpattern = pendingAttack.pattern !== undefined
+                ? pendingAttack.pattern : pendingAttack.choice;
+              bossInst.trueturn = 1;
+              bossInst.attacked = 0;
               H2.eventUser(bossInst, 0);
+              chartPrebuilt = true;
             } catch (e) { /* the chart replay below still runs */ }
           }
           // Swap the DISPATCH helper, not a property on the instance — reading
@@ -1557,7 +1570,9 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         // boss-driven chart — so it cannot fire anyway, and parts of the
         // attackcon machine read `attacked` as still-attacking.
         bossInst.attacked = 0;
-        GML_HELPERS.for(runtime).eventUser(bossInst, 0);
+        // Other_10 is NOT idempotent (counter decrements, shield-mode swaps);
+        // skip when the box-ordering block already built this chart.
+        if (!chartPrebuilt) GML_HELPERS.for(runtime).eventUser(bossInst, 0);
         bossInst.attackcon = 1;
         // The boss's dispatcher sets attackcon and the turn length on the SAME
         // line (`attackcon = 1; ... scr_turntimer(999);`). Setting attackcon by

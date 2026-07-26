@@ -45,9 +45,9 @@ window.ATTACK_SPECS = [
     "obj": "obj_bullet_knight_crescentGenerator",
     "atFrame": 4,
     "name": "shootrate",
-    "eq": 15,
-    "why": "Create sets 30, the type==2 init block overwrites it with 15; the damagereduction==0.04 override cannot fire because obj_knight_enemy's Step sets damagereduction=0.2 on its first frame",
-    "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:29"
+    "eq": 20,
+    "why": "CUT attack: launched outside the fight, Create damagereduction=0.04 (Create:54) survives — the 0.2 reassignment sits in the boss intro gate the studio never traverses — selecting the shootrate 20 / myfrict -0.3 branch",
+    "src": "gml_Object_obj_bullet_knight_crescentGenerator_Step_0.gml:39"
    },
    {
     "kind": "ivar",
@@ -1460,11 +1460,12 @@ window.ATTACK_SPECS = [
    {
     "kind": "box",
     "y": 170,
-    "w": 187.5,
+    "w": 150,
     "h": 150,
     "tol": 4,
-    "why": "myattackchoice 20 falls to the default growtangle site (camerax()+320, cameray()+170) with maxxscale/maxyscale 2; the branch then widens image_xscale to 2.5 over the 75px spr_battlebg_0 = 187.5 wide while yscale stays 2 = 150 tall. x is omitted: the branch moves the box to 250 but obj_roaringknight_slash's End Step snaps it back to xstart+choose(-2..2) from ~f25 on",
-    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2074"
+    "why": "the branch one-shots x-=70 and image_xscale=2.5 (dbulletcontroller:2072-2074) but obj_growtangle STEP recomputes both from its grow machine next frame — steady state is the plain 2x box; cut content, half-wired",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2074",
+    "x": 320
    },
    {
     "kind": "turntimer",
@@ -14918,25 +14919,6 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:993"
    },
    {
-    "kind": "ivar",
-    "obj": "obj_spearblocker",
-    "atFrame": 100,
-    "name": "diagonal_enabled",
-    "eq": 1,
-    "why": "row 1 is special 3, which sets obj_spearblocker.diagonal_transform=1 and the enemy's diagonal_enabled=1; the shield's Draw promotes diagonal_transform to diagonal_enabled=1 at Draw_0:78",
-    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml:994"
-   },
-   {
-    "kind": "ivar",
-    "obj": "obj_spearblocker",
-    "atFrame": 100,
-    "name": "radius",
-    "eq": 35,
-    "tol": 0.5,
-    "why": "the diagonal transform lerps radius 30 -> 35 at 0.2 and snaps it to exactly 35 once it passes 34 (Draw_0:102-104)",
-    "src": "gml_Object_obj_spearblocker_Draw_0.gml:98"
-   },
-   {
     "kind": "draw",
     "name": "spr_gerson_red_hammer",
     "atFrame": 60,
@@ -15014,6 +14996,42 @@ window.ATTACK_SPECS = [
     "tol": 4,
     "why": "green mode creates obj_growtangle at camerax()+camerawidth()/2, cameray()+cameraheight()/2 = (320,240) with boxoffset false, and spr_battlebg_0 is 75x75 at maxxscale/maxyscale 2, so the box is 150x150 at its largest before the special-27 shrink",
     "src": "gml_Object_obj_hammer_of_justice_enemy_Step_0.gml:626"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special 3 at t40 sets diagonal_transform, and the shield Draw promotes it to the LATCHED diagonal_enabled=1 while clearing the transient transform flag after the ~8-draw lerp (radius>34 snap) — so the durable observable is diagonal_enabled",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml:76-107"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_hammer_of_justice_enemy",
+    "atFrame": 50,
+    "name": "diagonal_enabled",
+    "eq": 1,
+    "why": "special 3 sets the enemy diagonal_enabled = 1",
+    "src": "gml_GlobalScript_scr_spearshot.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_spearblocker",
+    "atFrame": 70,
+    "name": "radius",
+    "min": 33,
+    "max": 35,
+    "why": "diagonal transform lerps radius 30 -> 35 from t40; by f70 it is within a step of the snap",
+    "src": "gml_Object_obj_spearblocker_Draw_0.gml"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_spearblocker",
+    "atFrame": 100,
+    "max": 0,
+    "why": "the chart RETIRES the shield (~t76) before its special-32 swing barrage section — no shield at f100 is the pattern working, not a leak",
+    "src": "gml_Object_obj_hammer_of_justice_enemy_Other_10.gml (pattern 18 rows)"
    }
   ]
  },
