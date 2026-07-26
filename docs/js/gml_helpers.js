@@ -989,7 +989,7 @@
           const fn = self[name];
           if (typeof fn !== 'function') return;
           // Draw events take the active context; everything else takes `other`.
-          if (name === 'draw' || name === 'drawEnd' || name === 'drawBegin') {
+          if (name.indexOf('draw') === 0) {
             fn.call(self, global.$gmlActiveCtx);
           } else {
             fn.call(self, self);
@@ -1016,6 +1016,11 @@
           case 8:                                   // ev_draw + which draw
             if (n === 72) return run('drawBegin');
             if (n === 73) return run('drawEnd');
+            if (n === 76) return run('drawPre');
+            if (n === 77) return run('drawPost');
+            if (n === 64) return run('drawGui');
+            if (n === 74) return run('drawGuiBegin');
+            if (n === 75) return run('drawGuiEnd');
             return run('draw');
           default:
             return;
@@ -1646,6 +1651,12 @@
       // Frame stamp for per-frame render caches (tinted surfaces).
       global.$gmlFrame = num(global.$gmlFrame) + 1;
       if (global.setActiveCtx) global.setActiveCtx(ctx);
+      // Point application_surface at the canvas being rendered. Re-bound every
+      // frame so it outlives the per-launch surface flush and follows a canvas
+      // swap.
+      if (ctx && ctx.canvas && global.GML_HELPERS.bindApplicationSurface) {
+        global.GML_HELPERS.bindApplicationSurface(ctx.canvas);
+      }
       const order = runtime.instances
         .filter(i => i && !i.destroyed && i.visible)
         .sort((a, b) => {
@@ -1662,14 +1673,23 @@
       // not begin/draw/end per instance. Objects that set up shared GPU state
       // (a surface target, a blend mode) in Draw Begin and tear it down in Draw
       // End rely on that ordering.
-      for (const inst of order) {
-        if (typeof inst.drawBegin !== 'function') continue;
-        ctx.save();
-        global.$gmlDrawSelf = inst;
-        try { inst.drawBegin(ctx); } catch (e) { runtime.log('DrawBegin error [' + inst.object_name + ']: ' + e.message); }
-        ctx.restore();
+      /** One full depth-ordered pass over a draw slot. */
+      function pass(method) {
+        for (const inst of order) {
+          if (typeof inst[method] !== 'function') continue;
+          ctx.save();
+          global.$gmlDrawSelf = inst;
+          try { inst[method](ctx); }
+          catch (e) { runtime.log(method + ' error [' + inst.object_name + ']: ' + e.message); }
+          ctx.restore();
+        }
+        global.$gmlDrawSelf = null;
       }
-      global.$gmlDrawSelf = null;
+
+      // Pre Draw runs before Draw Begin and is where the game clears the frame
+      // and sets up render targets.
+      pass('drawPre');
+      pass('drawBegin');
 
       const items = order.map(inst => ({
         d: num(inst.depth), tie: num(inst.id),
@@ -1699,15 +1719,16 @@
       items.sort((a, b) => (b.d - a.d) || (a.tie - b.tie));
       for (const it of items) it.run(ctx);
 
-      for (const inst of order) {
-        if (typeof inst.drawEnd === 'function') {
-          ctx.save();
-          global.$gmlDrawSelf = inst;
-          try { inst.drawEnd(ctx); } catch (e) {}
-          global.$gmlDrawSelf = null;
-          ctx.restore();
-        }
-      }
+      pass('drawEnd');
+      pass('drawPost');
+      // GUI slots draw in screen space, above everything, with no camera
+      // transform. The studio's view is the full 640x480 room, so GUI space and
+      // room space coincide and no extra transform is needed — but the pass
+      // itself has to exist: 127 objects put their readouts in Draw GUI, and
+      // Tenna's game show draws its scoreboard and set there.
+      pass('drawGuiBegin');
+      pass('drawGui');
+      pass('drawGuiEnd');
     };
   }
 
@@ -2889,6 +2910,29 @@
     // Tracked alongside the context stack because the context alone can't be
     // mapped back to a surface id, and callers branch on `!= -1` to decide
     // whether they must set a target before drawing.
+    /**
+     * application_surface — the surface GameMaker renders the frame into before
+     * compositing it to the window. Full-screen effects read it to grab "the
+     * frame so far": obj_tenna_smashcut_manager copies it, fills the screen
+     * black, and redraws the copy in two offset halves. Without it the copy was
+     * empty, so only the black fill survived and the whole smash-cut attack was
+     * a black screen.
+     *
+     * We draw straight to the main canvas, so the main canvas IS that surface.
+     * Id 0 is reserved for it (surface_create hands out ids from 1), and
+     * runtime.draw re-registers it each frame — which also survives the
+     * per-launch surface flush.
+     */
+    const APPLICATION_SURFACE = 0;
+    global.application_surface = APPLICATION_SURFACE;
+    global.GML_HELPERS.bindApplicationSurface = function (canvas) {
+      if (canvas) SURFACES.set(APPLICATION_SURFACE, canvas);
+    };
+    // Toggles for whether GameMaker auto-draws it; we always composite directly.
+    global.application_surface_enable = () => {};
+    global.application_surface_draw_enable = () => {};
+    global.application_get_position = () => 0;
+
     global.$gmlSurfaceTarget = -1;
     global.surface_set_target = id => {
       const c = SURFACES.get(num(id));

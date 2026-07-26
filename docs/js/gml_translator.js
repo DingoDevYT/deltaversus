@@ -46,6 +46,11 @@
       draw: 'draw',
       draw_begin: 'drawBegin',
       draw_end: 'drawEnd',
+      draw_pre: 'drawPre',
+      draw_post: 'drawPost',
+      draw_gui: 'drawGui',
+      draw_gui_begin: 'drawGuiBegin',
+      draw_gui_end: 'drawGuiEnd',
       cleanup: 'cleanUp',
     };
     for (let i = 0; i < 12; i++) m[`alarm_${i}`] = `alarm_${i}`;
@@ -258,7 +263,9 @@ ${collisionPairs.length ? `${objectName}.$collisions = ${JSON.stringify(collisio
     }
 
     emitMethod(method, body, objectName, cg) {
-      const isDraw = method === 'draw' || method === 'drawEnd' || method === 'drawBegin';
+      const isDraw = method === 'draw' || method === 'drawEnd' || method === 'drawBegin'
+        || method === 'drawPre' || method === 'drawPost'
+        || method === 'drawGui' || method === 'drawGuiBegin' || method === 'drawGuiEnd';
       const sig = isDraw ? `${method}(ctx)` : `${method}($other)`;
       const prologue = [`    const $s0 = this;`];
       prologue.push(`    const $o0 = ($other !== undefined && $other !== null) ? $other : this;`);

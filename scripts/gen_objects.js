@@ -40,9 +40,20 @@ function eventKeyFor(suffix) {
   if (suffix === 'Step_0') return 'step';
   if (suffix === 'Step_1') return 'step_begin';
   if (suffix === 'Step_2') return 'step_end';
+  // GameMaker's draw slots, in the order it runs them:
+  //   76 Pre Draw · 72 Draw Begin · 0 Draw · 73 Draw End · 77 Post Draw
+  //   74 GUI Begin · 64 Draw GUI · 75 GUI End
+  // Only 0/72/73 were extracted, so 202 objects lost draw code — including
+  // every HUD-style readout, which the game puts in Draw GUI. Tenna's game
+  // show draws its whole set that way.
   if (suffix === 'Draw_0') return 'draw';
   if (suffix === 'Draw_72') return 'draw_begin';
   if (suffix === 'Draw_73') return 'draw_end';
+  if (suffix === 'Draw_76') return 'draw_pre';
+  if (suffix === 'Draw_77') return 'draw_post';
+  if (suffix === 'Draw_64') return 'draw_gui';
+  if (suffix === 'Draw_74') return 'draw_gui_begin';
+  if (suffix === 'Draw_75') return 'draw_gui_end';
   let m = /^Alarm_(\d+)$/.exec(suffix);
   if (m && +m[1] < 12) return `alarm_${m[1]}`;
   // Other_0 = Outside Room (how most bullets clean themselves up),
