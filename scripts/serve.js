@@ -13,7 +13,38 @@ const mimeTypes = {
   '.json': 'application/json'
 };
 
+const SHOT_DIR = path.join(__dirname, '..', 'shots');
+
 const server = http.createServer((req, res) => {
+  // POST /snap/<name>.png with a base64 dataURL body writes the canvas to
+  // docs/../shots/<name>.png at FULL resolution.
+  //
+  // The browser-pane screenshot tool downscales to ~800px wide, which is enough
+  // to miss exactly the layering and tint errors this studio exists to catch —
+  // a frame that reads "fine" at 55% scale can have the battle box painted over
+  // the effect that should be on top of it. Round-tripping the dataURL through
+  // the console is worse: the strings are megabytes and get truncated. So the
+  // page posts its own pixels here and they get inspected from disk.
+  if (req.method === 'POST' && req.url.startsWith('/snap/')) {
+    const name = path.basename(decodeURIComponent(req.url.slice(6)));
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', c => { body += c; });
+    req.on('end', () => {
+      try {
+        const b64 = body.replace(/^data:image\/\w+;base64,/, '');
+        fs.mkdirSync(SHOT_DIR, { recursive: true });
+        fs.writeFileSync(path.join(SHOT_DIR, name), Buffer.from(b64, 'base64'));
+        res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('ok ' + name);
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('err ' + e.message);
+      }
+    });
+    return;
+  }
+
   // Strip the query string and decode: `?v=2` cache-busters are the normal way to
   // force a reload here, and path.join would otherwise look for a file literally
   // named "gml_studio.html?v=2".

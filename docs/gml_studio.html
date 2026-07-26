@@ -1210,6 +1210,14 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
   let turnEndedAt = null;
   function tickTurnTimer() {
     if (!runtime) return;
+    // obj_time's End Step does `global.time += 1` every frame — Deltarune's
+    // global frame counter, read 259 times across the corpus (mostly as the
+    // phase of a sin/cos). We never ran obj_time, so `global.time` was
+    // undefined and every one of those expressions evaluated to NaN. Canvas
+    // silently skips a draw with a NaN coordinate, which is why the Roaring
+    // Knight's scanline-wobbled body never appeared: all 160 strips per frame
+    // were computed at x = NaN.
+    window.time = (Number(window.time) || 0) + 1;
     // ch5 box-depth rule (obj_darkness_overlay_Step_0.gml:1-25): grown box
     // parks at depth 20 (behind obj_purplecontrols' depth-4 arena), closing
     // box at depth 5. Runs regardless of phase, like the real overlay.
@@ -1387,6 +1395,9 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     // obj_darkness_overlay (ch5's box-depth manager) gates its whole Step on
     // global.fighting.
     window.fighting = 1;
+    // The frame counter obj_time maintains. Reset per launch so sin(global.time)
+    // phases start where they do at the top of a real turn.
+    window.time = 0;
     turnEndedAt = null;
 
     // Silence the previous attack's sounds and loops.

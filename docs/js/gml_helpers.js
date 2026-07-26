@@ -2945,7 +2945,18 @@
     // connection lines and the purple lane grid are all outline draws, so they
     // came out black-on-black. GameMaker keeps one colour and one alpha that
     // apply to both fill and stroke, so model that.
-    const DRAWSTATE = { color: '#ffffff', alpha: 1 };
+    // `blend` belongs here because in GameMaker the blend mode is GLOBAL GPU
+    // state, not a property of the render target. The corpus relies on that:
+    // obj_knight_pointing_cone finishes its wedge with
+    //   draw_set_blend_mode(bm_add); surface_reset_target(); draw_surface(surf,...)
+    // — the mode is set while a SURFACE is still the target and has to still be
+    // in force after the target switches back to the screen. Storing it only on
+    // the canvas context lost it at every switch, so that blit ran source-over:
+    // the wedge is drawn in a near-black colour (merge_color(c_white, c_black,
+    // angle/target_angle)) precisely because it is meant to be ADDED — painted
+    // opaquely it becomes a black wedge that blots out the background instead
+    // of a shaft of light.
+    const DRAWSTATE = { color: '#ffffff', alpha: 1, blend: 'source-over' };
     const css = c => (typeof global.toCSSColor === 'function' ? global.toCSSColor(c) : c);
     function applyDrawState(ctx) {
       ctx.fillStyle = DRAWSTATE.color;
@@ -3030,7 +3041,15 @@
       ctx.fillStyle = DRAWSTATE.color;
       ctx.strokeStyle = DRAWSTATE.color;
       ctx.globalAlpha = Math.max(0, Math.min(1, num(DRAWSTATE.alpha)));
+      ctx.globalCompositeOperation = DRAWSTATE.blend || 'source-over';
     }
+    /** Set the GLOBAL blend mode and apply it to whatever target is active. */
+    function setBlend(op) {
+      DRAWSTATE.blend = op || 'source-over';
+      const ctx = global.$gmlActiveCtx;
+      if (ctx) ctx.globalCompositeOperation = DRAWSTATE.blend;
+    }
+    global.GML_SET_BLEND = setBlend;
     global.GML_PUSH_DRAW_STATE = pushDrawState;
     /**
      * sprite_set_offset — move a sprite's ORIGIN at runtime.
@@ -3788,10 +3807,7 @@
       3: 'destination-out',
     };
     global.gpu_set_blendmode = function (mode) {
-      const ctx = global.$gmlActiveCtx;
-      if (!ctx) return;
-      const op = BLEND_TO_COMPOSITE[num(mode)];
-      ctx.globalCompositeOperation = op || 'source-over';
+      setBlend(BLEND_TO_COMPOSITE[num(mode)] || 'source-over');
     };
     global.draw_set_blend_mode = global.gpu_set_blendmode;
     // The src/dst factor form is how Deltarune does MASKING on surfaces:
@@ -3813,7 +3829,12 @@
         '1,9': 'multiply',          // (zero, dest_colour)
         '5,2': 'lighter',           // (src_alpha, one): additive
         '2,2': 'lighter',           // (one, one): additive
-        '2,1': 'copy',              // (one, zero): overwrite
+        // (one, zero): src replaces dst WHERE THE PRIMITIVE COVERS. Canvas
+        // 'copy' is whole-canvas — it also clears every pixel the source does
+        // not touch, which turns "overwrite this sprite" into "erase the frame".
+        // source-over is the per-fragment equivalent for the opaque draws the
+        // corpus uses this for.
+        '2,1': 'source-over',
         '5,6': 'source-over',       // (src_alpha, inv_src_alpha): normal alpha
         '2,6': 'source-over',       // (one, inv_src_alpha): premultiplied normal
 
@@ -3848,15 +3869,28 @@
         //         painted OVER the grid and hid it.
         '8,7': 'destination-over',
         //
-        //   (7,1) dest_alpha, zero -> src*Ad, dst discarded. EXACTLY Canvas
-        //         'source-in'. obj_knight_split_growtangle draws its seam line
-        //         with this so the line exists only inside the split box's
-        //         silhouette; as source-over the line painted unclipped.
-        '7,1': 'source-in',
+        //   (7,1) dest_alpha, zero -> src*Ad where the primitive COVERS, and
+        //         dst untouched everywhere else (GameMaker's blend equation
+        //         only runs for fragments the primitive rasterizes).
         //
-        //   (8,1) inv_dest_alpha, zero -> src*(1-Ad): draw only where the
-        //         destination is EMPTY, discard it elsewhere = 'source-out'
-        //         (ch4 prophecy overlay).
+        //         That is Canvas 'source-atop', NOT 'source-in'. source-in is a
+        //         whole-canvas Porter-Duff operator: every pixel the new drawing
+        //         does not cover gets αs=0 and is ERASED. This was catastrophic
+        //         for obj_knight_split_growtangle, which strokes its 1px seam
+        //         line through this pair into source_surf (Draw_0:86-87) — the
+        //         whole 170x170 master box was wiped down to that one line, and
+        //         since both halves are re-cut FROM source_surf every split
+        //         (Draw_0:46,61) the battle box vanished for the rest of Flurry.
+        //         source-atop keeps dst where the source is absent and clips the
+        //         source to dst's alpha, which is exactly the intent: "draw this
+        //         line only where the box already exists".
+        '7,1': 'source-atop',
+        //
+        //   (8,1) inv_dest_alpha, zero -> src*(1-Ad) where covered. Canvas has
+        //         no per-fragment form of this; 'source-out' is the closest but
+        //         is whole-canvas (it erases dst outside the source). Only one
+        //         corpus site (ch4 prophecy overlay), which covers the region it
+        //         draws into, so the difference is not observable there.
         '8,1': 'source-out',
         //
         //   (1,5) zero, src_alpha -> dst*As: keep the destination scaled by
@@ -3888,7 +3922,7 @@
         MISSING_WARNED.add('bmext:' + key);
         console.warn(`[gml] gpu_set_blendmode_ext(${key}) has no canvas mapping — using source-over`);
       }
-      ctx.globalCompositeOperation = op || 'source-over';
+      setBlend(op || 'source-over');
     };
     global.draw_set_blend_mode_ext = global.gpu_set_blendmode_ext;
 
@@ -3918,12 +3952,11 @@
      * (bm_dest_alpha, bm_dest_alpha) boxsplitter case.
      */
     global.gpu_set_blendmode_ext_sepalpha = function (src, dst, asrc, adst) {
-      const ctx = global.$gmlActiveCtx;
       const a = num(asrc) + ',' + num(adst);
       // 7 = bm_dest_alpha, 1 = bm_zero, 6 = bm_inv_src_alpha, 2 = bm_one.
-      if (ctx && a === '7,1') { ctx.globalCompositeOperation = 'source-atop'; return; }
+      if (a === '7,1') { setBlend('source-atop'); return; }
       // Alpha erased wherever the source covers: a hole punch.
-      if (ctx && a === '1,6') { ctx.globalCompositeOperation = 'destination-out'; return; }
+      if (a === '1,6') { setBlend('destination-out'); return; }
       // Anything else: the colour pair carries the meaning.
       global.gpu_set_blendmode_ext(src, dst);
     };
