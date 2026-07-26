@@ -1,0 +1,155 @@
+{
+  "id": "lancer",
+  "chapter": "ch1",
+  "chNum": 1,
+  "label": "Lancer",
+  "enemy": "obj_lancerboss",
+  "extraEnemies": ["obj_lancerboss3", "obj_susieenemy", "obj_lancerboss2"],
+
+  "_shapeNote": "Lancer is THREE real encounters, not one fight with phases, and none of them has a single numeric selector variable. Three keys extend the documented shape because the information is load-bearing and there is nowhere else to put it: real[].phase (which encounter the entry belongs to), real[].set (the flag the dispatcher writes on the controller after creating it — obj_lancerbike has no `type` field, it has racecon/lcon), and phaseBlocks (the box/turn blocks for the two encounters that are not `enemy`). choice values 1-7 are ROSTER INDICES, not in-game selector values; the real gate is spelled out in each evidence string.",
+
+  "boxBlock": {
+    "file": "gml_Object_obj_lancerboss_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_growtangle))",
+    "ifElse": false
+  },
+  "turnBlock": {
+    "file": "gml_Object_obj_lancerboss_Step_0.gml",
+    "anchor": "global.turntimer = 999;",
+    "endAnchor": "attacked = 1;"
+  },
+
+  "phaseBlocks": {
+    "obj_lancerboss3": {
+      "boxBlock": {
+        "file": "gml_Object_obj_lancerboss3_Step_0.gml",
+        "anchor": "if (!instance_exists(obj_growtangle))",
+        "ifElse": false
+      },
+      "turnBlock": {
+        "file": "gml_Object_obj_lancerboss3_Step_0.gml",
+        "anchor": "global.turntimer = 999;",
+        "endAnchor": "}",
+        "note": "The 999 sits INSIDE the `if (attack_qual == 1)` block (Step_0:176) and the next line is that block's closing brace, so slicing to `turns += 1;` would capture an unbalanced `}`. endAnchor `}` is the first brace after the anchor and yields exactly `global.turntimer = 999;`."
+      }
+    },
+    "obj_susieenemy": {
+      "boxBlock": {
+        "file": "gml_Object_obj_susieenemy_Step_0.gml",
+        "anchor": "if (!instance_exists(obj_growtangle))",
+        "ifElse": false
+      },
+      "turnBlock": {
+        "file": "gml_Object_obj_susieenemy_Step_0.gml",
+        "anchor": "global.turntimer = 180;",
+        "endAnchor": "if (attacktype == 2)",
+        "note": "180 is the default for her two obj_dbulletcontroller attacks (types 20 and 85). Her bike attack (attacktype 0) overrides to 999 at Step_0:70 INSIDE its own branch, so the roster entry carries that turn length instead."
+      }
+    },
+    "obj_lancerboss2": {
+      "boxBlock": {
+        "file": "gml_Object_obj_lancerboss2_Step_0.gml",
+        "anchor": "if (!instance_exists(obj_growtangle))",
+        "ifElse": false
+      },
+      "turnBlock": {
+        "file": "gml_Object_obj_lancerboss2_Step_0.gml",
+        "anchor": "global.turntimer = 140;",
+        "endAnchor": "if (turns == 0 || turns == 2)",
+        "note": "DO NOT slice to `turns += 1;`. Between the 140 default and `turns += 1;` sit all THREE dispatcher branches with their instance_create(obj_dbulletcontroller) calls — replaying that block is the exact doubled-controller trap gen_attacks.js documents for the Knight. The 140 is the real turn length for type 24 only; types 20 and 21 raise it to 180 inside their own branches (Step_0:76 and Step_0:89), which is recorded per-entry below."
+      }
+    }
+  },
+
+  "extraAttackFiles": [
+    "gml_Object_obj_lancerboss3_Step_0.gml",
+    "gml_Object_obj_lancerboss2_Step_0.gml",
+    "gml_Object_obj_susieenemy_Step_0.gml"
+  ],
+
+  "real": [
+    {
+      "choice": 1,
+      "phase": "obj_lancerboss (fight 1) + obj_lancerboss3 (fight 2)",
+      "name": "Bike Race — honk, then drive-by across the screen",
+      "turntimer": 999,
+      "controller": "obj_lancerbike",
+      "set": { "racecon": 1 },
+      "evidence": "gml_Object_obj_lancerboss_Step_0.gml:69-77 — `if (attacks == 0)` arm: `bike = instance_create(x, y, obj_lancerbike); bike.racecon = 1;` then `attacks = 1`. Create_0.gml:25 starts `attacks = 0`, so this is the FIRST attack of fight 1 and fires again on the 3rd turn. Identical arm in gml_Object_obj_lancerboss3_Step_0.gml:157-165. Body: gml_Object_obj_lancerbike_Step_0.gml:211-326 (racecon 1->2 bob, 3 double honk + spr_lancernoise, 4 charge left at hspeed -20, 5 return). turntimer 999 (Step_0:89 / :176); the bike ends the turn itself with `global.turntimer = 2` at gml_Object_obj_lancerbike_Step_0.gml:330."
+    },
+    {
+      "choice": 2,
+      "phase": "obj_lancerboss (fight 1) + obj_lancerboss3 (fight 2)",
+      "name": "Bike Loop — loop-de-loop around the view, trailing spades",
+      "turntimer": 999,
+      "controller": "obj_lancerbike",
+      "set": { "lcon": 1 },
+      "evidence": "gml_Object_obj_lancerboss_Step_0.gml:78-86 — the `else` arm: `bike.lcon = 1;` then `attacks = 0`. Fires on turns 2 and 4 of fight 1. Identical arm in gml_Object_obj_lancerboss3_Step_0.gml:166-174. Body: gml_Object_obj_lancerbike_Step_0.gml:1-209 — lcon 1 -> 1.5 (snd_cardrive) -> 2 (wheelie) -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 (end). Spades spawn every 10 frames while `lcon >= 6 && lcon < 10` (Step_0:23-55): obj_regularbullet with spr_spadebullet, move_towards_point at the heart, friction -0.4 (accelerating). turntimer 999, self-terminated the same way."
+    },
+    {
+      "choice": 3,
+      "type": 20,
+      "phase": "obj_lancerboss2 (fight 3) turns 0 and 2; obj_susieenemy (fight 2) attacktype 1",
+      "name": "Falling Spades",
+      "turntimer": 180,
+      "controller": "obj_dbulletcontroller",
+      "evidence": "gml_Object_obj_lancerboss2_Step_0.gml:66-77 — `if (turns == 0 || turns == 2)` -> `dc.type = 20; global.turntimer = 180;`. Also gml_Object_obj_susieenemy_Step_0.gml:45-59 (`attacktype == 1`, turntimer 180, timepoints 3 / grazepoints 3). Body: gml_Object_obj_dbulletcontroller_Step_0.gml:325-383 — bmax 8 (:353-354), a spade drops from the top of the view at `obj_heart.x + (-80..+80) + 8` with gravity 0.3. Lines 326-351 whistle-animate obj_lancerboss3 (spr_lancerbike_l for 30 frames) when he exists, so the body is written for BOTH the Susie fight and the solo fight."
+    },
+    {
+      "choice": 4,
+      "type": 21,
+      "phase": "obj_lancerboss2 (fight 3) turn 1",
+      "name": "Side Spades — alternating left/right lanes",
+      "turntimer": 180,
+      "controller": "obj_dbulletcontroller",
+      "evidence": "gml_Object_obj_lancerboss2_Step_0.gml:79-90 — `if (turns == 1)` -> `dc.type = 21; global.turntimer = 180;`. Body: gml_Object_obj_dbulletcontroller_Step_0.gml:385-433 — bmax 9 (:387-388), spades enter alternately from view x+80 (heading right) and x+560 (heading left) at a random y inside obj_growtangle, speed 5 with friction -0.1, fading in via `with (obj_regularbullet) image_alpha += 0.2`. Shares the branch with types 23 (King) and 25 (Jevil), which are NOT Lancer's."
+    },
+    {
+      "choice": 5,
+      "type": 24,
+      "phase": "obj_lancerboss2 (fight 3) turns 3, 4, 5, 6",
+      "name": "Homing Falling Spades",
+      "turntimer": 140,
+      "controller": "obj_dbulletcontroller",
+      "evidence": "gml_Object_obj_lancerboss2_Step_0.gml:92-106 — `if (turns >= 3)` -> `dc.difficulty = turns * 2; dc.type = 24;`, with overrides `turns == 6 -> 30` (:97-98). turntimer stays at the 140 default (:64). Reachable difficulties are exactly 6, 8, 10, 30 (turns 3/4/5/6); see cut[] for why turns 7 / difficulty 90 never runs. Body: gml_Object_obj_dbulletcontroller_Step_0.gml:435-527 — `bmax = difficulty + 5` (:437) so spawn interval is 11/13/15/35 frames, and every live obj_regularbullet steers toward the heart's x (:439-501). Note the spawn y is a raw `-20` (:506), not view-relative, unlike type 20's `__view_get(e__VW.YView, 0) - 20` (:362)."
+    },
+    {
+      "choice": 6,
+      "type": 85,
+      "phase": "obj_susieenemy (fight 2) attacktype 2",
+      "name": "Susie's Axes — Lancer cheers from the sideline",
+      "turntimer": 180,
+      "controller": "obj_dbulletcontroller",
+      "evidence": "gml_Object_obj_susieenemy_Step_0.gml:29-43 — `if (attacktype == 2)` -> `dc.type = 85; dc.timepoints = 3; dc.grazepoints = 5;`, turntimer 180 (:27). Destroyed on creation if `sleeping == 1` (:38-42). Body: gml_Object_obj_dbulletcontroller_Step_0.gml:883-999 — hides the real Susie and Lancer, draws stand-ins `fakelan` (spr_lancerbike, whistles with spr_lancerbike_l whenever global.inv > 10) and `fakesus` (spr_susie_enemy_attack) as obj_bulletparent instances, and every 27 frames spawns an obj_axebullet at view x+540 / obj_battlesolid.y (:983-995). Restores visibility at turntimer <= 10."
+    },
+    {
+      "choice": 7,
+      "phase": "obj_susieenemy (fight 2) attacktype 0",
+      "name": "Susie rides the bike — axe barrage from Lancer's bike",
+      "turntimer": 999,
+      "controller": "obj_lancerbike_neo",
+      "evidence": "gml_Object_obj_susieenemy_Step_0.gml:61-71 — `if (attacktype == 0 && sleeping == 0)` -> `bike = instance_create(obj_lancerboss3.x, obj_lancerboss3.y, obj_lancerbike_neo); global.turntimer = 999;`. No flag to set: Create_0.gml:16 leaves `racecon = 0` and the Step's `if (racecon == 0)` block (gml_Object_obj_lancerbike_neo_Step_0.gml:1-33) self-starts. Body: Susie is an obj_regularbullet_permanent (spr_susiel_dark) that leaps onto the bike (racecon 0/1), the pair honks twice and charges (racecon 2/3) while `s_attack == 1` throws an obj_axebullet roughly every 8 frames with an accelerating hspeed (:71-116), then resets (racecon 4) and ends the turn with `global.turntimer = 5` (:202)."
+    }
+  ],
+
+  "cut": [
+    {
+      "choice": 22,
+      "type": 22,
+      "name": "Falling Spades (fast variant, bmax 6)",
+      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:325 shares the whole falling-spade body between `type == 20` and `type == 22`, and :356-357 gives 22 the tighter `bmax = 6`. It is unambiguously a Lancer attack — :326-351 whistle-animates obj_lancerboss3. But NOTHING in Chapter 1 ever writes it: `grep -rn 'type = 22'` over the entire Ch1 GML dump returns zero hits (types 23 and 25, which share the type-21 body, are written by obj_king_body/obj_king_boss and obj_joker respectively, so those are other bosses' attacks rather than cut Lancer ones). Unreachable."
+    },
+    {
+      "choice": 8,
+      "type": 24,
+      "name": "Homing Falling Spades at difficulty 90 (Lancer's 8th turn)",
+      "evidence": "gml_Object_obj_lancerboss2_Step_0.gml:100-101 — `if (turns == 7) dc.difficulty = 90;`. Unreachable: the ACT block that runs BEFORE each attack sets `actcon = 1` at :137, but the `if (turns == 7)` arm at :181-188 overrides it to `actcon = 2`. Only `actcon == 1` calls scr_attackphase() (:197-201); `actcon == 2` (:203-230) blacks the screen out and hands the fight to obj_lancerbattle2_event (con = 52), which destroys obj_lancerboss2 at gml_Object_obj_lancerbattle2_event_Step_0.gml:802. So the `global.mnfight == 2` attack block never runs an eighth time and difficulty 90 (bmax 95 — effectively no bullets) never happens."
+    }
+  ],
+
+  "mechanics": "THREE separate real encounters, in plot order, all set up by scr_encountersetup and all with global.specialbattle = 3.  (1) obj_lancerboss — encounter 2, triggered at gml_Object_obj_darkcastle_event_Step_0.gml:576-577; monstertype 2 (HP 540, AT 5, DF 1, mercymax 100, 3 ACTs); ends by script after exactly 4 attack turns (obj_lancerbike endcon checks `turns >= 4` at gml_Object_obj_lancerbike_Step_0.gml:336) and sets global.plot 22. Attack order is fixed RACE, LOOP, RACE, LOOP via the `attacks` toggle. Its ACT 3 (compliment) is stateful: obj_lancerboss_Step_0.gml:150-182 adds +20 mercy every time and moves global.monsterat by +1 / -1 / 0 as the compliment counter rises, i.e. the ACTs change the DAMAGE of subsequent bike attacks (bike.damage = global.monsterat * 5), and at compliment >= 3 obj_lancerbike_Step_0.gml:351-358 flips obj_dmgwriter.spec. candodge = 1 (Create_0.gml:27) makes him sidestep 0-damage hits (scr_damage_enemy.gml:29).  (2) obj_susieenemy + obj_lancerboss3 — encounter 31, triggered at gml_Object_obj_susieandlancer_event_Step_0.gml:143; the Susie-assisted rematch, two live monsters (Susie monstertype 19: HP 120, AT 7, DF -5+armor; Lancer monstertype 18: HP 800, AT 6, DF 1), plot 130. Only ONE of them attacks per turn: obj_lancerboss3_Step_0.gml:142-177 computes attack_qual = 1 only when `scr_monsterpop() == 1` (he is the last monster standing) or obj_susieenemy.sleeping == 1, otherwise Susie takes the turn. Susie's chooser is a plain 3-cycle `attacktype` 0 -> 1 -> 2 -> 0 (obj_susieenemy_Step_0.gml:73-76) that advances even on turns she is asleep, and her controllers are instance_destroy()ed on creation while sleeping (:38-42, :54-58). Ralsei's ACT 3 sings her to sleep (:204-271); she wakes after 3 turns (obj_susieenemy_Other_11.gml:4-14). If Susie is killed she is RESURRECTED with 40 HP after Lancer takes 3 solo turns (obj_lancerboss3_Step_0.gml:13-38). The fight's real win condition is the pacify chain: repeated ACTs drive anythingcounter to 10 and set defeated = 1 (:372-383), with an ears_blocked counter that lets Lancer plug his ears twice (actcon 20/21, :386-426).  (3) obj_lancerboss2 — encounter 20, triggered at gml_Object_obj_lancerbattle2_event_Step_0.gml:31 and :757; monstertype 12 (HP 2400, AT 4, DF -40, 1 ACT), plot 154. A fully scripted 8-turn fight: turns 0-6 attack, turn 7 is dialogue then a scripted blackout ending. Every turn does `global.monsterdf[myself] -= 5` (:190). Create_0.gml:40 sets firstskip = 1 and Step_0:1-20 force-opens the fight straight into the ACT text with global.myfight = 3 — the fight has no normal talk/blcon intro. Damage halves to `global.monsterat * 3` when the leader is at <= 70 HP (:73-74, :86-87). There is no kill guard, so 2400 damage would end it early, but the fight is not written to expect that.  Battle box: all four objects create obj_growtangle at (viewX+320, viewY+170) with no resizing — the Ch1 fixed box, same as Jevil.  Turn lengths: 999 for both bike attacks (self-terminated by obj_lancerbike endcon setting global.turntimer = 2, and obj_lancerbike_neo setting 5); 180 for types 20, 21 and 85; 140 for type 24; the pre-windup holding values 150 (obj_lancerboss2_Step_0.gml:116) and 120 (obj_susieenemy_Step_0.gml:99) are overwritten before the attack starts and are not real turn lengths.  Dead code inside live attacks, worth knowing but not roster entries: obj_lancerbike lcon states 3 and 4 are never reached (lcon jumps 2 -> 5 at Step_0:75); obj_lancerbike_Step_0.gml:222-227 (`else if (instance_exists(obj_susieenemy)) { s = 289; ... }`) is unreachable because obj_susieandlancer_event always exists in the only fight where obj_susieenemy does, and `s = 289` is a hardcoded instance id (decompiler artifact); obj_lancerbike's `spec`/`flip`/`loop`/`bikeflip` and obj_lancerbike_neo's `lcon`/`ltimer`/`type` are never read.  No global.monsterattackname anywhere in Chapter 1 (grep returns zero), and no soul modes, no minigames, no green/purple/yellow soul.",
+
+  "engineNeeds": "Every object and asset this fight touches is already in the studio: obj_lancerbike, obj_lancerbike_neo, obj_lancerboss/2/3, obj_susieenemy, obj_dbulletcontroller, obj_axebullet, obj_regularbullet_permanent, obj_bulletparent, obj_battlesolid, obj_dmgwriter, obj_afterimage_grow and obj_growtangle are all in docs/js/gml_objects.js; spr_lancerbike, spr_lancerbike_l, spr_lancerbike_hurt, spr_lancerbike_earcover, spr_spadebullet, spr_lancernoise, spr_susiel_dark, spr_susie_enemy(_attack/_defeat), spr_lancer_battle(_hurt) are all in sprite_manifest.js and sprite_indices.js; snd_cardrive, snd_lancerhonk, snd_drive, snd_spearrise, snd_lancerwhistle, snd_splat, snd_jump, snd_laz_c are all in gml_sounds.js.  What the studio actually lacks is a LAUNCH PATH: (a) gen_attacks.js cannot derive this roster. It has no monsterattackname (Ch1), and the Jevil-style selectorScan does not fit either — the bike attacks are selected by an `attacks == 0` / else toggle whose two arms create the SAME object with different flags, and obj_lancerboss2's arms are `turns == 0 || turns == 2` / `turns == 1` / `turns >= 3` whose windows do not each contain an instance_create (the type-24 window would lose its spawner). This roster needs to be DECLARED, the way Pink's `dates` are.  (b) Two attacks are controller objects with NO `type` field: obj_lancerbike needs `racecon = 1` or `lcon = 1` set after creation, and obj_lancerbike_neo needs nothing set at all. The launcher must support per-attack controller flags, not just `.type`.  (c) Three attacks self-terminate: obj_lancerbike sets global.turntimer = 2 (Step_0:330) and obj_lancerbike_neo sets 5 (Step_0:202) when their animation finishes, so their declared 999 turn length is a ceiling, not a duration — the studio must not clamp turn length or force-end the turn on a floor.  (d) The bike attacks are not box-confined: obj_lancerbike drives to the view edges (__view_get(e__VW.XView, 0) + 5 / + 630) and teleports to viewX + 740, so the studio needs a correct 640x480 view origin, not just the growtangle rect.  (e) Type 85 gates its axe spawn on `instance_exists(obj_battlesolid)` and reads obj_battlesolid.y (dbulletcontroller Step_0:983 and :993) — no battlesolid, no bullets at all; it also positions its two stand-in sprites off obj_battlesolid.y (:898, :911).  (f) Type 20's body reaches into obj_lancerboss3 to whistle-animate him (dbulletcontroller Step_0:326-351); harmless if he is absent (it is instance_exists-guarded) but the visual is wrong without him.  (g) Type 24 spawns at a raw y of -20 rather than view-relative (Step_0:506), so it only looks right when the view y origin is 0.",
+
+  "confidence": "high"
+}

@@ -1,0 +1,218 @@
+{
+  "id": "chaosking",
+  "chapter": "ch1",
+  "chNum": 1,
+  "label": "The Chaos King",
+  "enemy": "obj_king_boss",
+
+  "turnBlock": {
+    "file": "gml_Object_obj_king_boss_Step_0.gml",
+    "anchor": "global.turntimer = 180;",
+    "endAnchor": "event_user(5);",
+    "note": "VERIFIED: anchor occurs exactly once (idx 4237 in the stripped source), endAnchor exactly once (idx 4273). Slice == `global.turntimer = 180;`. Same shape as Jevil: obj_king_boss Step_0:148 assigns a flat baseline and Step_0:149 immediately calls event_user(5), so every per-attack value inside Other_15 (190/200/210/220/999) is meant to WIN. The studio's raise-only guard already protects that; this block only stops the 90-frame floor from applying if a setup replay fails."
+  },
+
+  "selectorScan": {
+    "file": "gml_Object_obj_king_boss_Other_15.gml",
+    "varName": "attack",
+    "note": "VERIFIED: the scan finds exactly 11 hits, `attack == 1` .. `attack == 11`, in file order, every branch braced and 313-707 chars, so `setup` is captured verbatim for all 11. `attacked == 0` on line 1 does NOT false-match (the regex needs `attack` followed by `==`)."
+  },
+
+  "selectorVar": "attack",
+
+  "boxBlock": null,
+  "boxBlockNote": "DELIBERATELY OMITTED. `grep -n growtangle gml_Object_obj_king_boss_Step_0.gml` returns NOTHING — Ch1 predates the shared box-setup block. Every one of King's 11 branches builds its OWN arena inside Other_15, and half of them build a DIFFERENT object (obj_nonsolid_growtangle, not obj_growtangle). Supplying any boxBlock would double-create the box. See engineNeeds: the studio's own default-box pre-create must be suppressed for this boss instead.",
+
+  "real": [
+    {
+      "choice": 1,
+      "type": 21,
+      "subtype": null,
+      "name": "Side Spades I (slow alternating edges)",
+      "controller": "obj_dbulletcontroller",
+      "box": "obj_growtangle @ (xx+320, yy+170)",
+      "turntimer": 190,
+      "damage": "global.monsterat[myself] * 5 * tempattack  (= 8*5 = 40)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:5-16 dispatches it; reachable because gml_Object_obj_king_boss_Step_0.gml:92-95 does `if (kturn <= 11) attack = kturn` after `kturn += 1` (Step_0:90), and kturn starts at 0 (Create_0:38) — so turn 1 always plays attack 1. Body: obj_dbulletcontroller Step_0:384-431, `type == 21` -> bmax = 9; spades spawn alternately at viewX+80 / viewX+560 at a random y inside the growtangle, speed 5 friction -0.1. `dd.btimer = -8` (Other_15:14) delays the first spade 17 frames past Create's btimer = 99."
+    },
+    {
+      "choice": 2,
+      "type": 1,
+      "subtype": 0,
+      "name": "Chain Wave I (slow swing)",
+      "controller": "obj_chainking",
+      "chain": "obj_wavechain",
+      "box": "obj_nonsolid_growtangle @ (xx+200, yy+175), sprite spr_battlebg_wavechain",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 4 * tempattack  (= 32), target = 3 (ALL)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:18-36. Reachable: turn 2, kturn 1 -> attack 2 (Step_0:94). obj_chainking Step_0:33-34 turns type 1 into obj_wavechain and Step_0:40 forwards `chain.type = subtype` (0). obj_wavechain Step_0 `type == 0`: king sines at sin(siner/12)*80 and a spade enters from viewX-20 every 20 frames; self-terminates at t >= tmax (220) with `global.turntimer = 3` — which is why the dispatcher parks the clock at 999. King goes `visible = 0` (Other_15:20) for the whole attack."
+    },
+    {
+      "choice": 3,
+      "type": 34,
+      "subtype": null,
+      "name": "Sky Chains I (rain, 28f gap)",
+      "controller": "obj_dbulletcontroller",
+      "box": "obj_growtangle @ (xx+320, yy+170)",
+      "turntimer": 210,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40) — but see the inherit BUG below",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:38-48. Reachable: turn 3, kturn 2 -> attack 3. Body: obj_dbulletcontroller Step_0:700-731 spawns obj_skychain from a random screen edge every 28 frames; obj_skychain homes at the soul on Create and trails obj_fadechain pieces. SOURCE BUG, replay verbatim: Step_0:727 is `scr_bullet_inherit(255);` (an object id, not the instance) where type 35/36 correctly pass `chain` — so type 34's chains keep obj_skychain Create's own damage = 50 / target = 0 instead of the King's 40 / mytarget."
+    },
+    {
+      "choice": 4,
+      "type": 5,
+      "subtype": null,
+      "name": "Bouncing Box I (slow drift)",
+      "controller": "obj_growtangle_bouncer",
+      "box": "obj_growtangle @ (xx+310, yy+165), sprite spr_battlebg_2, keep = 1",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40); global.invc *= 1.5",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:50-67. Reachable: turn 4, kturn 3 -> attack 4. Body: obj_growtangle_bouncer Step_2 `type == 5` — bounds inset 30px, 14-frame pause, accelerate to speed 4 on a choose(45,135,225,315) heading, 170 frames, then decelerate and event_user(2). Other_12 (= event_user(2)) sets `global.turntimer = 3` and destroys itself, so the dispatcher's 999 is a park value. The bouncer DRAGS obj_growtangle with it (Step_2 tail) and the soul is boxed in."
+    },
+    {
+      "choice": 5,
+      "type": 1,
+      "subtype": 1,
+      "name": "Chain Wave II (medium swing)",
+      "controller": "obj_chainking",
+      "chain": "obj_wavechain",
+      "box": "obj_nonsolid_growtangle @ (xx+200, yy+175), sprite spr_battlebg_wavechain",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 4 * tempattack (= 32), target = 3 (ALL)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:69-86. Reachable: turn 5, kturn 4 -> attack 5. obj_wavechain Step_0 `type == 1`: sin(siner/10)*80, spade every 18 frames. Distinct from choice 2 ONLY by subtype — see engineNeeds, the generator's dedupe key drops this entry."
+    },
+    {
+      "choice": 6,
+      "type": 2,
+      "subtype": 5,
+      "name": "Chain Drag (spiked box hauled around)",
+      "controller": "obj_chainking",
+      "chain": "obj_finalchain",
+      "box": "obj_nonsolid_growtangle @ (xx+205, yy+170), sprite spr_battlebg_1",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40), target = mytarget; global.invc *= 1.5",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:88-111. Reachable: turn 6, kturn 5 -> attack 6. `chainking.subtype = 5` at Other_15:95, downgraded to 2 only `if (chain_dragging >= 1)` (Other_15:97-98) — and attack 6 is dispatched exactly ONCE per battle (see cut list), so subtype 5 is the only value that ever ships. obj_chainking Step_0:36-37 makes obj_finalchain; `type >= 1` builds the spr_battlebg_spikes wall (obj_regularbullet_permanent) and the red chain then teleport-drags the box to random points 100-140px away, movetime 25, hold 22."
+    },
+    {
+      "choice": 7,
+      "type": 35,
+      "subtype": null,
+      "name": "Sky Chains II (rain, 22f gap)",
+      "controller": "obj_dbulletcontroller",
+      "box": "obj_growtangle @ (xx+320, yy+170)",
+      "turntimer": 220,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:113-123. Reachable three ways: turn 7 (kturn 6 -> attack 7), turn 13 (Step_0:98-99 `if (kturn == 12) attack = 7`) and turn 17 (Step_0:110-111 `if (kturn == 16) attack = 7`, which is itself unreachable — see cut). Body: obj_dbulletcontroller Step_0:732-763, identical to type 34 but every 22 frames AND with the correct `scr_bullet_inherit(chain)`."
+    },
+    {
+      "choice": 8,
+      "type": 3,
+      "subtype": null,
+      "name": "Bouncing Box II (fast, jittered heading)",
+      "controller": "obj_growtangle_bouncer",
+      "box": "obj_growtangle @ (xx+310, yy+165), sprite spr_battlebg_2, keep = 1",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40); global.invc *= 1.5",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:125-142. Reachable: turn 8 (kturn 7 -> attack 8) and turn 14 (Step_0:101-102 `if (kturn == 13) attack = 8`). Body: obj_growtangle_bouncer Step_2 `type == 3` — heading jittered +/-20, bounds inset 50px, accelerate to 4.4, 170 frames, decel 0.5."
+    },
+    {
+      "choice": 9,
+      "type": 23,
+      "subtype": null,
+      "name": "Side Spades II (fast alternating edges)",
+      "controller": "obj_dbulletcontroller",
+      "box": "obj_growtangle @ (xx+320, yy+170)",
+      "turntimer": 200,
+      "damage": "global.monsterat[myself] * 5 * tempattack (= 40)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:144-155. Reachable: turn 9 (kturn 8 -> attack 9) and turn 15 (Step_0:107-108 `if (kturn == 15) attack = 9`) — the LAST attack of the fight. Body: obj_dbulletcontroller Step_0:384-431 with bmax = 7 instead of 9."
+    },
+    {
+      "choice": 10,
+      "type": 1,
+      "subtype": 2,
+      "name": "Chain Wave III (fast swing)",
+      "controller": "obj_chainking",
+      "chain": "obj_wavechain",
+      "box": "obj_nonsolid_growtangle @ (xx+200, yy+175), sprite spr_battlebg_wavechain",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 4 * tempattack (= 32), target = 3 (ALL)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:157-175. Reachable: turn 10 (kturn 9 -> attack 10) and turn 15's predecessor turn 14 (Step_0:104-105 `if (kturn == 14) attack = 10`). obj_wavechain Step_0 `type == 2`: sin(siner/9)*80, spade every 16 frames."
+    },
+    {
+      "choice": 11,
+      "type": 2,
+      "subtype": 1,
+      "name": "Final Chain Drag (spikes + closing spade ring)",
+      "controller": "obj_chainking",
+      "chain": "obj_finalchain",
+      "box": "obj_nonsolid_growtangle @ (xx+205, yy+170), sprite spr_battlebg_1",
+      "turntimer": 999,
+      "damage": "global.monsterat[myself] * 3 * tempattack (= 24), target = 3 (ALL); global.invc *= 1.5",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:177-195. Reachable: turn 11 (kturn 10 -> attack 11). Hardest variant: obj_finalchain Create runs `type = 1` then `if (type == 1) maxtimer = 300`, and obj_chainking only overwrites `.type` AFTER the instance exists — so maxtimer is 300 for EVERY finalchain regardless of subtype. `type >= 1` gives the spike walls AND `type <= 1` gives the 5x5 obj_regularbullet_permanent spade grid that slowly closes on the soul (obj_finalchain Step_0 `bulletpoint == 1` block, which ends the attack when image_xscale reaches 0.68). movetime 25 with maxmove 22, so it hauls the box faster than subtype 5."
+    }
+  ],
+
+  "cut": [
+    {
+      "choice": null,
+      "type": null,
+      "name": "kturn ladder slots 16, 17 and >=18 (attack 7 / 11 / 11)",
+      "evidence": "gml_Object_obj_king_boss_Step_0.gml:110-117. Unreachable: Step_0:84-88 sets `battlecancel = 2` on the turn where kturn is already >= 14 (i.e. turn 15, which then dispatches attack 9), and Step_0:184-191 turns battlecancel == 2 into `con = 1` the moment that turn's clock runs out -> con 4/5/6 -> `global.flag[247] = 1; scr_monsterdefeat(); instance_destroy();` (Step_0:196-218). kturn can never reach 16. Note these slots add no NEW attack values anyway (7 and 11 both already play)."
+    },
+    {
+      "choice": 6,
+      "type": 2,
+      "subtype": 2,
+      "name": "Chain Drag, repeat variant (obj_finalchain type 2)",
+      "evidence": "gml_Object_obj_king_boss_Other_15.gml:97-98 `if (chain_dragging >= 1) chainking.subtype = 2;`. chain_dragging is only ever incremented at Other_15:100, inside the attack == 6 branch, and starts at 0 (Create_0:47). attack is set to 6 in exactly one place, Step_0:94 `attack = kturn` at kturn == 6 — the kturn >= 12 ladder (Step_0:98-117) only ever emits 7, 8, 10, 9, 7, 11. So attack 6 fires once per battle and subtype 2 never ships. obj_finalchain `type == 2` would be maxmove 16 with spikes but NO closing spade grid (`type <= 1` gate)."
+    },
+    {
+      "choice": null,
+      "type": 0,
+      "name": "obj_chainking type 0 -> obj_chain_of_hell",
+      "evidence": "gml_Object_obj_chainking_Step_0.gml:30-31 `if (type == 0) chain = instance_create(x - 44, y + 104, obj_chain_of_hell);`. The King only ever assigns chainking.type = 1 (Other_15:22, 74, 162) or 2 (Other_15:94, 183), and `grep -rn obj_chain_of_hell` over all of Chapter 1 finds only this one creation site plus the object-name table — so this whole path-driven chain object (gml_Object_obj_chain_of_hell_Step_0.gml) is dead in the shipped game."
+    },
+    {
+      "choice": null,
+      "type": 3,
+      "name": "obj_wavechain type 3 (fastest swing)",
+      "evidence": "gml_Object_obj_wavechain_Step_0.gml `if (type == 3)` — sin(siner/7)*80*wavefactor, spade every 14 frames. obj_chainking Step_0:40 sets `chain.type = subtype` and the King only ever passes subtype 0 (Other_15:23), 1 (Other_15:75) or 2 (Other_15:163). Nothing else in Chapter 1 creates obj_wavechain."
+    },
+    {
+      "choice": null,
+      "type": 0,
+      "name": "obj_finalchain types 0, 3, 4",
+      "evidence": "gml_Object_obj_finalchain_Step_0.gml branches on type for maxd (0 -> 110 + movetime 30, 3/4 -> 120) and maxmove (0 -> default 20, 3 -> 7, 4 -> 3). The King only passes subtype 5 (Other_15:95) and 1 (Other_15:184); the unreachable 2 is listed above. Type 0 additionally has no spike wall (`type >= 1`) — a bare dragged box that never ships."
+    },
+    {
+      "choice": null,
+      "type": 0,
+      "name": "obj_growtangle_bouncer types 0, 1, 2, 4",
+      "evidence": "gml_Object_obj_growtangle_bouncer_Step_2.gml defines six modes; the King's dispatcher assigns only 5 (Other_15:63) and 3 (Other_15:138). Type 0 IS reachable in the debug harness obj_king_body (gml_Object_obj_king_body_Step_0.gml:50), which is not a fight. Types 1, 2 and 4 have no assigner anywhere in Chapter 1."
+    },
+    {
+      "choice": null,
+      "type": 36,
+      "name": "obj_dbulletcontroller type 36 (sky chains, 16f gap)",
+      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:764-795 — a third, faster copy of the 34/35 sky-chain code. `grep -rn '\\.type = 36;'` over all of Chapter 1 returns nothing: no object ever selects it. (Sibling type 25, the bmax-4 variant of 21/23, is real but belongs to JEVIL — gml_Object_obj_joker_Other_15.gml:203 — not to the King.)"
+    },
+    {
+      "choice": null,
+      "type": null,
+      "name": "battlecancel == 1 (mercy-out ending)",
+      "evidence": "gml_Object_obj_king_boss_Step_0.gml:181-182 `if (battlecancel == 1) global.mercymod[myself] = 999;`. battlecancel is only ever written 0 (Create_0:29), 2 (Step_0:87) and 3 (Step_0:190). The spare-out ending is dead code — the fight always ends by turn count."
+    },
+    {
+      "choice": null,
+      "type": null,
+      "name": "obj_king_body — the whole object",
+      "evidence": "gml_Object_obj_king_body_Step_0.gml:1 gates everything on `keyboard_check(vk_enter) && active == 1 && scr_debug()`. It is a DEBUG ATTACK TESTER that re-implements the same 11 attacks with a fake timer (faketimermax) instead of global.turntimer, no damage/target assignment at all, and `if (attackno <= 11) attack = attackno; else attack = choose(7,8,9,10,11)` as its chooser. Its attack 4 uses bouncer type 0 and its attack 6 uses finalchain type 2 — neither of which the real fight can produce. It is NOT a phase of the Chaos King fight; treat it as a second, non-canonical chooser."
+    }
+  ],
+
+  "mechanics": "ONE enemy object, ONE phase, NO HP gate, NO soul mode change, NO minigame. Encounter 40 (gml_GlobalScript_scr_encountersetup.gml:430-438) puts obj_king_boss alone at (viewX+460, viewY+70) as monstertype 25: HP 2800/2800, AT 8, DF 0, mercymax 999 (gml_GlobalScript_scr_monstersetup.gml:611-620). The battle is STARTED from the cutscene director obj_kingcutscene (gml_Object_obj_kingcutscene_Step_0.gml:948-953 sets global.encounterno = 40, calls scr_encountersetup and creates obj_encounterbasic); everything else in that 3595-line file is scripted spectacle drawn with scr_marker (spr_spadebullet_chunk), not real bullets — there is no second bullet phase hiding in it. The fight is a FIXED 15-TURN SCRIPT driven by `kturn` (gml_Object_obj_king_boss_Step_0.gml:90-121): kturn++ then `attack = kturn` for kturn <= 11, then 12->7, 13->8, 14->10, 15->9. HP is decorative — the only HP read (Step_0:168) swaps a battle message. The difficulty ramp is DEFENSE, not attacks: from turn 13 on, `global.monsterdf[myself] -= 5` each turn down to a floor of -25 (Step_0:119-120). Targeting alternates: attacks 2, 5, 10 and 11 call scr_targetall(), everything else scr_randomtarget() (Step_0:125-128). Ralsei's/Susie's ACT chain (acting 2/3/4 with global.tempflag[5..7], Step_0:233-338) unlocks the three party ACTs and — via `tempattack = 0.8` (Step_0:262) — is the only thing that can scale King's damage. Attacks 4, 6, 8 and 11 also do `global.invc *= 1.5` on top of `global.invc = reminvc` (Other_15:3), so invincibility frames compound within a turn. Five of the eleven attacks (2, 5, 6, 10, 11) hide the boss (`visible = 0`) and replace the arena with obj_nonsolid_growtangle, which the chain objects then physically drag around the screen; obj_chainking's Destroy (gml_Object_obj_chainking_Destroy_0.gml) restores `visible = 1` and closes both box types. Six attacks (2, 4, 5, 6, 8, 10, 11) park `global.turntimer = 999` and rely on the chain/bouncer writing `global.turntimer = 3` when they finish. The fight ends unconditionally on turn 15: Step_0:84-88 sets battlecancel = 2, Step_0:177-193 turns that into con = 1, and Step_0:196-218 runs `global.flag[247] = 1; scr_monsterdefeat(); event_user(10); instance_destroy();` handing control back to obj_kingcutscene (Other_20 makes the cutscene King visible again with spr_chainking_hurt if flag 247 was 0).",
+
+  "engineNeeds": "1) DEDUPE KEY COLLISION — this is the blocker. gen_attacks.js:529 keys on `${boss}|${controller}|${type}`, but obj_chainking carries type 1 for THREE attacks (2, 5, 10) and type 2 for TWO (6, 11); the real selector is `subtype`. I ran the generator's own selectorScan logic over Other_15 and it collapses 11 attacks into 8, folding choices 5 and 10 into choice 2 and choice 11 into choice 6. The key needs `|${a.subtype}` (or `|${a.choice}` for ch1 selectorScan bosses), and the id scheme at gen_attacks.js:537 (`${boss}_type${type}`) needs the same — chaosking_type1 would otherwise name three different attacks. 2) CONTROLLER MIS-DETECTION — the scan's controller regex takes the FIRST instance_create in the window, and six King branches (1, 3, 4, 7, 8, 9) create the BOX first, so `controller` comes out obj_growtangle instead of obj_dbulletcontroller / obj_growtangle_bouncer. Harmless while setup replay succeeds (the studio only uses `controller` to find mainInst afterwards), but it makes mainInst the battle box, and the manual fallback at gml_studio.html:1805-1830 would spawn a growtangle-as-controller if a replay ever errors. 3) DEFAULT-BOX PRE-CREATE — gml_studio.html:1785-1789 creates an obj_growtangle at (320,170) whenever none exists yet, which for other bosses is already satisfied by the boxBlock replay. King has no boxBlock, so that fires and then the setup replay creates a SECOND box for attacks 1/3/4/7/8/9, and an unwanted visible growtangle alongside the nonsolid box for 2/5/6/10/11. The pre-create must be skipped when the roster declares boxBlock: null. 4) obj_nonsolid_growtangle IS THE ARENA for five attacks and the studio knows nothing about it — `grep nonsolid_growtangle docs/gml_studio.html` returns zero hits. syncGrowtangle() (gml_studio.html:1658-1662) only looks for obj_growtangle, so runtime.growtangle and centreSoulOn() point at the wrong box and the soul spawns outside the playfield. obj_wavechain and obj_finalchain also address `obj_nonsolid_growtangle.x/.y` directly every step (and MOVE it), so the soul-clamp has to follow that instance. 5) SUPPORT OBJECTS — already translated into docs/js/gml_objects.js ch1: obj_chainking, obj_wavechain, obj_finalchain, obj_chainpiece, obj_skychain, obj_fadechain, obj_growtangle_bouncer, obj_nonsolid_growtangle, obj_regularbullet, obj_regularbullet_permanent, obj_moveheart, obj_shake, obj_dbulletcontroller, obj_king_boss. MISSING: obj_heartmarker — it has no events at all (pure marker: sprite spr_diamondbullet_form, visible False, per Chapter 1 objects.tsv) but Other_15 does `hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker); scr_moveheart(); with (hm) instance_destroy();` in six branches, so the class must at least be instantiable or those branches throw. 6) global.invc must be a live number before replay and should be reset to reminvc (Other_15:3, outside the branches, so setup replay never restores it) — otherwise repeated launches of attacks 4/6/8/11 compound *1.5 forever. 7) obj_growtangle_bouncer sets `obj_growtangle.megakeep = 1` on Create and then WRITES obj_growtangle.x/y every step; obj_wavechain/obj_finalchain do `with (obj_growtangle) megakeep = 1` too. The studio must let the attack own the box position rather than re-centring it. 8) The boss instance needs xx/yy (Create_0:39-40, view origin) and mytarget = 3 (Create_0:31), tempattack = 1 (Create_0:41), chain_dragging = 0 (Create_0:47), reminvc (Create_0:43) — all in Create, so an ordinary boss-Create run covers it. 9) event_user(2) on obj_growtangle_bouncer maps to Other_12, which does `with (obj_king_body) active = 1;` — obj_king_body will not exist, and a `with` over an unknown class must be a no-op, not a throw.",
+
+  "confidence": "high"
+}

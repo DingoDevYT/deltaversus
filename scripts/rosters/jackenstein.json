@@ -1,0 +1,136 @@
+{
+  "id": "jackenstein",
+  "chapter": "ch4",
+  "chNum": 4,
+  "label": "Jackenstein",
+  "enemy": "obj_jackenstein_enemy",
+  "extraEnemies": ["obj_jackendummy"],
+
+  "boxBlock": {
+    "file": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_growtangle))",
+    "endAnchor": "global.mnfight = 2;",
+    "ifElse": false
+  },
+
+  "turnBlock": {
+    "file": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+    "anchor": "scr_turntimer(200);",
+    "endAnchor": "turns += 1;"
+  },
+
+  "selectorVar": "myattackchoice",
+  "chooserFile": "gml_Object_obj_jackenstein_enemy_Other_10.gml",
+
+  "real": [
+    {
+      "choice": 0,
+      "type": 146,
+      "name": "jack 1",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_starter",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:1-5 — phaseturn == 1 (the Create value, gml_Object_obj_jackenstein_enemy_Create_0.gml:16) assigns myattackchoice = 0. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:500-505; body at gml_Object_obj_dbulletcontroller_Step_0.gml:1831-1883."
+    },
+    {
+      "choice": 1,
+      "type": 147,
+      "name": "jack 2",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_3x2",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:7-11 — phaseturn == 2 assigns myattackchoice = 1. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:506-511; body at gml_Object_obj_dbulletcontroller_Step_0.gml:1885-2011."
+    },
+    {
+      "choice": 2,
+      "type": 151,
+      "name": "jack 3",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_normal",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:13-17 — phaseturn == 3 assigns myattackchoice = 2. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:512-517; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2458-2558. This is the only choice that sets obj_battlecontroller.dancing_jackolantern_con = 1 when the turn ends (Step_0:650-651), which starts the dancing-pumpkin overlay in obj_battlecontroller_Draw_0.gml:40-96."
+    },
+    {
+      "choice": 3,
+      "type": 150,
+      "name": "jack 4",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_chimney",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:19-23 — phaseturn == 4 assigns myattackchoice = 3. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:518-523; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2313-2456."
+    },
+    {
+      "choice": 4,
+      "type": 148,
+      "name": "jack 5",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_toolong",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:25-29 — phaseturn == 5 assigns myattackchoice = 4. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:524-529; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2013-2208."
+    },
+    {
+      "choice": 5,
+      "type": 153,
+      "name": "jack 6",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_nopumpkin",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:31-35 — phaseturn == 6 assigns myattackchoice = 5. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:530-535; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2755-2912."
+    },
+    {
+      "choice": 6,
+      "type": 149,
+      "name": "jack 7",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_twopumpkins",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:37-41 — phaseturn == 7 assigns myattackchoice = 6. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:536-541; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2210-2311."
+    },
+    {
+      "choice": 7,
+      "type": 152,
+      "name": "jack 8",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_yourtutu",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:43-47 — phaseturn == 8 assigns myattackchoice = 7. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:542-547; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2560-2753. Also the debug jump target: Step_0.gml:9-13 sets phaseturn = 8 on 'T'."
+    },
+    {
+      "choice": 8,
+      "type": 154,
+      "name": "jack 9",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_final",
+      "turntimer": 999999,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:49-53 — phaseturn == 9 assigns myattackchoice = 8. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:548-553; body at gml_Object_obj_dbulletcontroller_Step_0.gml:2914-3231 (the largest branch, 318 lines)."
+    },
+    {
+      "choice": 9,
+      "type": 155,
+      "name": "jack lightup",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "spr_ghost_house_lightup",
+      "turntimer": 900,
+      "evidence": "NOT in the phaseturn ladder. Assigned only by gml_Object_obj_jackenstein_enemy_Step_0.gml:81-84 `if (unleash == 1) myattackchoice = 9; else event_user(0);`. `unleash` is set at Step_0:727-732 (acting == 2.2 && !i_ex(obj_purify_event) -> unleash = 1), the UNLEASH act defined in gml_GlobalScript_scr_monstersetup.gml:2000-2003 (canact[1], name \"Unleash\", actcost 150 TP). Dispatched at Step_0:554-559; body at gml_Object_obj_dbulletcontroller_Step_0.gml:3233-3285. Because the else-branch is skipped, an UNLEASH turn does NOT advance phaseturn — the ladder resumes where it left off. Step_0:208 clears `unleash = 0` immediately, so it is strictly one turn per ACT."
+    },
+    {
+      "choice": 10,
+      "type": 156,
+      "name": "jack 10",
+      "controller": "obj_dbulletcontroller",
+      "boxSprite": "(none — keeps the plain growtangle sprite; sets image_yscale = 1 and y += 24)",
+      "turntimer": 420,
+      "evidence": "gml_Object_obj_jackenstein_enemy_Other_10.gml:55-59 — phaseturn == 10 assigns myattackchoice = 10, and Other_10.gml:61-64 (`phaseturn++; if (phaseturn == 11) phaseturn = 10;`) clamps phaseturn to 10 forever, so this is the endless late-fight attack. Dispatched at gml_Object_obj_jackenstein_enemy_Step_0.gml:560-565; body at gml_Object_obj_dbulletcontroller_Step_0.gml:3287-3349 — the ONLY jackenstein branch with per-frame logic outside `if (!made)` (timer1/timer2/timer3 spawners at 3311-3348)."
+    }
+  ],
+
+  "cut": [],
+
+  "cutNote": "There is nothing to cut. The dispatcher (Step_0:500-565) is a dense 0-10 if/else chain with no gaps, and every one of the eleven values has a writer: 0-8 and 10 from the phaseturn ladder in Other_10, 9 from the UNLEASH branch at Step_0:81-84. Verified by grepping every assignment of `myattackchoice` across all obj_jackenstein_enemy_* events — Create_0.gml:11 (= 0, agrees with turn 1 anyway), Other_10.gml:3/9/15/21/27/33/39/45/51/57, Step_0.gml:82. No other file in ch4 writes it.",
+
+  "mechanics": "GHOST-HOUSE MAZE fight, not a conventional bullet-hell. Every turn the battle box is REPLACED by a maze-shaped obj_growtangle (obj_growtangle's parent is obj_battlesolid in ch4 per objects.tsv, so the box sprite IS solid geometry) and the SOUL walks the corridors under wall-sliding solid collision (gml_Object_obj_heart_Step_0.gml:79-215). Nine of the eleven attacks set global.turntimer = 999999 (types 146-154): those turns end only when the heart touches obj_ghosthouse_exit (gml_Object_obj_ghosthouse_exit_Collision_obj_heart.gml:1-2 -> `global.turntimer = 1`), or when the chasing pumpkin has hit you 12 times (gml_Object_obj_ghosthouse_jackolantern_Other_15.gml:16-17). Only 155 (900) and 156 (420) are timed. Per maze: a key (obj_ghosthouse_key, +12.5 TP) opens the lock (obj_ghosthouse_lock, a battlesolid door that rotates 135 degrees away, gml_Object_obj_ghosthouse_key_Other_15.gml:25-32) and arms the exit (same file:31-32, `alarm[0] = 60`); obj_ghosthouse_dot are collectible TREASURE (+2.5 TP each, gml_Object_obj_ghosthouse_dot_Other_15.gml:7) that double as telegraphs for bullet paths. Touching obj_ghosthouse_trigger (invisible) spawns obj_ghosthouse_jackolantern, which chases along the GameMaker path stored on the controller (gml_Object_obj_ghosthouse_jackolantern_Create_0.gml:17 `path = obj_dbulletcontroller.path;`). The whole fight is rendered through obj_darkness_overlay with darkfight = true (boss Create, gml_Object_obj_jackenstein_enemy_Create_0.gml:68-73): only the radius around obj_lightsource_heartlight is visible, and the box/lock/lamp/battlesolids are drawn BY the darkness overlay, not by themselves (gml_Object_obj_darkness_overlay_Draw_0.gml:323-362). NO soul-mode changes (no green/purple/yellow) and NO HP gates: the selector is a pure turn counter and the only branch on HP is the death cutscene flag at Step_0:67-72. PER-TURN ACT MODIFIERS live on the boss instance and are read by the attacks: `scaredycat` (Kris's ScaredyCat act, Step_0:734-747, only offered when global.tempflag[100] > 0 — scr_monstersetup.gml:2008-2013, 5 TP) forces obj_heart.wspeed = 4 (gml_Object_obj_heart_Step_0.gml:11-12), speeds the type-148 pumpkin path by +13 (dbulletcontroller:2041-2042) and the chimney pumpkin by 15 frames (gml_Object_obj_ghosthouse_trigger_Collision_obj_heart.gml:121); `ract` (Ralsei's LightUp, Step_0:773-795, scr_monstersetup.gml:2020-2023, 2.5 TP) grows the heartlight by +10 radius / +12 biggerrad at the start of EVERY bullet phase (Step_0:489-498) and +5 more in type 155 (dbulletcontroller:3262-3266); `sact` (Susie's TreasureHunt, Step_0:749-771, scr_monstersetup.gml:2016-2019, 5 TP) adds 0.25/frame to type 156's dot spawner (dbulletcontroller:3315-3319). All three are cleared at turn end (Step_0:639-654). Stats: monstertype 107, HP 1350, AT 14, DF 0, mercymax 100 (gml_GlobalScript_scr_monstersetup.gml:1984-1996). `phase` (Create:15) and `endcon`/`end_cutscene_version` (Create:17-19, set at Step_0:70-71) are written but NEVER read anywhere — dead. TP gain is boosted 1.5x fight-wide when global.tempflag[89] >= 3 (gml_GlobalScript_scr_tensionheal.gml:3-4, which special-cases i_ex(obj_jackenstein_enemy)).",
+
+  "engineNeeds": "1) GAMEMAKER PATHS — path_add / path_add_point / path_set_closed / path_start / path_speed / path_end / path_action_reverse / path_action_restart. SEVEN of the eleven attacks build a path on the controller for the chase pumpkin (types 147, 148, 149, 150, 151, 152, 154 at dbulletcontroller lines 1911, 2040, 2238, 2338, 2487, 2588, 2939), and type 152 additionally gives SIX obj_gh_fireball_square bullets their own paths (each has `path = path_add()` in gml_Object_obj_gh_fireball_square_Create_0.gml:21; dbulletcontroller:2637-2716). Type 150's `path = path_add()` (2338) has ZERO points — that pumpkin runs on move_directly instead. 2) SOLID HEART MOVEMENT — gml_Object_obj_heart_Step_0.gml:79-215 resolves 8-way movement against obj_battlesolid with corner-nudging and wall-slide; obj_growtangle is a battlesolid child and every attack sets its mask_index = -1 so the MAZE SPRITE itself is the collision mask. Per-pixel (not bbox) collision is required — bbox turns each maze into a filled rectangle and the heart cannot move at all. Note the heart's view clamp (heart Step:249-259) is a VIEW clamp, not a box clamp: without working solid collision the soul simply walks off the maze. 3) TURN-END VIA obj_ghosthouse_exit — nine attacks run at turntimer 999999, so without the exit collision (and the 12-hit pumpkin fallback) every maze runs forever. 4) DARKNESS RENDERING — obj_darkness_overlay's 515-line Draw_0 builds surfaces, punches light holes for obj_lightsource_heartlight / _battle / _lamp / _firebar, and re-draws the growtangle, lock, lamp and selected battlesolids inside it (Draw_0:323-362). The box is set `visible = false` twice by the box block and is only turned back on by gml_Object_obj_ghosthouse_fadein_Draw_0.gml:6 once the controller's `made` flag is up; that same fadein draws the black silhouette (image_index 1 of the maze sprite) fading out at 0.025/frame = 40 frames. If obj_ghosthouse_fadein is not implemented, the maze is invisible for the entire turn. 5) obj_lightsource_heartlight MUST EXIST before launching type 156 — dbulletcontroller:3301-3302 uses direct dot-access (`obj_lightsource_heartlight.radius = 52;`), a hard runtime error on a missing instance, unlike the `with (...)` no-ops used by types 146-155. The boss Create makes it (Create_0.gml:61-66, radius 40) together with obj_darkness_overlay. 6) obj_grazebox and obj_heart must exist before the controller's `made` block runs (every type reassigns their sprite_index/mask_index to the small dodgeheart set, and reads obj_growtangle.x/y to place the soul). 7) NUMERIC SPRITE IDS — each attack sets `obj_growtangle.spr_custom_box = <int>`; those are raw ch4 asset indices, and all ten were verified against sprites.tsv (index = line number - 2) to resolve to the SAME sprite already assigned to sprite_index on the line above: 5420 spr_ghost_house_starter, 32 spr_ghost_house_3x2, 2173 spr_ghost_house_toolong, 1868 spr_ghost_house_twopumpkins, 3175 spr_ghost_house_chimney, 2334 spr_ghost_house_normal, 1401 spr_ghost_house_yourtutu, 5800 spr_ghost_house_nopumpkin, 5175 spr_ghost_house_final, 4708 spr_ghost_house_lightup. Safe shortcut: `spr_custom_box = sprite_index`. 8) SUPPORT CAST, all ch4-only: obj_ghosthouse_key / _lock / _exit / _trigger / _dot / _cleaner / _fadein, obj_gh_fireball_bouncy / _linear / _square / _hop / _mobius, obj_gh_bouncebarrier, obj_gh_exitsign, obj_battlesolid, obj_ghosthouse_jackolantern (456-line Step) and obj_ghosthouse_jackolantern_merciful (613-line Step, used ONLY by type 155), obj_your_tutu + obj_small_jackolantern + obj_takingtoolong (type 152 only), obj_regularbullet, obj_collidebullet, the obj_lightsource_* family. 9) SCRIPTS: scr_lerpvar / scr_lerp_var_instance / scr_script_delayed / scr_doom / scr_fire_bullet / scr_tensionheal / scr_afterimage / scr_bulletspawner / scr_moveheart / merge_color / sprite_create_from_surface. 10) FREE TEST HARNESS: ALL ELEVEN branches carry an `if (room == room_bullettest)` block that creates obj_darkness_overlay_bullettest and plays pumpkin_boss.ogg; types 148/149/152 additionally create obj_jackendummy there — an inert CHILD of obj_jackenstein_enemy (every event body is `exit;`) whose Create is just `scaredycat = true; sact = false; ract = false;`. Because it inherits the parent object, `i_ex(obj_jackenstein_enemy)` and `obj_jackenstein_enemy.scaredycat` resolve against it. So: if the studio reports room == room_bullettest it gets the dummy, the bullet-test darkness overlay and the music for free; otherwise it MUST supply a boss instance carrying scaredycat/sact/ract, because obj_heart, obj_ghosthouse_trigger and types 148/152/155/156 all read those fields. 11) BOX-BLOCK NOTE: the sliced box block ends at `global.mnfight = 2;` and therefore excludes the trailing `scr_turntimer(90);` (Step_0:477). Harmless — scr_turntimer only RAISES, and the turn block's `scr_turntimer(200);` supersedes it, which the controller then overwrites with a DIRECT `global.turntimer = ...` assignment (999999 / 900 / 420).",
+
+  "confidence": "high"
+}

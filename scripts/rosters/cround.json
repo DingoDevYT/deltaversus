@@ -1,0 +1,30 @@
+{
+  "id": "cround",
+  "chapter": "ch1",
+  "chNum": 1,
+  "label": "C. Round",
+  "enemy": "obj_smallcheckers_enemy",
+  "turnBlock": {
+    "file": "gml_Object_obj_smallcheckers_enemy_Step_0.gml",
+    "anchor": "global.turntimer = 1;",
+    "endAnchor": "if (rr == 999)"
+  },
+  "selectorScan": {
+    "file": "gml_Object_obj_smallcheckers_enemy_Step_0.gml",
+    "varName": "rr"
+  },
+  "selectorVar": "rr",
+  "real": [],
+  "cut": [
+    {
+      "choice": 999,
+      "type": 0,
+      "name": "spin heart (dead branch inherited from Hathy)",
+      "controller": "obj_spinheart",
+      "evidence": "gml_Object_obj_smallcheckers_enemy_Step_0.gml:43-52 — the branch is guarded by `if (rr == 999)` where rr was just assigned `rr = scr_monsterpop()` on line 43. gml_GlobalScript_scr_monsterpop.gml:3 returns `global.monster[0] + global.monster[1] + global.monster[2]`, and global.monster[i] is a 0/1 alive flag (obj_smallcheckers_enemy_Step_0.gml:10 tests `global.monster[myself] == 1`), so rr can only ever be 0, 1, 2 or 3. 999 is unreachable — C. Round can never spawn a bullet. Compare gml_Object_obj_heartenemy_Step_0.gml:59-78, the file this Step was copied from, where the identical block reads `rr = scr_monsterpop(); global.turntimer = 140; if (rr == 1) {obj_spinheart} else {obj_heartshaper}`: the guard was changed from 1 to 999 and the else branch deleted."
+    }
+  ],
+  "mechanics": "NOT A BULLET FIGHT. C. Round is the scripted ACT tutorial that runs when Susie rejoins the party (obj_chaseenemy_Create_0.gml:52-59, room_field_getsusie -> myencounter 7; obj_chaseenemy_Other_10.gml:14 -> global.encounterno = 7; scr_encountersetup.gml:110-118 -> one obj_smallcheckers_enemy, monstertype 9). scr_monstersetup.gml:237-267: 10 HP / AT 5 / DF 0 / 10 gold / sparepoint 0 / mercymax 100.\n\nENEMY TURN (Step_0:34-67), total ~13 frames: it never calls scr_moveheart and never creates obj_growtangle, so there is NO battle box and NO soul; it only destroys any leftover obj_heartblcon (line 36), counts rtimer to 12, sets global.turntimer = 1 (line 44, and line 65 while waiting), picks rr = choose(0) purely to select one battle message (line 58-61), and ends. obj_battlecontroller_Step_0.gml:831-857 decrements turntimer and closes the turn on the next frame. Talk phase is 5 frames (Create_0:6 talkmax = 5) against Hathy's 90, and unlike every other ch1 enemy it never creates the obj_heartblcon speech bubble at all.\n\nTHE REAL CONTENT IS THE ACT MENU (Step_0:96-209, gated on global.myfight == 3; obj_battlecontroller_Step_0.gml:552 sets acting = act index + 1). Three acts from scr_monstersetup.gml:249-266: acting 1 = \"Check\" (text, then scr_attackphase()); acting 2 = \"X-Compliment\" (Susie, actactor 2) -> 12 dialogue lines, actcon 5 -> obj_herosusie state 1 with points = 100 + round(random(40)), i.e. a scripted guaranteed hit that kills the 10 HP enemy, and trigger_event(0, 22); acting 3 = \"Warning\" (Ralsei, actactor 3) -> 18 dialogue lines, sets global.automiss[0] = 1 (line 148) so Susie's points = 0, then global.mercymod[myself] = 200 (line 184) which exceeds mercymax 100 and hspeed = 5 slides C. Round off screen. Outcome is recorded in global.flag[211]: 1 = X-Compliment, 2 = Warning, 3 = you used a normal attack instead (Step_0:1-8 watches obj_basicattack.sprite_index for spr_attack_cut1 / spr_attack_slap1). obj_npc_puzzlemaster1_Create_0.gml:20 reads that flag afterwards.\n\nDEAD CODE besides rr == 999: the obj_hathyfightevent no-damage branch (Step_0:73-86) is copy-pasted from obj_heartenemy_Step_0.gml:120-133 and belongs to the three-Hathy fight (encounter 9, obj_hathyfightevent_Step_0.gml:34), not to encounter 7; `battlecancel` (Step_0:90) is set to 0 in Create and never written anywhere else in the object. Draw_0:1-9 flags the tired/spareable status at HP <= maxhp/3 (i.e. <= 3.33 HP). The spr_smallchecker_crown / _transform / _transform2 / _transform3 sprites belong to obj_checker_animtest and obj_checkers_enemy (K. Round), not to this fight.",
+  "engineNeeds": "There is nothing for the bullet engine to run: real attack count is ZERO, so no boxBlock is supplied because obj_smallcheckers_enemy never creates obj_growtangle anywhere in any of its five events (Alarm_4, Create_0, Draw_0, Other_22, Step_0). If the studio launches the one dispatcher entry the selectorScan finds, it must know that entry is CUT: obj_spinheart is a bullet with no box and no soul spawn in this fight, and it expects obj_heart to exist (obj_spinheart_Create_0.gml:7-8 reads obj_heart.x/y), so the studio has to provide the soul and a box itself or the spawn errors. The turnBlock is a literal `global.turntimer = 1;` — one frame — so any studio floor (the 90-frame default) is wrong for this fight and would keep a nonexistent turn alive 90x too long. To reproduce the fight as shipped, the studio would need turn-REPLACEMENT support like Pink's dates: an ACT-menu driver that can run acting = 1/2/3, a Susie hero-attack stub (obj_herosusie state 1 / points / global.automiss[0]), the obj_writer dialogue gate that actcon 1/5/6/7 waits on, and alarm[4] (Alarm_4 is just `actcon += 1;`). Sprites are present: spr_smallchecker_idle (8 frames), _run (4), _hurt, drawn at 2x in Draw_0.",
+  "confidence": "high"
+}

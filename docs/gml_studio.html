@@ -357,6 +357,7 @@
 <script src="js/gml_sounds.js"></script>
 <script src="js/gml_audio.js"></script>
 <script src="js/sprite_indices.js"></script>
+<script src="js/gml_object_depths.js"></script>
 <script src="js/visual_probe.js"></script>
 <script src="js/flight_recorder.js"></script>
 <script src="js/spec_check.js"></script>
@@ -1563,7 +1564,20 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         { match: ['joker', 'jevil'], name: 'obj_joker', x: 520, y: 180 },
         { match: ['pink'], name: 'obj_pink_enemy', x: 520, y: 180 },
       ];
+      // global.monstertype per boss object, read from each chapter's
+      // scr_encountersetup (`global.monsterinstancetype[0] = obj_x;` paired with
+      // `global.monstertype[0] = N;`). scr_monstersetup switches on this to fill
+      // name/hp/maxhp/at/df/mercy/acts, so it is the one number a new boss needs
+      // for its real stats.
+      const MONSTER_TYPE = {
+        obj_knight_enemy: 104,
+        obj_spamton_neo_enemy: 50,
+        obj_hammer_of_justice_enemy: 105,
+        obj_joker: 20,
+        obj_pink_enemy: 118,
+      };
       let bossInst = null;
+      let objNameOfBoss = null;
       for (const b of BOSSES) {
         // A roster attack knows its own boss; guessing from the object name is
         // only for the raw-object list.
@@ -1573,6 +1587,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         if (!isMine) continue;
         const boss = runtime.createInstance(b.name, b.x, b.y);
         bossInst = boss;
+        objNameOfBoss = b.name;
         if (b.sprite) boss.sprite_index = b.sprite;
         GML_HELPERS.for(runtime).syncImageNumber(boss);
         boss.image_speed = 0.2;
@@ -1609,21 +1624,43 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
 
       const H2 = GML_HELPERS.for(runtime);
 
-      // Battle arrays the dispatcher branches write into. The boss's Create
-      // (scr_monstersetup) usually seeds them, but never leave them undefined —
-      // `global.monsterat[myself] * 4` in Jevil's branch would throw.
-      if (!Array.isArray(window.monsterattackname)) window.monsterattackname = [''];
-      if (!Array.isArray(window.monsterat)) window.monsterat = [10];
-      if (!Array.isArray(window.monster)) window.monster = [1];
-      // obj_bgfountaintest computes battleprog from these each frame. Unseeded
-      // they are the scalar 0, battleprog goes NaN, and a NaN globalAlpha is
-      // IGNORED by canvas (it keeps the previous alpha) — that is exactly the
-      // Flurry full-bright purple flood; NaN-merged tints also washed the
-      // fountain column's pxwhite overlay white (the "white sheet"). Any value
-      // works as long as hp === maxhp: battleprog = 1 - 0.2*5 = 0, the true
-      // full-HP fight-start look.
-      if (!Array.isArray(window.monsterhp)) window.monsterhp = [100, 100, 100];
-      if (!Array.isArray(window.monstermaxhp)) window.monstermaxhp = [100, 100, 100];
+      // ── Monster stats, from the GAME'S OWN table ────────────────────────
+      //
+      // These must be set AFTER obj_battlecontroller exists and UNCONDITIONALLY.
+      // Its Create runs `for (i = 0; i < 3; i++) scr_monster_statreset(i)`, which
+      // writes real zero-filled Arrays onto every one of these names — so the
+      // old `if (!Array.isArray(...))` guards were dead code from the moment the
+      // battlecontroller was created, and the stats stayed [0,0,0].
+      //
+      // That is not cosmetic: obj_bgfountaintest (created by the Knight's own
+      // Create, so present in all 7 of his attacks) computes
+      //   battleprog = 1 - (((hp - maxhp*0.8) / maxhp) * 5)
+      // which with 0/0 is NaN, and a NaN alpha is normalised to 1 — the whole
+      // fountain backdrop renders at full brightness with an rgb(NaN,NaN,NaN)
+      // tint. Damage, mercy and spare branches read the same arrays.
+      //
+      // Rather than invent numbers, run the boss's OWN setup: every boss's
+      // event_user(12) (Other_22) is
+      //   global.monsterx[myself] = x + sprite_width/2;
+      //   global.monstery[myself] = y + sprite_height/2;
+      //   scr_monstersetup();
+      // and scr_monstersetup fills name/hp/maxhp/at/df/gold/mercy/acts from the
+      // shipped table, keyed by global.monstertype. So seed the TYPE and let the
+      // game fill the rest — which also means every boss added later gets its
+      // real stats for free, just by listing its monstertype.
+      window.monsterattackname = [''];
+      window.monstertype = [MONSTER_TYPE[objNameOfBoss] || 0, 0, 0];
+      window.monster = [1, 0, 0];
+      window.monsterinstance = [bossInst || 0, 0, 0];
+      if (bossInst) {
+        try { H2.eventUser(bossInst, 12); } catch (e) { logError('monstersetup: ' + e.message); }
+      }
+      // Backstop for a boss with no table entry: hp === maxhp is the true
+      // fight-start state (battleprog = 1 - 0.2*5 = 0).
+      const mh = window.monstermaxhp, mhp = window.monsterhp;
+      if (!Array.isArray(mh) || !(Number(mh[0]) > 0)) window.monstermaxhp = [1000, 1000, 1000];
+      if (!Array.isArray(mhp) || !(Number(mhp[0]) > 0)) window.monsterhp = window.monstermaxhp.slice();
+      if (!Array.isArray(window.monsterat) || !(Number(window.monsterat[0]) > 0)) window.monsterat = [10, 10, 10];
       // Pink's date controller reads global.flag[1706..1708] ("have you seen
       // this date before") in its Create; an unseeded global array throws.
       if (!Array.isArray(window.flag)) window.flag = [];

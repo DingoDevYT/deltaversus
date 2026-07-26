@@ -468,6 +468,25 @@
         if (objInfo && objInfo.sprite) inst.sprite_index = objInfo.sprite;
       }
 
+      // THE OBJECT'S REAL DEPTH. DELTARUNE's own instance_create is a script:
+      //   var myDepth = object_get_depth(arg2);
+      //   return instance_create_depth(arg0, arg1, myDepth, arg2);
+      // and object_get_depth reads the GMS1-compat table in
+      // __global_object_depths() — obj_growtangle 5, obj_heart 1, obj_grazebox 2,
+      // obj_regularbullet -10, obj_monsterparent 90, obj_darkener 200.
+      // objects.tsv's depth column is 0 for EVERY object and is not the real
+      // value, so without this every battle object was born at depth 0 and the
+      // draw order collapsed onto the id tie-break.
+      //
+      // The lookup is FLAT: no parent inheritance. An object absent from the
+      // table genuinely is depth 0 (obj_knight_pointing_starchild does not
+      // inherit obj_regularbullet's -10), so `absent` must stay 0 here.
+      const depthTable = global.GML_OBJECT_DEPTHS
+        && global.GML_OBJECT_DEPTHS[this.$chapter || 'ch3'];
+      if (depthTable && Object.prototype.hasOwnProperty.call(depthTable, objType)) {
+        inst.depth = depthTable[objType];
+      }
+
       this.instances.push(inst);
 
       if (typeof inst.create === 'function' && !inst._created) {
@@ -844,7 +863,17 @@
   }
   function instance_create_depth(x, y, depth, objType) {
     const rt = global.activeGMLRuntime;
-    return rt ? rt.createInstance(objType, x, y) : null;
+    if (!rt) return null;
+    const inst = rt.createInstance(objType, x, y);
+    // The whole point of this call is the EXPLICIT depth, which overrides the
+    // object's table depth. Dropping it (the previous behaviour) silently
+    // relayered everything created this way — e.g. Pink's
+    // `instance_create_depth(x, y, 4, obj_purplecontrols)`, whose lane arena is
+    // designed to sit in front of the depth-5 battle box.
+    if (inst && depth !== undefined && depth !== null && isFinite(Number(depth))) {
+      inst.depth = Number(depth);
+    }
+    return inst;
   }
   function instance_number(obj) {
     const rt = global.activeGMLRuntime;

@@ -1,0 +1,184 @@
+{
+  "id": "queen",
+  "chapter": "ch2",
+  "chNum": 2,
+  "label": "Queen",
+  "enemy": "obj_queen_enemy",
+  "extraEnemies": ["obj_queenshield_enemy", "obj_berdlyplug_enemy"],
+  "controller": "obj_queen_bulletcontroller",
+
+  "boxBlock": {
+    "file": "gml_Object_obj_queen_enemy_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_growtangle))",
+    "ifElse": false,
+    "note": "Step_0:732-762, sliced by ifStatementEnd (no endAnchor). The growtangle create-chain, self-selecting on rr and difficulty: rr 1 -> (view+320, view+200); rr 5 -> +237 (cut attack); rr 7 -> +200 with maxxscale 2 / maxyscale 1.5; rr 9 -> +200, and at difficulty 1 maxxscale 1.5 / maxyscale 2; everything else -> +170. obj_growtangle defaults maxxscale = maxyscale = 2 (obj_growtangle_Create_0.gml:13-14). Anchor verified unique (grep -cF == 1) and the slice is brace-balanced (line 762 closes it). Do NOT extend this with an endAnchor at the scr_moveheart line: Step_0:769 closes the enclosing `if (rtimer == 0 && attackdone == 0)` block, so a slice to Step_0:771 carries a stray `}`."
+  },
+
+  "boxBlockWineHide": {
+    "file": "gml_Object_obj_queen_enemy_Step_0.gml",
+    "lines": "764-768",
+    "source": "if (rr == 2)\n{\n    obj_growtangle.sprite_index = spr_nothing;\n    obj_growtangle.visible = false;\n}",
+    "note": "Must be applied SEPARATELY (as a studio special case for types 2 / 2.1 / 2.2) — it sits after the closing brace of the box block and its own `if (rr == 2)` line is not unique in the file (3 occurrences: Step_0:332 and :997 are dialogue). The unique hook is `obj_growtangle.sprite_index = spr_nothing;` (1 occurrence). The Wine turn also skips the boss's scr_moveheart (Step_0:771, `&& rr != 2`); the controller places obj_heartmarker and calls scr_moveheart itself at obj_queen_bulletcontroller_Step_0.gml:371-382."
+  },
+
+  "turnBlock": null,
+  "turnBlockNote": "Queen has NO separate turn-length ladder. Every scr_turntimer call lives INSIDE its own `case` of the switch at Step_0:783-981, interleaved with the scr_bulletspawner calls, so no slice can set the turn length without also re-spawning the controller (the exact Knight double-spawn trap). Use `turnByChoice` below instead; without it every Queen attack falls back to the studio floor and the long attacks (Wine 400, Ultimate 371) are cut off at 90/120 frames.",
+
+  "dispatchBlock": {
+    "file": "gml_Object_obj_queen_enemy_Step_0.gml",
+    "anchor": "switch (rr)",
+    "endAnchor": "turns += 1;",
+    "note": "Step_0:783-985, the WHOLE switch. Self-selects on rr + difficulty and carries every scr_turntimer. Replay this INSTEAD of manually spawning a controller (it spawns one itself); never in addition. Both strings verified unique."
+  },
+
+  "selectorVar": "rr",
+  "difficultyVar": "difficulty",
+  "chooser": {
+    "file": "gml_Object_obj_queen_enemy_Other_10.gml",
+    "note": "event_user(0), called from Step_0:725 (`if (attackdebug < 0) event_user(0);`) once per turn. Assigns BOTH rr and difficulty. attackdebug is -1 and difficultydebug is 0 in Create and only debug input changes them."
+  },
+
+  "turnByChoice": {
+    "0": 300,
+    "1": 371,
+    "2": 400,
+    "3": 240,
+    "3.3": 190,
+    "4": 250,
+    "4.1": 300,
+    "4.2": 300,
+    "5": 300,
+    "6": 300,
+    "7": 266,
+    "8": 245,
+    "9": 300,
+    "10": 300,
+    "default": 300,
+    "preAttackFloor": 120,
+    "note": "Keys are `rr` (with rr.difficulty when the case overrides). rr 1 is 371 while ultimateattackused == 0 and 311 afterwards, but the ultimate can only fire once per fight (see mechanics), so 311 is dead. rr 3 is 240 except difficulty 3 (190, cut). rr 4 is 250 at d0 and 300 at d1/d2. `preAttackFloor` is the `else scr_turntimer(120)` at Step_0:1015 that runs every frame until rtimer hits 16; scr_turntimer only raises, so it never overrides a case value."
+  },
+
+  "real": [
+    { "choice": 1, "difficulty": 0, "type": 1, "turn": 371, "name": "QueenUltimate", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:39-45 — `if (usefinalattack == 1) { rr = 1; difficulty = 0; usefinalattack = 2; phaseturn -= 1; }`. usefinalattack is armed at Step_0:274-275 (`if (phase == 4) usefinalattack = 1;`) when the acid shield breaks during phase 4. Dispatcher Step_0:793-804." },
+
+    { "choice": 2, "difficulty": 0, "type": 2, "turn": 400, "name": "Wine", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:5-11 — `if (usewineattack == 1 && phase == 2) { rr = 2; difficulty = 0; }`. usewineattack is set by event_user(2) at Other_12.gml:3 on the phase 1->2 gate. Dispatcher Step_0:806-827." },
+
+    { "choice": 2, "difficulty": 1, "type": 2.1, "turn": 400, "name": "Wine", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:13-19 — `if (usewineattack == 1 && phase == 3) { rr = 2; difficulty = 1; }` (Other_12.gml:15, phase 2->3 gate). Also Other_10.gml:29-34 for phase 4 when beatwine2nodamage == 0. Type set at Step_0:820-821." },
+
+    { "choice": 2, "difficulty": 2, "type": 2.2, "turn": 400, "name": "Wine", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:21-28 — phase 4 wine with `beatwine2nodamage == 1`. That flag is set by the controller when type 2.1 starts (obj_queen_bulletcontroller_Step_0.gml:360) and cleared on any wine hit (obj_queen_wine_attack_droplet_Other_15.gml:4, obj_queen_wine_attack_bottom_hurtbox_Other_15.gml:4), i.e. clear the phase-3 wine without being hit. Type set at Step_0:823-824." },
+
+    { "choice": 3, "difficulty": 0, "type": 3, "turn": 240, "name": "Stomp", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:55-59 (phaseturn 2, phases 1-2), :102-106 (phase 1-2 random pool, rand 20-39), :142-146 (phaseturn 2, phases 3-4). Every one of them pairs rr = 3 with difficulty = 0. Dispatcher Step_0:829-851." },
+
+    { "choice": 4, "difficulty": 0, "type": 106, "turn": 250, "name": "NewSocialMedia", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:73-77 (phaseturn 5, phases 1-2), :120-124 (phase 1-2 pool, rand 80-99), :160-164 (phaseturn 5, phases 3-4). Dispatcher Step_0:853-872 (base type 106)." },
+
+    { "choice": 4, "difficulty": 1, "type": 107, "turn": 300, "name": "NewSocialMedia", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:178-182 (phaseturn 8, phases 3-4) and :212-216 (phase 3-4 pool, rand 0-19). Type override at Step_0:860-864." },
+
+    { "choice": 6, "difficulty": 0, "type": 6, "turn": 300, "name": "Explosion", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:61-65 (phaseturn 3, phases 1-2), :108-112 (phase 1-2 pool, rand 40-59), :148-152 (phaseturn 3, phases 3-4). Dispatcher Step_0:882-892." },
+
+    { "choice": 6, "difficulty": 1, "type": 6.1, "turn": 300, "name": "Explosion", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:190-194 (phaseturn 10, phases 3-4) and :224-228 (phase 3-4 pool, rand 40-59). Type override at Step_0:888-889." },
+
+    { "choice": 7, "difficulty": 0, "type": 112, "turn": 266, "name": "BerdlyTornado", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:49-53 (phaseturn 1, phases 1-2), :96-100 (phase 1-2 pool, rand 0-19), :136-140 (phaseturn 1, phases 3-4). The rr 7 -> 5 swap at Other_10.gml:244-248 never fires because obj_berdlyplug_enemy always exists (see cut entry for rr 5). Dispatcher Step_0:894-900." },
+
+    { "choice": 7, "difficulty": 1, "type": 113, "turn": 266, "name": "BerdlyTornado", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:184-188 (phaseturn 9, phases 3-4) and :218-222 (phase 3-4 pool, rand 20-39). Dispatcher Step_0:902-907." },
+
+    { "choice": 8, "difficulty": 0, "type": 100, "turn": 245, "name": "QueenLaser", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:67-71 (phaseturn 4, phases 1-2), :114-118 (phase 1-2 pool, rand 60-79), :154-158 (phaseturn 4, phases 3-4). Dispatcher Step_0:926-948 (base type 100)." },
+
+    { "choice": 8, "difficulty": 4, "type": 115, "turn": 245, "name": "QueenLaser", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:85-89 (phaseturn 7, phases 1-2), :126-130 (phase 1-2 pool, rand 100-120), :172-176 (phaseturn 7, phases 3-4). Type override at Step_0:941-942. Laser guns + a stomping leg every 50 frames." },
+
+    { "choice": 8, "difficulty": 5, "type": 116, "turn": 245, "name": "QueenLaser", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:202-206 (phaseturn 12, phases 3-4) and :236-240 (phase 3-4 pool, rand 80-100). Type override at Step_0:944-945. Lasers + legs + exploding heads." },
+
+    { "choice": 9, "difficulty": 0, "type": 110, "turn": 300, "name": "Plug", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:79-83 (phaseturn 6, phases 1-2) and :166-170 (phaseturn 6, phases 3-4). Note the phase 1-2 RANDOM pool never rolls rr 9, so in phases 1-2 this only ever plays on the single turn where phaseturn == 6. Dispatcher Step_0:950-963; also sets dc.damage = global.monsterat * 5 and dc.target." },
+
+    { "choice": 9, "difficulty": 1, "type": 111, "turn": 300, "name": "Plug", "controller": "obj_queen_bulletcontroller",
+      "evidence": "Other_10.gml:196-200 (phaseturn 11, phases 3-4) and :230-234 (phase 3-4 pool, rand 60-79). Type override at Step_0:960-961." }
+  ],
+
+  "cut": [
+    { "choice": 0, "type": 0, "name": "ImageSearch", "turn": 300,
+      "evidence": "Step_0:785-791. rr = 0 is only ever the INITIAL value at Other_10.gml:3; no ladder arm and no pool arm assigns 0. Both ladders are entered for every phase (phase is always 1-4, Create_0.gml:29 + Other_12.gml:4/16/29), and phaseturn is incremented to >= 1 at Other_10.gml:2 before any arm is tested, so some arm always overwrites rr. The only `phaseturn -= 1` paths (Other_10.gml:10/18/36/44) belong to turns that already forced rr to 2 or 1, and they cannot stack (see queen.md)." },
+
+    { "choice": 3, "difficulty": 1, "type": 3.1, "name": "Stomp (side legs)",
+      "evidence": "Step_0:836-837 needs `rr == 3 && difficulty == 1`. Every rr = 3 assignment in the chooser (Other_10.gml:57, :104, :144) is immediately followed by `difficulty = 0`, and no other arm assigns rr 3." },
+
+    { "choice": 3, "difficulty": 2, "type": 3.2, "name": "Stomp (alternating top/side)",
+      "evidence": "Step_0:839-840. Same reason as type 3.1 — rr 3 is only ever paired with difficulty 0 (Other_10.gml:57/104/144)." },
+
+    { "choice": 3, "difficulty": 3, "type": 3.3, "turn": 190, "name": "Stomp (sliding legs)",
+      "evidence": "Step_0:842-846. Same reason; also the only case arm that lowers the turn timer (190), so it is unreachable dead tuning." },
+
+    { "choice": 3, "difficulty": 4, "type": 3.4, "name": "Stomp (double)",
+      "evidence": "Step_0:848-849. Same reason — rr 3 never carries difficulty 4." },
+
+    { "choice": 4, "difficulty": 2, "type": 105, "name": "NewSocialMedia (wide)",
+      "evidence": "Step_0:866-870 needs `rr == 4 && difficulty == 2`. The chooser only pairs rr 4 with difficulty 0 (Other_10.gml:75, :122, :162) or 1 (:180, :214)." },
+
+    { "choice": 5, "type": 5, "turn": 300, "name": "Bufferbullet",
+      "evidence": "Step_0:874-880. rr = 5 is assigned in exactly one place: Other_10.gml:244-248, `if (!instance_exists(obj_berdlyplug_enemy)) { if (rr == 7) rr = 5; }`. obj_berdlyplug_enemy is created unconditionally by the pre-battle cutscene immediately before the encounter (obj_ch2_scene25_Step_0.gml:269-274 — `instance_create(...obj_berdlyplug_enemy); ... scr_battle(59, 1, queen_marker, new_berdly, 0);`) and scr_battle(59) is the ONLY entry point to this fight. Nothing destroys the plug during battle: the only instance_destroy calls are in the post-battle cutscene (obj_ch2_scene25_Step_0.gml:367 and :458). The `scr_sideb_get_phase() < 2` guard in obj_queen_enemy_Create_0.gml:3 is redundant because the cutscene already made it, and obj_ch2_scene25_Create_0.gml:7 destroys the whole scene (and therefore this battle) at sideb phase >= 3. So the plug always exists and rr never becomes 5." },
+
+    { "choice": 7, "difficulty": 2, "type": 7, "name": "BerdlyFeather",
+      "evidence": "Step_0:909-914 needs `rr == 7 && difficulty == 2`. The chooser pairs rr 7 only with difficulty 0 (Other_10.gml:51, :98, :138) or 1 (:186, :220)." },
+
+    { "choice": 7, "difficulty": 3, "type": 7.5, "name": "BerdlyFeather (hard)",
+      "evidence": "Step_0:916-921. Doubly dead: rr 7 never carries difficulty 3, AND obj_queen_bulletcontroller_Step_0.gml has no `type == 7.5` branch at all (it stops at `else if (type == 7)` on line 752), so the controller would fall through to the no-op `else if (init == 1) init = 2;` at line 1136 and spawn nothing." },
+
+    { "choice": 8, "difficulty": 1, "type": 101, "name": "QueenLaser (sweeping walls)",
+      "evidence": "Step_0:932-933 needs `rr == 8 && difficulty == 1`. The chooser pairs rr 8 with difficulty 0 (Other_10.gml:69, :116, :156), 4 (:87, :128, :174) or 5 (:204, :238) — never 1." },
+
+    { "choice": 8, "difficulty": 2, "type": 102, "name": "QueenLaser (fast sweeping walls)",
+      "evidence": "Step_0:935-936. Same reason — rr 8 never carries difficulty 2." },
+
+    { "choice": 8, "difficulty": 3, "type": 114, "name": "QueenLaser + search windows",
+      "evidence": "Step_0:938-939. Same reason — rr 8 never carries difficulty 3." },
+
+    { "choice": 10, "type": 8, "name": "Birthday",
+      "evidence": "Step_0:966-973 (`dc.type = 8; dc.special = 5;`). No `rr = 10` exists anywhere: the complete list of rr writers is Other_10.gml:3/7/15/25/31/41/51/57/63/69/75/81/87/98/104/110/116/122/128/138/144/150/156/162/168/174/180/186/192/198/204/214/220/226/232/238/247 plus the two vestigial dialogue rolls at Step_0:324 and :989. None produce 10." },
+
+    { "choice": null, "type": "rr", "name": "Unknown (switch default)",
+      "evidence": "Step_0:975-980. The `default:` arm sets `dc.type = rr`. Unreachable because cases 0-10 cover every value the chooser can produce (1,2,3,4,6,7,8,9 in real play; 0/5/10 already shown dead)." }
+  ],
+
+  "cutControllerBranches": [
+    { "type": 4, "controller": "obj_queen_bulletcontroller",
+      "evidence": "obj_queen_bulletcontroller_Step_0.gml:631-693 (obj_queen_finger scroll + obj_queen_sm_deleter + obj_queen_pfp). No dispatcher arm ever sets dc.type = 4 — case 4 of the switch sets 106/107/105. It is also the ONLY branch that reads the controller's own `difficulty` field (line 646), which Queen's dispatcher never assigns." },
+    { "type": 9, "controller": "obj_queen_bulletcontroller",
+      "evidence": "Referenced only in the branch guard at obj_queen_bulletcontroller_Step_0.gml:27 (`type == 0 || type == 9 || type == 8`). No `dc.type = 9` anywhere in ch2." },
+    { "type": 2.3, "controller": "obj_queen_bulletcontroller",
+      "evidence": "Referenced only at obj_queen_bulletcontroller_Step_0.gml:445 (`type == 2.1 || type == 2.2 || type == 2.3`). Never assigned; the wine branch guard at line 345 does not even accept 2.3, so it would never run." },
+    { "special": 99, "controller": "obj_queen_bulletcontroller",
+      "evidence": "obj_queen_bulletcontroller_Step_0.gml:271-285 spawns obj_queen_search_window_bday. `special` is only assigned from the dispatcher at Step_0:789 (`dc.special = difficulty`, cut rr 0) and Step_0:970 (`dc.special = 5`, cut rr 10); never 99." },
+    { "flag": "bufferattack", "controller": "obj_queen_bulletcontroller",
+      "evidence": "obj_queen_enemy_Create_0.gml:19 sets `bufferattack = false` and NOTHING in ch2 ever writes it true (only reads at Step_0:818/833/857/878/886/930/953/971/979). So obj_queen_buffercontroller is never created and every `if (bufferattack)` path in the controller (lines 29-46, 79-98, 308-318, 712-719) is dead, as is scr_queen_buffercheck's true branch." },
+    { "objects": ["obj_queen_search_flail", "obj_queen_search_gun", "obj_queen_search_gun_old", "obj_queen_search_flail_old", "obj_queen_search_window_old", "obj_queen_search_window_bday", "obj_queen_search_image", "obj_queen_search_bdog", "obj_queen_search_junk", "obj_queen_search_laser", "obj_queen_solitaire", "obj_queenshield_enemy_old", "obj_queenshield_enemy_old2"],
+      "evidence": "grep over the whole ch2 dump: none of these are instance_create'd by any object other than themselves. They are leftovers from earlier versions of the search attack and the shield." }
+  ],
+
+  "phases": {
+    "gate": "gml_Object_obj_queen_enemy_Other_12.gml (event_user(2), called from Step_0:243-247 at the top of the enemy-talk step)",
+    "1": "start. No acid shield. ACT menu is Loosen / GroupLoosen / Throw (Berdly mercy). Ladder arms 1-7 then a clamped random pool.",
+    "2": "bardlymercy >= 25 OR hp < 75% (Other_12.gml:1-11). usewineattack = 1, shieldhp 400, shieldacthp 6, shieldsize 7, targetmercy 50.",
+    "3": "bardlymercy >= 50 OR hp < 50% (Other_12.gml:13-24). usewineattack = 1, shieldhp 500, shieldacthp 8, shieldsize 10, targetmercy 75.",
+    "4": "bardlymercy >= 75 OR hp < 25% (Other_12.gml:26-37). usewineattack = 1, shieldhp 500, shieldacthp 8, shieldsize 12, targetmercy 100. Breaking the shield here arms the Ultimate (Step_0:274-275).",
+    "phaseturnNote": "phaseturn is NEVER reset on a phase change (Create_0.gml:28 is the only initialiser). Phases 1-2 clamp it to 7 (Other_10.gml:91-93); phases 3-4 do not clamp, so it keeps climbing to 12 and then into the second pool. Wine and Ultimate turns do `phaseturn -= 1` so they do not consume a ladder slot."
+  },
+
+  "mechanics": "Four HP/mercy-gated phases with a per-phase-turn ladder plus a random pool (obj_queen_enemy Other_10 = event_user(0)). rr picks the attack, difficulty picks the sub-type; both come out of the same ladder arm. Red soul only, no green/blue/purple mode. Two turn types are not ordinary bullet turns: (a) WINE (rr 2) hides the battle box entirely (Step_0:764-768 sets obj_growtangle.sprite_index = spr_nothing and visible = false) and suppresses the boss's own scr_moveheart (Step_0:771, `rr != 2`); Queen throws her glass (wineglasscon 1->2->3 in Step_0:96-165) and only then does `with (obj_queen_bulletcontroller) init = 3;`, at which point the CONTROLLER places obj_heartmarker and calls scr_moveheart itself (obj_queen_bulletcontroller_Step_0.gml:371-382) and the fight becomes 'tilt the giant glass, catch the acid droplets'. Difficulty 1/2 add a sinusoidal glass rotation (line 449). (b) ULTIMATE (rr 1, type 1) fades out every hero and Queen (image_alpha), covers the real soul with obj_hiddenheart, and plays a scripted joke: a download bar, obj_queen_poppup_error errors, and eight obj_queen_explodinghead_intro passes. The ACID SHIELD (obj_queenshield_enemy) is created by obj_queenshield_intro when obj_queen_wineglass is destroyed at the end of a wine turn (obj_queen_wineglass_Destroy_0.gml:4); while it exists the ACT menu swaps Loosen -> Toast (Other_11.gml) and toasts drain shieldacthp; when it breaks in phase 4 the next turn is the Ultimate. obj_berdlyplug_enemy is a permanent second on-field object (Berdly wired into the ceiling): it is the mercy target, it is physically moved by BerdlyTornado (obj_queen_bulletcontroller_Step_0.gml:952 sets obj_berdlyplug_enemy.con = 1) and by the Throw ACT (obj_queen_throw_controller, an aiming minigame, Step_0:1236-1241). Queen HP 1510 / AT 10 / mercymax 100 (gml_GlobalScript_scr_monstersetup.gml:1345-1394, monstertype 48).",
+
+  "engineNeeds": "1) SWITCH DISPATCH. Queen is the first boss whose dispatcher is a `switch (rr)` (Step_0:783-981) instead of an if/else chain. gen_attacks.js's attackAnnouncements() cannot handle it: walking backward from an announcement to the enclosing `{` lands on the switch's own brace, so `setup` is either the entire switch (>3500 chars -> nulled) or every preceding case; and the `<var> == N)` back-scan for the branch value finds `if (rtimer == 16)` and records selector 'rtimer', choice 16 for EVERY Queen attack. The forward window also runs past the case's `break` into later cases, over-collecting extraFields (bufferattack/damage/target). A switch-aware slicer (case label -> next case label) is needed, or hand-authored per-attack setups from the line ranges in queen.md. 2) NO TURN LADDER — see turnBlock/turnByChoice above; the studio floor would cut Wine (400) and the Ultimate (371) in half. 3) WINE CANNOT BE SPAWNED STANDALONE. Types 2 / 2.1 / 2.2 idle forever at init == 2; only obj_queen_enemy's Step advances wineglasscon and sets the controller's init = 3 (Step_0:156-157). The boss instance must exist and be stepping, with `wineglasscon = 1; drink = 0;` applied as the case body does. 4) HARD DEPENDENCIES that will throw if absent: obj_berdlyplug_enemy (types 112/113 at controller line 952, type 7 at line 756 — both dereference it with no instance_exists guard); obj_heart (type 1, controller line 340); obj_growtangle (types 110/111 destroy themselves without it, and the 0/8/9 branch dereferences obj_growtangle.x directly). 5) DIFFICULTY IS BOSS-SIDE. Queen's dispatcher never sets dc.difficulty; the boss's own `difficulty` selects which type is passed. The studio's DIFF selector must set obj_queen_enemy.difficulty (or just pick the type), not obj_queen_bulletcontroller.difficulty — the controller's own difficulty field is read by cut type 4 only. 6) Controller lifecycle: Step's first block calls scr_monsterattacknamecount(global.monsterattackname[creator]) so `creator` must be a valid monster slot (scr_bulletspawner sets it); Destroy_0 does `with (obj_queenshield_enemy) appearcon = 1;` and snd_stop(snd_crowd). 7) The 105/106/107 social-media attack creates obj_social_media_attack_fade_heroes and loops snd_crowd; the studio needs sound-loop cleanup or the crowd noise persists between launches.",
+
+  "confidence": "high"
+}
