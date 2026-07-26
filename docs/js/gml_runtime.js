@@ -1543,6 +1543,47 @@
     vk_lalt: 164, vk_ralt: 165,
   });
 
+  // Event type / sub-event codes for event_perform.
+  //
+  // These were missing, and the failure was silent and destructive rather than
+  // merely absent: `event_perform(ev_draw, ev_draw_normal)` compiled to an
+  // undefined read, became event_perform(0, 0) — and 0 is ev_create. So a call
+  // meant to DRAW an instance RE-RAN ITS CREATE EVENT instead, resetting it to
+  // its initial state every frame.
+  //
+  // obj_purplecontrols draws Pink's DIE! / IT'S OK buttons exactly that way
+  // (Draw_0.gml:485-491, `with (obj_pinknodeact) event_perform(...)`), so every
+  // frame reset their image_alpha to 0 and life_time to 0 and the buttons never
+  // faded in — the whole date-3 finale was unplayable because nothing you could
+  // press was ever visible.
+  Object.assign(global, {
+    // types
+    ev_create: 0, ev_destroy: 1, ev_alarm: 2, ev_step: 3, ev_collision: 4,
+    ev_keyboard: 5, ev_mouse: 6, ev_other: 7, ev_draw: 8, ev_keypress: 9,
+    ev_keyrelease: 10, ev_trigger: 11, ev_cleanup: 12, ev_gesture: 13,
+    ev_pre_create: 14,
+    // step sub-events
+    ev_step_normal: 0, ev_step_begin: 1, ev_step_end: 2,
+    // draw sub-events
+    ev_draw_normal: 0, ev_gui: 64, ev_resize: 65,
+    ev_draw_begin: 72, ev_draw_end: 73,
+    ev_gui_begin: 74, ev_gui_end: 75,
+    ev_pre_draw: 76, ev_post_draw: 77,
+    // "other" sub-events
+    ev_outside: 0, ev_boundary: 1, ev_game_start: 2, ev_game_end: 3,
+    ev_room_start: 4, ev_room_end: 5, ev_no_more_lives: 6,
+    ev_animation_end: 7, ev_end_of_path: 8, ev_no_more_health: 9,
+    ev_close_button: 30,
+    // mouse sub-events
+    ev_left_button: 0, ev_right_button: 1, ev_middle_button: 2, ev_no_button: 3,
+    ev_left_press: 4, ev_right_press: 5, ev_middle_press: 6,
+    ev_left_release: 7, ev_right_release: 8, ev_middle_release: 9,
+    ev_mouse_enter: 10, ev_mouse_leave: 11,
+    ev_mouse_wheel_up: 60, ev_mouse_wheel_down: 61,
+  });
+  for (let i = 0; i < 12; i++) global['ev_alarm' + i] = i;
+  for (let i = 0; i < 16; i++) global['ev_user' + i] = 10 + i;
+
   global.instance_create_depth = instance_create_depth;
   global.mean = mean;
   global.scr_approach = scr_approach;

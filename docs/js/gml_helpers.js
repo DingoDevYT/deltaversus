@@ -1013,6 +1013,7 @@
             if (n === 5) return run('roomEnd');
             if (n === 7) return run('animationEnd');
             return;
+          case 12: return run('cleanUp');
           case 8:                                   // ev_draw + which draw
             if (n === 72) return run('drawBegin');
             if (n === 73) return run('drawEnd');
