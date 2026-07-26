@@ -124,7 +124,77 @@ const BOSSES = [
     extraAttackFiles: ['gml_Object_obj_date_controller_Step_0.gml'] },
 ];
 
+// ── Roster configs contributed as DATA ─────────────────────────────────────
+//
+// Everything above is a boss whose config was hand-derived. scripts/rosters/
+// holds the same thing as JSON, one file per fight, each written alongside a
+// .md showing the chooser-to-roster derivation. Adding a fight is therefore a
+// data change, not a code change: drop in <id>.json and it appears here.
+//
+// Each file supplies the BOSSES fields (enemy, boxBlock, turnBlock,
+// selectorScan, extraAttackFiles, controllerSet, monsterType) plus `real` and
+// `cut` lists, which become that boss's REAL filter below.
+const ROSTER_DIR = path.join(__dirname, 'rosters');
+const rosterConfigs = [];
+if (fs.existsSync(ROSTER_DIR)) {
+  for (const f of fs.readdirSync(ROSTER_DIR).filter(x => x.endsWith('.json')).sort()) {
+    let j;
+    try { j = JSON.parse(fs.readFileSync(path.join(ROSTER_DIR, f), 'utf8')); }
+    catch (e) { console.warn(`[rosters] ${f}: unreadable — ${e.message}`); continue; }
+    if (!j || !j.id || !j.enemy) { console.warn(`[rosters] ${f}: missing id/enemy`); continue; }
+    // A fight with no real attacks is documented, not listed: C. Round's
+    // encounter is the scripted ACT tutorial, its attack spawn is unreachable
+    // and its turn is one frame, so there is nothing to launch.
+    if (Array.isArray(j.real) && j.real.length === 0) {
+      console.warn(`[rosters] ${j.id}: 0 real attacks — documented only, not added`);
+      continue;
+    }
+    rosterConfigs.push(j);
+  }
+}
+for (const j of rosterConfigs) {
+  if (BOSSES.some(b => b.id === j.id)) continue;   // hand-written entry wins
+  BOSSES.push({
+    id: j.id, chapter: j.chapter, chNum: j.chNum, label: j.label,
+    enemy: j.enemy, extraEnemies: j.extraEnemies || [],
+    boxBlock: j.boxBlock || null, turnBlock: j.turnBlock || null,
+    selectorScan: j.selectorScan || null,
+    extraAttackFiles: j.extraAttackFiles || [],
+    controllerSet: j.controllerSet || null,
+    monsterType: j.monsterType === undefined ? null : j.monsterType,
+    fromRoster: true,
+  });
+}
+
 function chapterDir(n) { return path.join(GML_ROOT, `DELTARUNE Chapter ${n} - GML`); }
+
+/**
+ * The boss's global.monstertype, read out of scr_encountersetup.
+ *
+ * scr_monstersetup switches on this to fill name/hp/maxhp/at/df/mercy/acts, so
+ * it is the single number the studio needs to give a fight its REAL stats
+ * instead of invented ones. Encounters bind it in pairs:
+ *     global.monsterinstancetype[0] = obj_knight_enemy;
+ *     global.monstertype[0] = 104;
+ * The slot index varies and the two lines are not always adjacent, so match the
+ * instancetype line and then take the next monstertype assignment for the SAME
+ * slot within the same case.
+ */
+function monsterTypeOf(chNum, enemy) {
+  const src = readIfExists(path.join(chapterDir(chNum), 'gml_GlobalScript_scr_encountersetup.gml'));
+  if (!src) return null;
+  const re = new RegExp(
+    'monsterinstancetype\\[(\\d+)\\]\\s*=\\s*' + enemy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*;',
+    'g');
+  let m;
+  while ((m = re.exec(src))) {
+    const slot = m[1];
+    const after = src.slice(m.index, m.index + 600);
+    const t = new RegExp('monstertype\\[' + slot + '\\]\\s*=\\s*(\\d+)').exec(after);
+    if (t) return Number(t[1]);
+  }
+  return null;
+}
 
 function readIfExists(p) { return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null; }
 
@@ -288,6 +358,22 @@ function attackAnnouncements(src) {
     const before = clean.slice(Math.max(0, i - 300), i);
     const cond = [...before.matchAll(/([a-zA-Z_]\w*)\s*==\s*(-?\d+(?:\.\d+)?)\s*\)/g)].pop();
 
+    // SWITCH DISPATCH. Queen is the first boss whose dispatcher is
+    // `switch (rr) { case 3: ... }` rather than an if/else chain, so there is no
+    // `rr == 3)` for the test above to find and every one of her attacks came
+    // out with a null selector — unlaunchable, because the studio sets the
+    // selector on the boss to pick the branch. Resolve the nearest preceding
+    // `case N:` and then the `switch (var)` that encloses it.
+    let swSelector = null, swChoice = null, swCaseAt = -1;
+    if (!cond) {
+      const upto = clean.slice(0, i);
+      const caseM = [...upto.matchAll(/\bcase\s+(-?\d+(?:\.\d+)?)\s*:/g)].pop();
+      if (caseM) {
+        const sw = [...upto.slice(0, caseM.index).matchAll(/\bswitch\s*\(\s*([a-zA-Z_]\w*)\s*\)/g)].pop();
+        if (sw) { swSelector = sw[1]; swChoice = Number(caseM[1]); swCaseAt = caseM.index; }
+      }
+    }
+
     // The WHOLE enclosing branch, walked backward to its `{`. The studio
     // replays this verbatim with self = the boss, because setup that PRECEDES
     // the announcement (box creation, obj_purplecontrols mode, heart markers)
@@ -320,11 +406,25 @@ function attackAnnouncements(src) {
     ).test(setup);
     if (setup.length > 3500 || escaped) setup = null;
 
+    // A switch case has no braces of its own, so the backward walk above lands
+    // on the SWITCH's `{` and swallows every sibling case. Re-slice from the
+    // `case N:` to whichever comes first: the next `case`, the `break`, or the
+    // end of the announcement's own block.
+    if (swCaseAt >= 0) {
+      const bodyStart = clean.indexOf(':', swCaseAt) + 1;
+      const nextCase = clean.indexOf('case ', i);
+      const brk = clean.indexOf('break;', i);
+      let stop = end;
+      for (const cand of [nextCase, brk]) if (cand >= 0 && cand < stop) stop = cand;
+      const sliced = src.slice(bodyStart, stop).trim();
+      setup = (sliced && sliced.length <= 3500) ? sliced : null;
+    }
+
     out.push({
       name,
       setup,
-      selector: cond ? cond[1] : null,
-      choice: cond ? Number(cond[2]) : null,
+      selector: cond ? cond[1] : swSelector,
+      choice: cond ? Number(cond[2]) : swChoice,
       controller: (/(?:scr_bulletspawner|instance_create(?:_depth)?)\s*\([^;]*?(obj_[a-zA-Z0-9_]+)\s*\)/.exec(window) || [])[1] || null,
       type: (() => { const t = /\.\s*type\s*=\s*(-?\d+(?:\.\d+)?)/.exec(window); return t ? Number(t[1]) : null; })(),
       usesDifficulty: /\.\s*difficulty\s*=/.test(window),
@@ -348,6 +448,9 @@ const roster = [];
 const notes = [];
 const boxSetups = {};
 const turnSetups = {};
+// Per-boss "emit the roster JSON's own list" closures, run only for fights that
+// none of the scanning paths could see (see the DECLARED ATTACKS note below).
+const DECLARED_FALLBACK = {};
 
 for (const boss of BOSSES) {
   const dir = chapterDir(boss.chNum);
@@ -357,9 +460,13 @@ for (const boss of BOSSES) {
   const tb = extractTurnBlock(dir, boss.turnBlock);
   if (tb) { turnSetups[boss.id] = tb; notes.push(`${boss.id}: turn block ${tb.length} chars`); }
   else if (boss.turnBlock) notes.push(`${boss.id}: TURN BLOCK NOT FOUND — check anchor`);
-  // Attack dispatch can live in any event of the enemy object.
+  // Attack dispatch can live in any event of the enemy object — and, for a
+  // fight that spans several enemy objects, of any of them. Berdly is two
+  // separate encounters (obj_berdlyb_enemy and obj_berdlyb2_enemy) and the
+  // paired Chapter 5 fights put one enemy's attacks in the other's Step.
+  const scanObjects = [boss.enemy].concat(boss.extraEnemies || []);
   const eventFiles = fs.existsSync(dir)
-    ? fs.readdirSync(dir).filter(f => f.startsWith(`gml_Object_${boss.enemy}_`))
+    ? fs.readdirSync(dir).filter(f => scanObjects.some(o => f.startsWith(`gml_Object_${o}_`)))
     : [];
 
   let found = 0;
@@ -382,6 +489,41 @@ for (const boss of BOSSES) {
     }
   }
   notes.push(`${boss.id}: ${found} named attacks in ${boss.enemy}`);
+
+  // DECLARED ATTACKS. Not every fight dispatches through
+  // `global.monsterattackname[...] = "..."` next to a controller spawn:
+  //   * Lancer's turns set fields on a persistent obj_lancerbike
+  //     (`bike.racecon = 1` / `bike.lcon = 1`) — no announcement, no type.
+  //   * Lanino & Elnina and Orange & Green dispatch from their own controller
+  //     object with one shared type and a `special` / life-counter selecting
+  //     the variant.
+  // For those, the roster JSON's `real` list IS the derivation (each entry
+  // carries file:line evidence), so emit it directly rather than inventing a
+  // parser per fight. Only used when scanning found nothing, so a fight the
+  // scanner handles keeps its verbatim setup blocks.
+  DECLARED_FALLBACK[boss.id] = () => {
+    const cfg = rosterConfigs.find(c => c.id === boss.id);
+    let d = 0;
+    for (const r of (cfg && cfg.real) || []) {
+      if (!r.controller) continue;
+      roster.push({
+        boss: boss.id, bossLabel: boss.label, chapter: boss.chapter,
+        enemy: boss.enemy,
+        selector: (cfg.selectorVar && typeof r.choice === 'number') ? cfg.selectorVar : null,
+        choice: typeof r.choice === 'number' ? r.choice : null,
+        name: r.name || `${boss.label} attack`,
+        controller: r.controller,
+        type: r.type === undefined ? null : r.type,
+        set: r.set || null,
+        turntimerHint: r.turntimer === undefined ? null : r.turntimer,
+        usesDifficulty: false, difficultyLiteral: null, extraFields: [],
+        setup: null, declared: true,
+        source: `rosters/${boss.id}.json (declared)`,
+      });
+      d++;
+    }
+    if (d) notes.push(`${boss.id}: ${d} DECLARED attacks from rosters/${boss.id}.json`);
+  };
 
   // Attacks announced by a HELPER object rather than the boss (Pink's date
   // controller spawns the type-210 finale itself). No selector is recorded:
@@ -517,16 +659,28 @@ for (const boss of BOSSES) {
       notes.push(`${boss.id}: ${gfound} standalone controllers via ${boss.dispatchScript}`);
     }
   }
+
+  // Last resort, once every scanning path has had its turn: a fight none of
+  // them could see falls back to the roster JSON's own derivation.
+  if (DECLARED_FALLBACK[boss.id] && !roster.some(r => r.boss === boss.id)) {
+    DECLARED_FALLBACK[boss.id]();
+  }
 }
 
 // De-duplicate: the same (controller, type) can be dispatched from more than one
 // branch (difficulty variants). Keep the first, record the alternatives.
 const seen = new Map();
+const usedIds = new Set();
 const final = [];
 for (const a of roster) {
   // pattern/datecount must be part of the key: green entries share controller
   // (null) and all four dates share obj_date_controller with no type.
-  const key = `${a.boss}|${a.controller}|${a.type}|${a.pattern}|${a.datecount}`;
+  // The NAME is part of the identity. Difficulty variants of one attack share
+  // both the announcement and the (controller, type), so they still collapse —
+  // but the Chaos King dispatches three genuinely different attacks through
+  // obj_chainking with type 1, and without the name they merged into one entry
+  // and two of his attacks disappeared from the roster.
+  const key = `${a.boss}|${a.controller}|${a.type}|${a.pattern}|${a.datecount}|${a.name}`;
   if (seen.has(key)) { seen.get(key).alsoChoices.push(a.choice); continue; }
   a.alsoChoices = [];
   a.hasSpecial = (a.extraFields || []).includes('special');
@@ -535,6 +689,18 @@ for (const a of roster) {
     : a.launch === 'pink-date'
       ? `${a.boss}_date${a.datecount}`
       : `${a.boss}_${a.type !== null ? ('type' + String(a.type).replace('.', '_')) : a.controller.replace(/^obj_/, '')}`;
+  // Now that same-(controller,type) attacks with different names are kept
+  // separately, the id can collide. Ids address attacks everywhere — the
+  // dropdown, SPEC_CHECK, the visual baseline — so make them unique by
+  // appending a slug of the announcement rather than a bare counter.
+  if (usedIds.has(a.id)) {
+    const slug = String(a.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24);
+    let candidate = `${a.id}_${slug || 'alt'}`;
+    let n = 2;
+    while (usedIds.has(candidate)) candidate = `${a.id}_${slug || 'alt'}${n++}`;
+    a.id = candidate;
+  }
+  usedIds.add(a.id);
   seen.set(key, a);
   final.push(a);
 }
@@ -573,9 +739,46 @@ const REAL = {
     : ['obj_box_throw_controller', 'obj_gerson_shell_kick_controller'].includes(a.controller),
   pink: a => a.launch === 'pink-date' || [200, 202, 208, 209, 203, 199, 210].includes(a.type),
 };
+// Fights contributed as data carry their own real/cut lists. Match on whatever
+// the derivation actually keyed on — a `type` when the dispatcher uses one, the
+// selector `choice` otherwise — so a roster JSON does not have to know how the
+// generator will end up naming the entry.
+for (const j of rosterConfigs) {
+  if (REAL[j.id]) continue;                      // hand-written filter wins
+  const realTypes = new Set((j.real || []).filter(r => r.type !== undefined && r.type !== null).map(r => Number(r.type)));
+  const realChoices = new Set((j.real || []).filter(r => r.choice !== undefined && r.choice !== null).map(r => Number(r.choice)));
+  const realControllers = new Set((j.real || []).map(r => r.controller).filter(Boolean));
+  REAL[j.id] = a => {
+    if (a.type !== null && a.type !== undefined && realTypes.size) return realTypes.has(Number(a.type));
+    if (a.choice !== null && a.choice !== undefined && realChoices.size) return realChoices.has(Number(a.choice));
+    return realControllers.has(a.controller);
+  };
+}
+
 for (const a of final) {
   const judge = REAL[a.boss];
   a.inFight = judge ? !!judge(a) : true;
+  // The boss's monstertype, so the studio can run the fight's own
+  // scr_monstersetup and get real hp/at/df instead of invented numbers.
+  const cfg = BOSSES.find(b => b.id === a.boss);
+  if (cfg) {
+    if (cfg.monsterType === null || cfg.monsterType === undefined) {
+      // Lanino & Elnina and Orange & Green are driven by a CONTROLLER object
+      // that is not itself a monster, so the encounter binds the stats to the
+      // real enemies listed alongside it.
+      cfg.monsterType = monsterTypeOf(cfg.chNum, cfg.enemy);
+      for (const e of cfg.extraEnemies || []) {
+        if (cfg.monsterType !== null && cfg.monsterType !== undefined) break;
+        cfg.monsterType = monsterTypeOf(cfg.chNum, e);
+      }
+    }
+    if (cfg.monsterType !== null && cfg.monsterType !== undefined) a.monsterType = cfg.monsterType;
+    // The fight's OTHER enemies. Several of these fights are duos (Lanino &
+    // Elnina, Aqua & Seth, Yellow & Blue, Orange & Green) and their attacks
+    // read both enemies for positioning and state, so the studio has to spawn
+    // the partner too or those reads land on an empty proxy at (320, 240).
+    if ((cfg.extraEnemies || []).length) a.extraEnemies = cfg.extraEnemies;
+  }
 }
 
 console.log(notes.join('\n'));

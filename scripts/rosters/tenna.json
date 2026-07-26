@@ -4,10 +4,12 @@
   "chNum": 3,
   "label": "Tenna (final fight)",
   "enemy": "obj_tenna_enemy",
+  "monsterType": 103,
+  "encounter": 121,
   "supportObjects": [
+    "obj_actor_tenna",
     "obj_tenna_enemy_bg",
     "obj_tenna_minigame_ui",
-    "obj_actor_tenna",
     "obj_tenna_zoom"
   ],
   "boxBlock": {
@@ -21,8 +23,8 @@
   "selectorVar": "myattackchoice",
   "chooser": {
     "file": "gml_Object_obj_tenna_enemy_Other_10.gml",
-    "calledFrom": "gml_Object_obj_tenna_enemy_Step_0.gml:50 — event_user(0), gated on attackchosen == false",
-    "secondSelector": "minigametype / difficulty (a STRING + int pair, passed to obj_tenna_zoom at Step_0:1226-1231)"
+    "calledFrom": "gml_Object_obj_tenna_enemy_Step_0.gml:44-62 — event_user(0) at :50, gated on scr_isphase(\"enemytalk\") && talked == 0 && attackchosen == false",
+    "secondSelector": "minigametype (STRING) + difficulty (int), handed to obj_tenna_zoom at gml_Object_obj_tenna_enemy_Step_0.gml:1225-1231 and re-dispatched in gml_Object_obj_tenna_zoom_Other_11.gml"
   },
   "real": [
     {
@@ -33,27 +35,27 @@
       "spawns": "obj_tenna_allstars_manager -> obj_tenna_allstars_bullet",
       "damage": 65,
       "turntimer": 200,
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:22-23 — `if (phaseturn == 1) myattackchoice = 0;`. phaseturn is incremented every non-minigame turn at Other_10:6-7 and reset to 0 at Other_10:31, so the 1/2/3 ladder cycles forever while Tenna is above half HP. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:576-583."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:22-23 `if (phaseturn == 1) myattackchoice = 0;`. phaseturn is incremented at Other_10:6-7 on every turn the player did not ACT Minigame, and reset to 0 at :31, so the 1/2/3 ladder cycles forever while Tenna is above half HP. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:576-583; controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:2526-2535."
     },
     {
       "choice": 1,
       "type": 126,
       "name": "smashcut",
       "controller": "obj_dbulletcontroller",
-      "spawns": "obj_tenna_smashcut_attack",
+      "spawns": "obj_tenna_smashcut_attack (-> obj_tenna_smashcut_manager, obj_tenna_smashcutter)",
       "damage": 65,
       "turntimer": 260,
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:25-26 — `if (phaseturn == 2) myattackchoice = 1;`. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:584-591."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:25-26 `if (phaseturn == 2) myattackchoice = 1;`. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:584-591; controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:2552-2560."
     },
     {
       "choice": 2,
       "type": 128,
       "name": "rimshot lensflare",
       "controller": "obj_dbulletcontroller",
-      "spawns": "obj_tenna_rimshot_star (two stars, 90-degree-apart sides)",
+      "spawns": "two obj_tenna_rimshot_star, fired at btimer 103 and 117 from two sides 90 degrees apart",
       "damage": 65,
       "turntimer": 260,
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:28-32 — `if (phaseturn == 3) { myattackchoice = 2; phaseturn = 0; }`. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:592-599."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:28-32 `if (phaseturn == 3) { myattackchoice = 2; phaseturn = 0; }`. Dispatched at gml_Object_obj_tenna_enemy_Step_0.gml:592-599; controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:2562-2612 (rate1 78 / rate2 50 for the snd_rimshot pulse)."
     },
     {
       "choice": 3,
@@ -61,7 +63,7 @@
       "minigametype": "music",
       "difficulty": 0,
       "controller": "obj_rhythmgame (tenna_boss = true, turn_length = 360)",
-      "evidence": "chosen by the global.tempflag[91] ladder in gml_Object_obj_tenna_enemy_Other_10.gml:90-93 (tempflag 2), :108-112 (5), :137-141 (9), :158-162 (13) and by randomchosen == 0 in the >16 random pool at :220-221 (weighted choose(0,0,0,...) at :192/:195). Turn itself: myattackchoice = 3 at Other_10:36/43/49/57. Spawned at gml_Object_obj_tenna_zoom_Other_11.gml:37-46. Caption at Other_13:48-52."
+      "evidence": "global.tempflag[91] ladder in gml_Object_obj_tenna_enemy_Other_10.gml:90-94 (tempflag 2), :108-112 (5), :137-141 (9), :158-162 (13), plus randomchosen == 0 in the >16 pool at :220-221 (weighted choose(0, 0, 0, ...) at :192 / :195). ALSO forced as the opener of every MINIGAME INSANITY turn by Other_10:287-291 `if (minigameinsanity == 1) { minigametype = \"music\"; difficulty = 0; }`. Built at gml_Object_obj_tenna_zoom_Other_11.gml:37-46; caption at Other_13:48-52; ends at obj_tenna_zoom_Step_0.gml:448-457 (timer 300)."
     },
     {
       "choice": 3,
@@ -69,7 +71,7 @@
       "minigametype": "cooking",
       "difficulty": 0,
       "controller": "obj_chefs_init (obj_chefs_game.microgame = 6, obj_chefs_spawner mode 1 freq 90)",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:84-88 (tempflag 1) and :164-168 (tempflag 14), plus randomchosen == 1 at :223-227. Spawned at gml_Object_obj_tenna_zoom_Other_11.gml:48-105 (the minigamedifficulty == 0 arm). Caption at Other_13:54-57."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:84-88 (tempflag 1) and :164-168 (tempflag 14), plus randomchosen == 1 at :223-227. Insanity re-roll also produces it at gml_Object_obj_tenna_zoom_Step_0.gml:381-385. Built at gml_Object_obj_tenna_zoom_Other_11.gml:48-105 (the minigamedifficulty == 0 arm); caption at Other_13:54-57."
     },
     {
       "choice": 3,
@@ -77,7 +79,7 @@
       "minigametype": "cowboy",
       "difficulty": 0,
       "controller": "obj_shootout_controller (shootout_type = 2)",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:102-106 (tempflag 4) and :143-147 (tempflag 10), plus randomchosen == 2 at :229-233. Spawned at gml_Object_obj_tenna_zoom_Other_11.gml:151-243 (`if (minigamedifficulty == 0) obj_shootout_controller.shootout_type = 2;` :212-213). Caption at Other_13:77-78."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:102-106 (tempflag 4) and :143-147 (tempflag 10), plus randomchosen == 2 at :229-233. Note randomchosen 2 is reachable even in the flag[1197] > 0 pool, because the anti-repeat loop at :199-206 does `randomchosen += 2` and then wraps (`if (flag[1197] > 0 && randomchosen > 7) randomchosen -= 7`), so 0 -> 2 and 9 -> 2. Built at gml_Object_obj_tenna_zoom_Other_11.gml:151-243 (`if (minigamedifficulty == 0) obj_shootout_controller.shootout_type = 2;` at :212-213); caption at Other_13:77-78."
     },
     {
       "choice": 3,
@@ -85,24 +87,24 @@
       "minigametype": "cowboy",
       "difficulty": 1,
       "controller": "obj_shootout_controller (shootout_type = 3) + obj_shootout_big_tenna",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:131-135 (tempflag 8) and :184-188 (tempflag 16), plus randomchosen == 3 at :235-239. Spawned at gml_Object_obj_tenna_zoom_Other_11.gml:215-219. Caption at Other_13:80-81."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:131-135 (tempflag 8) and :184-188 (tempflag 16), plus randomchosen == 3 at :235-239. Built at gml_Object_obj_tenna_zoom_Other_11.gml:215-219; caption at Other_13:80-81."
     },
     {
       "choice": 3,
       "type": 150,
-      "name": "PHYSICAL CHALLENGE — battle d1 / SHOOT THE TARGETS! (sharpshoot)",
+      "name": "PHYSICAL CHALLENGE — battle d1 / SHOOT THE TARGETS! (sharpshoot test)",
       "minigametype": "battle",
       "difficulty": 1,
-      "controller": "obj_dbulletcontroller type 150 -> obj_lightemup_controller (target inst.type = 5)",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:96-100 (tempflag 3), :177-181 (tempflag 15 when global.flag[1197] == 0), plus randomchosen == 4 at :241-245. Dispatched at gml_Object_obj_tenna_zoom_Other_11.gml:251-267 (`global.monsterattackname[myself] = \"sharpshoot test\"; dc.type = 150; dc.minigamedifficulty = 1;`). obj_lightemup_controller_Create_0.gml:7-8 turns the target into type 5 (sharpshoot) because obj_tenna_zoom.minigamedifficulty == 1. Caption at Other_13:90-96."
+      "controller": "obj_dbulletcontroller type 150 -> obj_lightemup_controller with obj_shadowman_sharpshoot_target.type = 5",
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:96-100 (tempflag 3) and :170-181 (tempflag 15, the global.flag[1197] == 0 arm), plus randomchosen == 4 at :241-245. Announced at gml_Object_obj_tenna_zoom_Other_11.gml:251-267 (`global.monsterattackname[myself] = \"sharpshoot test\"; dc.type = 150;`). The variant is selected by gml_Object_obj_lightemup_controller_Create_0.gml:7-8 `if (i_ex(obj_tenna_zoom) && obj_tenna_zoom.minigamedifficulty == 1) inst.type = 5;` — it reads the ZOOM's difficulty, not dc.minigamedifficulty (both branches set dc.minigamedifficulty = 1, so that field does not discriminate). Ends at obj_tenna_zoom_Step_0.gml:561-570 (ui timer >= 270 or 3 fails). Caption at Other_13:90-96."
     },
     {
       "choice": 3,
       "name": "PHYSICAL CHALLENGE — battle d2 / BOUNCE THE BALL!",
       "minigametype": "battle",
       "difficulty": 2,
-      "controller": "obj_elnina_umbrella + obj_elnina_bouncingbullet + obj_umbrella_tv rain (own obj_growtangle at view+320, view+200)",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:124-128 (tempflag 7 when global.flag[1197] == 0), :152-156 (tempflag 12), plus randomchosen == 5 at :247-251. Built at gml_Object_obj_tenna_zoom_Other_11.gml:269-356; the bouncing ball itself is spawned from gml_Object_obj_tenna_zoom_Step_0.gml:470-559. Caption at Other_13:98-104."
+      "controller": "obj_elnina_umbrella + obj_elnina_bouncingbullet + 19x obj_umbrella_tv rain, in its own obj_growtangle at (view+320, view+200)",
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:117-128 (tempflag 7, the global.flag[1197] == 0 arm) and :152-156 (tempflag 12), plus randomchosen == 5 at :247-251. Built at gml_Object_obj_tenna_zoom_Other_11.gml:269-356; the ball itself is spawned from gml_Object_obj_tenna_zoom_Step_0.gml:470-559. Ends at obj_tenna_zoom_Step_0.gml:561-570 (timer 300 or 3 fails) or from obj_elnina_bouncingbullet_Collision_obj_elnina_umbrella.gml:63-66. Caption at Other_13:98-104."
     },
     {
       "choice": 3,
@@ -110,17 +112,17 @@
       "name": "LIGHT 'EM UP (the ultimate / final attack)",
       "minigametype": "battle",
       "difficulty": 3,
-      "controller": "obj_dbulletcontroller type 150 -> obj_lightemup_controller (target inst.type = 4) + obj_tenna_lightemup_bullet",
-      "evidence": "reached only through the MINIGAME INSANITY escalation: gml_Object_obj_tenna_enemy_Other_10.gml:9-10 sets minigameinsanity when HP <= 20% of 5500 or the score reaches 1000; obj_tenna_zoom then shortens minigameinsanitytimermax down to 30 (gml_Object_obj_tenna_zoom_Step_0.gml:299-311) and on the 5th channel flip at 30 (:423-436) sets `minigametype = \"battle\"; minigamedifficulty = 3;` and `with (obj_tenna_enemy) phaseturn = 18`. The attack is announced at gml_Object_obj_tenna_zoom_Other_11.gml:358-377 (`\"lightemup\"`, dc.type = 150). obj_tenna_enemy_Other_10.gml:60-67 then re-selects battle d3 every following turn and latches haveusedultimate = true, which is what lets Step_0:37-42 end the fight."
+      "controller": "obj_dbulletcontroller type 150 -> obj_lightemup_controller with obj_shadowman_sharpshoot_target.type = 4; bullets from obj_actor_tenna",
+      "evidence": "Reached ONLY through the MINIGAME INSANITY escalation. gml_Object_obj_tenna_enemy_Other_10.gml:9-10 sets minigameinsanity when HP <= 20% of 5500 or obj_tenna_enemy_bg.myscore >= 1000, while haveusedultimate is still false. obj_tenna_zoom then channel-surfs on a timer that shrinks 120 -> 110 -> ... -> 50 -> 39 -> 38 -> ... -> 30 (gml_Object_obj_tenna_zoom_Step_0.gml:299-311); once minigameinsanitytimermax == 30 each flip increments obj_tenna_enemy.minigameinsanitycount, and on the 5th such flip :423-436 forces `minigametype = \"battle\"; minigamedifficulty = 3;` and `with (obj_tenna_enemy) phaseturn = 18;`. Announced at gml_Object_obj_tenna_zoom_Other_11.gml:358-377 (`\"lightemup\"`, dc.type = 150). obj_lightemup_controller_Create_0.gml leaves the target at type 4 because the zoom's difficulty is 3, not 1."
     },
     {
       "choice": 3,
       "name": "PHYSICAL CHALLENGE — susiezilla d2 / PROTECT RALSEI!",
       "minigametype": "susiezilla",
       "difficulty": 2,
-      "controller": "obj_susiezilla_gamecontroller setup(2) — ralsei tower, statue.maxhp 40",
-      "conditional": "global.flag[1197] > 0 (physical-challenge points banked earlier in the chapter, set in obj_round_evaluation_Draw_0.gml:402-404)",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:117-129 (tempflag 7, the flag[1197] > 0 arm) and randomchosen == 6 at :253-257 (only in the flag[1197] > 0 pool at :195). Spawned at gml_Object_obj_tenna_zoom_Other_11.gml:10-35; mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:247-260. Caption at Other_13:20-21."
+      "controller": "obj_susiezilla_gamecontroller setup(2) — spr_susiezilla_ralsei_tower statue, maxhp 40",
+      "conditional": "global.flag[1197] > 0",
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:117-123 (tempflag 7, the flag[1197] > 0 arm) and randomchosen == 6 at :253-257, which only exists in the flag[1197] > 0 pool `choose(0, 0, 0, 1, 3, 4, 5, 6, 7)` at :195 — with flag[1197] == 0 the pool tops out at 5 and the wrap at :202-203 keeps it there. flag[1197] is the banked PHYSICAL CHALLENGE score, written at gml_Object_obj_round_evaluation_Draw_0.gml:402-404. Built at gml_Object_obj_tenna_zoom_Other_11.gml:17-18; mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:247-260. Caption at Other_13:20-21."
     },
     {
       "choice": 3,
@@ -129,16 +131,16 @@
       "difficulty": 3,
       "controller": "obj_susiezilla_gamecontroller setup(3) — obj_susiezilla_singlescreen_kickboxin_tenna, hp 3",
       "conditional": "global.flag[1197] > 0",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:170-176 (tempflag 15, flag[1197] > 0 arm). Mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267 (obj_susiezilla_singlescreen_kickboxin_tenna, hp 3). Caption at Other_13:23-27."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:170-176 (tempflag 15, the flag[1197] > 0 arm). Built at gml_Object_obj_tenna_zoom_Other_11.gml:20-21; mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267. Caption at Other_13:23-27."
     },
     {
       "choice": 3,
-      "name": "PHYSICAL CHALLENGE — susiezilla d4 / FIGHT...?",
+      "name": "PHYSICAL CHALLENGE — susiezilla d4 / FIGHT...? (giant Tenna variant)",
       "minigametype": "susiezilla",
       "difficulty": 4,
-      "controller": "obj_susiezilla_gamecontroller setup(4) — same karate Tenna, second variant",
+      "controller": "obj_susiezilla_gamecontroller setup(4) — same kickboxing Tenna, second variant",
       "conditional": "global.flag[1197] > 0",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:259-263 — randomchosen == 7, which only exists in the flag[1197] > 0 pool `choose(0, 0, 0, 1, 3, 4, 5, 6, 7)` at :195. Same 3/4 mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267; mode 4 differs from 3 only downstream (obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:91-100 gates the giant-Tenna variant)."
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:259-263 — randomchosen == 7, which exists only in the flag[1197] > 0 pool at :195. Shares the mode 3/4 body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267; the difference is downstream at gml_Object_obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:91-107, which gates the giant-Tenna variant on obj_tenna_zoom.minigameinsanity or obj_tenna_enemy.alreadydidgianttenna. Caption at Other_13:29-33."
     }
   ],
   "cut": [
@@ -146,76 +148,83 @@
       "choice": 20,
       "type": 150,
       "name": "light em up (standalone dispatcher branch)",
-      "evidence": "gml_Object_obj_tenna_enemy_Step_0.gml:609-615 is a real dispatcher branch, but the ONLY writer of `myattackchoice = 20` in Chapter 3 is gml_Object_obj_tenna_enemy_Other_12.gml:74-78 (`if (phaseturn == 18) { myattackchoice = 20; haveusedultimate = true; }`). Other_12 is event_user(2) on obj_tenna_enemy, and obj_tenna_enemy calls only event_user(0) (Step_0:50) — nothing anywhere in ch3 does `with (obj_tenna_enemy) event_user(2)`. The live fight reaches LIGHT 'EM UP through minigametype \"battle\" difficulty 3 instead."
+      "evidence": "gml_Object_obj_tenna_enemy_Step_0.gml:609-615 is a real dispatcher branch (`monsterattackname = \"light em up\"`, dc.type = 150, scr_turntimer(999999)), but the ONLY writer of `myattackchoice = 20` in all of Chapter 3 is gml_Object_obj_tenna_enemy_Other_12.gml:74-78. Other_12 is event_user(2) on obj_tenna_enemy, and a chapter-wide grep finds no `event_user(2)` call targeting obj_tenna_enemy anywhere — the object only ever calls event_user(0) (Step_0:50). The live fight reaches LIGHT 'EM UP as minigametype \"battle\" difficulty 3 instead."
     },
     {
       "choice": 21,
       "name": "sharpshoot debug turn (minigametype \"battle\", difficulty 1, turntimer 999999)",
-      "evidence": "gml_Object_obj_tenna_enemy_Step_0.gml:616-622. Selected only by gml_Object_obj_tenna_enemy_Other_10.gml:12-17 `if (testsharpshoot == true) { phaseturn = 99; myattackchoice = 21; exit; }`. `testsharpshoot` is written exactly once in the whole chapter — `testsharpshoot = false;` at gml_Object_obj_tenna_enemy_Create_0.gml:122. No writer sets it true."
+      "evidence": "gml_Object_obj_tenna_enemy_Step_0.gml:616-622. Selected only by gml_Object_obj_tenna_enemy_Other_10.gml:12-17 `if (testsharpshoot == true) { phaseturn = 99; myattackchoice = 21; exit; }`. `testsharpshoot` is written exactly once in the chapter — `testsharpshoot = false;` at gml_Object_obj_tenna_enemy_Create_0.gml:122. No writer sets it true. (Its only other reader is gml_Object_obj_lightemup_controller_Create_0.gml:4-5, the other route to sharpshoot targets.)"
     },
     {
       "type": 127,
       "name": "lensflare only",
-      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:2537-2550 implements type 127 (two obj_lensflare_manager at opposite ends of a random diameter), but a chapter-wide grep for `type = 127` returns nothing — no object ever dispatches it."
+      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:2537-2550 implements type 127 (two obj_lensflare_manager at opposite ends of a random diameter, at btimer 110 and 125), but a chapter-wide grep for `type = 127` returns nothing. No object dispatches it."
     },
     {
       "type": 129,
       "name": "rimshot lensflare — fast variant",
-      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:2562-2610 shares its branch with 128 but uses rate1 27 / rate2 20 instead of 78 / 50 and fires only one star. Nothing sets `type = 129` anywhere in ch3."
+      "evidence": "gml_Object_obj_dbulletcontroller_Step_0.gml:2562-2611 shares its branch with 128 but fires only one star (`btimer == 103 || (type == 128 && btimer == 117)` at :2573) and pulses at rate1 27 / rate2 20 instead of 78 / 50 (:2596-2603). A chapter-wide grep for `type = 129` returns nothing."
     },
     {
       "choice": 3,
       "name": "cooking difficulty 2 (microgame 1, freq 50)",
       "minigametype": "cooking",
       "difficulty": 2,
-      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:107-148 is a full second cooking setup, but every cooking assignment in the chooser pins difficulty 0 — Other_10:86-87, :166-167 and :225-226 — and the insanity re-roll in obj_tenna_zoom_Step_0.gml:381-385 also pins 0. minigamedifficulty 2 for cooking can never occur in this fight."
+      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:107-148 is a complete second cooking setup, but every cooking assignment pins difficulty 0 — obj_tenna_enemy_Other_10.gml:86-87, :166-167, :225-226 and the insanity re-roll at obj_tenna_zoom_Step_0.gml:383-384. minigamedifficulty 2 for cooking cannot occur in this fight."
+    },
+    {
+      "choice": 3,
+      "name": "cooking difficulty 1 / 3 — DODGE AND SERVE!",
+      "minigametype": "cooking",
+      "difficulty": "1 and 3",
+      "evidence": "Captions exist at gml_Object_obj_tenna_zoom_Other_13.gml:59-60 and :65-66, but gml_Object_obj_tenna_zoom_Other_11.gml's cooking block only has arms for minigamedifficulty 0 (:64) and 2 (:107) — there is no setup body for 1 or 3 at all, and no chooser writer. Leftover from the board-4 kitchen section."
     },
     {
       "choice": 3,
       "name": "battle difficulty 0 — PHOTO 3 SMILES! (obj_shutta photo minigame)",
       "minigametype": "battle",
       "difficulty": 0,
-      "evidence": "gml_Object_obj_tenna_zoom_Other_13.gml:88 has the caption and Other_12.gml:78-88 still tears down obj_shutta_nobyacttest / obj_shutta_photo_controller / obj_shutta_enemy, so a photo minigame once existed here. It is doubly unreachable: (1) the chooser never yields battle difficulty 0, and (2) even if it did, gml_Object_obj_tenna_zoom_Other_11.gml:248-249 rewrites `if (minigamedifficulty == 0) minigamedifficulty = choose(1, 2);` and Other_11 (event_user(1), fired at Step_0:127) runs BEFORE Other_13 (event_user(3), fired at Step_0:275), so the caption can never print either."
+      "evidence": "Doubly unreachable. (1) No chooser ever yields battle difficulty 0 — every battle assignment is difficulty 1, 2 or 3 (Other_10:98-99, :126-127, :154-155, :179-180, :243-244, :249-250, :64-65). (2) Even if one did, gml_Object_obj_tenna_zoom_Other_11.gml:248-249 rewrites `if (minigamedifficulty == 0) minigamedifficulty = choose(1, 2);` and Other_11 (event_user(1), fired at obj_tenna_zoom_Step_0.gml:127) runs BEFORE Other_13 (event_user(3), fired at :275), so the default `\"PHOTO 3 SMILES!\"` string at Other_13:88 can never survive either. The photo minigame's teardown is still present at gml_Object_obj_tenna_zoom_Other_12.gml:78-88 (obj_shutta_nobyacttest / obj_shutta_nobyact_tv / obj_shutta_photo_controller / obj_shutta_enemy)."
     },
     {
       "choice": 3,
       "name": "susiezilla difficulty 1 — BREAK THE STATUE!",
       "minigametype": "susiezilla",
       "difficulty": 1,
-      "evidence": "dispatched at gml_Object_obj_tenna_zoom_Other_11.gml:14-15, captioned at Other_13:17-18, mode body at obj_susiezilla_gamecontroller_Create_0.gml:244-245 (obj_susiezilla_statue_enemy). The final-fight chooser only ever produces susiezilla 2, 3 and 4 (Other_10:121-122, :174-175, :255-256, :261-262)."
+      "evidence": "Dispatched at gml_Object_obj_tenna_zoom_Other_11.gml:14-15, captioned at Other_13:17-18, mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:244-245 (obj_susiezilla_statue_enemy). The final-fight chooser only ever produces susiezilla 2, 3 and 4 (Other_10:121-122, :174-175, :255-256, :261-262)."
     },
     {
       "choice": 3,
       "name": "susiezilla difficulty 5 — DESTROY HOUSES!",
       "minigametype": "susiezilla",
       "difficulty": 5,
-      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:26-27 / Other_13:35-36; mode 5 is the wave-spawning arcade mode (obj_susiezilla_gamecontroller_Create_0.gml:269-270, alarm[10]). Never selected by obj_tenna_enemy_Other_10 — it belongs to the standalone Susiezilla arcade section."
+      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:26-27 / Other_13:35-36; mode 5 is the wave-spawning arcade mode (gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:269-270, alarm[10]). No chooser writer — it belongs to the standalone Susiezilla arcade section."
     },
     {
       "choice": 3,
       "name": "susiezilla difficulty 6 — DESTROY HOUSES!",
       "minigametype": "susiezilla",
       "difficulty": 6,
-      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:29-30 / Other_13:38-39; mode 6 at obj_susiezilla_gamecontroller_Create_0.gml:272-273 (alarm[11]). No chooser writer."
+      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:29-30 / Other_13:38-39; mode 6 at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:272-273 (alarm[11]). No chooser writer."
     },
     {
       "choice": 3,
       "name": "susiezilla difficulty 7",
       "minigametype": "susiezilla",
       "difficulty": 7,
-      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:32-33 dispatches setup(7); there is not even a caption for it in Other_13. No chooser writer."
+      "evidence": "gml_Object_obj_tenna_zoom_Other_11.gml:32-33 dispatches setup(7), but gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:275-277 is an EMPTY body and Other_13 has no caption for it. No chooser writer."
     },
     {
-      "name": "phaseturn == 19 ultimate re-entry",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:69-76 is a byte-for-byte duplicate of the phaseturn == 18 block. Nothing in ch3 ever assigns phaseturn 19: the only writers are Other_10:7 (++, but the 1/2/3 ladder resets to 0 at :31), Other_10:14 (= 99), Other_10:20 (= 18, behind the dead testlightemup flag), Step_0:96 (= 0) and obj_tenna_zoom_Step_0.gml:435 (= 18)."
+      "name": "obj_tenna_enemy event_user(2) ladder (Other_12) — including the TRIPLE FEATURE",
+      "evidence": "gml_Object_obj_tenna_enemy_Other_12.gml:1-78 is a complete alternative 18-step chooser (phaseturn 1..18 -> choices 0/1/2/3/20, `myattackchoice = choose(0, 1, 2)` at :59, `_minigamecount = 3` at :71). It is orphaned: obj_tenna_enemy only ever calls event_user(0) (Step_0:50) and nothing in ch3 does `with (obj_tenna_enemy) event_user(2)`. It also writes `_minigamecount`, which is a var LOCAL to Other_10 (declared at Other_10:1) — proof it was split off from the live chooser. Consequently `minigametype3` / `difficulty3`, plumbed all the way through obj_tenna_enemy_Create_0.gml:39-40, Step_0:1230-1231, obj_tenna_zoom_Create_0.gml:32-33 and the con == 3 chain at obj_tenna_zoom_Step_0.gml:769-798, can never be reached: the live chooser sets _minigamecount to 1 or 2 only (Other_10:1, :51)."
     },
     {
-      "name": "obj_tenna_enemy event_user(2) ladder (Other_12) — incl. the TRIPLE FEATURE",
-      "evidence": "gml_Object_obj_tenna_enemy_Other_12.gml:1-78 is a complete alternative 18-step chooser (phaseturn 1..18 -> choices 0/1/2/3/20, `myattackchoice = choose(0, 1, 2)` at :59, `_minigamecount = 3` at :71). It is orphaned: obj_tenna_enemy only ever calls event_user(0) (Step_0:50), and it writes `_minigamecount`, a var LOCAL to Other_10, which proves it was split off from the live chooser. Consequently `minigametype3` / `difficulty3` — plumbed all the way through obj_tenna_enemy_Step_0.gml:1230-1231, obj_tenna_zoom_Create_0.gml:32-33 and the con == 3 chain at obj_tenna_zoom_Step_0.gml:769-798 — can never be reached: the live chooser sets _minigamecount to 1 or 2 only (Other_10:1, :51)."
+      "name": "Other_10 phaseturn == 18 / == 19 ultimate re-entry blocks",
+      "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:60-67 and :69-76 are byte-for-byte duplicates that re-select battle difficulty 3. Neither runs in the live fight: phaseturn = 18 is assigned by gml_Object_obj_tenna_zoom_Step_0.gml:435 MID-TURN, and the same block immediately sets minigametype/difficulty and calls event_user(1), so LIGHT 'EM UP starts without the chooser. That turn then never ends — obj_tenna_zoom_Step_0.gml:14-15 floors global.turntimer at 4 on every step, and the zoom's only exits to con = 2 (Step_0:448-468, :561-571) have no arm for minigamedifficulty == 3 — so event_user(0) is never reached again and phaseturn stays 18 (which is exactly what gml_Object_obj_tenna_minigame_ui_Draw_0.gml:1 tests for). These blocks are belt-and-braces; the only other writer of phaseturn 18 is the dead `testlightemup` flag at Other_10:19-20 (written false once, at Create_0:121)."
     }
   ],
-  "mechanics": "WIN CONDITION IS POINTS, NOT HP. Tenna has 5500 HP (scr_monstersetup.gml:1861-1866) but the fight ends when obj_tenna_enemy_bg.myscore reaches 1000 AND haveusedultimate is true (Step_0:37-42). Encounter 121 (scr_encountersetup.gml:867-880) is SOLO — monstertype[1] and [2] are 0. THREE TURN KINDS: (a) ordinary bullet turns, myattackchoice 0/1/2, red soul in the standard box created at Step_0:557-558; (b) PHYSICAL CHALLENGE turns, myattackchoice 3, which set minigametransition_con = 1 (Step_0:600-608), fly obj_actor_tenna into the screen and create obj_tenna_zoom (Step_0:1183-1243), which is a second dispatcher keyed on a STRING minigametype plus an int difficulty; (c) the LIGHT 'EM UP finale. Minigame turns run at turntimer 999 with a hard floor of 4 (obj_tenna_zoom_Step_0.gml:14-15) and end by forcing global.turntimer to 1 (Step_0:1260-1261). Failing a minigame does not damage you during it: obj_tenna_zoom counts minigamefailcount, and the boss cashes it in afterwards at Step_0:1298-1375 for 56 / 26 / 18 damage per fail. HOW A MINIGAME TURN IS TRIGGERED: the player ACTing 'Minigame' (Step_0:861-872, acting 5.1 sets minigameactivated), OR Tenna's HP dropping to 50% (Other_10:34-39, which then forces choice 3 EVERY turn), OR minigameinsanity. DOUBLE FEATURE: once minigamecount >= 6 the chooser sets _minigamecount = 2 (Other_10:47-52) and queues two minigames in one turn via minigametype2; obj_tenna_zoom chains them at con == 3 (Step_0:769-798). MINIGAME ORDER is a global.tempflag[91] ladder (Other_10:78-292): 1 cooking, 2 music, 3 battle d1, 4 cowboy d0, 5 music, 7 susiezilla d2 or battle d2, 8 cowboy d1, 9 music, 10 cowboy d0, 12 battle d2, 13 music, 14 cooking, 15 susiezilla d3 or battle d1, 16 cowboy d1, then a weighted random pool (choose(0,0,0,1,2,3,4,5), or choose(0,0,0,1,3,4,5,6,7) with global.flag[1197] > 0) with a 3-pass anti-repeat filter. FINAL PHASE (MINIGAME INSANITY): HP <= 20% or score >= 1000 sets minigameinsanity (Other_10:9-10); obj_tenna_zoom then channel-surfs between minigames on a timer that shrinks 120 -> 30 (Step_0:299-311), and on the 5th flip at 30 it forces battle d3 and sets the boss's phaseturn = 18 (:423-436), which is LIGHT 'EM UP. SOUL MODES: red soul only for 125/126/128 and battle d2; the sharpshoot and LIGHT 'EM UP turns replace the soul with an aiming cursor (obj_lightemup_controller_Create_0.gml:22-37) and reposition/re-sprite all three heroes into zoo suits; cowboy uses obj_shootout_heart; music, cooking and susiezilla replace player control entirely. SIDE SYSTEMS the boss Step also runs: the score/points meter (obj_tenna_enemy_bg, addscore/myscore/maxscore 1000), Susie's BET act (Step_0:959-993, 20 pts, 30 with the Jevil tail), Ralsei's POPULAR BOY act linking his HP to score (Step_0:1046-1096, 773-774), the Lancer stool cheat (Step_0:757-769, 1160-1181), and a 22-step balloon-dialogue state machine (Step_0:71-545) with a sword-route branch on global.flag[1050].",
-  "engineNeeds": "The three ordinary bullet attacks (125 / 126 / 128) are conventional obj_dbulletcontroller work and should run: obj_tenna_allstars_manager, obj_tenna_smashcut_attack, obj_tenna_rimshot_star and obj_lensflare_manager are all already in docs/js/gml_objects.js. Caveats: obj_tenna_allstars_manager uses ds_list plus two surfaces and a GML 2.3 `spawn_new = function(arg0)` method, and it opens with snd_loop(snd_crowd_laughter_loop). Everything else needs new engine work. (1) THE MINIGAME TURN IS NOT AN ANNOUNCED ATTACK. The myattackchoice == 3 branch (Step_0:600-608) sets no global.monsterattackname and creates no controller, so gen_attacks.js's announcement scan yields nothing for the 10 real PHYSICAL CHALLENGE variants. They need a declared launch mode the way Pink's dates do (`launch: 'tenna-minigame'` with minigametype + difficulty) that creates obj_tenna_zoom directly with those two fields set, skipping the obj_actor_tenna jump-in. (2) TYPE-150 DEDUP COLLISION. Three separate dispatches produce obj_dbulletcontroller.type = 150 — Step_0:609-615 (cut choice 20), obj_tenna_zoom_Other_11.gml:251-267 (sharpshoot) and :358-377 (LIGHT 'EM UP). gen_attacks.js's dedup key is boss|controller|type|pattern|datecount, so all three collapse into ONE entry and the CUT choice-20 one wins (it is scanned first). By luck that entry still plays the real finale — obj_lightemup_controller_Create_0.gml:1-8 only downgrades the target to type 5 when myattackchoice == 21 or obj_tenna_zoom.minigamedifficulty == 1, neither of which holds — but the sharpshoot variant becomes unreachable from the dropdown unless obj_tenna_zoom is faked with minigamedifficulty = 1. (3) obj_lightemup_controller's Create references obj_tenna_enemy, obj_herokris, obj_herosusie and obj_heroralsei UNGUARDED and calls scr_act_charsprite on all three; the studio must have a full three-hero party. (4) UNIMPLEMENTED NATIVES: the cowboy minigame's setup calls layer_create, layer_background_create, layer_background_htiled, layer_background_stretch and layer_background_speed (obj_tenna_zoom_Other_11.gml:221-243) — all five are in docs/js/native_gaps.json, and obj_tenna_zoom_Other_11.gml is literally the cited example for layer_background_speed. (5) obj_tenna_zoom's transition does sprite_create_from_surface(application_surface, ...) (Step_0:117) and drives four scr_lerpvar tweens over surfaces; the zoom is cosmetic and can be stubbed by jumping straight to con = 1 with event_user(1) already fired. (6) susiezilla needs obj_mainchara.cutscene, a 1280-wide game_bounds sub-world, scr_script_delayed and scr_dark_marker; cooking needs the whole obj_chefs_* kitchen plus scr_chefs_end; music needs obj_rhythmgame_chart and audio-synced charting. (7) NO TURN BLOCK is supplied on purpose: every Tenna turn length lives INSIDE its dispatcher branch (200 / 260 / 260 / 999 / 999999) and is therefore carried by the per-attack `setup` slice. The only out-of-branch call is the raise-only scr_turntimer(90) floor at Step_0:565, which is identical to the studio's own default, so a turnBlock would be a no-op — and any slice wide enough to include it is either brace-unbalanced or re-runs the spawners (the Knight double-spawn trap).",
+  "mechanics": "WIN CONDITION IS POINTS, NOT HP. Tenna has 5500 HP / AT 13 (gml_GlobalScript_scr_monstersetup.gml:1861-1866) but the fight ends when obj_tenna_enemy_bg.myscore >= 1000 AND haveusedultimate == true (gml_Object_obj_tenna_enemy_Step_0.gml:37-42 -> endcon = 1). Encounter 121 (gml_GlobalScript_scr_encountersetup.gml:867-881) is SOLO: monstertype[1] and [2] are 0. THREE KINDS OF TURN. (a) Ordinary bullet turns, myattackchoice 0/1/2, red soul in the standard box created at Step_0:555-562. (b) PHYSICAL CHALLENGE turns, myattackchoice 3, which set minigametransition_con = 1 (Step_0:600-608), fly obj_actor_tenna into the screen and create obj_tenna_zoom (Step_0:1183-1243) — a SECOND dispatcher keyed on a STRING minigametype plus an int difficulty (obj_tenna_zoom_Other_11.gml). (c) The LIGHT 'EM UP finale. Minigame turns run at turntimer 999 with a hard floor of 4 (obj_tenna_zoom_Step_0.gml:14-15) and end by forcing global.turntimer to 1 (Step_0:1258-1261). Failing a minigame does no damage during it: obj_tenna_zoom counts minigamefailcount (capped at 3, Step_0:1295-1296) and the boss cashes it in afterwards at Step_0:1298-1375 for 56 / 26 / 18 damage per fail (doubled onto Ralsei alone if POPULAR BOY is active). HOW A MINIGAME TURN IS TRIGGERED: the player ACTing 'Minigame' (Step_0:839-872 — acting 2/3/4/5 fall into 5.1, which sets minigameactivated), OR Tenna's HP dropping to 50% (Other_10:34-39, which then forces choice 3 every turn and bumps minigamecount TWICE per turn because :41-45 also fires), OR minigameinsanity (:54-58). DOUBLE FEATURE: once minigamecount >= 6 the chooser sets _minigamecount = 2 (Other_10:47-52) and queues two minigames in one turn via minigametype2; obj_tenna_zoom chains them at con == 3 (Step_0:769-798). MINIGAME ORDER is a global.tempflag[91] ladder (Other_10:78-292, tempflag[91] written nowhere else in the chapter): 1 cooking, 2 music, 3 battle d1, 4 cowboy d0, 5 music, (6 skips to 7), 7 susiezilla d2 or battle d2, 8 cowboy d1, 9 music, 10 cowboy d0, (11 skips to 12), 12 battle d2, 13 music, 14 cooking, 15 susiezilla d3 or battle d1, 16 cowboy d1, then a weighted random pool with a 3-pass anti-repeat filter. FINAL PHASE (MINIGAME INSANITY): HP <= 20% or score >= 1000 sets minigameinsanity (Other_10:9-10); the chooser forces music as that turn's opener (:287-291), then obj_tenna_zoom channel-surfs between minigames on a shrinking timer (120 -> 50 by -10, then -1 down to a floor of 30, Step_0:299-311), the pool narrows to choose(1, 2, 4, 5) once the timer is <= 60 (:339-340), and on the 5th flip at 30 it forces battle d3 = LIGHT 'EM UP (:423-436). SOUL MODES: red soul for 125 / 126 / 128 and battle d2 only; sharpshoot and LIGHT 'EM UP replace the soul with an aiming cursor and reposition/re-sprite all three heroes into zoo suits (obj_lightemup_controller_Create_0.gml:22-57); cowboy uses obj_shootout_heart; music, cooking and susiezilla replace player control entirely. LIGHT 'EM UP's BULLETS DO NOT COME FROM THE CONTROLLER: obj_actor_tenna's Draw event runs the pattern generator, gated on `i_ex(obj_lightemup_controller) && obj_shadowman_sharpshoot_target.type == 4` (gml_Object_obj_actor_tenna_Draw_0.gml:1063-1510), and it is what prints 'DEFEAT TENNA!' and sets obj_tenna_enemy.stopshoot. SIDE SYSTEMS the boss Step also runs: the score meter (obj_tenna_enemy_bg, addscore / myscore / maxscore 1000, banked through gml_GlobalScript_scr_tenna_add_score.gml — which routes points to obj_tenna_minigame_ui.myscore instead while obj_tenna_zoom exists), the turn-count point multiplier (Step_0:52-59), Susie's BET act (Step_0:959-993, 20 points, 30 with the Jevil tail), Ralsei's POPULAR BOY act (Step_0:1046-1096), the Lancer stool cheat (Step_0:757-785), and a 22-step balloon-dialogue state machine (Step_0:71-545) with a sword-route branch on global.flag[1050] (Create_0:73-74).",
+  "engineNeeds": "THE THREE ORDINARY BULLET ATTACKS SHOULD RUN. 125 / 126 / 128 are conventional obj_dbulletcontroller work; obj_tenna_allstars_manager, obj_tenna_allstars_bullet, obj_tenna_smashcut_attack, obj_tenna_smashcut_manager, obj_tenna_rimshot_star and obj_lensflare_manager are all present in docs/js/gml_objects.js, as are obj_lightemup_controller, obj_lightemup_bg, obj_shadowman_sharpshoot_target, obj_tenna_lightemup_bullet, obj_tenna_zoom, obj_tenna_enemy_bg, obj_tenna_minigame_ui, obj_actor_tenna, obj_shootout_controller, obj_rhythmgame, obj_susiezilla_gamecontroller, obj_chefs_init, obj_elnina_umbrella and obj_umbrella_tv. Caveat: obj_tenna_allstars_manager uses ds_list plus two surfaces and a GML 2.3 `spawn_new = function(arg0)` method, and opens with snd_loop(snd_crowd_laughter_loop) (Create_0:1-15). ITEMS THE STUDIO STILL NEEDS. (1) REGISTER THE BOSS: docs/gml_studio.html's MONSTER_TYPE map (:1572-1578) needs `obj_tenna_enemy: 103` and its BOSSES list needs an entry, or the fight gets no stats and no boss instance. obj_tenna_enemy's own Create builds the rest of the cast for free (obj_actor_tenna preset 2 at Create_0:80-81, obj_tenna_enemy_bg at :88-89, obj_tenna_minigame_ui at :91) but it also calls scr_enable_screen_border(1), scr_enemy_object_init(), scr_speaker(\"tenna\") and destroys obj_battleback, and it hard-requires obj_herosusie + obj_heroralsei (Step_0:1-10 exits without them). (2) THE MINIGAME TURN IS NOT AN ANNOUNCED ATTACK. The myattackchoice == 3 branch (Step_0:600-608) sets no global.monsterattackname and creates no controller, so gen_attacks.js's announcement scan yields NOTHING for the 10 real PHYSICAL CHALLENGE variants. They need a declared launch mode the way Pink's dates do (`launch: 'tenna-minigame'` carrying minigametype + difficulty) that creates obj_tenna_zoom directly with those two fields set, skipping the obj_actor_tenna jump-in. (3) TYPE-150 DEDUP COLLISION. Three dispatches produce obj_dbulletcontroller.type = 150 — Step_0:609-615 (cut choice 20), obj_tenna_zoom_Other_11.gml:251-267 (sharpshoot) and :358-377 (LIGHT 'EM UP). gen_attacks.js's dedup key is boss|controller|type|pattern|datecount, so all three collapse into ONE entry and the CUT choice-20 one wins (the enemy's own event files are scanned before extraAttackFiles). By luck that entry still plays the real finale — obj_lightemup_controller_Create_0.gml:4-8 downgrades the target to type 5 only when myattackchoice == 21 or obj_tenna_zoom.minigamedifficulty == 1, and choice 20 satisfies neither — but the sharpshoot variant is unreachable from the dropdown unless an obj_tenna_zoom is faked with minigamedifficulty = 1. Note also that the two Other_11 entries arrive with selector null, so the studio's bossDispatched gate (gml_studio.html:1684-1685) would give them no box block, no turn block and no setup even if they survived dedup. (4) LIGHT 'EM UP NEEDS obj_actor_tenna ALIVE AND DRAWING. Its bullets are spawned from gml_Object_obj_actor_tenna_Draw_0.gml:1410-1506, a 1877-line Draw event; the studio's `also` list sets e.step = null but leaves draw intact, which is what this attack needs. obj_lightemup_controller's Create also references obj_tenna_enemy, obj_herokris, obj_herosusie and obj_heroralsei UNGUARDED and calls scr_act_charsprite on all three, so a full three-hero party is required. (5) UNIMPLEMENTED NATIVES: the cowboy setup calls layer_create, layer_background_create, layer_background_htiled, layer_background_stretch and layer_background_speed (obj_tenna_zoom_Other_11.gml:221-243) — all five are in docs/js/native_gaps.json, and obj_tenna_zoom_Other_11.gml is literally the cited example for layer_background_speed. (6) obj_tenna_zoom's transition does sprite_create_from_surface(application_surface, ...) (Step_0:117) and drives surface-based lerp tweens; obj_battlecontroller_Draw_0.gml:32 draws that screenshot. The zoom is cosmetic and can be stubbed by jumping straight to con = 1 with event_user(1) already fired. (7) The other minigames need whole subsystems: susiezilla needs obj_mainchara.cutscene, a 1280-wide sub-world, scr_script_delayed and scr_dark_marker; cooking needs the obj_chefs_* kitchen plus scr_chefs_end; music needs obj_rhythmgame's chart data and audio sync. (8) NO turnBlock IS SUPPLIED, ON PURPOSE. Every Tenna turn length lives INSIDE its dispatcher branch (200 / 260 / 260 / 999 / 999999 / 999999) and is therefore carried by the per-attack `setup` slice — verified: all four announcements in Step_0 produce brace-balanced setups of 188-223 chars, each ending in its own scr_turntimer call, and none trips the `escaped` or 3500-char guards. The only out-of-branch call is the raise-only `scr_turntimer(90)` floor at Step_0:565, identical to the studio's own fallback at gml_studio.html:1897, so a turn block would be a strict no-op — and any slice wide enough to reach it either breaks brace balance or re-runs the spawners (the Knight double-spawn trap).",
   "confidence": "high",
-  "exclusions": "obj_tenna_board4_enemy (encounters 133 / 134 / 135, scr_encountersetup.gml:1106 / 1122 / 1144) is the mid-chapter BOARD 4 Tenna, not this fight: it is a different object with its own Create/Step/Other_10, it appears alongside obj_shadowman_enemy and obj_zapper_enemy, it has one unconditional attack (`\"rimshot lensflare\"` -> dc.type = 125 at its Step_0:465-468 — note it reuses type 125 under a DIFFERENT name), and its Other_10 ladder assigns myattackchoice 1/4/5/6/7/8, values its own Step never tests. obj_tenna_board4_gacha, obj_board_*, obj_tennaPresetTester and obj_tenna_battle_idleanimtest are overworld/dev objects with no monsterparent lineage. The obj_shootout_*, obj_rhythmgame_*, obj_chefs_* and obj_susiezilla_* objects are NOT excluded as 'minigames' because in this fight they are not standalone sections — they are the boss's attacks, reached from obj_tenna_enemy's own turn dispatcher via myattackchoice == 3; the standalone versions of the same games live in their own rooms (room_dw_chef_empty / room_dw_rhythm_empty / room_dw_susiezilla_empty, obj_tenna_zoom_Other_13.gml:1-8) and are reached with minigametype strings ('chef board 4', 'rythm board 4', 'susiezilla board 4') that obj_tenna_enemy never produces."
+  "exclusions": "obj_tenna_board4_enemy (encounters 133 / 134 / 135, gml_GlobalScript_scr_encountersetup.gml:1106 / 1122 / 1144, monstertype 105) is the mid-chapter BOARD 4 Tenna, not this fight: it is a different object with its own Create/Step/Other_10, encounters 134 and 135 pair it with obj_shadowman_enemy and obj_zapper_enemy, and it has one unconditional attack — `global.monsterattackname[myself] = \"rimshot lensflare\"; dc.type = 125; scr_turntimer(300);` at its Step_0:463-469, reusing type 125 under a DIFFERENT name — while its Other_10 assigns myattackchoice 1/4/5/6/7/8, values its own Step never tests at all. obj_tenna_board4_gacha and obj_board_* are overworld objects and obj_tennaPresetTester / obj_tenna_battle_idleanimtest are dev harnesses; none has obj_monsterparent lineage in objects.tsv (only obj_tenna_enemy and obj_tenna_board4_enemy do). The obj_shootout_*, obj_rhythmgame_*, obj_chefs_* and obj_susiezilla_* objects are NOT excluded as 'minigames': in this fight they are not standalone sections but the boss's own attacks, reached from obj_tenna_enemy's turn dispatcher via myattackchoice == 3. The standalone copies live in their own rooms and are entered with minigametype strings 'chef board 4' / 'rythm board 4' / 'susiezilla board 4' (gml_Object_obj_tenna_zoom_Other_13.gml:1-8), strings obj_tenna_enemy never produces — so the test is a string comparison, not a judgement call."
 }

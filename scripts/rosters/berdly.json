@@ -1,0 +1,170 @@
+{
+  "id": "berdly",
+  "chapter": "ch2",
+  "chNum": 2,
+  "label": "Berdly",
+  "enemy": "obj_berdlyb_enemy",
+  "extraEnemies": ["obj_berdlyb2_enemy", "obj_werewire_enemy"],
+  "controller": "obj_dbulletcontroller",
+
+  "twoFights": {
+    "note": "Berdly has TWO real battles in ch2 and they are different objects with different dispatchers, different turn lengths and different difficulty wiring. obj_berdlyplug_enemy is NOT a third Berdly fight — it is the wired-into-the-ceiling prop in the QUEEN fight and is already covered by rosters/queen.json (it is a mercy target and a tornado prop, it has no attack dispatcher of its own: gml_Object_obj_berdlyplug_enemy_Step_0.gml is 97 lines of wire physics with no scr_bulletspawner).",
+    "fight1": "obj_berdlyb_enemy — 'BUMP OF CHICKEN', the roller-coaster / bumper-car fight in Cyber City. Encounter 58 (scr_encountersetup.gml:575-582), monstertype 43 (scr_monstersetup.gml:1188-1218, HP 1985 / AT 10 / mercymax 100), launched by obj_berdly_encounter_setup_Step_0.gml:9 with global.specialbattle = 3 and encounterflag 529. Chronologically FIRST: this encounter sets global.flag[9] = 1 (obj_berdly_encounter_setup_Step_0.gml:14-18) and the second fight sets global.flag[9] = 2 before calling scr_battle (obj_ch2_city_berdly_Step_0.gml:327).",
+    "fight2": "obj_berdlyb2_enemy — the BERDLY + NOELLE fight later in Cyber City (this is the Snowgrave / Weird Route fight). Encounter 82 (scr_encountersetup.gml:908-920), monstertype 46 (scr_monstersetup.gml:1290-1313, HP 900 / AT 9 / mercymax 100), launched by obj_ch2_city_berdly_Step_0.gml:336 `scr_battle(82, 1, berdly_marker, 0, 0)` with encounterflag 550. Chronologically SECOND."
+  },
+
+  "boxBlock": {
+    "file": "gml_Object_obj_berdlyb_enemy_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_moveheart) && !instance_exists(obj_heart))",
+    "endAnchor": "}",
+    "ifElse": false,
+    "note": "FIGHT 1. Step_0:166-173, inside `if (talkedcon == 1) { if (scr_isphase(\"bullets\")) { ... } }`. Both strings verified: the anchor occurs exactly once (grep -cF == 1) and there is NO brace anywhere between line 166 and line 173, so endAnchor \"}\" resolves to the block closer on line 174 and the slice is brace-balanced (verified by replaying gen_attacks.js's strip()/extractBoxBlock against the real file). The slice is scr_moveheart() + the plain growtangle create at (view+320, view+170) + the `difficulty == 1 && rr == 0` 45-degree rotate. obj_growtangle defaults maxxscale = maxyscale = 2 (obj_growtangle_Create_0.gml:13-14) — Berdly never resizes the box in fight 1. The rotate is DEBUG-ONLY here: obj_berdlyb_enemy.difficulty is 0 in Create (Create_0.gml:9) and the only writer is the debug toggle at Step_0:537-541 (`if (scr_debug()) if (keyboard_check_pressed(ord(\"B\"))) difficulty = 1 - difficulty;`). Do NOT anchor on `if (!instance_exists(obj_growtangle))` with no endAnchor unless you are happy to drop the rotate — that variant also extracts cleanly (verified) but loses the debug branch."
+  },
+
+  "turnBlock": null,
+  "turnBlockNote": "FIGHT 1 HAS NO SEPARATE TURN LADDER. All three scr_turntimer calls live INSIDE their own dispatcher branch, immediately after the scr_bulletspawner in that branch (Step_0:190 / :198 / :206), exactly like Queen. Any slice that contains the turn value also contains `dc = scr_bulletspawner(x, y, obj_dbulletcontroller)` and would double-spawn the controller (the Knight trap recorded in gen_attacks.js). A one-line slice such as anchor `scr_turntimer(210);` + endAnchor `}` does extract cleanly (verified) but is not self-selecting — the three attacks have three different lengths. Use `turnByChoice` below. FIGHT 2 is different and DOES have a sliceable flat turn line — see fights[1].turnBlock.",
+
+  "turnByChoice": {
+    "0": 210,
+    "1": 200,
+    "2": 180,
+    "preAttackFloor": 120,
+    "note": "FIGHT 1 only. Keys are `rr` as assigned by the attackorder ladder. rr 0 Tornado 210 (Step_0:190), rr 1 SpearBlast 200 (Step_0:198), rr 2/else Chirashi 180 (Step_0:206). `preAttackFloor` is the `else scr_turntimer(120);` at Step_0:242 that runs every frame while rtimer < 16; scr_turntimer only RAISES (`if (global.turntimer < arg0) global.turntimer = arg0`) so it never lowers a real value. Nothing in fight 1 shortens the turn afterwards: obj_dbulletcontroller's only direct `global.turntimer = 200;` write is in the type 8 `difficulty == 1` arm (Step_0:265) and fight 1 hardcodes dc.difficulty = 0 for the Tornado."
+  },
+
+  "selectorVar": "rr",
+  "chooser": {
+    "file": "gml_Object_obj_berdlyb_enemy_Step_0.gml",
+    "lines": "27-39",
+    "note": "FIGHT 1. There is no event_user chooser — the ladder is inline at the top of the enemytalk phase: `if (attackorder == 0) rr = 0; if (attackorder == 1) rr = 2; if (attackorder == 2) { rr = 1; attackorder = -1; } attackorder++;`. attackorder starts at 0 (Create_0.gml:18), so the fight is a strict 3-cycle: Tornado -> Chirashi -> SpearBlast -> repeat. Step_0:212's `rr = choose(0, 1, 2, 3, 4, 5)` is BATTLE-MESSAGE ONLY (it picks one of the six 'Berdly calls Queen for help' flavour lines at :214-230) and is overwritten by the ladder before the next attack is read."
+  },
+
+  "extraAttackFiles": ["gml_Object_obj_berdlyb2_enemy_Step_0.gml"],
+
+  "real": [
+    { "fight": 1, "choice": 0, "type": 8, "difficulty": 0, "turn": 210, "name": "Tornado", "controller": "obj_dbulletcontroller",
+      "evidence": "Chooser Step_0:27-28 `if (attackorder == 0) rr = 0;` with attackorder = 0 in Create_0.gml:18 — this is literally the first attack of the fight and recurs every 3rd turn. Dispatcher Step_0:184-191 (`dc.type = 8; dc.difficulty = 0; scr_turntimer(210);`). Controller obj_dbulletcontroller_Step_0.gml:259-382, difficulty-0 arm at :273-307: four obj_berdlyb_tornado spawned at maxx+30, alternating from miny+22 or maxy-22, yshift = growtangle.sprite_height/3 - 14, maxSpeed 6, direction 180, staggered timers." },
+
+    { "fight": 1, "choice": 2, "type": 10, "difficulty": 2, "turn": 180, "name": "Chirashi", "controller": "obj_dbulletcontroller",
+      "evidence": "Chooser Step_0:30-31 `if (attackorder == 1) rr = 2;` — turn 2 of the 3-cycle. Dispatcher Step_0:200-207, the bare `else` (`dc.type = 10; dc.difficulty = 2; scr_turntimer(180);`). Controller :412-440: maxmake = 2 (only difficulty 1 gives 3, :420), two obj_berdlyb_chirashistorm at (x+46, y+40) 50 frames apart, each firing a 4x3 grid of obj_berdlyb_chirashibullet. difficulty 2 takes the chirashibullet `else` branch (obj_berdlyb_chirashibullet_Step_0.gml:48-52): the swarm mirrors about the BOX CENTRE rather than tracking the heart." },
+
+    { "fight": 1, "choice": 1, "type": 9, "difficulty": 1, "turn": 200, "name": "SpearBlast", "controller": "obj_dbulletcontroller",
+      "evidence": "Chooser Step_0:33-37 `if (attackorder == 2) { rr = 1; attackorder = -1; }` — turn 3 of the 3-cycle, then attackorder++ returns it to 0. Dispatcher Step_0:192-199 (`dc.type = 9; dc.difficulty = 1; scr_turntimer(200);`). Controller :383-411: creates obj_berdlyb_spearblaster at (x-18, y-114) and HIDES the boss (`global.monsterinstance[creator].visible = 0;` :388, restored in obj_berdlyb_spearblaster_Destroy_0.gml), special = choose(0,1) :391, then 6 obj_berdlyb_spearblast at a 50-frame rate (difficulty >= 1, :394); every other spear is aimed at the player (`(made % 2) == special`, :405)." },
+
+    { "fight": 2, "choice": 0, "chosenattack": 0, "type": 8, "difficulty": 1, "turn": 260, "turnOverride": 200, "name": "Tornado", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2, Berdly ALONE. Chooser obj_berdlyb2_enemy_Step_0.gml:38-41 — turn 0 takes the `else rr = attack_phase;` arm with attack_phase = 0 (Create_0.gml:31), so this is the opening attack of fight 2. Step_0:43-47 maps rr 0 -> chosenattack 0. difficulty comes from Step_0:421 `difficulty = (scr_monsterpop() == 1) ? 1 : 0;` and the werewires are not summoned until turn 2, so turn 0 is difficulty 1. Dispatcher Step_0:442-448. Controller difficulty-1 arm obj_dbulletcontroller_Step_0.gml:308-366: EIGHT tornadoes on a 240px ring around obj_growtangle at 45-degree spacing, spinning inward, spindir = choose(-1,1), middespawn = 1. Note this arm also does `global.turntimer = 200;` at :265 — a DIRECT assignment, so it LOWERS the 260 set at Step_0:464." },
+
+    { "fight": 2, "choice": 1, "chosenattack": 2, "type": 10, "difficulty": 1, "turn": 260, "name": "Chirashi", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2, Berdly ALONE. Turn 1 takes `else rr = attack_phase;` with attack_phase advanced to 1 by Step_0:467-468 (`if (!sideb_route && scr_monsterpop() == 1) attack_phase = (attack_phase + 1) % 3;`). Step_0:49-53 maps rr 1 -> chosenattack 2. difficulty 1 (alone). Dispatcher Step_0:456-462. Controller :412-440 with maxmake = 3 (:420) — THREE storms, and chirashibullet difficulty 1 takes the `targetAngle = 205 - ((targetAngle - 205) * 0.75)` arm (obj_berdlyb_chirashibullet_Step_0.gml:39-42)." },
+
+    { "fight": 2, "choice": 2, "chosenattack": 1, "type": 9, "difficulty": 1, "turn": 260, "name": "SpearBlast", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2, Berdly ALONE. Reachable two ways: (a) `else rr = attack_phase;` once attack_phase reaches 2, which happens after the werewires are all dead/spared (scr_monsterpop() == 1 re-enables the advance at Step_0:467-468); (b) not on turn 2 — the `turns == 2` arm forces irandom(2) but the werewires are summoned in the same enemytalk phase (Step_0:96-117 -> :344-373), so difficulty is 0 there. Step_0:55-59 maps rr 2 -> chosenattack 1. Dispatcher Step_0:449-455, `dc.difficulty = sideb_route ? 2 : difficulty;` -> 1." },
+
+    { "fight": 2, "choice": 0, "chosenattack": 0, "type": 8, "difficulty": 0, "turn": 260, "name": "Tornado", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2 WITH WEREWIRES. From turn 2 onward the chooser takes `else if (turns == 2 || scr_monsterpop() > 1) rr = irandom(2);` (Step_0:38-39), so rr 0/1/2 are all live while any obj_werewire_enemy is alive, and Step_0:421 gives difficulty 0 because scr_monsterpop() > 1. Same controller arm as fight 1's Tornado (obj_dbulletcontroller_Step_0.gml:273-307) but on a 260-frame turn instead of 210." },
+
+    { "fight": 2, "choice": 1, "chosenattack": 2, "type": 10, "difficulty": 0, "turn": 260, "name": "Chirashi", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2 WITH WEREWIRES: rr = irandom(2) -> 1 -> chosenattack 2, difficulty 0 (Step_0:421). Controller :414-421 immediately re-rolls it: `if (difficulty == 0) difficulty = choose(-1, 0);` and then flips it every storm with `if (difficulty < 1) difficulty = -1 - difficulty;` (:437-438), so the two storms alternate between heart-tracking (difficulty 0, obj_berdlyb_chirashibullet_Step_0.gml:43-47) and box-centre mirroring (difficulty -1, the else at :48-52). Also `if (made > 0 && scr_monsterpop() == 1) d.first_set = false;` (:431-432) greys out the follow-up storm — dead while werewires are alive." },
+
+    { "fight": 2, "choice": 2, "chosenattack": 1, "type": 9, "difficulty": 0, "turn": 260, "name": "SpearBlast", "controller": "obj_dbulletcontroller",
+      "evidence": "Fight 2 WITH WEREWIRES: rr = irandom(2) -> 2 -> chosenattack 1 (Step_0:55-59), `dc.difficulty = sideb_route ? 2 : difficulty` -> 0. This is the ONLY way to see the fast spear rate: obj_dbulletcontroller_Step_0.gml:394 is `btimer > (((difficulty >= 1) ? 50 : 30) * ratio)`, so difficulty 0 fires the 6 spears at a 30-frame rate instead of 50." },
+
+    { "fight": 2, "choice": 2, "chosenattack": 1, "type": 9, "difficulty": 2, "turn": 260, "name": "SpearBlast (Weird Route)", "controller": "obj_dbulletcontroller",
+      "evidence": "SNOWGRAVE / WEIRD ROUTE ONLY. sideb_route = scr_sideb_get_phase() > 0 (Create_0.gml:7). Dispatcher Step_0:454 `dc.difficulty = sideb_route ? 2 : difficulty;`. It is also the OPENING attack of the weird-route fight: the weird-route chooser is Step_0:36-37 `if (sideb_route) rr = 2 - rr;` and rr = 0 in Create_0.gml:35, so turn 1 gives rr = 2 -> chosenattack 1. Difficulty 2 makes EVERY spear home on the player (obj_dbulletcontroller_Step_0.gml:405 `if (difficulty == 2 || (made % 2) == special)`), and obj_berdlyb_spearblaster swaps to spr_berdlyb_super_jump_serious (obj_berdlyb_spearblaster_Create_0.gml:5-6)." }
+  ],
+
+  "cut": [
+    { "fight": 1, "name": "Mr. Bones' Wild Ride (ACT index 3, `acting == 4`)", "kind": "act",
+      "evidence": "obj_berdlyb_enemy_Step_0.gml:304-314 sets mrboneswildride = 1 (which raises o_coaster_controller.timermax from 180 to 250 at Step_0:416-417) and forces all three heroes onto the coaster. `acting` is `act index + 1` (scr_actselect.gml:6, `global.monsterinstance[arg0].acting = arg1 + 1;`), so acting == 4 needs global.canact[myself][3]. scr_monstersetup.gml:1188-1218 (monstertype 43) defines canact[0] Check, canact[1] Bump, canact[2] BumpX and nothing else, and scr_monster_actreset(myself) clears the array first (scr_monstersetup.gml:3). Index 3 is never set for type 43 anywhere in ch2, so this branch and the 250-frame long-ride timer are unreachable." },
+
+    { "fight": 1, "name": "NITRO bump variant", "kind": "mechanic",
+      "evidence": "obj_berdlyb_enemy.nitro is initialised to 0 (Create_0.gml:13) and the ONLY other write in ch2 is `if (nitro > 0) nitro -= 1;` (Step_0:17-18). Nothing ever raises it. That kills o_coaster_berdly_Collision_o_coaster_hero.gml:9-12's two-branch bump result (the nitro > 0 arm), o_coaster_hero_Other_24.gml:1, and the whole nitro path in the legacy o_coaster_hero_old." },
+
+    { "fight": 1, "name": "PREMONITION telegraph", "kind": "mechanic",
+      "evidence": "Same shape: obj_berdlyb_enemy.premonition = 0 (Create_0.gml:14), only decremented (Step_0:20-21). The readers o_coaster_berdly_Create_0.gml:30-37 and o_coaster_berdly_Step_0.gml:83-90 therefore always take the drawpremonition = 0 path, so the telegraph loop at o_coaster_berdly_Draw_0.gml:46-52 never draws." },
+
+    { "controller": "obj_dbulletcontroller", "type": 8, "name": "Tornado `special == 2` (phase-offset ring)", "kind": "controller-branch",
+      "evidence": "obj_dbulletcontroller_Step_0.gml:356-357 (`else if (special == 2) startDelay += 12.831853071795862;`) and :372-376 (`else if (special == 2) { special = 0; btimer = 0; }`). The controller's `special` is only ever set to 1, at :263 inside `if (init == 1 && difficulty == 1)`, and cleared to 0 at :368-371. grep over the whole ch2 dump finds no `special = 2;` on obj_dbulletcontroller (only obj_onionbody, obj_queen_bulletcontroller's `d.special` and obj_sneo_bulletcontroller)." },
+
+    { "controller": "obj_dbulletcontroller", "type": 8, "name": "Tornado at difficulty other than 0 or 1", "kind": "controller-branch",
+      "evidence": "obj_dbulletcontroller_Step_0.gml:273/308 is a strict `if (difficulty == 0) ... else if (difficulty == 1)` with no else, so any other value spawns nothing at all. Neither Berdly dispatcher can produce one (fight 1 hardcodes 0 at Step_0:189; fight 2 passes the 0/1 boolean from Step_0:421) — worth knowing because the studio's DIFF selector could." },
+
+    { "fight": 2, "name": "`bulletoverride`", "kind": "vestigial",
+      "evidence": "obj_berdlyb2_enemy_Create_0.gml:19 `bulletoverride = -1;` is never read. Copy-paste from obj_rouxls_enemy / obj_spamton_enemy, where it IS read (`rr = (bulletoverride == -1) ? irandom(2) : bulletoverride;`, obj_spamton_enemy_Step_0.gml:82). grep over ch2 shows obj_berdlyb2_enemy has no reader." },
+
+    { "fight": 2, "name": "Werewire hang attack (obj_werewire_enemy `rr == 3`)", "kind": "ally-attack",
+      "evidence": "obj_werewire_enemy_Step_0.gml:52 `rr = (scr_monsterpop() > 1) ? choose(0, 1) : 3;`. Inside the Berdly fight the werewires only exist because Berdly summoned them (obj_berdlyb2_enemy_Step_0.gml:344-373), so Berdly is always alive alongside them and scr_monsterpop() is always >= 2 — rr is always choose(0,1), i.e. the spark-shot mode. rr 3 (shootmode 2, `global.turntimer = 170`, spr_werewire_hang) belongs to the standalone werewire encounters. The werewires' `if (!instance_exists(obj_berdlyb2_enemy))` guards at :56 and :132 confirm the author knew both contexts." },
+
+    { "objects": ["obj_berdlyb_tornado_old", "o_coaster_controller_old", "o_coaster_hero_old", "o_coaster_hero_back_old", "obj_berdlyb_wire_old"], "kind": "orphan-objects",
+      "evidence": "grep over the whole ch2 dump: zero references from any file outside each object's own event files. Earlier revisions of the tornado bullet and of the entire bumper-car minigame. (obj_berdlyb_spearblast_mini LOOKS orphaned but is NOT — it is spawned as a child bullet at obj_berdlyb_spearblast_bullet_Step_0.gml:33.)" },
+
+    { "fight": 1, "name": "obj_berdlyb_enemy Other_5 (event_user 0)", "kind": "no-op",
+      "evidence": "gml_Object_obj_berdlyb_enemy_Other_5.gml is a single `exit;`. Unlike the Knight / SNEO / Pink, Berdly's chooser is NOT in a user event — do not look for one." }
+  ],
+
+  "fights": [
+    {
+      "id": "berdly_coaster",
+      "label": "Berdly — Bump of Chicken (coaster fight)",
+      "enemy": "obj_berdlyb_enemy",
+      "encounter": 58,
+      "monstertype": 43,
+      "hp": 1985,
+      "at": 10,
+      "mercymax": 100,
+      "boxBlock": {
+        "file": "gml_Object_obj_berdlyb_enemy_Step_0.gml",
+        "anchor": "if (!instance_exists(obj_moveheart) && !instance_exists(obj_heart))",
+        "endAnchor": "}"
+      },
+      "turnBlock": null,
+      "turnByChoice": { "0": 210, "1": 200, "2": 180, "preAttackFloor": 120 },
+      "selectorVar": "rr",
+      "chooserLines": "gml_Object_obj_berdlyb_enemy_Step_0.gml:27-39",
+      "dispatcherLines": "gml_Object_obj_berdlyb_enemy_Step_0.gml:182-239",
+      "realChoices": [0, 1, 2]
+    },
+    {
+      "id": "berdly_noelle",
+      "label": "Berdly — with Noelle (Snowgrave fight)",
+      "enemy": "obj_berdlyb2_enemy",
+      "extraEnemies": ["obj_werewire_enemy"],
+      "encounter": 82,
+      "monstertype": 46,
+      "hp": 900,
+      "at": 9,
+      "mercymax": 100,
+      "boxBlock": {
+        "file": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+        "anchor": "if (!i_ex(obj_moveheart) && !i_ex(obj_heart))",
+        "endAnchor": "}",
+        "ifElse": false,
+        "note": "Step_0:423-430. Anchor verified unique (grep -cF == 1); no brace between 423 and 430, so endAnchor \"}\" resolves to the closer on 431 and the slice is balanced (verified against gen_attacks.js's strip()/extractBoxBlock). Yields scr_moveheart() + the plain growtangle create at (view+320, view+170) + `if (difficulty == 1 && chosenattack == 0) obj_growtangle.target_angle += 45;`. Unlike fight 1 the rotate is REAL here: difficulty is set from gameplay at Step_0:421. Deliberately excludes line 421 itself so the studio's own difficulty selection is not overwritten — apply `difficulty = (scr_monsterpop() == 1) ? 1 : 0;` yourself if you want the authentic coupling."
+      },
+      "turnBlock": {
+        "file": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+        "anchor": "scr_turntimer(260);",
+        "endAnchor": "turns += 1;",
+        "note": "Step_0:464. Both strings verified unique; extractTurnBlock's `/turntimer/` disambiguation passes trivially because the anchor contains it. Extracts to exactly `scr_turntimer(260);` — identical shape to Spamton NEO's turn block. Flat for all three attacks. Two things can still change the real length: obj_dbulletcontroller_Step_0.gml:265 sets `global.turntimer = 200;` DIRECTLY (not via scr_turntimer, so it lowers) for the difficulty-1 Tornado, and Step_0:499 has the usual `else scr_turntimer(120);` pre-attack floor."
+      },
+      "selectorVar": "chosenattack",
+      "intermediateVar": "rr",
+      "difficultyVar": "difficulty",
+      "chooserLines": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:36-59 (rr -> chosenattack) + :421 (difficulty) + :467-468 (attack_phase advance)",
+      "dispatcherLines": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:438-496",
+      "realChoices": [0, 1, 2]
+    }
+  ],
+
+  "phases": {
+    "fight1": "No HP phases and no difficulty progression — a strict 3-attack cycle for the whole fight. The only progression is COSMETIC/mercy: obj_berdlyb_enemy_Step_0.gml:50-56 fires once when `global.mercymod > 50 || hp < 50%` (and balloonorder > 4), setting bumpedpast50percent = 1 and ballooncon = 2 ('Smart Smoke!'), and it does `attackorder--` so that turn does not consume a ladder slot — the same attack repeats next turn. Step_0:57-62 fires once at mercymod > 0 (ballooncon = 1). o_coaster_berdly_Step_0.gml:1 switches Berdly's car to the damaged sprite on the same 50%/mercy>50 condition. The fight ENDS on mercy: o_coaster_controller_Step_0.gml:92-93 `if (global.mercymod[myself] >= 100) endcon = 1;`, and endcon runs the scripted coaster explosion at obj_berdlyb_enemy_Step_0.gml:490-535 (skipvictory, snd_bomb at endtime 30, scr_wincombat at 90). scr_spell.gml:100-111 short-circuits the same ending if Pacify is cast.",
+    "fight2_normal": "Turn-indexed script for turns 0-5 (Step_0:61-255, all inside `if (scr_sideb_get_phase() == 0)`). Turn 2's second balloon sets summoning = true (Step_0:110-112) and Step_0:344-373 adds `3 - scr_monsterpop()` obj_werewire_enemy (monstertype 33) via scr_monster_add. While they live, scr_monsterpop() > 1 forces `rr = irandom(2)` and difficulty 0; once they are gone the attack_phase cycle resumes and difficulty returns to 1. Turn 6+ falls to the else at Step_0:256-279 (Noelle-hurt dialogue or nothing). Ends on mercy: Step_0:691-697 `if (global.mercymod[myself] >= 100) scr_wincombat();`.",
+    "fight2_weird": "scr_sideb_get_phase() > 0 (global.flag[915] gating, scr_sideb_get_phase.gml). sideb_route is latched in Create_0.gml:7. NO werewires are ever summoned (the whole summon ladder is inside the `scr_sideb_get_phase() == 0` branch), so scr_monsterpop() == 1 forever and difficulty is always 1. The chooser degenerates to Step_0:36-37 `rr = 2 - rr` — see mechanics for why that is effectively random after turn 1. ACT names change (Glare / Wake instead of Play Dumb / Play Smart, scr_monstersetup.gml:1304-1309) and Glare drops global.monsterdf by 5 per use (Step_0:592). The fight ends when Noelle casts SnowGrave: obj_spell_snowgrave_Draw_0.gml:231-241 sets obj_berdlyb2_enemy.sidebcon = 1, which runs the 30-step cutscene at Step_0:786-889 ending in scr_losechar() + global.flag[915] = 6 + scr_wincombat()."
+  },
+
+  "mechanics": "TWO SEPARATE FIGHTS, ONE SHARED ATTACK SET. Both Berdlys dispatch the same three obj_dbulletcontroller types — 8 Tornado, 9 SpearBlast, 10 Chirashi — and differ only in which difficulties they pass and how long the turn is. Red soul only in both; no green/blue/purple mode, no soul-mode swap, no box resize (both create a bare obj_growtangle at view+320/view+170 and leave maxxscale/maxyscale at the default 2). The one box tweak is a 45-degree rotation applied to the Tornado turn when difficulty == 1 (fight 1: debug only; fight 2: whenever Berdly is alone). FIGHT 1 (obj_berdlyb_enemy) is a MINIGAME FIGHT: obj_berdlyb_enemy_Step_0.gml:4 creates o_coaster_controller in the first step, and the ACT menu (Bump / BumpX / S-Action / R-Action) launches a real-time bumper-car chase — o_coaster_controller drives three o_coaster_hero cars against o_coaster_berdly, the player mashes Z/X/C (mykey 90/88/67, o_coaster_controller_Create_0.gml:13-15) inside a timermax-180 window, and the collision at o_coaster_berdly_Collision_o_coaster_hero.gml awards bumpmercy which is applied at o_coaster_controller_Step_0.gml:89-90. Damage does not end this fight; mercy does. Berdly is drawn by o_coaster_berdly (Draw_0 mirrors his sprite_index/image_index) rather than by himself. FIGHT 2 (obj_berdlyb2_enemy) is a FOUR-HERO fight with Noelle as the fourth party member (global.hp[4], canactnoe/N-Action) and is the Snowgrave gate: obj_berdlyb2_enemy is the ONLY enemy in the game whose Create sets `freezable = 0` (Create_0.gml:25, against scr_enemy_object_init.gml:53's default 1), so IceShock cannot freeze him (obj_icespell_Draw_0.gml:57) — SnowGrave is the only way. Casting SnowGrave with global.flag[924] < 4 is intercepted by the boss itself (`global.bmenuno == 99`, Step_0:721-784) which plays a Noelle refusal, increments flag 924 and bounces the menu back to global.bmenuno = 2; on the 4th attempt scr_spellinfo.gml:134-139 sets spellanim = 1 and the spell actually fires. Berdly SUMMONS on turn 2 (up to three obj_werewire_enemy, monstertype 33) and they attack alongside him with their own spark shots. On the Weird Route the whole summon/dialogue ladder is skipped and Kris being at 0 HP makes Berdly skip his turn entirely (Step_0:412-418, scr_mnendturn).",
+
+  "engineNeeds": "1) SPLIT THIS INTO TWO BOSSES entries, `berdly_coaster` (obj_berdlyb_enemy) and `berdly_noelle` (obj_berdlyb2_enemy). They share types 8/9/10 but the turn lengths (210/200/180 vs a flat 260) and the difficulties (hardcoded 0/1/2 vs gameplay-derived 0/1/2) are different, so a single entry would mis-time half the roster. See `fights` above for two ready-made configs. 2) FIGHT 1 HAS NO SLICEABLE TURN BLOCK — use turnByChoice, or the studio floor cuts the 210-frame Tornado to 120 and the tornado waves after the first never spawn. 3) HARD DEPENDENCIES that dereference without an instance_exists guard: obj_growtangle (the controller's own preamble reads obj_growtangle.y/.sprite_height at obj_dbulletcontroller_Step_0.gml:15-16; type 8 difficulty 0 reads obj_growtangle.sprite_height at :277 and difficulty 1 reads obj_growtangle.x/.y at :331-332; obj_berdlyb_chirashistorm_Create_0.gml:3-4 reads obj_growtangle.x/.y) and obj_heart (obj_berdlyb_chirashibullet_Step_0.gml:45 reads obj_heart.x/.y in the difficulty-0 arm). 4) `creator` MUST BE A VALID MONSTER SLOT for type 9: obj_dbulletcontroller_Step_0.gml:388 does `global.monsterinstance[creator].visible = 0;` and obj_berdlyb_spearblaster_Destroy_0.gml does the matching `= 1`. scr_bulletspawner sets creator; a hand-made controller must too, or the spear attack throws on frame one and leaves the boss invisible if it half-runs. 5) BOSS-SIDE DIFFICULTY. Neither Berdly ever reads obj_dbulletcontroller.difficulty from a boss field — fight 1 writes literals (0/1/2) and fight 2 computes `(scr_monsterpop() == 1) ? 1 : 0` plus a sideb_route override. The studio's DIFF selector should write dc.difficulty directly. Legal values are 0/1/2 for types 9 and 10 and ONLY 0/1 for type 8 (anything else spawns nothing — see the cut list). 6) FIGHT 1'S ACT IS A REAL-TIME MINIGAME the engine does not have: o_coaster_controller + 3x o_coaster_hero + o_coaster_hero_back + o_coaster_berdly + o_coastersmoke, driven by raw keyboard checks on Z/X/C, with its own collision event and its own mercy economy. It is not a bullet attack and will not appear in a monsterattackname scan. Fight 1 also cannot be WON by damage — victory is `mercymod >= 100 -> endcon = 1` and a 90-frame scripted explosion. 7) FIGHT 1'S BOSS IS DRAWN BY A PROXY. obj_berdlyb_enemy_Create_0.gml:5 sets visible = false and only alarm[5] (fired from Create via Step_0:5) turns it back on; o_coaster_berdly_Draw_0.gml copies sprite_index/image_index across. A standalone launcher that never creates o_coaster_berdly will render nothing. obj_berdlyb_enemy_Destroy_0.gml also destroys o_coaster_berdly / o_coaster_hero / o_coaster_controller / obj_herokris and creates o_berdly_coaster_end_fix — expect teardown side effects. 8) FIGHT 2 NEEDS A FOURTH PARTY MEMBER. Noelle is global.hp[4] / global.battlemag[1] / canactnoe, and the Step reads global.hp[4] (Step_0:28-31, :218, :265) and global.charcantarget[0] (:14). It also needs obj_werewire_enemy addable at runtime via scr_monster_add(33, ...) for the summon turn, and reads scr_monsterpop() to pick both the attack and the difficulty — with a 1-monster studio scene fight 2 will always run its solo (difficulty 1) variants. 9) scr_sideb_get_phase() must be stubbable: it decides sideb_route, the SpearBlast difficulty-2 variant, the spearblaster sprite, and the ACT names. 10) obj_dbulletcontroller's Step preamble calls scr_monsterattacknamecount(global.monsterattackname[creator]); obj_werewire_enemy_Step_0.gml:156 reads scr_monsterattacknamecount(\"Chirashi\") to slow its own shots, so the announcement string is load-bearing beyond bookkeeping.",
+
+  "confidence": "high"
+}

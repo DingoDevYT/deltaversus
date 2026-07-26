@@ -32,7 +32,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type109",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -52,7 +53,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type98",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -72,7 +74,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type99",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -92,7 +95,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type102",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -112,7 +116,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type103",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -134,7 +139,8 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "knight_type104",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -154,7 +160,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type106",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -174,7 +181,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type105",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -194,7 +202,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type107",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -214,7 +223,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type108",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -241,7 +251,8 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "knight_type151",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -261,7 +272,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type152",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -283,7 +295,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type153",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -306,7 +319,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type154",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 104
  },
  {
   "boss": "knight",
@@ -326,7 +340,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "knight_type101",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 104
  },
  {
   "boss": "spamton_neo",
@@ -346,7 +361,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_type0",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -368,7 +384,8 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "spamton_neo_type1",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -390,7 +407,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": true,
   "id": "spamton_neo_type1_5",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -412,7 +430,8 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "spamton_neo_type8_5",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -435,7 +454,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_type51",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -455,7 +475,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_type6",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -477,7 +498,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": true,
   "id": "spamton_neo_type12",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -501,7 +523,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_sneo_phonecall",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -523,7 +546,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_type9",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -544,8 +568,9 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_spamton_neo_enemy_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
-  "id": "spamton_neo_type1",
-  "inFight": false
+  "id": "spamton_neo_type1_diamonds",
+  "inFight": false,
+  "monsterType": 50
  },
  {
   "boss": "spamton_neo",
@@ -565,7 +590,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "spamton_neo_sneo_bulletcontroller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 50
  },
  {
   "boss": "gerson",
@@ -585,7 +611,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green0",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -605,7 +632,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green1",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -625,7 +653,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green2",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -645,7 +674,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green3",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -665,7 +695,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green4",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -685,7 +716,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green5",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -705,7 +737,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green6",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -725,7 +758,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green7",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -745,7 +779,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green8",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -765,7 +800,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green9",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -785,7 +821,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green10",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -805,7 +842,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green11",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -825,7 +863,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green12",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -845,7 +884,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green13",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -865,7 +905,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green14",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -885,7 +926,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green15",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -905,7 +947,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green16",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -925,7 +968,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green17",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -945,7 +989,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green18",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -965,7 +1010,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green19",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -985,7 +1031,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green20",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1005,7 +1052,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green21",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1025,7 +1073,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green22",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1045,7 +1094,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green23",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1065,7 +1115,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green24",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1085,7 +1136,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green25",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1105,7 +1157,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green26",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1125,7 +1178,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green27",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1145,7 +1199,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green28",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1165,7 +1220,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green29",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1185,7 +1241,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green30",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1205,7 +1262,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green31",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1225,7 +1283,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green32",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1245,7 +1304,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green33",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1265,7 +1325,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green34",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1285,7 +1346,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green35",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1305,7 +1367,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green36",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1325,7 +1388,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green37",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1345,7 +1409,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green38",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1365,7 +1430,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green39",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1385,7 +1451,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green40",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1405,7 +1472,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green41",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1425,7 +1493,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green42",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1445,7 +1514,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green43",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1465,7 +1535,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green44",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1485,7 +1556,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green45",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1505,7 +1577,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green46",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1525,7 +1598,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green47",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1545,7 +1619,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green48",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1565,7 +1640,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green49",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1585,7 +1661,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green50",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1605,7 +1682,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green51",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1625,7 +1703,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green52",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1645,7 +1724,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green53",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1665,7 +1745,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green54",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1685,7 +1766,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green55",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1705,7 +1787,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green56",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1725,7 +1808,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green57",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1745,7 +1829,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green58",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1765,7 +1850,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green70",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1785,7 +1871,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green71",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1805,7 +1892,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green72",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1825,7 +1913,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green73",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1845,7 +1934,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green100",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1865,7 +1955,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green101",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1885,7 +1976,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green110",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1905,7 +1997,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green111",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1925,7 +2018,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green112",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1945,7 +2039,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green120",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1965,7 +2060,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green140",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -1985,7 +2081,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green150",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2005,7 +2102,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green160",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2025,7 +2123,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green170",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2045,7 +2144,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green180",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2065,7 +2165,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green200",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2085,7 +2186,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green210",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2105,7 +2207,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green211",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2125,7 +2228,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green212",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2145,7 +2249,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green213",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2165,7 +2270,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green220",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2185,7 +2291,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green230",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2205,7 +2312,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_green240",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2221,7 +2329,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_gerson_box_hit_controller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2237,7 +2346,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_gerson_bell_attack_controller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2253,7 +2363,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_gerson_hammer_bro_attack_controller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2269,7 +2380,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_box_throw_controller",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2285,7 +2397,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_hammer_bounce_controller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2301,7 +2414,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_gerson_shell_kick_controller",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 105
  },
  {
   "boss": "gerson",
@@ -2317,7 +2431,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "gerson_gerson_box_rumble_controller",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 105
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 70;\n        dc.target = mytarget;\n        dc.grazepoints = 2;\n        dc.damage = global.monsterat[myself] * 5;\n        \n        with (body)\n            condition = 2;",
@@ -2343,7 +2458,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type70",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 65;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2369,7 +2485,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type65",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 49;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 3;\n        \n        with (body)\n            condition = 2;",
@@ -2395,7 +2512,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type49",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "if (body.condition < 4)\n            body.condition = 5;\n        \n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 75;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 6;",
@@ -2421,7 +2539,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type75",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "snd_play(scr_84_get_sound(\"snd_joker_anything\"));\n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 62;\n        dc.target = mytarget;\n        dc.inv = 20;\n        dc.damage = global.monsterat[myself] * 5;\n        dc.grazepoints = 2;",
@@ -2448,7 +2567,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type62",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.grazepoints = 3;\n        dc.type = 50;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;\n        \n        with (body)\n            condition = 2;",
@@ -2474,7 +2594,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type50",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 73;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2499,7 +2620,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type73",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 68;\n        dc.target = mytarget;\n        dc.grazepoints = 2;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2525,7 +2647,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type68",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "snd_play(scr_84_get_sound(\"snd_joker_anything\"));\n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.inv = 20;\n        dc.type = 61;\n        dc.target = mytarget;\n        dc.grazepoints = 3;\n        dc.damage = global.monsterat[myself] * 5;\n        global.turntimer = 240;",
@@ -2552,7 +2675,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type61",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 48;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 4;\n        global.turntimer = 270;\n        \n        with (body)\n            condition = 2;",
@@ -2578,7 +2702,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type48",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 72;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;",
@@ -2603,7 +2728,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type72",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "if (body.condition < 4)\n            body.condition = 5;\n        \n        dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 76;\n        dc.target = mytarget;\n        dc.grazepoints = 3;\n        dc.damage = global.monsterat[myself] * 6;",
@@ -2629,7 +2755,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type76",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 71;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 5;\n        dc.grazepoints = 2;\n        \n        with (body)\n            condition = 2;",
@@ -2655,7 +2782,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type71",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 46;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        dc.grazepoints = 4;\n        global.turntimer = 330;\n        \n        with (body)\n            condition = 2;",
@@ -2681,7 +2809,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type46",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 74;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;",
@@ -2706,7 +2835,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type74",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 77;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 1500;\n        \n        if (body.condition < 4)\n            body.condition = 5;",
@@ -2731,7 +2861,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type77",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 47;\n        dc.target = 3;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;\n        \n        with (body)\n            condition = 2;",
@@ -2756,7 +2887,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type47",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 20
  },
  {
   "setup": "dc = instance_create(x, y, obj_dbulletcontroller);\n        dc.type = 25;\n        dc.target = mytarget;\n        dc.damage = global.monsterat[myself] * 4;\n        global.turntimer = 300;",
@@ -2781,7 +2913,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "jevil_type25",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 20
  },
  {
   "boss": "pink",
@@ -2801,7 +2934,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type200",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2821,7 +2955,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type206",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2841,7 +2976,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type202",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2861,7 +2997,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type208",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2881,7 +3018,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type209",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2901,7 +3039,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type203",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2921,7 +3060,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type204",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2941,7 +3081,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type205",
-  "inFight": false
+  "inFight": false,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2961,7 +3102,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type199",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -2981,7 +3123,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_type210",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -3002,7 +3145,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_date1",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -3023,7 +3167,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_date2",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -3044,7 +3189,8 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_date3",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
  },
  {
   "boss": "pink",
@@ -3065,7 +3211,2827 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "pink_date4",
-  "inFight": true
+  "inFight": true,
+  "monsterType": 118
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "KnifeChain",
+  "controller": "obj_dbulletcontroller",
+  "type": 308,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [
+   0
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type308",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "FanOfKnives",
+  "controller": "obj_dbulletcontroller",
+  "type": 309,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"FanOfKnives\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 309;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type309",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "KnifePetal",
+  "controller": "obj_dbulletcontroller",
+  "type": 310,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"KnifePetal\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 310;\n                    scr_turntimer(240);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [
+   2
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type310",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "OmegaKnife",
+  "controller": "obj_dbulletcontroller",
+  "type": 300,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"OmegaKnife\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 300;\n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [
+   3
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type300",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 4,
+  "name": "Everything",
+  "controller": "obj_dbulletcontroller",
+  "type": 311,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Everything\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 311;\n                    scr_turntimer(244);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "aqua_seth_type311",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 5,
+  "name": "Duck",
+  "controller": "obj_dbulletcontroller",
+  "type": 312,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Duck\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 312;\n                    scr_turntimer(180);",
+  "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "aqua_seth_type312",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "SupportFire",
+  "controller": "obj_dbulletcontroller",
+  "type": 313,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SupportFire\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 313;",
+  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type313",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "OmegaBook",
+  "controller": "obj_dbulletcontroller",
+  "type": 306,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"OmegaBook\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 306;\n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type306",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "aqua_seth",
+  "bossLabel": "Aqua & Seth",
+  "chapter": "ch5",
+  "enemy": "obj_aqua_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "OmegaBookEx",
+  "controller": "obj_dbulletcontroller",
+  "type": 306,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "omega_ex_mode"
+  ],
+  "setup": "global.monsterattackname[myself] = \"OmegaBookEx\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 306;\n                    dc.omega_ex_mode = true;\n                    scr_turntimer(480);",
+  "source": "gml_Object_obj_purple_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "aqua_seth_type306_omegabookex",
+  "inFight": true,
+  "monsterType": 112,
+  "extraEnemies": [
+   "obj_purple_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 0,
+  "name": "Tornado",
+  "controller": "obj_dbulletcontroller",
+  "type": 8,
+  "usesDifficulty": true,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Tornado\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 8;\n                dc.difficulty = difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "alsoChoices": [
+   0,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type8",
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": "chosenattack",
+  "choice": 1,
+  "name": "SpearBlast",
+  "controller": "obj_dbulletcontroller",
+  "type": 9,
+  "usesDifficulty": true,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"SpearBlast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 9;\n                dc.difficulty = sideb_route ? 2 : difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "alsoChoices": [
+   1,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type9",
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "boss": "berdly",
+  "bossLabel": "Berdly",
+  "chapter": "ch2",
+  "enemy": "obj_berdlyb_enemy",
+  "selector": null,
+  "choice": null,
+  "name": "Chirashi",
+  "controller": "obj_dbulletcontroller",
+  "type": 10,
+  "usesDifficulty": true,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Chirashi\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 10;\n                dc.difficulty = difficulty;",
+  "source": "gml_Object_obj_berdlyb2_enemy_Step_0.gml",
+  "alsoChoices": [
+   null,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "berdly_type10",
+  "inFight": true,
+  "monsterType": 43,
+  "extraEnemies": [
+   "obj_berdlyb2_enemy",
+   "obj_werewire_enemy"
+  ]
+ },
+ {
+  "setup": "box = instance_create(xx + 320, yy + 170, obj_growtangle);\n        mh = scr_moveheart();\n        dd = instance_create(0, 0, obj_dbulletcontroller);\n        dd.type = 21;\n        dd.damage = global.monsterat[myself] * 5 * tempattack;\n        dd.target = mytarget;\n        dd.side = 1;\n        dd.btimer = -8;\n        global.turntimer = 190;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 1,
+  "name": "attack 1 (type 21)",
+  "controller": "obj_growtangle",
+  "type": 21,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type21",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "visible = 0;\n        chainking = instance_create(x, y, obj_chainking);\n        chainking.type = 1;\n        chainking.subtype = 0;\n        chainking.grazepoints = 6;\n        box = instance_create(xx + 200, yy + 175, obj_nonsolid_growtangle);\n        box.sprite_index = spr_battlebg_wavechain;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();\n        \n        chainking.damage = global.monsterat[myself] * 4 * tempattack;\n        chainking.target = 3;\n        global.turntimer = 999;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 2,
+  "name": "attack 2 (type 1)",
+  "controller": "obj_chainking",
+  "type": 1,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type1",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "box = instance_create(xx + 320, yy + 170, obj_growtangle);\n        scr_moveheart();\n        dd = instance_create(0, 0, obj_dbulletcontroller);\n        dd.type = 34;\n        dd.damage = global.monsterat[myself] * 5 * tempattack;\n        dd.target = mytarget;\n        dd.btimer = 10;\n        global.turntimer = 210;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 3,
+  "name": "attack 3 (type 34)",
+  "controller": "obj_growtangle",
+  "type": 34,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type34",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "global.invc *= 1.5;\n        box = instance_create(xx + 310, yy + 165, obj_growtangle);\n        box.sprite_index = spr_battlebg_2;\n        box.keep = 1;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();\n        \n        damagebox = instance_create(box.x, box.y, obj_growtangle_bouncer);\n        damagebox.type = 5;\n        damagebox.damage = global.monsterat[myself] * 5 * tempattack;\n        damagebox.target = mytarget;\n        global.turntimer = 999;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 4,
+  "name": "attack 4 (type 5)",
+  "controller": "obj_growtangle",
+  "type": 5,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type5",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "visible = 0;\n        chainking = instance_create(x, y, obj_chainking);\n        chainking.grazepoints = 6;\n        chainking.type = 1;\n        chainking.subtype = 1;\n        box = instance_create(xx + 200, yy + 175, obj_nonsolid_growtangle);\n        box.sprite_index = spr_battlebg_wavechain;\n        chainking.damage = global.monsterat[myself] * 4 * tempattack;\n        chainking.target = 3;\n        global.turntimer = 999;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 5,
+  "name": "attack 5 (type 1)",
+  "controller": "obj_chainking",
+  "type": 1,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type1_attack_5_type_1",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "global.invc *= 1.5;\n        visible = 0;\n        timeruse = 0;\n        chainking = instance_create(x, y, obj_chainking);\n        chainking.type = 2;\n        chainking.subtype = 5;\n        \n        if (chain_dragging >= 1)\n            chainking.subtype = 2;\n        \n        chain_dragging += 1;\n        box = instance_create(xx + 205, yy + 170, obj_nonsolid_growtangle);\n        box.sprite_index = spr_battlebg_1;\n        chainking.damage = global.monsterat[myself] * 5 * tempattack;\n        chainking.target = mytarget;\n        global.turntimer = 999;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 6,
+  "name": "attack 6 (type 2)",
+  "controller": "obj_chainking",
+  "type": 2,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type2",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "box = instance_create(xx + 320, yy + 170, obj_growtangle);\n        scr_moveheart();\n        dd = instance_create(0, 0, obj_dbulletcontroller);\n        dd.type = 35;\n        global.turntimer = 220;\n        dd.damage = global.monsterat[myself] * 5 * tempattack;\n        dd.target = mytarget;\n        dd.btimer = 10;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 7,
+  "name": "attack 7 (type 35)",
+  "controller": "obj_growtangle",
+  "type": 35,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type35",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "global.invc *= 1.5;\n        box = instance_create(xx + 310, yy + 165, obj_growtangle);\n        box.sprite_index = spr_battlebg_2;\n        box.keep = 1;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();\n        \n        damagebox = instance_create(box.x, box.y, obj_growtangle_bouncer);\n        damagebox.type = 3;\n        damagebox.damage = global.monsterat[myself] * 5 * tempattack;\n        damagebox.target = mytarget;\n        global.turntimer = 999;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 8,
+  "name": "attack 8 (type 3)",
+  "controller": "obj_growtangle",
+  "type": 3,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type3",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "box = instance_create(xx + 320, yy + 170, obj_growtangle);\n        scr_moveheart();\n        dd = instance_create(0, 0, obj_dbulletcontroller);\n        dd.type = 23;\n        global.turntimer = 200;\n        dd.damage = global.monsterat[myself] * 5 * tempattack;\n        dd.target = mytarget;\n        dd.btimer = -8;\n        dd.side = 1;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 9,
+  "name": "attack 9 (type 23)",
+  "controller": "obj_growtangle",
+  "type": 23,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type23",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "visible = 0;\n        chainking = instance_create(x, y, obj_chainking);\n        chainking.grazepoints = 6;\n        chainking.type = 1;\n        chainking.subtype = 2;\n        box = instance_create(xx + 200, yy + 175, obj_nonsolid_growtangle);\n        box.sprite_index = spr_battlebg_wavechain;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();\n        \n        chainking.damage = global.monsterat[myself] * 4 * tempattack;\n        chainking.target = 3;\n        global.turntimer = 999;",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 10,
+  "name": "attack 10 (type 1)",
+  "controller": "obj_chainking",
+  "type": 1,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type1_attack_10_type_1",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "setup": "global.invc *= 1.5;\n        visible = 0;\n        timeruse = 0;\n        chainking = instance_create(x, y, obj_chainking);\n        chainking.type = 2;\n        chainking.subtype = 1;\n        box = instance_create(xx + 205, yy + 170, obj_nonsolid_growtangle);\n        box.sprite_index = spr_battlebg_1;\n        chainking.damage = global.monsterat[myself] * 3 * tempattack;\n        chainking.target = 3;\n        global.turntimer = 999;\n        hm = instance_create(box.x - 10, box.y - 10, obj_heartmarker);\n        scr_moveheart();\n        \n        with (hm)\n            instance_destroy();",
+  "boss": "chaosking",
+  "bossLabel": "The Chaos King",
+  "chapter": "ch1",
+  "enemy": "obj_king_boss",
+  "selector": "attack",
+  "choice": 11,
+  "name": "attack 11 (type 2)",
+  "controller": "obj_chainking",
+  "type": 2,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_king_boss_Other_15.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "chaosking_type2_attack_11_type_2",
+  "inFight": true,
+  "monsterType": 25
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "jack 1",
+  "controller": "obj_dbulletcontroller",
+  "type": 146,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 1\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 146;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type146",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "jack 2",
+  "controller": "obj_dbulletcontroller",
+  "type": 147,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 2\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 147;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type147",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "jack 3",
+  "controller": "obj_dbulletcontroller",
+  "type": 151,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 3\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 151;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type151",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "jack 4",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 4\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 150;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type150",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 4,
+  "name": "jack 5",
+  "controller": "obj_dbulletcontroller",
+  "type": 148,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 5\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 148;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type148",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 5,
+  "name": "jack 6",
+  "controller": "obj_dbulletcontroller",
+  "type": 153,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 6\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 153;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type153",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 6,
+  "name": "jack 7",
+  "controller": "obj_dbulletcontroller",
+  "type": 149,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 7\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 149;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type149",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 7,
+  "name": "jack 8",
+  "controller": "obj_dbulletcontroller",
+  "type": 152,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 8\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 152;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type152",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 8,
+  "name": "jack 9",
+  "controller": "obj_dbulletcontroller",
+  "type": 154,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 9\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 154;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type154",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 9,
+  "name": "jack lightup",
+  "controller": "obj_dbulletcontroller",
+  "type": 155,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack lightup\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 155;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type155",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "boss": "jackenstein",
+  "bossLabel": "Jackenstein",
+  "chapter": "ch4",
+  "enemy": "obj_jackenstein_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "jack 10",
+  "controller": "obj_dbulletcontroller",
+  "type": 156,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"jack 10\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 156;",
+  "source": "gml_Object_obj_jackenstein_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "jackenstein_type156",
+  "inFight": true,
+  "monsterType": 107,
+  "extraEnemies": [
+   "obj_jackendummy"
+  ]
+ },
+ {
+  "setup": "if (jumpcon == 1)\n    {\n        if (vspeed >= 0)\n        {\n            if (y >= ((obj_growtangle.y + (obj_growtangle.sprite_height / 2)) - sprite_height))\n            {\n                snd_play(snd_impact);\n                instance_create(0, 0, obj_shake);\n                y = (obj_growtangle.y + (obj_growtangle.sprite_height / 2)) - sprite_height;\n                jumptimer = 0;\n                vspeed = 0;\n                gravity = 0;\n                hspeed = 0;\n                sprite_index = spr_checkers_crouch;\n                jumpcon = 0;\n            }\n        }\n    }\n    \n    if (jumpcon == 3)\n    {\n        if (vspeed >= 0)\n        {\n            if (y >= (floory - 2))\n            {\n                snd_play(snd_impact);\n                instance_create(0, 0, obj_shake);\n                y = floory;\n                x = xstart;\n                vspeed = 0;\n                gravity = 0;\n                hspeed = 0;\n                sprite_index = spr_checkers_crouch;\n                jumpcon = 4;\n            }\n        }\n    }\n    \n    if (jumpcon == 0)\n    {\n        sprite_index = spr_checkers_crouch;\n        jumptimer += 1;\n        jumpmax = 20;\n        \n        if (amt >= 1)\n            jumpmax = 10;\n        \n        if (jumptimer >= jumpmax)\n        {\n            snd_play(snd_jump);\n            floory = y;\n            jumptimer = 0;\n            jumpcon = 1;\n            amt += 1;\n            sprite_index = spr_checkers_leap;\n            targetx = (obj_heart.x + 8) - (sprite_width / 2);\n            vspeed = -15;\n            \n            if (amt == 1)\n                vspeed = -17;\n            \n            gravity = 1;\n            hspeed = (targetx - x) / 28;\n            \n            if (amt >= 4)\n            {\n                active = 0;\n                jumpcon = 3;\n                targetx = xstart;\n                gravity = 2;\n                hspeed = (targetx - x) / 16;\n            }\n        }\n    }\n    \n    if (jumpcon == 4)\n    {\n        jumptimer += 1;\n        \n        if (jumptimer >= 10)\n        {\n            global.turntimer = -1;\n            \n            with (obj_checkers_enemy)\n                visible = 1;\n            \n            instance_destroy();\n        }\n    }",
+  "boss": "kround",
+  "bossLabel": "K. Round",
+  "chapter": "ch1",
+  "enemy": "obj_checkers_enemy",
+  "selector": "leapmode",
+  "choice": 0,
+  "name": "leapmode 0",
+  "controller": "obj_shake",
+  "type": null,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "kround_shake",
+  "inFight": true,
+  "monsterType": 10
+ },
+ {
+  "setup": "if (jumpcon == 7)\n    {\n        jumptimer += 1;\n        \n        if (jumptimer >= 10)\n        {\n            with (obj_regularbullet)\n            {\n                active = 0;\n                image_alpha -= 0.1;\n            }\n        }\n        \n        if (jumptimer >= 20)\n        {\n            global.turntimer = -1;\n            \n            with (obj_checkers_enemy)\n                visible = 1;\n            \n            instance_destroy();\n        }\n    }\n    \n    if (jumpcon == 6)\n    {\n        if (y >= (floory - 2))\n        {\n            y = floory;\n            x = xstart;\n            vspeed = 0;\n            gravity = 0;\n            hspeed = 0;\n            sprite_index = spr_checkers_crouch;\n            jumpcon = 7;\n        }\n    }\n    \n    if (jumpcon == 0)\n    {\n        sprite_index = spr_checkers_crouch;\n        jumptimer += 1;\n        \n        if (jumptimer >= 20)\n        {\n            floory = y;\n            jumptimer = 0;\n            jumpcon = 1;\n            sprite_index = spr_checkers_leap;\n            targetx = (obj_heart.x + 8) - (sprite_width / 2);\n            hspeed = (targetx - x) / 17;\n            vspeed = -17;\n            snd_play(snd_jump);\n            gravity = 1;\n            amt += 1;\n            \n            if (amt >= 3)\n            {\n                active = 0;\n                jumpcon = 6;\n                targetx = xstart;\n                gravity = 2;\n                hspeed = (targetx - x) / 16;\n            }\n        }\n    }\n    \n    if (jumpcon == 1)\n    {\n        if (vspeed >= 0)\n        {\n            gravity = 0;\n            vspeed = 0;\n            hspeed = 0;\n            jumpcon = 2;\n            snd_play(snd_boost);\n        }\n    }\n    \n    if (jumpcon == 2)\n    {\n        image_speed = 0.25;\n        jumptimer += 1;\n        \n        if (jumptimer >= 15)\n        {\n            snd_play(snd_ultraswing);\n            image_speed = 0;\n            image_index = 0;\n            vspeed = 32;\n            jumpcon = 3;\n            jumptimer = 0;\n        }\n    }\n    \n    if (jumpcon == 3)\n    {\n        a = scr_afterimage();\n        a.image_alpha = 0.7;\n        \n        if (y >= ((obj_growtangle.y + (obj_growtangle.sprite_height / 2)) - sprite_height))\n        {\n            shrapmax = 6;\n            snd_play(snd_impact);\n            instance_create(0, 0, obj_shake);\n            \n            for (i = 0; i < shrapmax; i += 1)\n            {\n                shrap = instance_create(((x + (sprite_width / 2)) - 15) + (i * 5), obj_growtangle.y + (obj_growtangle.sprite_height / 2), obj_regularbullet);\n                shrap.image_xscale = 1.5;\n                shrap.image_yscale = 1.5;\n                shrap.direction = 130 - random(10) - (70 * (i / (shrapmax - 1)));\n                shrap.sprite_index = spr_checkershrapnel;\n                shrap.speed = 6 + random(1);\n                shrap.gravity = 0.25;\n                shrap.target = target;\n                shrap.damage = damage;\n            }\n            \n            y = (obj_growtangle.y + (obj_growtangle.sprite_height / 2)) - sprite_height;\n            vspeed = 0;\n            gravity = 0;\n            hspeed = 0;\n            sprite_index = spr_checkers_crouch;\n            jumpcon = 0;\n        }\n    }",
+  "boss": "kround",
+  "bossLabel": "K. Round",
+  "chapter": "ch1",
+  "enemy": "obj_checkers_enemy",
+  "selector": "leapmode",
+  "choice": 1,
+  "name": "leapmode 1",
+  "controller": "obj_shake",
+  "type": null,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "kround_shake_leapmode_1",
+  "inFight": true,
+  "monsterType": 10
+ },
+ {
+  "setup": "if (jumpcon == 0)\n    {\n        sprite_index = spr_checkers_magnificent;\n        image_speed = 0.5;\n        jumpcon = 1;\n        magamt = 0;\n    }\n    \n    if (jumpcon == 1)\n    {\n        if (image_index == 2)\n            snd_play(snd_ultraswing);\n        \n        if (image_index >= 4)\n        {\n            image_index = 4;\n            image_speed = 0;\n            hspeed = -4;\n            gravity = -0.12;\n            jumpcon = 2;\n            siner = 0;\n        }\n    }\n    \n    if (jumpcon == 2)\n    {\n        siner += 1;\n        y += (sin(siner / 3) * 4);\n        s_timer += 1;\n        \n        if (s_timer == 20)\n            snd_play(snd_magicsprinkle);\n        \n        if (s_timer >= 24)\n        {\n            bul = instance_create(x + random(sprite_width / 2), (y + sprite_height) - 50, obj_regularbullet);\n            bul.sprite_index = spr_checkershrapnel;\n            bul.vspeed = 3;\n            bul.image_xscale = 1.5;\n            bul.image_yscale = 1.5;\n            bul.depth = depth + 1;\n            bul.gravity_direction = 135 + random(180);\n            bul.gravity = 0.06;\n            bul.target = target;\n            bul.damage = damage;\n            \n            if (magamt == 6 || magamt == 12)\n            {\n                with (bul)\n                {\n                    gravity = 0;\n                    move_towards_point(obj_heart.x + 8, obj_heart.y + 8, 3);\n                }\n            }\n            \n            s_timer = 21;\n            magamt += 1;\n        }\n        \n        if (y < (__view_get(e__VW.YView, 0) - 200))\n        {\n            speed = 0;\n            gravity = 0;\n            y = ystart - 100;\n            x = xstart + 300;\n            hspeed = -30;\n            vspeed = 10;\n            jumpcon = 3;\n        }\n    }\n    \n    if (jumpcon == 3)\n    {\n        magamt = 0;\n        jumptimer += 1;\n        \n        if (jumptimer >= 10)\n        {\n            snd_play(snd_impact);\n            instance_create(0, 0, obj_shake);\n            amt += 1;\n            s_timer = 0;\n            x = xstart;\n            y = ystart;\n            hspeed = 0;\n            vspeed = 0;\n            jumpcon = 0;\n            jumpcon = 4;\n            jumptimer = 0;\n            sprite_index = spr_checkers_idle;\n            image_index = 0;\n            image_speed = 0;\n        }\n    }\n    \n    if (jumpcon == 4)\n    {\n        jumptimer += 1;\n        \n        if (jumptimer >= 20)\n        {\n            with (obj_regularbullet)\n            {\n                active = 0;\n                image_alpha -= 0.1;\n            }\n        }\n        \n        if (jumptimer >= 30)\n        {\n            global.turntimer = -1;\n            instance_destroy();\n            \n            with (obj_checkers_enemy)\n                visible = 1;\n        }\n    }",
+  "boss": "kround",
+  "bossLabel": "K. Round",
+  "chapter": "ch1",
+  "enemy": "obj_checkers_enemy",
+  "selector": "leapmode",
+  "choice": 2,
+  "name": "leapmode 2",
+  "controller": "obj_regularbullet",
+  "type": null,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "kround_regularbullet",
+  "inFight": true,
+  "monsterType": 10
+ },
+ {
+  "setup": "with (obj_regularbullet)\n    {\n        image_xscale += 0.01;\n        image_yscale += 0.01;\n    }\n    \n    if (jumpcon == 0)\n    {\n        sprite_index = spr_checkers_leg;\n        image_index = 0;\n        image_speed = 0.5;\n        jumpcon = 1;\n    }\n    \n    if (jumpcon == 1)\n    {\n        if (image_index == 3)\n        {\n            snd_play(snd_swing);\n            snd_play(snd_magicsprinkle);\n            \n            for (i = 0; i < 4; i += 1)\n            {\n                bul = instance_create(x - 40, y + 100, obj_regularbullet);\n                bul.sprite_index = spr_checkershrapnel;\n                bul.direction = (point_direction(bul.x, bul.y, obj_heart.x + 8, obj_heart.y + 8) - (10 * i)) + random(i * 20);\n                bul.speed = 3.5 + random(1.8);\n                bul.target = target;\n                bul.damage = damage;\n            }\n        }\n        \n        if (image_index >= 5)\n        {\n            image_index = 5;\n            image_speed = 0;\n            jumpcon = 2;\n        }\n    }\n    \n    if (jumpcon == 2)\n    {\n        jumptimer += 1;\n        \n        if (jumptimer >= 10)\n        {\n            sprite_index = spr_checkers_idle;\n            image_index = 0;\n        }\n        \n        if (jumptimer >= 20)\n        {\n            jumptimer = 0;\n            jumpcon = 0;\n            amt += 1;\n            \n            if (amt >= 4)\n            {\n                jumpcon = 3;\n                jumptimer = 0;\n            }\n        }\n    }\n    \n    if (jumpcon == 3)\n    {\n        jumptimer += 1;\n        \n        if (jumptimer >= 20)\n        {\n            with (obj_regularbullet)\n            {\n                image_alpha -= 0.1;\n                active = 0;\n            }\n        }\n        \n        if (jumptimer >= 30)\n        {\n            global.turntimer = -1;\n            instance_destroy();\n            \n            with (obj_checkers_enemy)\n                visible = 1;\n        }\n    }",
+  "boss": "kround",
+  "bossLabel": "K. Round",
+  "chapter": "ch1",
+  "enemy": "obj_checkers_enemy",
+  "selector": "leapmode",
+  "choice": 3,
+  "name": "leapmode 3",
+  "controller": "obj_regularbullet",
+  "type": null,
+  "usesDifficulty": false,
+  "controllerSet": null,
+  "extraFields": [],
+  "source": "gml_Object_obj_checkers_leap_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "kround_regularbullet_leapmode_3",
+  "inFight": true,
+  "monsterType": 10
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 1,
+  "name": "Bike Race — honk, then drive-by across the screen",
+  "controller": "obj_lancerbike",
+  "type": null,
+  "set": {
+   "racecon": 1
+  },
+  "turntimerHint": 999,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_lancerbike",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 2,
+  "name": "Bike Loop — loop-de-loop around the view, trailing spades",
+  "controller": "obj_lancerbike",
+  "type": null,
+  "set": {
+   "lcon": 1
+  },
+  "turntimerHint": 999,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_lancerbike_bike_loop_loop_de_loop_a",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 3,
+  "name": "Falling Spades",
+  "controller": "obj_dbulletcontroller",
+  "type": 20,
+  "set": null,
+  "turntimerHint": 180,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_type20",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 4,
+  "name": "Side Spades — alternating left/right lanes",
+  "controller": "obj_dbulletcontroller",
+  "type": 21,
+  "set": null,
+  "turntimerHint": 180,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_type21",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 5,
+  "name": "Homing Falling Spades",
+  "controller": "obj_dbulletcontroller",
+  "type": 24,
+  "set": null,
+  "turntimerHint": 140,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_type24",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 6,
+  "name": "Susie's Axes — Lancer cheers from the sideline",
+  "controller": "obj_dbulletcontroller",
+  "type": 85,
+  "set": null,
+  "turntimerHint": 180,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_type85",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lancer",
+  "bossLabel": "Lancer",
+  "chapter": "ch1",
+  "enemy": "obj_lancerboss",
+  "selector": null,
+  "choice": 7,
+  "name": "Susie rides the bike — axe barrage from Lancer's bike",
+  "controller": "obj_lancerbike_neo",
+  "type": null,
+  "set": null,
+  "turntimerHint": 999,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lancer.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lancer_lancerbike_neo",
+  "inFight": true,
+  "monsterType": 2,
+  "extraEnemies": [
+   "obj_lancerboss3",
+   "obj_susieenemy",
+   "obj_lancerboss2"
+  ]
+ },
+ {
+  "boss": "lanino_elnina",
+  "bossLabel": "Lanino & Elnina",
+  "chapter": "ch3",
+  "enemy": "obj_elnina_lanino_controller",
+  "selector": "special",
+  "choice": 0,
+  "name": "Weather Report — twin mascots, opposing bullets KISS on contact",
+  "controller": "obj_dbulletcontroller",
+  "type": 130,
+  "set": {
+   "type": 130,
+   "special": 0,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
+  "turntimerHint": 260,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lanino_elnina.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lanino_elnina_type130",
+  "inFight": true,
+  "monsterType": 61,
+  "extraEnemies": [
+   "obj_lanino_enemy",
+   "obj_elnina_enemy"
+  ]
+ },
+ {
+  "boss": "lanino_elnina",
+  "bossLabel": "Lanino & Elnina",
+  "chapter": "ch3",
+  "enemy": "obj_elnina_lanino_controller",
+  "selector": "special",
+  "choice": 1,
+  "name": "The favored one grows — 2.25x mascot holds still, partner keeps drifting",
+  "controller": "obj_dbulletcontroller",
+  "type": 130,
+  "set": {
+   "type": 130,
+   "special": 1,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
+  "turntimerHint": 260,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lanino_elnina.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lanino_elnina_type130_the_favored_one_grows_2_",
+  "inFight": true,
+  "monsterType": 61,
+  "extraEnemies": [
+   "obj_lanino_enemy",
+   "obj_elnina_enemy"
+  ]
+ },
+ {
+  "boss": "lanino_elnina",
+  "bossLabel": "Lanino & Elnina",
+  "chapter": "ch3",
+  "enemy": "obj_elnina_lanino_controller",
+  "selector": "special",
+  "choice": 2,
+  "name": "Smug vs. Scared — favored mascot big and fast, partner shrinking away",
+  "controller": "obj_dbulletcontroller",
+  "type": 130,
+  "set": {
+   "type": 130,
+   "special": 2,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
+  "turntimerHint": 260,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lanino_elnina.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lanino_elnina_type130_smug_vs_scared_favored_m",
+  "inFight": true,
+  "monsterType": 61,
+  "extraEnemies": [
+   "obj_lanino_enemy",
+   "obj_elnina_enemy"
+  ]
+ },
+ {
+  "boss": "lanino_elnina",
+  "bossLabel": "Lanino & Elnina",
+  "chapter": "ch3",
+  "enemy": "obj_elnina_lanino_controller",
+  "selector": "special",
+  "choice": 3,
+  "name": "Chase — both mascots fly and ricochet inside the box, bullets aimed at centre",
+  "controller": "obj_dbulletcontroller",
+  "type": 130,
+  "set": {
+   "type": 130,
+   "special": 3,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
+  "turntimerHint": 275,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lanino_elnina.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lanino_elnina_type130_chase_both_mascots_fly_a",
+  "inFight": true,
+  "monsterType": 61,
+  "extraEnemies": [
+   "obj_lanino_enemy",
+   "obj_elnina_enemy"
+  ]
+ },
+ {
+  "boss": "lanino_elnina",
+  "bossLabel": "Lanino & Elnina",
+  "chapter": "ch3",
+  "enemy": "obj_elnina_lanino_controller",
+  "selector": "special",
+  "choice": 4,
+  "name": "FINAL ATTACK — the partner is erased, the favored mascot fills the box",
+  "controller": "obj_dbulletcontroller",
+  "type": 130,
+  "set": {
+   "type": 130,
+   "special": 4,
+   "side": "0 = Lanino favored, 1 = Elnina favored",
+   "difficulty": 0
+  },
+  "turntimerHint": 850,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/lanino_elnina.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "lanino_elnina_type130_final_attack_the_partner",
+  "inFight": true,
+  "monsterType": 61,
+  "extraEnemies": [
+   "obj_lanino_enemy",
+   "obj_elnina_enemy"
+  ]
+ },
+ {
+  "boss": "orange_green",
+  "bossLabel": "Orange & Green",
+  "chapter": "ch5",
+  "enemy": "obj_orange_green_controller",
+  "selector": null,
+  "choice": null,
+  "name": "COOKING TIME — Green's FAST FOOD (falling eggs/donuts/candy + green flame bullets)",
+  "controller": "obj_dbulletcontroller",
+  "type": 131,
+  "set": {
+   "type": 131,
+   "creator": "obj_green_enemy.myself",
+   "damage": "global.monsterat[green] * 5 = 80"
+  },
+  "turntimerHint": 270,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/orange_green.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "orange_green_type131",
+  "inFight": true,
+  "monsterType": 113,
+  "extraEnemies": [
+   "obj_orange_enemy",
+   "obj_green_enemy"
+  ]
+ },
+ {
+  "boss": "orange_green",
+  "bossLabel": "Orange & Green",
+  "chapter": "ch5",
+  "enemy": "obj_orange_green_controller",
+  "selector": null,
+  "choice": null,
+  "name": "OMEGA-3 uppercut — Orange leaps the box and slams down expanding glove rings",
+  "controller": "obj_dbulletcontroller",
+  "type": 314,
+  "set": {
+   "type": 314,
+   "difficulty": 8,
+   "creator": "obj_orange_enemy.myself",
+   "damage": "global.monsterat[orange] * 5 = 80"
+  },
+  "turntimerHint": 360,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/orange_green.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "orange_green_type314",
+  "inFight": true,
+  "monsterType": 113,
+  "extraEnemies": [
+   "obj_orange_enemy",
+   "obj_green_enemy"
+  ]
+ },
+ {
+  "boss": "orange_green",
+  "bossLabel": "Orange & Green",
+  "chapter": "ch5",
+  "enemy": "obj_orange_green_controller",
+  "selector": null,
+  "choice": null,
+  "name": "OMEGA-3 SUPER ATTACK — Orange's finale (condescend / Orange-mercy ending)",
+  "controller": "obj_dbulletcontroller",
+  "type": 132,
+  "set": {
+   "type": 132,
+   "creator": "obj_orange_enemy.myself",
+   "damage": "global.monsterat[orange] * 5 = 80"
+  },
+  "turntimerHint": 615,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/orange_green.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "orange_green_type132",
+  "inFight": true,
+  "monsterType": 113,
+  "extraEnemies": [
+   "obj_orange_enemy",
+   "obj_green_enemy"
+  ]
+ },
+ {
+  "boss": "orange_green",
+  "bossLabel": "Orange & Green",
+  "chapter": "ch5",
+  "enemy": "obj_orange_green_controller",
+  "selector": null,
+  "choice": null,
+  "name": "OMEGA PAN — Green's finale, three orbiting pans firing flame fans (admire / Green-mercy ending)",
+  "controller": "obj_dbulletcontroller",
+  "type": 307,
+  "set": {
+   "type": 307,
+   "creator": "obj_green_enemy.myself",
+   "damage": 92,
+   "target": 4
+  },
+  "turntimerHint": 500,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": null,
+  "declared": true,
+  "source": "rosters/orange_green.json (declared)",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "orange_green_type307",
+  "inFight": true,
+  "monsterType": 113,
+  "extraEnemies": [
+   "obj_orange_enemy",
+   "obj_green_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rtimer",
+  "choice": 16,
+  "name": "ImageSearch",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 0,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "special",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type0",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 1,
+  "name": "QueenUltimate",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 1,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"QueenUltimate\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 1;\n                    \n                    if (ultimateattackused == 0)\n                        scr_turntimer(371);\n                    \n                    if (ultimateattackused == 1)\n                        scr_turntimer(311);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type1",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "ultimateattackused",
+  "choice": 1,
+  "name": "Wine",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type2",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "Stomp",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 3,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type3",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 4,
+  "name": "NewSocialMedia",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 106,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type106",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "Bufferbullet",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 5,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type5",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 6,
+  "name": "Explosion",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 6,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Explosion\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 6;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 6.1;\n                    \n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type6",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 0,
+  "name": "BerdlyTornado",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 112,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BerdlyTornado\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 112;",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type112",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 1,
+  "name": "BerdlyTornado",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 113,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BerdlyTornado\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 113;",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type113",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 2,
+  "name": "BerdlyFeather",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 7,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BerdlyFeather\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 7;",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type7",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 3,
+  "name": "BerdlyFeather",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 7.5,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BerdlyFeather\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 7.5;",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_type7_5",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 8,
+  "name": "QueenLaser",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 100,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"QueenLaser\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 100;\n                    dc.bufferattack = bufferattack;\n                    \n                    if (difficulty == 1)\n                        dc.type = 101;\n                    \n                    if (difficulty == 2)\n                        dc.type = 102;\n                    \n                    if (difficulty == 3)\n                        dc.type = 114;\n                    \n                    if (difficulty == 4)\n                        dc.type = 115;\n                    \n                    if (difficulty == 5)\n                        dc.type = 116;\n                    \n                    scr_turntimer(245);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type100",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 5,
+  "name": "Plug",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 110,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type110",
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "difficulty",
+  "choice": 1,
+  "name": "Birthday",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 8,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "queen_type8",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 10,
+  "name": "Unknown",
+  "controller": "obj_queen_bulletcontroller",
+  "type": null,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "bufferattack"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Birthday\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = 8;\n                    dc.special = 5;\n                    dc.bufferattack = bufferattack;\n                    scr_turntimer(300);\n                    break;\n                \n                default:\n                    global.monsterattackname[myself] = \"Unknown\";\n                    dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                    dc.type = rr;\n                    dc.bufferattack = bufferattack;\n                    scr_turntimer(300);",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "queen_queen_bulletcontroller",
+  "inFight": false,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 0,
+  "name": "YarnBalls",
+  "controller": "obj_dbulletcontroller",
+  "type": 2,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "element"
+  ],
+  "setup": "global.monsterattackname[myself] = \"YarnBalls\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 2;\n                dc.element = 6;",
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type2",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 0,
+  "name": "MeowWow",
+  "controller": "obj_dbulletcontroller",
+  "type": 3,
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "element"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type3",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 0,
+  "name": "WhipAttack",
+  "controller": "obj_dbulletcontroller",
+  "type": 20,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"WhipAttack\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 20;",
+  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
+  "alsoChoices": [
+   0
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type20",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 1,
+  "name": "RisingDiamonds",
+  "controller": "obj_dbulletcontroller",
+  "type": 1,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"RisingDiamonds\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 1;",
+  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tasque_manager_type1",
+  "inFight": false,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tasque_manager",
+  "bossLabel": "Tasque Manager",
+  "chapter": "ch2",
+  "enemy": "obj_tasque_manager_enemy",
+  "selector": "rr",
+  "choice": 2,
+  "name": "QuizAttack",
+  "controller": "obj_dbulletcontroller",
+  "type": 32,
+  "usesDifficulty": true,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"QuizAttack\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 32;\n                dc.difficulty = quizDifficulty;",
+  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
+  "alsoChoices": [
+   1
+  ],
+  "hasSpecial": false,
+  "id": "tasque_manager_type32",
+  "inFight": true,
+  "monsterType": 42,
+  "extraEnemies": [
+   "obj_tasque_enemy"
+  ]
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "all star cast",
+  "controller": "obj_dbulletcontroller",
+  "type": 125,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "damage"
+  ],
+  "setup": "global.monsterattackname[myself] = \"all star cast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 125;\n                dc.damage = 65;\n                scr_turntimer(200);",
+  "source": "gml_Object_obj_tenna_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type125",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "smashcut",
+  "controller": "obj_dbulletcontroller",
+  "type": 126,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "damage"
+  ],
+  "setup": "global.monsterattackname[myself] = \"smashcut\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 126;\n                dc.damage = 65;\n                scr_turntimer(260);",
+  "source": "gml_Object_obj_tenna_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type126",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "rimshot lensflare",
+  "controller": "obj_dbulletcontroller",
+  "type": 128,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "damage"
+  ],
+  "setup": "global.monsterattackname[myself] = \"rimshot lensflare\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 128;\n                dc.damage = 65;\n                scr_turntimer(260);",
+  "source": "gml_Object_obj_tenna_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type128",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": "myattackchoice",
+  "choice": 20,
+  "name": "light em up",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"light em up\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 150;\n                scr_turntimer(999999);",
+  "source": "gml_Object_obj_tenna_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type150",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": null,
+  "choice": null,
+  "name": "sharpshoot test",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "creator",
+   "creatorid",
+   "target",
+   "damage",
+   "minigamedifficulty"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_tenna_zoom_Other_11.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type150_sharpshoot_test",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "tenna",
+  "bossLabel": "Tenna (final fight)",
+  "chapter": "ch3",
+  "enemy": "obj_tenna_enemy",
+  "selector": null,
+  "choice": null,
+  "name": "lightemup",
+  "controller": "obj_dbulletcontroller",
+  "type": 150,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "creator",
+   "creatorid",
+   "target",
+   "damage",
+   "minigamedifficulty"
+  ],
+  "setup": null,
+  "source": "gml_Object_obj_tenna_zoom_Other_11.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "tenna_type150_lightemup",
+  "inFight": true,
+  "monsterType": 103
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "darkshapeswithred",
+  "controller": "obj_dbulletcontroller",
+  "type": 461,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 461;\n                scr_turntimer(420);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type461",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "darkshapescentipedeharder",
+  "controller": "obj_dbulletcontroller",
+  "type": 451,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedeharder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 451;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type451",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "darkshapesbigshot",
+  "controller": "obj_dbulletcontroller",
+  "type": 452,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesbigshot\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 452;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   2,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type452",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "darkshapesbigshotdesperation",
+  "controller": "obj_dbulletcontroller",
+  "type": 453,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesbigshotdesperation\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 453;\n                scr_turntimer(430);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   3,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type453",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 4,
+  "name": "darkshapesbigshotaimed",
+  "controller": "obj_dbulletcontroller",
+  "type": 454,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesbigshotaimed\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 454;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   4,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type454",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 5,
+  "name": "darkshapescentipedehardest",
+  "controller": "obj_dbulletcontroller",
+  "type": 470,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedehardest\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 470;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type470",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 6,
+  "name": "darkshapesintro",
+  "controller": "obj_dbulletcontroller",
+  "type": 456,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesintro\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 456;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   6,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type456",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 7,
+  "name": "darkshapescentipedeintro",
+  "controller": "obj_dbulletcontroller",
+  "type": 457,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedeintro\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 457;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   7,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type457",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 8,
+  "name": "darkshapesmine",
+  "controller": "obj_dbulletcontroller",
+  "type": 458,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesmine\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 458;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   8,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type458",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 9,
+  "name": "thehands",
+  "controller": "obj_dbulletcontroller",
+  "type": 459,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"thehands\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 459;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [
+   9,
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type459",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "thehandsfast",
+  "controller": "obj_dbulletcontroller",
+  "type": 462,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"thehandsfast\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 462;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type462",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 11,
+  "name": "thehandsfastest",
+  "controller": "obj_dbulletcontroller",
+  "type": 463,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"thehandsfastest\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 463;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type463",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 12,
+  "name": "darkshapescentipedenoshapes",
+  "controller": "obj_dbulletcontroller",
+  "type": 464,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedenoshapes\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 464;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type464",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 13,
+  "name": "darkshapesbigshotdesperationshort",
+  "controller": "obj_dbulletcontroller",
+  "type": 465,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesbigshotdesperationshort\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 465;\n                global.turntimer = 240;",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type465",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 14,
+  "name": "darkshapeharder",
+  "controller": "obj_dbulletcontroller",
+  "type": 468,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapeharder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 468;\n                scr_turntimer(420);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type468",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 15,
+  "name": "darkshapehardest",
+  "controller": "obj_dbulletcontroller",
+  "type": 469,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapehardest\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 469;\n                scr_turntimer(420);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type469",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 16,
+  "name": "darkshapefinal",
+  "controller": "obj_dbulletcontroller",
+  "type": 472,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapefinal\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 472;\n                scr_turntimer(900);",
+  "source": "gml_Object_obj_titan_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "titan_type472",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "darkshapeswithred",
+  "controller": "obj_dbulletcontroller",
+  "type": 450,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 450;",
+  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type450",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "darkshapescentipede",
+  "controller": "obj_dbulletcontroller",
+  "type": 451,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipede\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 451;",
+  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type451_darkshapescentipede",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 5,
+  "name": "darkshapescentipedehard",
+  "controller": "obj_dbulletcontroller",
+  "type": 455,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapescentipedehard\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 455;",
+  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type455",
+  "inFight": false,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "titan",
+  "bossLabel": "The Titan",
+  "chapter": "ch4",
+  "enemy": "obj_titan_enemy",
+  "selector": "myattackchoice",
+  "choice": 10,
+  "name": "darkshapesspeedup",
+  "controller": "obj_dbulletcontroller",
+  "type": 460,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"darkshapesspeedup\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 460;",
+  "source": "gml_Object_obj_titan_spawn_enemy_Step_0.gml",
+  "alsoChoices": [
+   null
+  ],
+  "hasSpecial": false,
+  "id": "titan_type460",
+  "inFight": true,
+  "monsterType": 108,
+  "extraEnemies": [
+   "obj_titan_spawn_enemy"
+  ]
+ },
+ {
+  "boss": "watercooler",
+  "bossLabel": "Watercooler",
+  "chapter": "ch3",
+  "enemy": "obj_watercooler_enemy",
+  "selector": "rtimer",
+  "choice": 12,
+  "name": "Rain",
+  "controller": "obj_dbulletcontroller",
+  "type": 135,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "special",
+   "special",
+   "special"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Rain\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 135;\n                dc.special = 0;\n                \n                if (turns > 1 && (turns % 2) == 0)\n                    dc.special = 1;\n                else if (turns > 1)\n                    dc.special = 2;",
+  "source": "gml_Object_obj_watercooler_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "watercooler_type135",
+  "inFight": true,
+  "monsterType": 58
+ },
+ {
+  "boss": "watercooler",
+  "bossLabel": "Watercooler",
+  "chapter": "ch3",
+  "enemy": "obj_watercooler_enemy",
+  "selector": null,
+  "choice": null,
+  "name": "Moon",
+  "controller": "obj_dbulletcontroller",
+  "type": 69,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [
+   "special"
+  ],
+  "setup": "global.monsterattackname[myself] = \"Moon\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 69;\n                dc.special = 0;",
+  "source": "gml_Object_obj_watercooler_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": true,
+  "id": "watercooler_type69",
+  "inFight": false,
+  "monsterType": 58
+ },
+ {
+  "boss": "yellow_blue",
+  "bossLabel": "Yellow & Blue",
+  "chapter": "ch5",
+  "enemy": "obj_blue_enemy",
+  "selector": "myattackchoice",
+  "choice": 0,
+  "name": "GuidedBullet",
+  "controller": "obj_dbulletcontroller",
+  "type": 301,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"GuidedBullet\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 301;\n                scr_turntimer(300);",
+  "source": "gml_Object_obj_blue_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "yellow_blue_type301",
+  "inFight": true,
+  "monsterType": 115,
+  "extraEnemies": [
+   "obj_yellow_enemy"
+  ]
+ },
+ {
+  "boss": "yellow_blue",
+  "bossLabel": "Yellow & Blue",
+  "chapter": "ch5",
+  "enemy": "obj_blue_enemy",
+  "selector": "myattackchoice",
+  "choice": 1,
+  "name": "Dancers",
+  "controller": "obj_dbulletcontroller",
+  "type": 302,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"Dancers\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 302;\n                scr_turntimer(270);",
+  "source": "gml_Object_obj_blue_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "yellow_blue_type302",
+  "inFight": true,
+  "monsterType": 115,
+  "extraEnemies": [
+   "obj_yellow_enemy"
+  ]
+ },
+ {
+  "boss": "yellow_blue",
+  "bossLabel": "Yellow & Blue",
+  "chapter": "ch5",
+  "enemy": "obj_blue_enemy",
+  "selector": "myattackchoice",
+  "choice": 2,
+  "name": "ShootingGallery",
+  "controller": "obj_dbulletcontroller",
+  "type": 303,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"ShootingGallery\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 303;\n                scr_turntimer(225);",
+  "source": "gml_Object_obj_blue_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "yellow_blue_type303",
+  "inFight": true,
+  "monsterType": 115,
+  "extraEnemies": [
+   "obj_yellow_enemy"
+  ]
+ },
+ {
+  "boss": "yellow_blue",
+  "bossLabel": "Yellow & Blue",
+  "chapter": "ch5",
+  "enemy": "obj_blue_enemy",
+  "selector": "myattackchoice",
+  "choice": 3,
+  "name": "BlueSinging",
+  "controller": "obj_dbulletcontroller",
+  "type": 304,
+  "usesDifficulty": false,
+  "difficultyLiteral": null,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BlueSinging\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 304;\n                scr_turntimer(300);",
+  "source": "gml_Object_obj_blue_enemy_Step_0.gml",
+  "alsoChoices": [],
+  "hasSpecial": false,
+  "id": "yellow_blue_type304",
+  "inFight": true,
+  "monsterType": 115,
+  "extraEnemies": [
+   "obj_yellow_enemy"
+  ]
  }
 ];
 
@@ -3074,11 +6040,34 @@ window.GML_ATTACKS_BOXSETUP = {
  "spamton_neo": "if (!instance_exists(obj_growtangle))\n                    {\n                        instance_create(__view_get(e__VW.XView, 0) + 245, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                        \n                        if (rr == 0)\n                        {\n                            obj_growtangle.x += 54;\n                            obj_growtangle.maxxscale = 3.2;\n                            obj_growtangle.maxyscale = 1.5;\n                            chargesfxtimer = 0;\n                            dance_timer = 0;\n                            armaim = -80;\n                            \n                            if (difficulty == 3)\n                            {\n                                scr_rememberxy();\n                                scr_move_to_point_over_time(x + 50, y, 8);\n                                \n                                with (obj_sneo_vine_cut)\n                                    hide = 1;\n                                \n                                with (obj_sneo_vine_transition)\n                                    hide = 1;\n                            }\n                        }\n                        \n                        if (rr == 3)\n                        {\n                            obj_growtangle.x += 44;\n                            obj_growtangle.y += 54;\n                            obj_growtangle.maxxscale = 2;\n                            obj_growtangle.maxyscale = 2;\n                        }\n                        \n                        if (rr == 5)\n                        {\n                            scr_rememberxy();\n                            scr_move_to_point_over_time(x + 200, y, 8);\n                            \n                            with (obj_sneo_vine_cut)\n                                hide = 1;\n                            \n                            with (obj_sneo_vine_transition)\n                                hide = 1;\n                        }\n                        \n                        if (rr == 7)\n                        {\n                            obj_growtangle.x += 15;\n                            obj_growtangle.maxxscale = 2;\n                            obj_growtangle.maxyscale = 2;\n                            scr_rememberxy();\n                        }\n                        else if (rr == 8)\n                        {\n                            scr_rememberxy();\n                            scr_move_to_point_over_time(x, cameray() + 20, 8);\n                            \n                            with (obj_sneo_vine_cut)\n                                hide = 1;\n                            \n                            with (obj_sneo_vine_transition)\n                                hide = 1;\n                        }\n                        else if (rr == 8.5 || rr == 4)\n                        {\n                            obj_growtangle.x += 64;\n                            obj_growtangle.y += 8;\n                            obj_growtangle.maxxscale = 3.2;\n                            obj_growtangle.maxyscale = 1.5;\n                        }\n                        else if (rr == 6)\n                        {\n                            obj_growtangle.x += 58;\n                            obj_growtangle.maxxscale = 3.3333333333333335;\n                            obj_growtangle.maxyscale = 2.3;\n                            scr_rememberxy();\n                            scr_move_to_point_over_time(x + 200, y, 16);\n                            \n                            with (obj_sneo_vine_cut)\n                                hide = 1;\n                            \n                            with (obj_sneo_vine_transition)\n                                hide = 1;\n                        }\n                        else if (rr == 9)\n                        {\n                            obj_growtangle.y += 10;\n                            obj_growtangle.maxyscale = 1.9;\n                            obj_growtangle.maxxscale = 2.5;\n                        }\n                    }",
  "gerson": "if (!instance_exists(obj_growtangle))\n            instance_create(camerax() + (camerawidth() / 2), cameray() + (cameraheight() / 2), obj_growtangle);\n        \n        with (obj_growtangle)\n        {\n            if (other.boxoffset)\n                y -= 50;\n        }",
  "jevil": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
- "pink": "if (myattackchoice == 2 || myattackchoice == 3 || myattackchoice == 4 || myattackchoice == 5 || myattackchoice == 6)\n            {\n            }\n            else\n            {\n                if (!instance_exists(obj_growtangle))\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                \n                with (obj_growtangle)\n                {\n                    if (!instance_exists(obj_moveheart))\n                        scr_moveheart();\n                }\n                \n                if (myattackchoice != 3)\n                {\n                    with (obj_growtangle)\n                        instance_create_depth(x, y, 4, obj_purplecontrols);\n                }\n            }"
+ "pink": "if (myattackchoice == 2 || myattackchoice == 3 || myattackchoice == 4 || myattackchoice == 5 || myattackchoice == 6)\n            {\n            }\n            else\n            {\n                if (!instance_exists(obj_growtangle))\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                \n                with (obj_growtangle)\n                {\n                    if (!instance_exists(obj_moveheart))\n                        scr_moveheart();\n                }\n                \n                if (myattackchoice != 3)\n                {\n                    with (obj_growtangle)\n                        instance_create_depth(x, y, 4, obj_purplecontrols);\n                }\n            }",
+ "aqua_seth": "if (!instance_exists(obj_growtangle))\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n        \n        if (myattackchoice == 3)\n        {\n            with (obj_growtangle)\n            {\n                maxxscale = 3;\n                maxyscale = 3;\n            }\n        }",
+ "berdly": "if (!instance_exists(obj_moveheart) && !instance_exists(obj_heart))\n                    scr_moveheart();\n                \n                if (!instance_exists(obj_growtangle))\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                \n                if (difficulty == 1 && rr == 0)\n                    obj_growtangle.target_angle += 45;",
+ "jackenstein": "if (!instance_exists(obj_growtangle))\n        {\n            if (myattackchoice == 0)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 112, __view_get(e__VW.YView, 0) + 170 + 21, obj_growtangle);\n            \n            if (myattackchoice == 1)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 92, __view_get(e__VW.YView, 0) + 170 + 28, obj_growtangle);\n            \n            if (myattackchoice == 2)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 5, (__view_get(e__VW.YView, 0) + 170) - 5, obj_growtangle);\n            \n            if (myattackchoice == 3)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 92, __view_get(e__VW.YView, 0) + 170 + 64, obj_growtangle);\n            \n            if (myattackchoice == 4)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 5, __view_get(e__VW.YView, 0) + 170 + 90, obj_growtangle);\n            \n            if (myattackchoice == 5)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 109, __view_get(e__VW.YView, 0) + 170 + 83, obj_growtangle);\n            \n            if (myattackchoice == 6)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 70, __view_get(e__VW.YView, 0) + 170 + 61, obj_growtangle);\n            \n            if (myattackchoice == 7)\n                instance_create(__view_get(e__VW.XView, 0) + 320 + 95, __view_get(e__VW.YView, 0) + 170 + 55, obj_growtangle);\n            \n            if (myattackchoice == 8)\n                instance_create((__view_get(e__VW.XView, 0) + 320) - 161, __view_get(e__VW.YView, 0) + 170 + 101, obj_growtangle);\n            \n            if (myattackchoice == 9)\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170 + 90, obj_growtangle);\n            \n            if (myattackchoice == 10)\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170 + 24, obj_growtangle);\n        }\n        \n        with (obj_growtangle)\n        {\n            visible = false;\n            image_xscale = 2;\n            image_yscale = 2;\n            image_alpha = 1;\n            depth = 15;\n            timer = 15;\n        }\n        \n        instance_create_depth(0, 0, -15, obj_ghosthouse_fadein);\n        obj_growtangle.visible = false;\n        \n        if (!instance_exists(obj_moveheart) && !i_ex(obj_heart))\n            scr_moveheart();\n        \n        with (obj_growtangle)\n        {\n            image_xscale = 2;\n            image_yscale = 2;\n            timer = maxtimer;\n            x = __view_get(e__VW.XView, 0) + 320;\n            y = __view_get(e__VW.YView, 0) + 170;\n        }",
+ "kround": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
+ "lancer": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
+ "lanino_elnina": "if (!instance_exists(obj_growtangle))\n    {\n        if (turns < 7)\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n        \n        if (turns == 7)\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 190, obj_growtangle);\n    }",
+ "orange_green": "if (global.mnfight == 1.5 && endcon == 0)\n{\n    if (i_ex(obj_green_enemy) && global.monsterhp[obj_green_enemy.myself] < (global.monstermaxhp[obj_green_enemy.myself] * 0.7) && healing_egg_con == 0)\n        healing_egg_con = 1;\n    else if (i_ex(obj_orange_enemy) && global.monsterhp[obj_orange_enemy.myself] < (global.monstermaxhp[obj_orange_enemy.myself] * 0.7) && healing_egg_con == 0 && global.monsterhp[obj_orange_enemy.myself] < global.monsterhp[obj_green_enemy.myself])\n        healing_egg_con = 2;\n    else if (!instance_exists(obj_growtangle) && healing_egg_con == 0)\n        instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n    \n    with (obj_growtangle)\n        maxxscale = 1.5;\n    \n    if (powerup == 4)\n    {\n        with (obj_growtangle)\n            maxxscale = 2;\n    }\n    \n    if (!instance_exists(obj_moveheart) && healing_egg_con == 0)\n        scr_moveheart();\n    \n    scr_turntimer(90);\n    global.mnfight = 2;\n    ballooncon = -1;\n}",
+ "queen": "if (!instance_exists(obj_growtangle))\n                    {\n                        if (rr == 1)\n                        {\n                            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 200, obj_growtangle);\n                        }\n                        else if (rr == 5)\n                        {\n                            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 237, obj_growtangle);\n                        }\n                        else if (rr == 7)\n                        {\n                            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 200, obj_growtangle);\n                            obj_growtangle.maxxscale = 2;\n                            obj_growtangle.maxyscale = 1.5;\n                        }\n                        else if (rr == 9)\n                        {\n                            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 200, obj_growtangle);\n                            \n                            if (difficulty == 1)\n                            {\n                                obj_growtangle.maxxscale = 1.5;\n                                obj_growtangle.maxyscale = 2;\n                            }\n                        }\n                        else\n                        {\n                            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n                        }\n                    }",
+ "tasque_manager": "if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);",
+ "tenna": "if (myattackchoice < 3)\n        {\n            if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n            \n            if (!instance_exists(obj_moveheart) && !i_ex(obj_heart))\n                scr_moveheart();\n        }",
+ "titan": "if (!instance_exists(obj_growtangle))\n            {\n                if (myattackchoice == 2 || myattackchoice == 3 || myattackchoice == 4)\n                    instance_create(__view_get(e__VW.XView, 0) + 250, __view_get(e__VW.YView, 0) + 200, obj_growtangle);\n                else\n                    instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n            }",
+ "watercooler": "if (!instance_exists(obj_growtangle))\n            instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n        \n        if (amimoonwarmer == false)\n            instance_create(obj_growtangle.x - 10, obj_growtangle.y + 18, obj_heartmarker);\n        \n        if (!instance_exists(obj_moveheart))\n            scr_moveheart();\n        \n        with (obj_heartmarker)\n            instance_destroy();",
+ "yellow_blue": "if (i_ex(obj_yellow_enemy) && global.monsterhp[obj_yellow_enemy.myself] < (global.monstermaxhp[obj_yellow_enemy.myself] * 0.5) && obj_yellow_enemy.healingraincon == 0)\n                obj_yellow_enemy.healingraincon = 1;\n            else if (!instance_exists(obj_growtangle))\n                instance_create(__view_get(e__VW.XView, 0) + 320, __view_get(e__VW.YView, 0) + 170, obj_growtangle);\n            \n            if (myattackchoice == 0)\n            {\n                with (obj_growtangle)\n                {\n                    x -= 50;\n                    \n                    with (obj_heart)\n                        x -= 50;\n                }\n            }\n            \n            if (myattackchoice == 1)\n            {\n                with (obj_growtangle)\n                {\n                    maxxscale = 3.5;\n                    y += 48;\n                }\n            }\n            \n            if (myattackchoice == 2)\n            {\n                with (obj_growtangle)\n                {\n                    x -= 50;\n                    maxxscale = 3;\n                }\n            }\n            \n            if (myattackchoice == 3)\n            {\n                with (obj_growtangle)\n                    maxxscale = 3;\n            }"
 };
 
 window.GML_ATTACKS_TURNSETUP = {
  "knight": "if (myattackchoice == 7)\n                scr_turntimer(270);\n            else if (myattackchoice == 2)\n                scr_turntimer(350);\n            else if (myattackchoice == 0 && difficulty == 0)\n                scr_turntimer(300);\n            else if (myattackchoice == 0 && difficulty == 1)\n                scr_turntimer(300);\n            else if (myattackchoice == 11 && difficulty == 0)\n                scr_turntimer(292);\n            else if (myattackchoice == 11)\n                scr_turntimer(300);\n            else if (myattackchoice == 12)\n                scr_turntimer(300);\n            else if (myattackchoice == 13 && difficulty == 3)\n                scr_turntimer(360);\n            else if (myattackchoice == 13)\n                scr_turntimer(330);\n            else if (myattackchoice == 14)\n                scr_turntimer(300);\n            else if (myattackchoice == 15)\n                scr_turntimer(300);\n            else\n                scr_turntimer(240);",
  "spamton_neo": "scr_turntimer(260);\n                \n                if (rr == 1)\n                    scr_turntimer(300);\n                \n                if (rr == 2)\n                    scr_turntimer(750 + (hellmode * 450));\n                \n                if (rr == 2 && difficulty == 1)\n                    scr_turntimer(850 + (hellmode * 450));\n                \n                if (rr == 2 && difficulty == 6)\n                    scr_turntimer(150);\n                \n                if (rr == 6)\n                    scr_turntimer(330);\n                \n                if (rr == 7)\n                    scr_turntimer(300);\n                \n                if (rr == 5)\n                    scr_turntimer(90);",
- "jevil": "global.turntimer = 240;"
+ "jevil": "global.turntimer = 240;",
+ "aqua_seth": "scr_turntimer(90);",
+ "chaosking": "global.turntimer = 180;",
+ "jackenstein": "scr_turntimer(200);",
+ "kround": "global.turntimer = 999;",
+ "lancer": "global.turntimer = 999;",
+ "lanino_elnina": "if (turns < 5)\n            scr_turntimer(260);\n        \n        if (turns == 5)\n            scr_turntimer(275);\n        \n        if (turns == 6)\n            scr_turntimer(275);\n        \n        if (turns == 7)\n            scr_turntimer(850);",
+ "tasque_manager": "scr_turntimer(140);",
+ "titan": "scr_turntimer(360);\n            \n            if (myattackchoice == 2)\n                scr_turntimer(270);",
+ "watercooler": "scr_turntimer(200);",
+ "yellow_blue": "scr_turntimer(90);"
 };

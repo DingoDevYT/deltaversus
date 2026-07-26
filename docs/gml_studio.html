@@ -1576,6 +1576,21 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         obj_joker: 20,
         obj_pink_enemy: 118,
       };
+      // Fights added as roster data (scripts/rosters/*.json) are not in the
+      // hand-written BOSSES list above and do not need to be: a roster attack
+      // already names its own enemy object, and every extra enemy the fight
+      // needs. Synthesise an entry so all 19 fights spawn through one path.
+      if (pendingAttack && pendingAttack.enemy
+          && !BOSSES.some(b => b.name === pendingAttack.enemy)) {
+        BOSSES.push({
+          match: [], name: pendingAttack.enemy, x: 520, y: 180,
+          also: (pendingAttack.extraEnemies || []).filter(e => e !== pendingAttack.enemy),
+        });
+      }
+      if (pendingAttack && pendingAttack.monsterType !== undefined
+          && pendingAttack.monsterType !== null) {
+        MONSTER_TYPE[pendingAttack.enemy] = pendingAttack.monsterType;
+      }
       let bossInst = null;
       let objNameOfBoss = null;
       for (const b of BOSSES) {

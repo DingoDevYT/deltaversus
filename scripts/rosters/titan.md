@@ -4,9 +4,9 @@
 
 | object | parent | role |
 |---|---|---|
-| `obj_titan_enemy` | `obj_monsterparent` | **the boss.** monstertype 108, HP 21000, AT 18 (`scr_monstersetup.gml:2026-2069`) |
-| `obj_titan_spawn_enemy` | `obj_monsterparent` | a **separate, earlier encounter** — "Titan Spawn", monstertype 109, HP 3000 (`scr_monstersetup.gml:2072-2111`) |
-| `obj_titan_enemy_actor` | *(none)* | not an enemy — a visual stand-in with no battle code. `obj_titan_enemy_Create_0.gml:129-135` copies its `siner` and destroys it. Its Create is a near-verbatim copy of the boss's (same `unleash_hp = 3000`, `attack_chooser = 6`, `handattackhardcon = 0`), but it has only Create/Draw/Step and never touches `myattackchoice`. |
+| `obj_titan_enemy` | `obj_monsterparent` | **the boss.** monstertype 108, HP 21000, AT 18, DF 0 (`scr_monstersetup.gml:2027-2059`). Encounter **175** (`scr_encountersetup.gml:1133-1150`), one instance. |
+| `obj_titan_spawn_enemy` | `obj_monsterparent` | a **separate, earlier encounter** — "TITAN SPAWN - AT 30 DF 200", monstertype 109, encounter **177** with two instances (`scr_encountersetup.gml:1164-1181`). Shares `obj_dbulletcontroller` and the whole darkshape engine, but is not this fight. |
+| `obj_titan_enemy_actor` | *(none)* | **not an enemy** — a visual stand-in with no battle code. `obj_titan_enemy_Create_0.gml:129-135` copies its `siner` and destroys it. Its Create is a near-verbatim copy of the boss's (same `unleash_hp = 3000`, `attack_chooser = 6`, `handattackhardcon = 0`, same `phase`/`phaseturn`/`myattackchoice` init), but the object has only Create/Draw/Step, its Step is 25 lines of hurt-shake, and it never touches `myattackchoice`. |
 
 So the fight is driven by **`obj_titan_enemy`**, dispatching `obj_dbulletcontroller` with a `.type`,
 chosen by **`myattackchoice`** — the same shape as the Knight. `obj_titan_spawn_enemy` runs its own
@@ -40,28 +40,31 @@ smaller version of the same dispatcher and is documented at the bottom.
 | 16 | 472 | darkshapefinal | 297-303 |
 | **20** | — | `instance_create(x, y, obj_titan_heal)` | 305-314 |
 
-Choice 20 has **no `global.monsterattackname` line**, so `gen_attacks.js`'s announcement scan will
-never see it. It has to be declared by hand, exactly like Pink's dates.
+Every one of the 17 numbered branches carries a `global.monsterattackname` line, so
+`gen_attacks.js`'s announcement scan finds all 17 (verified by running `attackAnnouncements()`
+against the file — 17 hits, all with a controller, a type and a non-null `setup` slice of 146-211
+characters). **Choice 20 has no announcement at all** and must be declared by hand, exactly like
+Pink's dates.
 
 ## The chooser
 
 Everything that assigns `myattackchoice` anywhere in chapter 4:
 
-**`obj_titan_enemy_Other_10.gml`** (`event_user(0)`), called from `Step_0:332` after
-`phaseturn++` at the end of every enemy turn, and again from `Step_0:2014` the moment UNLEASH lands:
+**`obj_titan_enemy_Other_10.gml`** (`event_user(0)`), called from `Step_0:332` after `phaseturn++`
+at the end of every enemy turn, and again from `Step_0:2014` the moment UNLEASH lands:
 
 ```gml
 if (phase == 1)
 {
-    if (phaseturn == 1)  { myattackchoice = 0;  ... }          // :10-15
-    if (phaseturn == 2)  { myattackchoice = 12; ... }          // :17-22
-    if (phaseturn == 3)  { myattackchoice = 9; phaseturn = 0; }// :24-30
+    if (phaseturn == 1)  { myattackchoice = 0;  ... }           // :10-15
+    if (phaseturn == 2)  { myattackchoice = 12; ... }           // :17-22
+    if (phaseturn == 3)  { myattackchoice = 9; phaseturn = 0; } // :24-30
 }
 else if (phase == 2)
 {
-    if (phaseturn == 1)  { myattackchoice = 4;  ... }          // :34-48
+    if (phaseturn == 1)  { myattackchoice = 4;  ... }           // :34-48
     if (phaseturn == 2)  { myattackchoice = 1; phaseturn = 1;
-                           phase = 3; deunleash = true; }      // :50-68
+                           phase = 3; deunleash = true; }       // :50-68
 }
 else if (phase == 3)   // 1 :74 · 14 :81 · 10 :88, phaseturn = 0 :90
 else if (phase == 4)   // 4 :99 · 5 :115 -> phase = 5, deunleash = true :118-119
@@ -105,15 +108,21 @@ endingcon 22.5 (Step_0:1292) ──────▶ phase 8  {15 → DualBuster �
 Three arms of the unleash switch are **dead**. `Step_0:1975` (`phase == 2 → 4`), `:1983`
 (`phase == 4 → 6`) and `:1997` (`phase == 6 → 6`) can never fire, because `unleashed` is only
 cleared by `deunleash` (`Step_0:338-348`) and `deunleash` is set only on the LAST turn of phases 2
-and 4 — at which point `phase` has already been moved on to 3 or 5. During phases 2, 4 and 6 the
-ACT falls into `Step_0:1936-1944` ("Kris!! What are you doing!? Attack!!") instead. This does not
-change the roster: every choice in those arms is reachable another way.
+and 4 — at which point `phase` has already been moved on to 3 or 5. Phase 6 never sets it at all,
+and `Step_0:2005-2011` removes the ACT from the menu there anyway. During phases 2, 4 and 6 the ACT
+falls into `Step_0:1936-1944` ("Kris!! What are you doing!? Attack!!") instead. This does not change
+the roster: every choice in those arms is reachable another way.
 
 Phase 6 reaches choice **3** exactly once per fight. `Create_0.gml:37` sets `loopedphase6 = 0`, so
 the first phase-6 turn falls through to `switch (phase6turn)` → case 1 → choice 3; case 2 then sets
 `loopedphase6 = true` (`Other_10.gml:203`) and every later phase-6 turn takes the `if (loopedphase6)`
 shortcut to choice 4. (The `if (loopedphase6 == true)` at `:197` is inside case 2 *before* the
 assignment on `:203`, so that battle message is itself dead code.)
+
+Phase 7 is mostly cutscene, not attacks: the enemytalk interceptor at `Step_0:112-131` diverts
+`phaseturn == 2` to `endingcon = 4` and `phaseturn == 3` to `endingcon = 8`, so only phase-7
+`phaseturn == 1` actually runs its queued choice 20. The other two heals arrive from inside the
+cutscene chain (`Step_0:723`, `:620`).
 
 ## Real roster — 12 entries for the Titan proper
 
@@ -136,22 +145,23 @@ assignment on `:203`, so that battle message is itself dead code.)
 `myattackchoice`. Unlike the Knight, the Titan escalates by swapping to a harder *type*, not by
 raising a difficulty field. What the dispatcher never passes on, the controller supplies: types
 462/463 set `_titanhandsmanager.difficulty = 1 / 2` themselves
-(`obj_dbulletcontroller_Step_0.gml:3767, 3781`).
+(`obj_dbulletcontroller_Step_0.gml:3767, 3781`) and bump `obj_titan_battle_finger.wibbly_cooldown`
+to 11 / 12.
 
-## Cut — 6 entries
+## Cut — 6 Titan entries
 
 | choice | type | name | why it can never be chosen |
 |---|---|---|---|
 | 2 | 452 | darkshapesbigshot | No writer in either fight. Its fossils survive twice over: the box block still tests `myattackchoice == 2` (`Step_0:155`) and the turn ladder still has the dead `if (myattackchoice == 2) scr_turntimer(270);` (`Step_0:177-178`). |
-| 6 | 456 | darkshapesintro | No Titan writer. **Reachable in the Titan Spawn fight** (`obj_titan_spawn_enemy_Other_10.gml:5`), so the deduped roster entry is real — just not in this fight. |
+| 6 | 456 | darkshapesintro | No Titan writer. **Reachable in the Titan Spawn fight** (`obj_titan_spawn_enemy_Other_10.gml:5`), so the deduped roster row is real — just not in *this* fight. It is the one type that appears in both `cut` (scope titan) and `real` (scope spawn) in `titan.json`. |
 | 7 | 457 | darkshapescentipedeintro | No writer in either fight. |
 | 8 | 458 | darkshapesmine | No writer — and **broken**: `obj_dbulletcontroller_Step_0.gml:3692` guards on `if (!made && obj_)`, a dangling identifier, and its `pattern_mines` is never defined in `obj_darkshape_manager_Create_0.gml`. |
-| 13 | 465 | darkshapesbigshotdesperationshort | No writer. The only branch that *lowers* the turn (`global.turntimer = 240;`, `Step_0:278`) — hence "short". |
+| 13 | 465 | darkshapesbigshotdesperationshort | No writer. The only branch that *lowers* the turn (`global.turntimer = 240;`, `Step_0:278`, bypassing `scr_turntimer`'s raise-only guard) — hence "short". |
 | 16 | 472 | darkshapefinal | No writer, `scr_turntimer(900)`. `pattern_darkshape_final` (`obj_darkshape_manager_Create_0.gml:1036-1045`) spawns `obj_darkshape_giant`, which never appears in the shipped fight. The real finale is choice 15 → DualBuster → choice 4 → Susie's Idea. |
 
 Two more controller branches — types **466** (`pattern_mineguys`) and **467**
 (`pattern_darkshape_walls`) — exist in `obj_dbulletcontroller_Step_0.gml:3830` and `:3851` with
-**no dispatcher entry anywhere in chapter 4**, so they never even become roster rows. Both call
+**no `dc.type = ` writer anywhere in chapter 4**, so they never even become roster rows. Both call
 undefined pattern functions. (Type 471 in the same file is `obj_holywatercooler_enemy`'s, not the
 Titan's — `obj_holywatercooler_enemy_Step_0.gml:389`.)
 
@@ -159,8 +169,9 @@ Titan's — `obj_holywatercooler_enemy_Step_0.gml:389`.)
 
 ## The box block
 
-`obj_titan_enemy_Step_0.gml:153-159`, anchor `if (!instance_exists(obj_growtangle))` (unique in the
-file), 415 characters:
+`obj_titan_enemy_Step_0.gml:153-159`, anchor `if (!instance_exists(obj_growtangle))`. Verified by
+running `extractBoxBlock()`: the anchor occurs **exactly once** in the file and slices to **415
+characters** —
 
 ```gml
 if (!instance_exists(obj_growtangle))
@@ -173,10 +184,11 @@ if (!instance_exists(obj_growtangle))
 ```
 
 The three big-blast attacks shift the box left and down so the blasts, which are fired from
-`obj_growtangle.x + 240`, have room to cross it. `maxxscale`/`maxyscale` stay at `obj_growtangle`'s
-default 2/2 except for types **468** (2.125) and **469** (2.25), which the controller sets itself
-(`obj_dbulletcontroller_Step_0.gml:3867-3871, 3893-3897`) — so the per-attack `setup` slice is not
-where that lives, and the studio gets it for free by actually spawning the controller.
+`obj_growtangle.x + 240` against an `obj_darkshape_blast_tester` at `obj_growtangle.x + 260`, have
+room to cross it. `maxxscale`/`maxyscale` stay at `obj_growtangle`'s default except for types
+**468** (2.125) and **469** (2.25), which the *controller* sets itself
+(`obj_dbulletcontroller_Step_0.gml:3867-3871, 3893-3897`) — so that sizing is not in the per-attack
+`setup` slice, and the studio gets it for free by actually spawning the controller.
 
 The whole block already sits inside `if (myattackchoice == 20) { } else { ... }` (`Step_0:148-163`),
 so **a heal turn creates no box at all** — and `Step_0:61` likewise skips `obj_darkener` when
@@ -185,7 +197,9 @@ so **a heal turn creates no box at all** — and `Step_0:61` likewise skips `obj
 ## The turn block
 
 `obj_titan_enemy_Step_0.gml:175-178`, anchor `scr_turntimer(360);`, endAnchor
-`if (myattackchoice == 0)`:
+`if (myattackchoice == 0)`. Verified by running `extractTurnBlock()`: the first occurrence of the
+anchor is the right one (it passes the `/turntimer/` proximity test on its own text) and the slice
+is **105 characters** —
 
 ```gml
 scr_turntimer(360);
@@ -204,6 +218,7 @@ Two traps here.
    run through the entire dispatcher and the studio would spawn a *second* `obj_dbulletcontroller`
    every turn — the exact bug the Knight's notes record.
 
+The 360 is set **before any choice test**, so even the boxless choice-20 heal turn runs at 360.
 Per-attack overrides are all *inside* the dispatcher branches, so they ride along in each entry's
 `setup`: 420 for choices 0/14/15, 430 for choice 3, `global.turntimer = 240` for the cut choice 13.
 Controller-side raises to 420 also exist for types 451/455/457/464/470
@@ -214,29 +229,32 @@ One override is **not** capturable: `if (myattackchoice == 4 && phase == 8) glob
 (`Step_0:319-320`) sits after `turns += 1`, outside every branch, and needs `phase == 8`. The
 studio will run choice 4 at 360 rather than the phase-8 240.
 
-Termination depends on this: `obj_darkshape_manager_Step_0.gml:3-7` destroys itself the moment
-`global.turntimer <= 0`, so an unreplayed turn block means the attack ends on frame one.
+Termination depends on all of this: `obj_darkshape_manager_Step_0.gml:3-7` destroys itself the
+moment `global.turntimer <= 0`, so an unreplayed turn block means the attack ends on frame one.
 
 ---
 
 ## What the fight actually is
 
 RED soul, plain rectangular box, **no green/purple/yellow modes, no minigame turns, no
-turn-replacement dates**. The one non-bullet turn is choice 20, which just plays `obj_titan_heal`.
+turn-replacement dates**. `scr_moveheart()` at `Step_0:161-162` is the only soul setup. The one
+non-bullet turn is choice 20, which just plays `obj_titan_heal`.
 
-The mechanic is light versus dark. `obj_darkshape` bullets home in on the SOUL
-(`obj_darkshape_Create_0.gml:136-171`); loitering inside `obj_darkshape_light_aura` — whose radius
-tracks `obj_titan_enemy.light_radius`, default 48, raised by the 10-TP **Brighten** ACT — burns a
-shape's `light` to 1, killing it into an `obj_darkshape_greenblob`
-(`obj_darkshape_Create_0.gml:94-134`) that pays out TENSION scaled by `obj_titan_enemy.tensionscaling`.
-That scaling ramps 1 → 1.5 → 2 → 3 after 4, 5 and 7 turns without an UNLEASH
-(`Step_0:74-81`), so the game hands you the 200 TP if you stall. Spending it is the entire phase
-engine.
+The mechanic is light versus dark. `obj_darkshape` bullets home in on the SOUL; loitering inside
+`obj_darkshape_light_aura` — whose `radius_goal` is copied from `obj_titan_enemy.light_radius`,
+default 48, raised by the 10-TP **Brighten** ACT (`obj_darkshape_light_aura_Create_0.gml:1-8`) —
+drives a shape's `light` to 1, killing it into an `obj_darkshape_greenblob`
+(`obj_darkshape_Create_0.gml:99-104`) that pays out TENSION scaled by
+`obj_titan_enemy.tensionscaling`. That scaling ramps 1 → 1.5 → 2 → 3 after 4, 5 and 7 turns without
+an UNLEASH (`Step_0:74-81`), so the game hands you the 200 TP if you stall. Spending it is the
+entire phase engine.
 
-Damage (`obj_heroparent_Step_0.gml:362-392`): ×0.5 while shielded, ×0.1 in `drawstate == "defense"`,
-×5 on the exposed weak point — ×10 with weapon 26 or 11 — all times `unleashmultiplier`, which
-phase 6 ramps 1.2 / 1.2 / 2 / 3 (`Other_10.gml:159-171`). Against 21000 HP that is why phase 6 is
-where the fight is won.
+Damage (`obj_heroparent_Step_0.gml:361-390`, mirrored for spells in `scr_spell.gml:143-150`): ×0.5
+while shielded, ×0.1 in `drawstate == "defense"`, ×5 on the exposed weak point — ×10 with weapon 26
+or 11 — all times `unleashmultiplier`, which phase 6 ramps 1.2 / 1.2 / 2 / 3
+(`Other_10.gml:159-171`). Against 21000 HP that is why phase 6 is where the fight is won.
+`scr_damage_enemy.gml:50-54` and `Step_0:3-5` both clamp `global.monsterhp` to a floor of 1, so the
+Titan cannot be killed by damage — the fight ends through the `endingcon` script.
 
 **The hands attacks carry state between turns.** `obj_titan_battle_hands_manager_Create_0.gml:82-146`
 and `:205-269` read `hand1_finger1..4` / `hand2_finger1..4` off `obj_titan_enemy` and immediately
@@ -261,19 +279,20 @@ at difficulty 0 → 1 → 2, and a fresh studio launch always starts with all ei
 
 ## Sub-fight: the Titan Spawn (`obj_titan_spawn_enemy`)
 
-A separate, earlier encounter. Multiple instances can co-exist and only the first is the
-battlecontroller (`Create_0.gml:4-5`), which is why its box/turn/dispatch code is all gated on
-`if (battlecontroller)`. Its chooser is a three-line ladder called from `Step_0:6`:
+A separate, earlier encounter — `scr_encountersetup.gml` case **177**, two instances, against the
+Titan's case **175**. Only the first instance is the battlecontroller (`Create_0.gml:4-5`), which is
+why its box/turn/dispatch code is all gated on `if (battlecontroller)`. Its chooser is a three-line
+ladder called from `Step_0:6`:
 
 ```gml
 phaseturn++;
-if (phaseturn == 1) { myattackchoice = 6;  }    // Other_10.gml:3-7
-if (phaseturn == 2) { myattackchoice = 10; }    // :9-13
+if (phaseturn == 1) { myattackchoice = 6;  }                // Other_10.gml:3-7
+if (phaseturn == 2) { myattackchoice = 10; }                // :9-13
 if (phaseturn == 3) { myattackchoice = 0; phaseturn = 2; }  // :15-20
 ```
 
 `phaseturn = 2` on the third call means the sequence is **6, 10, 0, 0, 0, …** forever, until the
-160-TP **Banish** ACT ends it (`Step_0:313-314` → `scr_wincombat`).
+**Banish** ACT ends it (`scr_monstersetup.gml:2098`; `Step_0:313-314` → `scr_wincombat`).
 
 - **Used (3):** choice 6 → type 456 *darkshapesintro*, choice 10 → type 460 *darkshapesspeedup*,
   choice 0 → type 450 *darkshapeswithred* (which sets no `pattern_to_use` and therefore runs
@@ -283,21 +302,32 @@ if (phaseturn == 3) { myattackchoice = 0; phaseturn = 2; }  // :15-20
   both; **455 (`darkshapescentipedehard`) exists only here and is unreachable**, the one genuinely
   new cut entry the spawn contributes.
 
+Note the choice numbers do **not** line up between the two fights: spawn choice 0 is type 450 while
+Titan choice 0 is 461, and spawn choice 10 is 460 while Titan choice 10 is 462. `titan.json` tags
+every entry with `scope` for this reason, and carries `realTypes` / `cutTypes` so any downstream
+judge can key on `type` and avoid the collision entirely.
+
 Its box (`Step_0:33-34`) is the plain `view + (320, 170)` with no per-attack offset, and its turn
 length is a flat `scr_turntimer(360)` *after* the dispatch (`Step_0:127`) with no per-attack
 override at all — so the Titan's own turn block covers it.
 
-Listing `gml_Object_obj_titan_spawn_enemy_Step_0.gml` in `extraAttackFiles` is enough to pull types
-**450**, **455** and **460** into the roster; the other eight spawn announcements collapse into the
-Titan's own entries under `gen_attacks.js`'s `boss|controller|type` dedupe key, which is the right
-outcome because the Titan's entries carry the `setup` slices.
+Listing `gml_Object_obj_titan_spawn_enemy_Step_0.gml` in `extraAttackFiles` pulls exactly three new
+rows into the roster — types **450**, **455** and **460**. The other eight spawn announcements
+collapse into the Titan's own entries under `gen_attacks.js`'s `boss|controller|type` dedupe key,
+which is the right outcome because the Titan's entries carry the `setup` slices (extra-file entries
+are given `setup: null` by design). The three that survive are trivial branches — name, spawner,
+type — so a manual spawn with the type reproduces them exactly.
 
 ---
 
 ## Counts
 
-**21 roster entries: 15 real, 6 cut.**
-12 real belong to `obj_titan_enemy` (11 bullet attacks + 1 declared heal turn); 3 belong to
-`obj_titan_spawn_enemy`. Of the 6 cut, 5 are Titan dispatcher branches (choices 2, 7, 8, 13, 16)
-and 1 is spawn-only (type 455). Type 456 counts as real because the spawn fight plays it, even
-though the Titan's choice 6 has no writer.
+**22 roster rows: 15 real, 7 cut.**
+
+- **The Titan itself: 12 real, 6 cut.** 11 bullet attacks (choices 0, 1, 3, 4, 5, 9, 10, 11, 12, 14,
+  15) plus the declared choice-20 heal turn; cut are choices 2, 6, 7, 8, 13, 16.
+- **The Titan Spawn (separate encounter): 3 real, 1 cut** — types 456, 460, 450 real; type 455 cut.
+- Type **456** is the one row that is cut in the Titan and real in the spawn, so it appears in both
+  lists under different `scope` tags and lands in `realTypes`.
+- Types 466, 467 and 471 are `obj_dbulletcontroller` branches with no Titan dispatcher entry at all
+  and never become rows.

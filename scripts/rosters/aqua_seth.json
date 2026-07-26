@@ -1,0 +1,152 @@
+{
+  "id": "aqua_seth",
+  "chapter": "ch5",
+  "chNum": 5,
+  "label": "Aqua & Seth",
+  "enemy": "obj_aqua_enemy",
+  "extraEnemies": ["obj_purple_enemy"],
+
+  "_shapeNote": "READ THIS BEFORE WIRING THE FIGHT. (1) Seth is obj_purple_enemy — objects.tsv gives `obj_purple_enemy / spr_seth_battle / obj_monsterparent`. There is no obj_seth_enemy. obj_seth_shi_controller and obj_seth_shinobeetle_controller are Seth CAMEOS in unrelated encounters and have nothing to do with this fight. (2) The fight is encounter 223 (gml_Object_obj_dw_cliff_sethaqua_battle_Step_0.gml:327, `scr_battle(223, 3, seth_marker, aqua_marker, 0);`); gml_GlobalScript_scr_encountersetup.gml:852-863 puts obj_purple_enemy in monster slot 0 and obj_aqua_enemy in slot 1. (3) BOTH monsters own a `myattackchoice` dispatcher and BOTH fire in the same bullet phase on turns 1 and 3 — two live obj_dbulletcontroller instances at once. A one-attack-per-turn model does not cover this fight. (4) `enemy` is obj_aqua_enemy because 10 of the 13 monsterattackname announcements live in her Step. The announcement scan over obj_aqua_enemy_* will therefore emit TEN entries with DUPLICATE (name, choice, type) triples: entries 0-3 are the SOLO Aqua fight (encounter 220) and entries 4-9 are this fight. Take the SECOND occurrence of choices 0/1/2/3. See `cut`. (5) The battle-box owner CHANGES mid-fight: Aqua's block runs turns 0-4, Seth's runs turns 5-6 after Aqua is removed. See boxBlock / boxBlockLate / mechanics.",
+
+  "boxBlock": {
+    "file": "gml_Object_obj_aqua_enemy_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_growtangle))",
+    "endAnchor": "if (!instance_exists(obj_moveheart))",
+    "ifElse": false
+  },
+
+  "boxBlockLate": {
+    "_note": "NOT a gen_attacks.js field — informational. Turns 5-6, after Aqua is removed, the box is created by Seth instead (gml_Object_obj_purple_enemy_Step_0.gml:1201-1214). It is the same 320/170 growtangle with NO maxxscale override, so replaying only Aqua's boxBlock is correct for every turn EXCEPT that Aqua's block also applies the OmegaKnife 3x resize. Seth's OmegaBook/OmegaBookEx run at the default box size.",
+    "file": "gml_Object_obj_purple_enemy_Step_0.gml",
+    "anchor": "if (!instance_exists(obj_growtangle))",
+    "endAnchor": "global.mnfight = 2;"
+  },
+
+  "turnBlock": {
+    "file": "gml_Object_obj_aqua_enemy_Step_0.gml",
+    "anchor": "scr_turntimer(90);",
+    "endAnchor": "}"
+  },
+
+  "extraAttackFiles": ["gml_Object_obj_purple_enemy_Step_0.gml"],
+
+  "selectorVar": "myattackchoice",
+
+  "real": [
+    {
+      "choice": 0,
+      "type": 308,
+      "name": "KnifeChain",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": "260 on turn 4, else 240",
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:478-488 (inside the `else if (fight_type == \"seth\")` arm at :474). Reachable THREE ways from the chooser gml_Object_obj_aqua_enemy_Other_11.gml:28-86. (a) Turn 0 when the carried-over flag is 1: Other_11:38-40 `case 1: myattackchoice = 0;`. (b) Turn 1 as a REPEAT of turn 0 — Other_11:56 guards the turn-1 reroll with `if (turns == 1 && !phasehit)`, so if turn 0's attack CONNECTED the variable is left untouched and turn 0's value fires again. (c) Turn 4 unconditionally: Other_11:78-79 `if (turns == 4) myattackchoice = 0;` — this is the scripted rope setpiece. Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3465-3486 creates TWO obj_attack_knifechain_manager2 (directions 145 and 215). Note the params differ per turn: :3473 tests `obj_aqua_enemy.fight_type == \"seth\" && obj_aqua_enemy.turns != 5`, and because Aqua's `turns++` (Step_0:536) runs BEFORE the controller's first Step, turn 4 reads turns == 5 and takes the ELSE branch — knife_setup(..., 50, 8, 0.35) instead of (..., 60, 6, 0.35)."
+    },
+    {
+      "choice": 1,
+      "type": 309,
+      "name": "FanOfKnives",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 240,
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:490-496. Reachable four ways from gml_Object_obj_aqua_enemy_Other_11.gml: (a) turn 0 when the carried flag is 2 (Other_11:42-44 `case 2: myattackchoice = 1;`); (b) turn 1 on a MISS — Other_11:58-59 `if (myattackchoice != 1) myattackchoice = 1;` is the default reroll target; (c) turn 1 as a repeat-on-hit of a turn-0 value of 1; (d) turn 3 via Other_11:70-73 `if (turns == 3) { if (!phasehit) myattackchoice = previous_attack; }`, where previous_attack was captured at Other_11:66 as turn 1's choice. Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3488-3516; the `obj_netskie_enemy` arm at :3494 is a different encounter, this fight takes :3507-3514 and sets `knife_number = 3` because fight_type == \"seth\" (:3512-3513)."
+    },
+    {
+      "choice": 2,
+      "type": 310,
+      "name": "KnifePetal",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 240,
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:498-504. Reachable four ways: (a) turn 0 when the carried flag is 3 (gml_Object_obj_aqua_enemy_Other_11.gml:46-48 `case 3: myattackchoice = 2;`); (b) turn 1 when turn 0 was already 1 — Other_11:60-61 `else myattackchoice = 2;`; (c) turn 1 as a repeat-on-hit of a turn-0 value of 2; (d) turn 3 as previous_attack (Other_11:66, :73). Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3518-3529 creates obj_attack_knife_leafling with `knife_number = 6` (:3526-3527, gated on fight_type == \"seth\")."
+    },
+    {
+      "choice": 3,
+      "type": 300,
+      "name": "OmegaKnife",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 245,
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:506-512. Reachable (a) on turn 0 when the carried flag is 4 (gml_Object_obj_aqua_enemy_Other_11.gml:50-52 `case 4: myattackchoice = 3;`), (b) on turn 1 as a repeat-on-hit of that, and (c) on turn 3 as previous_attack. This is the ONLY choice that resizes the battle box — boxBlock's `if (myattackchoice == 3) with (obj_growtangle) { maxxscale = 3; maxyscale = 3; }` (Step_0:371-378). Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3330-3374 builds a 6x6 grid of obj_omega_knife on a 100px pitch centred on obj_growtangle, all heading 315 at speed 4, re-aimed by +/-45 every 60 frames. IMPORTANT: the `global.turntimer = 480` override at :3336-3338 is gated on `fight_type == \"solo\"`, so in THIS fight the turn stays at the dispatcher's 245."
+    },
+    {
+      "choice": 4,
+      "type": 311,
+      "name": "Everything",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 244,
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:514-520. PAIRED-FIGHT EXCLUSIVE — it has no counterpart in the solo dispatcher. Reachable on turn 0 when the carried flag is 0 (gml_Object_obj_aqua_enemy_Other_11.gml:34-36 `case 0: myattackchoice = 4;`), which is the no-data default: gml_Object_obj_aqua_enemy_Other_22.gml:5-6 zeroes global.flag[1313] on entry to encounter 220, and Aqua's `evaluate()` (Create_0:56-69) exits without writing it if the player was never hit. Seth's intro acknowledges exactly this case — gml_Object_obj_purple_enemy_Step_0.gml:755 `if (global.flag[1313] == 0)` plays \"You didn't take ANY DAMAGE!?\" and his announcement line is \"Aqua, throw EVERYTHING AT THEM!!!\" (:724, :811-812). Also reachable on turn 1 as a repeat-on-hit and on turn 3 as previous_attack. Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3531-3539 creates obj_attack_knife_everything."
+    },
+    {
+      "choice": 5,
+      "type": 312,
+      "name": "Duck",
+      "owner": "obj_aqua_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 180,
+      "evidence": "Dispatcher gml_Object_obj_aqua_enemy_Step_0.gml:522-528. PAIRED-FIGHT EXCLUSIVE. Fires unconditionally on turn 2 — gml_Object_obj_aqua_enemy_Other_11.gml:64-68 `if (turns == 2) { previous_attack = myattackchoice; myattackchoice = 5; }` — and again on turn 3 if the duck connected (:70-75 `if (turns == 3) { if (!phasehit) ... else myattackchoice = 5; }`). This is the joke payoff for Seth's \"use \\cRTHAT\\c0 ATTACK!!!\" (gml_Object_obj_purple_enemy_Step_0.gml:723, :808-809). Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3541-3554 spawns ONE obj_thrash_duck_bullet at btimer 119 with damage 1, speed 2, direction 180, snd_pombark. It is deliberately trivial to dodge — that is the gag, and it is what makes Seth's turn-4 meltdown happen."
+    },
+    {
+      "choice": 0,
+      "type": 313,
+      "name": "SupportFire",
+      "owner": "obj_purple_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": "none — Seth sets no timer, the turn length is whatever Aqua's simultaneous attack raised it to (floor 90)",
+      "evidence": "Dispatcher gml_Object_obj_purple_enemy_Step_0.gml:1224-1229. Chooser gml_Object_obj_purple_enemy_Other_11.gml:12-13 `if (turns > 0 && turns < 4 && !duck) myattackchoice = 0;`, where `duck` is set at :6-10 by reading `obj_aqua_enemy.myattackchoice == 5`. So it fires on turn 1 always (Aqua's turn-1 choice is never 5) and on turn 3 only when Aqua is NOT ducking, i.e. when turn 2's duck missed. It is suppressed on turn 0 (`turns > 0` fails), turn 2 (duck), turn 4 (`turns < 4` fails), and turn 3 when the duck hit. Ordering is guaranteed: Seth's Step:701-707 runs `with (obj_aqua_enemy) event_user(1);` BEFORE his own `event_user(1);`, so Aqua's choice for the CURRENT turn is already committed when the duck test reads it. Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3556-3565 creates obj_purple_aim_attack at scr_get_box(0)+75 / scr_get_box(5) with `damage = floor(damage * 1.25)`."
+    },
+    {
+      "choice": 1,
+      "type": 306,
+      "name": "OmegaBook",
+      "owner": "obj_purple_enemy",
+      "controller": "obj_dbulletcontroller",
+      "turntimer": 300,
+      "evidence": "Dispatcher gml_Object_obj_purple_enemy_Step_0.gml:1231-1237. Chooser gml_Object_obj_purple_enemy_Other_11.gml:15-16 `if (turns == 5) myattackchoice = 1;`. Turn 5 is Seth's first solo turn — Aqua is removed during the post-turn-4 talk at gml_Object_obj_purple_enemy_Step_0.gml:435-444 (`with (obj_aqua_enemy) scr_monsterdefeat();`), and his start-of-turn-5 speech is at :911-920 (\"It's time for my ultimate tactic!\"). Controller branch gml_Object_obj_dbulletcontroller_Step_0.gml:3436-3453 creates obj_omega_book_manager at the growtangle centre with `damage = floor(damage * 1.25) + 15`."
+    },
+    {
+      "choice": 2,
+      "type": 306,
+      "name": "OmegaBookEx",
+      "owner": "obj_purple_enemy",
+      "controller": "obj_dbulletcontroller",
+      "controllerSet": { "omega_ex_mode": true },
+      "turntimer": 480,
+      "evidence": "Dispatcher gml_Object_obj_purple_enemy_Step_0.gml:1239-1246 — same type 306 as OmegaBook but with `dc.omega_ex_mode = true` (:1244) and a 480-frame turn. Chooser gml_Object_obj_purple_enemy_Other_11.gml:18-19 `if (turns == 6) myattackchoice = 2;`. The controller reads the flag via `variable_instance_exists(id, \"omega_ex_mode\")` at gml_Object_obj_dbulletcontroller_Step_0.gml:3445-3451 and then quadruples angle_speed_goal, doubles angle_speed_change and doubles scroll_speed_goal on the obj_omega_book_manager. This is the fight's last attack: Seth's start-of-turn-6 line is :922-947 (\"THAT WAS MY ULTIMATE MOVE!!!\"), and once turns reaches 7 the `case 7:` arm at :447 runs his retreat into scr_wincombat."
+    }
+  ],
+
+  "cut": [
+    {
+      "choice": 0,
+      "type": 308,
+      "name": "KnifeChain (solo)",
+      "evidence": "gml_Object_obj_aqua_enemy_Step_0.gml:395-401. Unreachable in encounter 223: the whole arm is guarded by `if (fight_type == \"solo\")` at Step_0:391, and gml_Object_obj_aqua_enemy_Other_22.gml:8-13 sets `fight_type = \"seth\"` whenever `global.encounterno == 223`. NOT cut content globally — it is the real solo Aqua fight (encounter 220, entered from gml_Object_obj_dw_garden_aqua_Step_0.gml:570). Listed here because the announcement scan over obj_aqua_enemy_* emits it with the SAME name/choice/type as the paired version and the studio must drop it from this fight. Differences if you ever want the solo fight: turntimer is a flat 240 (no turn-4 260 case), and the controller takes the `knife_setup(..., 50, 8, 0.35)` branch."
+    },
+    {
+      "choice": 1,
+      "type": 309,
+      "name": "FanOfKnives (solo)",
+      "evidence": "gml_Object_obj_aqua_enemy_Step_0.gml:403-409, inside the `fight_type == \"solo\"` arm (:391) that encounter 223 can never enter (Other_22:8-13). Its solo chooser is the `turn % 3` ladder at Other_11:1-27, which is itself gated on `fight_type == \"solo\"` at Other_11:1 and never runs here — in the paired fight Aqua's own Step does not even call event_user(1) (Step_0:59-62 routes to `talked = 2` unless solo). Solo version omits the `knife_number = 3` bump (dbulletcontroller:3512-3513)."
+    },
+    {
+      "choice": 2,
+      "type": 310,
+      "name": "KnifePetal (solo)",
+      "evidence": "gml_Object_obj_aqua_enemy_Step_0.gml:411-417, inside the dead `fight_type == \"solo\"` arm (:391 / Other_22:8-13). Solo version omits the `knife_number = 6` bump at gml_Object_obj_dbulletcontroller_Step_0.gml:3526-3527."
+    },
+    {
+      "choice": 3,
+      "type": 300,
+      "name": "OmegaKnife (solo)",
+      "evidence": "gml_Object_obj_aqua_enemy_Step_0.gml:419-425, inside the dead `fight_type == \"solo\"` arm (:391 / Other_22:8-13). Materially different from the paired OmegaKnife even though both are type 300: solo sets scr_turntimer(300) and then the controller OVERRIDES it to `global.turntimer = 480` at gml_Object_obj_dbulletcontroller_Step_0.gml:3336-3338, a branch explicitly gated on `fight_type == \"solo\"`. In the paired fight the attack runs at 245. Its solo chooser trigger is the mercy/boredom gate Other_11:20-26 (`global.mercymod[myself] == 100 || omega_switch`), which also sets `noreturn` and leads into the solo fight's scripted ending (Step_0:3-41)."
+    }
+  ],
+
+  "mechanics": "ONE encounter (223), TWO monsters, a fully scripted 7-turn ladder, no random attack selection anywhere. Plain RED soul throughout — no green/purple/yellow mode, no obj_purplecontrols, no minigame board (grepped: zero soulmode hits in either Step or in any of the attack managers). TURN LADDER (Aqua choice / Seth choice): t0 flag-driven / none; t1 repeat-or-reroll / SupportFire; t2 Duck / none; t3 repeat-or-previous / SupportFire-unless-duck; t4 KnifeChain / none; t5 (Aqua gone) / OmegaBook; t6 / OmegaBookEx; t7 -> retreat + scr_wincombat. TWO CONTROLLERS AT ONCE on turns 1 and 3: Aqua and Seth each run their own `if (rtimer == 12)` dispatcher in the same bullet phase (aqua Step_0:476, purple Step_0:1222) and each calls scr_bulletspawner, so two obj_dbulletcontroller instances are live simultaneously. CROSS-FIGHT INPUT: turn 0 is chosen by `global.flag[1313]`, written by Aqua's `evaluate()` in the EARLIER solo fight (Create_0:56-69, called from Step_0:34 and :156) from whichever of her four attacks hit the player most; the map is Other_11:32-53 flag {0,1,2,3,4} -> choice {4,0,1,2,3}. Flag 0 (never hit) yields the paired-exclusive \"Everything\". FEEDBACK LOOP: `phasehit` is set true by Aqua's bullet objects on contact (obj_bullet_knife_Other_15.gml:56, obj_omega_knife_Other_15.gml:21, obj_attack_knifefan_bullet_Other_15.gml:40, obj_aquabullet_Other_15.gml:46) and cleared at the end of every chooser run (Other_11:84). It decides whether turn 1 repeats or rerolls, whether turn 3 re-ducks, and which of Seth's two dialogue arms plays (purple Step_0:7-11 `_yep`). BOX OWNER HANDOFF: obj_battlecontroller.attackpriority resets to -1 each turn (scr_endturn.gml:114, scr_mnendturn.gml:28). While Aqua lives she claims it during enemytalk (aqua Step_0:64-65, scr_attackpriority(0)), so Seth's box block — which is gated on `scr_attackpriority(myattackpriority)` with myattackpriority 0 (purple Step_0:1203, :708) — returns false and never runs. Aqua's block is UNGATED (aqua Step_0:368-385) and does the work, including the OmegaKnife 3x resize. After scr_monsterdefeat removes Aqua (purple Step_0:437-438) her Step exits at `global.monster[myself] == 1`, nothing claims priority, and Seth's block takes over for turns 5-6. TURN-4 SETPIECE: Aqua's forced KnifeChain hits SETH. obj_attack_knifechain_manager2_Alarm_1.gml:4-63 makes him jump and shout a seven-line panic sequence (\"WE'RE ON THE SAME TEAM--!!\") indexed by `rope_counter`, and the writer is forced open with `disablebutton1/disablebutton2/preventcskip` (:56-60). Alarm_1:1-2 and Alarm_2:1-2 both bail when `global.turntimer <= 5`, and Alarm_2:6-7 stops once rope_counter hits 6. This is what drives Aqua's exit. ACT SYSTEM: the paired fight replaces Aqua's six solo ACTs with three party-wide ones (SpinX/PoseX/DanceX, Other_22:16-24) plus S-Action/R-Action simul acts (:29-34); Seth COUNTERS every one after the first — aqua Step_0:739-763 grants 20 mercy only while `seth_counter == 0`, then \"But, Seth countered!\" and the mercy is taken back (:900-912). Mercy is therefore capped and the fight cannot be spared to completion. HP GATES: both monsters clamp at 10% max HP and set `violence_end` (aqua Create_0:87-94, purple Create_0:56-62), which routes to the alternate endings at purple Step_0:949-1116 (Seth downed) and :1118-1193 (Aqua downed) — either one ends the fight early via scr_wincombat. `noreturn` is forced on turns 0 and 1 (aqua Step_0:530-534).",
+
+  "engineNeeds": "1) SIMULTANEOUS CONTROLLERS — turns 1 and 3 need two independent obj_dbulletcontroller instances alive in one bullet phase, each with its own btimer/made/type. A single-controller harness will drop Seth's SupportFire. 2) TWO ENEMY OBJECTS with independent `turns` counters, both stepping each frame, plus the cross-reads Seth->Aqua (`obj_aqua_enemy.myattackchoice`, purple Other_11:6-10 and Step_0:796-812) and Aqua->Seth (`with (obj_purple_enemy) duck_hit = ...`, aqua Other_11:81-82). Aqua's counter also has to be readable by the controller (dbulletcontroller:3473 reads obj_aqua_enemy.turns) and must already be incremented when the controller first steps. 3) CHOOSER ORDER — both choosers must run from Seth's enemytalk block in the order Aqua-then-Seth (purple Step_0:701-707); running Seth's first breaks the duck test. 4) global.flag[1313] must be selectable input (0-4) to reach all five turn-0 openers, and `phasehit` must be wired from actual player collisions or turns 1/3 will not branch. 5) MID-FIGHT MONSTER REMOVAL — scr_monsterdefeat on Aqua at turn 5 must stop her Step, free attackpriority, and hand the box to Seth. 6) The scan will hand you TEN announcements for obj_aqua_enemy with duplicate (name, choice, type) keys; keys must be disambiguated by source offset or by fight_type, or the solo entries will shadow the paired ones. 7) obj_omega_book_manager must honour `omega_ex_mode` (4x angle_speed_goal, 2x angle_speed_change, 2x scroll_speed_goal). 8) turntimer must be per-attack, not a floor — the values span 180 (Duck) to 480 (OmegaBookEx) against a base of 90, and the KnifeChain value is turn-dependent (260 on turn 4, 240 elsewhere). 9) Only the turn-4 rope sequence needs dialogue mid-bullet-phase (obj_attack_knifechain_manager2_Alarm_1) with input suppression; everything else is ordinary bullet hell. 10) NOT needed: alternate soul modes, minigame boards, custom heart controllers — this fight is plain red soul.",
+
+  "confidence": "high"
+}
