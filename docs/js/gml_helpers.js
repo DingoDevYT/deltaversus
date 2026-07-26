@@ -1090,13 +1090,34 @@
           if (v === -4) return DEAD_REF;
           const inst = instanceById(v);
           if (inst) return inst;
-          // A handle to something that no longer exists. GameMaker raises here,
-          // but a lerp helper outliving its target by one frame shouldn't kill
-          // the whole event — route the writes into a sink and say so once.
+          // NOT a dead instance handle: numbers below 100000 are OBJECT asset
+          // indices (GameMaker starts instance ids at 100000), and the
+          // decompile bakes them where the source named an object.
+          // `growtangle = 1517;` on obj_roaringknight_boxsplitter_attack is
+          // `growtangle = obj_growtangle;` — and every read AND write through
+          // it was landing in the dead-ref sink, which is why Flurry's box
+          // never split or moved (its whole gimmick) and why the very first
+          // runtime sweep logged "write to instance 1517 — ignored".
+          // obj_heart_follower's `target = 1463` (= obj_heart, the Stars
+          // attack) and the bullethell targeters' 1185 (= obj_mainchara) were
+          // the same bug. GameMaker's own semantics for <object_index>.x is
+          // "the instance of that object", so resolve exactly that way —
+          // through getInstances, which also honours the soul aliases and
+          // parent chains.
+          if (v >= 0 && v < 100000) {
+            const nm = OI() && OI().objectName(v, runtime.$chapter || 'ch3');
+            if (nm) {
+              const list = runtime.getInstances(nm);
+              if (list.length) return list[0];
+            }
+          }
+          // A handle to something that genuinely no longer exists. GameMaker
+          // raises here, but a lerp helper outliving its target by one frame
+          // shouldn't kill the whole event — route into a sink and say so once.
           const key = 'deadref:' + v;
           if (!MISSING_WARNED.has(key)) {
             MISSING_WARNED.add(key);
-            console.warn(`[gml] write to instance ${v}, which no longer exists — ignored`);
+            console.warn(`[gml] instance/object ref ${v} resolves to nothing live — ignored`);
           }
           return DEAD_REF;
         }
@@ -1533,10 +1554,24 @@
     const plainDestroy = runtime.destroyInstance.bind(runtime);
     runtime.destroyInstance = function (inst) {
       if (!inst || inst.destroyed) return;
-      if (typeof inst.destroyEvent === 'function' && !destroying.has(inst)) {
+      if (!destroying.has(inst)) {
         destroying.add(inst);
-        try { inst.destroyEvent(); }
-        catch (e) { runtime.log('destroy error [' + inst.object_name + ']: ' + e.message); }
+        if (typeof inst.destroyEvent === 'function') {
+          try { inst.destroyEvent(); }
+          catch (e) { runtime.log('destroy error [' + inst.object_name + ']: ' + e.message); }
+        }
+        // CLEAN UP runs after Destroy whenever an instance is removed — and
+        // NOTHING ever dispatched it. Round 11 extracted 349 CleanUp handlers
+        // and they have been dead code since: every companion object an
+        // instance frees there leaked. Measured on the Knight's Flurry, which
+        // is where Landon saw "sprites that are meant to disappear but don't":
+        // obj_roaringknight_splitslash's CleanUp is `safe_delete(slashmarker)`,
+        // and TEN orphaned obj_marker telegraphs were still alive at the end of
+        // the attack.
+        if (typeof inst.cleanUp === 'function') {
+          try { inst.cleanUp(); }
+          catch (e) { runtime.log('cleanup error [' + inst.object_name + ']: ' + e.message); }
+        }
       }
       plainDestroy(inst);
     };
@@ -3465,7 +3500,24 @@
       const ctx = shapeCtx(); if (!ctx || num(r) < 0) return;
       ctx.save(); ctx.beginPath(); ctx.arc(num(x), num(y), num(r), 0, Math.PI * 2);
       if (bool(outline)) { ctx.strokeStyle = global.toCSSColor(c1); ctx.stroke(); }
-      else { ctx.fillStyle = global.toCSSColor(c1); ctx.fill(); }
+      else {
+        // c1 is the CENTRE colour, c2 the EDGE — a radial gradient, per the
+        // manual. Filling flat c1 broke the Roaring Knight's whole backdrop:
+        // its Draw multiplies six expanding
+        // `draw_circle_color(cx, cy, r, c_white, #595959)` rings plus a
+        // white→black vignette onto the flow texture through
+        // (bm_zero, bm_src_color), and a FLAT WHITE circle multiplies to a
+        // no-op — so none of the pulsing darkening ever happened and the
+        // background rendered flat and blinding.
+        let fill = global.toCSSColor(c1);
+        if (c2 !== undefined && c2 !== null && num(r) > 0) {
+          const g = ctx.createRadialGradient(num(x), num(y), 0, num(x), num(y), num(r));
+          g.addColorStop(0, global.toCSSColor(c1));
+          g.addColorStop(1, global.toCSSColor(c2));
+          fill = g;
+        }
+        ctx.fillStyle = fill; ctx.fill();
+      }
       ctx.restore();
     };
     global.draw_triangle_colour = global.draw_triangle_color = (x1, y1, x2, y2, x3, y3, c1, c2, c3, outline) => {
