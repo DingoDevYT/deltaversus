@@ -1566,7 +1566,22 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // terminate check on frame ONE and never spawned a star.
       if (pendingAttack && bossInst && bossDispatched) {
         const turnGML = (window.GML_ATTACKS_TURNSETUP || {})[pendingAttack.boss];
-        if (turnGML) runSnippet(turnGML, bossInst, 'turn length');
+        if (turnGML) {
+          // The block may RAISE the clock but never LOWER what the dispatcher
+          // already set, because the two orderings differ per boss and this
+          // replay only has one.
+          //
+          // The Knight's ladder genuinely runs AFTER his dispatcher, and sets
+          // through scr_turntimer, which is raise-only anyway. Jevil is the
+          // mirror image: obj_joker's Step assigns a flat
+          // `global.turntimer = 240` and THEN calls event_user(5), so the
+          // per-attack values inside Other_15 (300 for jattack 5, 330 for 13,
+          // 1500 for BYE BYE) are meant to win. Replaying the block afterwards
+          // clobbered all six back down to 240.
+          const before = Number(window.turntimer) || 0;
+          runSnippet(turnGML, bossInst, 'turn length');
+          if ((Number(window.turntimer) || 0) < before) window.turntimer = before;
+        }
       }
 
       if (!(Number(window.turntimer) > 0)) window.turntimer = 90;
