@@ -4433,18 +4433,26 @@
     return id;
   }
   function recolourCached(img, w, h, tag, paint) {
-    const key = imgId(img) + '|' + w + 'x' + h + '|' + tag;
-    const hit = RECOLOUR.get(key);
-    if (hit) {
-      // Refresh LRU position.
-      RECOLOUR.delete(key);
-      RECOLOUR.set(key, hit);
-      return hit;
+    // ONLY sprite images are cacheable. A sprite frame is an immutable <img>,
+    // so a tint of it is valid forever. A SURFACE is a <canvas> whose pixels are
+    // rewritten every frame, and caching by identity would hand back the tint of
+    // a frame that no longer exists — a frozen background that still animates in
+    // the source. Surfaces always take the fresh path.
+    const cacheable = img instanceof HTMLImageElement && w * h <= RECOLOUR_MAX_AREA;
+    const key = cacheable ? imgId(img) + '|' + w + 'x' + h + '|' + tag : null;
+    if (key) {
+      const hit = RECOLOUR.get(key);
+      if (hit) {
+        // Refresh LRU position.
+        RECOLOUR.delete(key);
+        RECOLOUR.set(key, hit);
+        return hit;
+      }
     }
     const buf = document.createElement('canvas');
     buf.width = w; buf.height = h;
     paint(buf.getContext('2d'));
-    if (w * h <= RECOLOUR_MAX_AREA) {
+    if (key) {
       RECOLOUR.set(key, buf);
       recolourBytes += w * h * 4;
       while (recolourBytes > RECOLOUR_MAX_BYTES && RECOLOUR.size) {
