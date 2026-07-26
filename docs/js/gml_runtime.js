@@ -167,8 +167,8 @@
       this.yprevious = this.y;
 
       // Vector movement
-      this._hspeed = 0;
-      this._vspeed = 0;
+      this.$hspeed = 0;
+      this.$vspeed = 0;
       this.gravity = 0;
       this.gravity_direction = 270;
       this.friction = 0;
@@ -264,29 +264,29 @@
     }
 
     // --- Speed/Direction as computed properties ---
-    get speed() { return Math.hypot(this._hspeed, this._vspeed); }
+    get speed() { return Math.hypot(this.$hspeed, this.$vspeed); }
     set speed(val) {
-      if (val === 0) { this._hspeed = 0; this._vspeed = 0; return; }
+      if (val === 0) { this.$hspeed = 0; this.$vspeed = 0; return; }
       const dir = this.direction;
-      this._hspeed = val * dcos(dir);
-      this._vspeed = -val * dsin(dir);
+      this.$hspeed = val * dcos(dir);
+      this.$vspeed = -val * dsin(dir);
     }
 
     get direction() {
-      if (this._hspeed === 0 && this._vspeed === 0) return 0;
-      let d = Math.atan2(-this._vspeed, this._hspeed) * RAD2DEG;
+      if (this.$hspeed === 0 && this.$vspeed === 0) return 0;
+      let d = Math.atan2(-this.$vspeed, this.$hspeed) * RAD2DEG;
       return d < 0 ? d + 360 : d;
     }
     set direction(val) {
       const spd = this.speed;
-      this._hspeed = spd * dcos(val);
-      this._vspeed = -spd * dsin(val);
+      this.$hspeed = spd * dcos(val);
+      this.$vspeed = -spd * dsin(val);
     }
 
-    get hspeed() { return this._hspeed; }
-    set hspeed(v) { this._hspeed = v; }
-    get vspeed() { return this._vspeed; }
-    set vspeed(v) { this._vspeed = v; }
+    get hspeed() { return this.$hspeed; }
+    set hspeed(v) { this.$hspeed = v; }
+    get vspeed() { return this.$vspeed; }
+    set vspeed(v) { this.$vspeed = v; }
 
     get sprite_width() {
       if (this.object_name === 'obj_growtangle') {
@@ -318,8 +318,8 @@
 
       // Gravity
       if (this.gravity !== 0) {
-        this._hspeed += lengthdir_x(this.gravity, this.gravity_direction);
-        this._vspeed += lengthdir_y(this.gravity, this.gravity_direction);
+        this.$hspeed += lengthdir_x(this.gravity, this.gravity_direction);
+        this.$vspeed += lengthdir_y(this.gravity, this.gravity_direction);
       }
 
       // Friction
@@ -332,8 +332,8 @@
       }
 
       // Position
-      this.x += this._hspeed;
-      this.y += this._vspeed;
+      this.x += this.$hspeed;
+      this.y += this.$vspeed;
 
       // Alarms
       for (let a = 0; a < 12; a++) {

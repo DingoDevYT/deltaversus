@@ -599,6 +599,53 @@ untouched), an **AUTO** checkbox that advances to the next attack when the
 status reads finished, DIFF 0–4 in the toolbar, and `SPEC_CHECK.diffSmoke()` —
 a liveness sweep of every real-fight attack at difficulties 0–4.
 
+## The full-roster review batch (14 items) — root causes
+
+1. **Gerson never ending**: the studio withheld phase "bullets" (mnfight 2) for
+   greens to keep the boss's dispatcher quiet — but the chart's own end
+   (`attackcon == 3 && !i_ex(obj_spearshot)` → turntimer = 10) only matters if
+   the countdown runs, and both clocks gate on mnfight == 2. The dispatcher's
+   real gate is `scr_isphase("bullets") && attacked == 0`, and the REAL
+   mid-chart state is attacked = 1 — so the launch now sets attacked = 1 and
+   keeps mnfight 2. green0 verified ending at frame 214.
+2. **Engine-internal name collision (BIG)**: the runtime used `_speed`,
+   `_hspeed`, `_vspeed`, `_direction` as its internal motion fields — and the
+   corpus uses those SAME names as user variables (obj_sword_tunnel_sword's
+   whole end-phase is `_speed`/`_gravity` maths). Writes corrupted the motion
+   model: the sword tunnel's aimed final dash went anywhere. All internals are
+   now `$`-prefixed (impossible in GML identifiers). Verified: the sword's
+   aim → pull-back → hold → dash-at-80 sequence is source-exact.
+3. **moveSoul absolute clamp vs authoritative writes**: game code writes
+   obj_heart.x directly (the phonehand master pins the heart at master.x−36
+   even past the wall; the warped box does its own containment). GameMaker
+   walls gate only INPUT movement — the studio's union-bounds backstop yanked
+   game-placed hearts back every tick (the phonehand "pushed into the wall"
+   jitter). The backstop now only applies when the heart STARTED the tick
+   inside the box.
+4. **Soul depth**: the SOUL overlay was pinned at depth 0; obj_heart.depth is
+   game-writable (−100 in SNEO fights) and the finale layers against it
+   (mouth back at heart.depth+1). The overlay now reads the live heart depth —
+   the finale soul renders on top of the warped box.
+5. **SNEO finale**: with 3+4 the yellow soul shows over the black warp quad,
+   the depth graph matches source exactly (growtangle −2, echo −1, warped −2,
+   mouth-back −99), and the forme → obj_sneo_lastattack handoff runs with the
+   white head pieces rendering. The huge dark body against the intentional
+   blackout backdrop is dark in the real game too.
+6. **Knight**: Stars' cone wedge draws over the box (purple flow inside the
+   box interior verified by pixel); Flurry's slashes cycle continuously with
+   the real box hidden (obj_knight_split_growtangle Create sets
+   obj_growtangle.visible = false) and the halves flying; Roaring's whole
+   intro (ghost knight fade-in, afterimage roar pulses, star push) was
+   scr_lerpvar/scr_script_delayed-driven — dead before the JIT fix, verified
+   alive now; frame cost ~9.6ms mid-attack.
+7. **Pink purple modes (cat/rotating/tunnel/singing/bomb)**: ch5's
+   obj_darkness_overlay is the box's depth manager — grown box parks at depth
+   20 (obj_darkness_overlay_Step_0.gml:1-25), which is what obj_purplecontrols'
+   depth-4 lane/arrow arena is designed to draw in front of. The studio now
+   applies that battle rule; lanes/arrows render, the 202 flicker (depth-tie
+   fight) is gone, tunnel spawns its 41 zap walls, singing builds its trail
+   content, and date 3's finale hands over to the type-210 node maze.
+
 ## What still needs your eyes
 
 Nothing here is verifiable from source alone:

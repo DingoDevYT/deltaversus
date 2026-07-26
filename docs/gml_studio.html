@@ -1209,7 +1209,19 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
   // reaps the whole bullet tree exactly as `with (obj_bulletparent)` does.
   let turnEndedAt = null;
   function tickTurnTimer() {
-    if (!runtime || Number(window.mnfight) !== 2) return;
+    if (!runtime) return;
+    // ch5 box-depth rule (obj_darkness_overlay_Step_0.gml:1-25): grown box
+    // parks at depth 20 (behind obj_purplecontrols' depth-4 arena), closing
+    // box at depth 5. Runs regardless of phase, like the real overlay.
+    const bd = runtime.$ch5BoxDepth;
+    if (bd) {
+      for (const g of runtime.instances) {
+        if (!g || g.destroyed || g.object_name !== 'obj_growtangle') continue;
+        if (!bd.boxInit && Number(g.growcon) === 2) { bd.boxInit = true; g.depth = 20; }
+        if (bd.boxInit && Number(g.growcon) === 3) { bd.boxInit = false; g.depth = 5; }
+      }
+    }
+    if (Number(window.mnfight) !== 2) return;
     // If the REAL obj_battlecontroller is present and stepping, it owns the
     // clock — defer to the game's own code and don't double-count. It closes the
     // turn by setting `obj_darkener.darken = 0`, and the DARKENER's Draw is what
@@ -1372,16 +1384,22 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     // "bullets are flying" is mnfight 2, which is the phase the studio recreates.
     window.mnfight = 2;
     window.interact = 0;
+    // obj_darkness_overlay (ch5's box-depth manager) gates its whole Step on
+    // global.fighting.
+    window.fighting = 1;
     turnEndedAt = null;
 
     // Silence the previous attack's sounds and loops.
     if (window.GML_AUDIO) GML_AUDIO.stopAll();
 
-    // Box outline + SOUL join the depth pipeline at depth 0: negative-depth
-    // bullets draw over them, positive-depth background under.
+    // Box outline + SOUL join the depth pipeline. The soul's depth is the
+    // LIVE obj_heart depth — game code writes it (dates park the heart in
+    // front of overlays, the SNEO finale layers its mouth at heart.depth+1)
+    // and a hard-coded 0 ignored every one of those writes.
     runtime.$overlays = [
       { depth: 0, tie: 1e9, draw: drawBoxOverlay },
-      { depth: 0, tie: 1e9 + 1, draw: drawSoulOverlay },
+      { depth: () => Number(runtime.soul && runtime.soul.depth) || 0,
+        tie: 1e9 + 1, draw: drawSoulOverlay },
     ];
 
     // Soul mode per boss: Spamton NEO fights use the yellow (justice) soul.
@@ -1453,6 +1471,27 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       {
         const bc = runtime.createInstance('obj_battlecontroller', 0, 0);
         if (bc) { bc.step = null; bc.visible = false; }
+      }
+      // Chapter 5's battle darkness system is obj_darkness_overlay, and it is
+      // ALSO the box's depth manager: its Step parks obj_growtangle at depth 5
+      // once the box is grown. The purple-soul modes rely on that —
+      // obj_purplecontrols composites lanes/arrows at depth 4, i.e. designed
+      // to sit IN FRONT of the depth-5 box. Without the overlay the box stayed
+      // at 0 and its opaque black interior covered every lane and arrow (the
+      // cat and bomb turns read as "missing visuals"). It runs for real; its
+      // Draw is the ch5 alpha-mask darkness idiom the engine already supports.
+      // Chapter 5's obj_darkness_overlay is the box's DEPTH MANAGER: once the
+      // box has grown (growcon 2) it parks obj_growtangle at depth 20, and at
+      // close (growcon 3) at depth 5 — obj_darkness_overlay_Step_0.gml:1-25.
+      // The purple-soul modes depend on it: obj_purplecontrols composites the
+      // lane/arrow arena at depth 4, i.e. designed to draw IN FRONT of the
+      // depth-20 box. Without the rule the box's opaque black interior at
+      // depth 0 covered every lane. Implemented here as battle furniture
+      // (the studio doesn't run the overlay's full darkness Draw).
+      if (chapter === 'ch5') {
+        runtime.$ch5BoxDepth = { boxInit: false };
+      } else {
+        runtime.$ch5BoxDepth = null;
       }
 
       // Auto-spawn parent attack controllers for child bullet objects so full attack patterns run
@@ -1700,11 +1739,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         mainInst = bossInst;
         bossInst.attackpattern = pendingAttack.pattern;
         bossInst.trueturn = 1;
-        // Left at 0 deliberately. `attacked` gates the boss's dispatcher, but
-        // that branch also needs phase "bullets", which we withhold for a
-        // boss-driven chart — so it cannot fire anyway, and parts of the
-        // attackcon machine read `attacked` as still-attacking.
-        bossInst.attacked = 0;
+        // attacked = 1 is the REAL mid-chart state: the dispatcher fires on
+        // `scr_isphase("bullets") && attacked == 0` and sets attacked = 1
+        // itself after choosing. With 1, phase "bullets" (mnfight 2) is safe —
+        // and mnfight 2 is REQUIRED, because the chart's own end
+        // (`attackcon == 3 && !i_ex(obj_spearshot)` -> turntimer = 10) only
+        // matters if the countdown is running, and both the studio tick and
+        // the game's clock gate on mnfight == 2. Withholding the phase made
+        // every green run forever (turntimer parked at 10).
+        bossInst.attacked = 1;
         // Other_10 is NOT idempotent (counter decrements, shield-mode swaps);
         // skip when the box-ordering block already built this chart.
         if (!chartPrebuilt) GML_HELPERS.for(runtime).eventUser(bossInst, 0);
@@ -1846,13 +1889,12 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // and its Step only counts the turn down while mnfight == 2 — so setting
       // the phase before the battle context is built silently disables the clock.
       //
-      // EXCEPT for a boss-driven chart (Gerson's green soul). There the BOSS is
-      // the attack: we hand-select a pattern, call its chart builder and start
-      // its attackcon machine. Phase "bullets" also unlocks the boss's own
-      // dispatcher, which re-picks the pattern from `trueturn` and resets rtimer
-      // every step — it fights the launch and nothing spawns. The boss owns its
-      // own timing here, so leave the phase alone and let it drive.
-      if (!(pendingAttack && pendingAttack.launch === 'gerson-green')) window.mnfight = 2;
+      // Greens too: the old exception withheld the phase to keep the boss's
+      // dispatcher quiet, but the dispatcher's gate is
+      // `scr_isphase("bullets") && attacked == 0` and the launch now sets
+      // attacked = 1 (the real mid-chart state). Without mnfight 2 the
+      // countdown never ran and every green ran forever.
+      window.mnfight = 2;
 
       // Keep this short: the readouts in the top-right share the row.
       const label = pendingAttack ? pendingAttack.name : objName;

@@ -1770,46 +1770,46 @@
       // is the single most common way Deltarune aims a bullet.
       const norm360 = v => ((num(v) % 360) + 360) % 360;
       function syncPolar(o) {
-        const h = num(o._hspeed), v = num(o._vspeed);
+        const h = num(o.$hspeed), v = num(o.$vspeed);
         const mag = Math.sqrt(h * h + v * v);
-        o._speed = mag;
-        if (mag > 1e-9) o._direction = norm360(Math.atan2(-v, h) * 180 / Math.PI);
+        o.$speed = mag;
+        if (mag > 1e-9) o.$direction = norm360(Math.atan2(-v, h) * 180 / Math.PI);
       }
       Object.defineProperty(proto, 'hspeed', {
         configurable: true,
-        get() { return this._hspeed || 0; },
-        set(v) { this._hspeed = num(v); syncPolar(this); },
+        get() { return this.$hspeed || 0; },
+        set(v) { this.$hspeed = num(v); syncPolar(this); },
       });
       Object.defineProperty(proto, 'vspeed', {
         configurable: true,
-        get() { return this._vspeed || 0; },
-        set(v) { this._vspeed = num(v); syncPolar(this); },
+        get() { return this.$vspeed || 0; },
+        set(v) { this.$vspeed = num(v); syncPolar(this); },
       });
       Object.defineProperty(proto, 'speed', {
         configurable: true,
         get() {
-          if (this._speed !== undefined) return this._speed;
-          const h = num(this._hspeed), v = num(this._vspeed);
+          if (this.$speed !== undefined) return this.$speed;
+          const h = num(this.$hspeed), v = num(this.$vspeed);
           return Math.sqrt(h * h + v * v);
         },
         set(v) {
           v = num(v);
-          this._speed = v;
-          const d = this._direction || 0;
-          this._hspeed = v * global.dcos(d);
-          this._vspeed = -v * global.dsin(d);
+          this.$speed = v;
+          const d = this.$direction || 0;
+          this.$hspeed = v * global.dcos(d);
+          this.$vspeed = -v * global.dsin(d);
         },
       });
       Object.defineProperty(proto, 'direction', {
         configurable: true,
-        get() { return norm360(this._direction || 0); },
+        get() { return norm360(this.$direction || 0); },
         set(v) {
-          this._direction = num(v);
-          const s = this._speed !== undefined
-            ? this._speed
-            : Math.sqrt(num(this._hspeed) ** 2 + num(this._vspeed) ** 2);
-          this._hspeed = s * global.dcos(v);
-          this._vspeed = -s * global.dsin(v);
+          this.$direction = num(v);
+          const s = this.$speed !== undefined
+            ? this.$speed
+            : Math.sqrt(num(this.$hspeed) ** 2 + num(this.$vspeed) ** 2);
+          this.$hspeed = s * global.dcos(v);
+          this.$vspeed = -s * global.dsin(v);
         },
       });
 
@@ -2122,6 +2122,13 @@
       const soul = rt && rt.soul;
       if (!soul) return;
       dx = num(dx); dy = num(dy);
+      // Where the soul stood BEFORE this input tick. Game code writes
+      // obj_heart.x/y directly (the phonehand master pins the heart at
+      // master.x - 36 even past the box wall) and in GameMaker those writes
+      // are AUTHORITATIVE — walls only gate the player's own movement. The
+      // union backstop below must therefore never yank a heart that game
+      // code already placed outside the box.
+      const entryX = num(soul.x), entryY = num(soul.y);
       const oi = global.GML_OBJECT_INDEX;
       const chapter = (rt && rt.$chapter) || 'ch3';
       const isSolid = inst => inst.object_name === 'obj_battlesolid'
@@ -2196,7 +2203,16 @@
         // Precise walls already stop the heart AT the frame, so only inset when
         // falling back to the rectangle.
         const pad = precise ? 0 : 8;
-        if (r - l > pad * 2 && b - t > pad * 2) {
+        // Only clamp a heart that STARTED this tick inside the box (small
+        // tolerance for the pad). If game code parked it outside — the
+        // phonehand push, a cutscene reposition — the clamp would fight that
+        // authoritative write every frame and the heart visibly jittered
+        // against the wall. Input already can't ESCAPE the box: the per-pixel
+        // slide above blocks at the frame, and a heart outside gets no help
+        // from us to move further out (the view clamp still applies).
+        const wasInside = entryX >= l - pad && entryX <= r + pad
+          && entryY >= t - pad && entryY <= b + pad;
+        if (wasInside && r - l > pad * 2 && b - t > pad * 2) {
           soul.x = Math.max(l + pad, Math.min(r - pad, num(soul.x)));
           soul.y = Math.max(t + pad, Math.min(b - pad, num(soul.y)));
         }
