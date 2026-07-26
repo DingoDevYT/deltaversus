@@ -1431,6 +1431,23 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       if (pendingAttack && bossInst && !isDate && bossDispatched) {
         const boxGML = (window.GML_ATTACKS_BOXSETUP || {})[pendingAttack.boss];
         if (boxGML) {
+          // A boss-driven CHART picks its box offset in event_user(0), so that
+          // has to run before the box block reads it. Gerson's block ends with
+          // `with (obj_growtangle) { if (other.boxoffset) y -= 50; }` and
+          // `attackpattern > 69 && attackpattern < 72` sets boxoffset in
+          // Other_10 — so patterns 70 and 71 place their box at y 190, not the
+          // default 240. Replaying the box first read a boxoffset that had not
+          // been chosen yet.
+          //
+          // Only for the chart bosses: a controller attack's event_user(0) is
+          // the boss's own attack CHOOSER, which would override the roster pick
+          // (the trap this block already guards against by stubbing eventUser).
+          if (pendingAttack.selector === 'attackpattern') {
+            try {
+              bossInst.attackpattern = pendingAttack.choice;
+              H2.eventUser(bossInst, 0);
+            } catch (e) { /* the chart replay below still runs */ }
+          }
           // Swap the DISPATCH helper, not a property on the instance — reading
           // an unset instance property materialises the truthy auto-array.
           const savedEventUser = H2.eventUser;
