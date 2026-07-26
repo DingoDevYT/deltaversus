@@ -415,6 +415,10 @@
   class GMLRuntimeEnvironment {
     constructor() {
       this.instances = [];
+      // id -> instance index for instanceById, which is otherwise a linear scan
+      // through the instance Proxy on every `$R.d(someId).prop`. Pruned by the
+      // same live sweep that prunes `instances`, so it cannot retain the dead.
+      this.$byId = new Map();
       this.nextId = 100000;
       this.objectDefinitions = {};
       this.errorLog = [];
@@ -526,6 +530,7 @@
       }
 
       this.instances.push(inst);
+      if (this.$byId) this.$byId.set(inst.id, inst);
 
       if (typeof inst.create === 'function' && !inst._created) {
         inst._created = true;

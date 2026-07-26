@@ -345,8 +345,8 @@
 <script src="js/sprite_trims.js?v=d44f25ce"></script>
 <script src="js/gml_object_index.js?v=cdc111fc"></script>
 <script src="js/gml_asset_db.js?v=5a83a304"></script>
-<script src="js/gml_runtime.js?v=4c82073b"></script>
-<script src="js/gml_helpers.js?v=bbc551c1"></script>
+<script src="js/gml_runtime.js?v=6d06b894"></script>
+<script src="js/gml_helpers.js?v=f9a872a1"></script>
 <script src="js/gml_compiler.js?v=c32f64c8"></script>
 <script src="js/gml_codegen.js?v=03beba16"></script>
 <script src="js/gml_translator.js?v=2a034754"></script>
@@ -2051,10 +2051,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
   let lastTime = performance.now(), frameCount = 0, fps = 60;
   let lastStepTime = performance.now();
   const stepInterval = 1000 / 30; // Fixed 30 FPS step cadence (GameMaker room_speed = 30 1:1)
+  // Set by the step block, consumed by the render block: draw runs once per
+  // STEP, never once per rAF callback. See the comment at the draw call.
+  let needsDraw = false;
 
   function gameLoop(now) {
-    // FPS counter
-    frameCount++;
+    // The FPS readout counts DRAWN frames, not rAF callbacks. Counting
+    // callbacks reported the monitor's refresh rate no matter how badly the
+    // engine was keeping up, which is exactly the number you do not want.
+    // A healthy run reads 30 — GameMaker's room_speed, one draw per step.
     if (now - lastTime >= 1000) {
       fps = frameCount;
       frameCount = 0;
@@ -2138,6 +2143,24 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         if (soulMode === 'yellow' && runtime && runtime.soul) {
           runtime.soul.image_index = (yCharging && yChargeFrames >= 40) ? 2 : 0;
         }
+        // ONE DRAW PER STEP — this is correctness, not throttling.
+        //
+        // GameMaker runs Draw exactly once per step, and Deltarune COUNTS TIME
+        // IN DRAW PASSES: obj_dbullet_vert fades itself in with
+        // `image_alpha += 0.1` from its Draw, and obj_gerson_green_chevron
+        // advances `timer++` toward 100 from its Draw (which is also what spawns
+        // the green-soul shield). Drawing on every rAF callback while stepping
+        // at 30 Hz therefore ran all of that at the DISPLAY refresh rate: twice
+        // game speed on a 60 Hz monitor, ~4.8x on a 144 Hz one, and a different
+        // speed on every machine.
+        //
+        // It also made "ms per frame" meaningless as a budget, because the
+        // draws-per-step ratio moved with frame time.
+        //
+        // Drawn here rather than before the block above so the yellow-soul
+        // charge visuals see this step's yChargeFrames / image_index instead of
+        // rendering one step stale for the whole 35-step spiral.
+        needsDraw = true;
       }
       lastStepTime = now - (dt % stepInterval);
     }
@@ -2154,6 +2177,13 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     // 1.1 against an expected 0-0.15. Pausing here makes a paused studio
     // genuinely frozen.
     if (paused) { requestAnimationFrame(gameLoop); return; }
+    // Nothing stepped this callback, so there is nothing new to show and a draw
+    // would be an EXTRA Draw pass for objects that count time in Draw. The
+    // canvas keeps its previous contents, which is the same picture.
+    if (!needsDraw) { requestAnimationFrame(gameLoop); return; }
+    needsDraw = false;
+    frameCount++;
+
     // Set active context for drawing functions
     setActiveCtx(ctx);
 

@@ -600,6 +600,15 @@
   // including full-surface draw_clear washes — landed on the SCREEN. That is
   // where the giant white rectangles over some Knight attacks came from.
   const SURFACES = new Map();
+  /**
+   * Content version per surface id — bumped by every operation that can write a
+   * surface's pixels. tintedSurface validates its cache against this, so a
+   * surface that is painted once and then only read never pays for a re-tint.
+   * Surface ids are never reused (nextSurfaceId only increments), so a freed id
+   * cannot alias a stale entry.
+   */
+  const SURFVER = new Map();
+  const bumpSurface = id => { const k = Number(id); SURFVER.set(k, (SURFVER.get(k) || 0) + 1); };
   let nextSurfaceId = 1;
   const surfaceStack = [];
 
@@ -687,19 +696,57 @@
       return null;
     }
 
+    /**
+     * Instance for a raw GML id.
+     *
+     * This was a linear scan over every instance, and each visit read
+     * `.destroyed` and `.id` THROUGH the GMLInstance Proxy — measured at 202
+     * calls and 43,000 element visits per frame, the third-hottest function in
+     * the engine. It is the backing lookup for `$R.d(someId).prop`, which the
+     * codegen emits for every instance-handle property access.
+     *
+     * Ids are unique and monotonic (nextId only increments, and the one instance
+     * built outside createInstance has a fixed id), so a Map is an exact index.
+     * The `!destroyed` re-check preserves the scan's semantics: the corpus uses
+     * `destroyed` as an ordinary GML variable and even resets it, so liveness
+     * must be read from the instance, never inferred from map membership.
+     */
     function instanceById(id) {
       id = num(id);
+      const byId = runtime.$byId;
+      if (byId) {
+        const i = byId.get(id);
+        return (i && !i.destroyed) ? i : null;
+      }
       for (const i of runtime.instances) if (!i.destroyed && num(i.id) === id) return i;
       return null;
     }
 
-    /** True when `inst` is of `name` or descends from it, as GML matches objects. */
+    /**
+     * True when `inst` is of `name` or descends from it, as GML matches objects.
+     *
+     * Memoised on (child, parent). isDescendantOf walks the parent chain and
+     * allocates a Set plus an array EVERY call, and this is the innermost
+     * predicate of every `with (obj_type)`, instance_exists, instance_number and
+     * collision query — measured at 5,678 calls per frame on a 190-instance
+     * attack. The object graph is static for a run, so the answer never changes.
+     */
+    const ISKIND = new Map();
     function instanceIs(inst, name) {
       if (!inst) return false;
-      if (inst.object_name === name || name === 'all') return true;
+      const child = inst.object_name;
+      if (child === name || name === 'all') return true;
+      if (typeof child !== 'string' || typeof name !== 'string') return false;
+      const key = child + ' ' + name;
+      const hit = ISKIND.get(key);
+      if (hit !== undefined) return hit;
       const oi = OI();
+      // Do NOT memoise a miss caused by the index not being loaded yet — that
+      // would freeze "false" in for the rest of the run.
       if (!oi) return false;
-      return oi.isDescendantOf(inst.object_name, name, runtime.$chapter || 'ch3');
+      const v = oi.isDescendantOf(child, name, runtime.$chapter || 'ch3');
+      ISKIND.set(key, v);
+      return v;
     }
 
     function instancesOf(v) {
@@ -1615,6 +1662,14 @@
       for (const inst of phase()) if (typeof inst.stepEnd === 'function') safe(inst, 'stepEnd', runtime);
 
       runtime.instances = runtime.instances.filter(i => i && !i.destroyed);
+      // Prune the id index alongside it. Letting it grow retains every instance
+      // ever created — measured at 8-24x the live population within a minute,
+      // tens of MB of garbage held live, which buys back a GC spike on exactly
+      // the worst frame this work is meant to fix.
+      if (runtime.$byId && runtime.$byId.size > runtime.instances.length) {
+        runtime.$byId.clear();
+        for (const i of runtime.instances) runtime.$byId.set(i.id, i);
+      }
     };
 
     // JIT: compile the object's class the first time anything spawns it.
@@ -2902,6 +2957,7 @@
       c.height = Math.max(1, Math.ceil(num(h)));
       const id = nextSurfaceId++;
       SURFACES.set(id, c);
+      bumpSurface(id);
       return id;
     };
     global.surface_exists = id => SURFACES.has(num(id));
@@ -2927,7 +2983,11 @@
     global.surface_get_height = id => { const c = SURFACES.get(num(id)); return c ? c.height : 0; };
     global.surface_resize = (id, w, h) => {
       const c = SURFACES.get(num(id));
-      if (c) { c.width = Math.max(1, Math.ceil(num(w))); c.height = Math.max(1, Math.ceil(num(h))); }
+      if (c) {
+        c.width = Math.max(1, Math.ceil(num(w)));
+        c.height = Math.max(1, Math.ceil(num(h)));
+        bumpSurface(id);
+      }
     };
     // surface_copy(dest, x, y, source) — blit one surface onto another, and
     // surface_copy_part(dest, x, y, source, xs, ys, w, h) for a sub-rect.
@@ -2939,6 +2999,7 @@
       const d = SURFACES.get(num(dest));
       const s = SURFACES.get(num(src));
       if (!d || !s) return 0;
+      bumpSurface(dest);   // the destination pixels are about to change
       // A zero-sized source rect makes drawImage throw; GameMaker draws nothing.
       const w = sw === undefined ? s.width : Math.min(num(sw), s.width - num(sx || 0));
       const h = sh === undefined ? s.height : Math.min(num(sh), s.height - num(sy || 0));
@@ -2978,7 +3039,7 @@
     const APPLICATION_SURFACE = 0;
     global.application_surface = APPLICATION_SURFACE;
     global.GML_HELPERS.bindApplicationSurface = function (canvas) {
-      if (canvas) SURFACES.set(APPLICATION_SURFACE, canvas);
+      if (canvas) { SURFACES.set(APPLICATION_SURFACE, canvas); bumpSurface(APPLICATION_SURFACE); }
     };
     // Toggles for whether GameMaker auto-draws it; we always composite directly.
     global.application_surface_enable = () => {};
@@ -2989,6 +3050,9 @@
     global.surface_set_target = id => {
       const c = SURFACES.get(num(id));
       if (!c) return false;
+      // Anything drawn from here until reset_target lands on this surface, so
+      // its cached tints are invalid from this moment.
+      bumpSurface(id);
       surfaceStack.push({ ctx: global.$gmlActiveCtx || null, surf: global.$gmlSurfaceTarget });
       global.$gmlSurfaceTarget = num(id);
       global.setActiveCtx(c.getContext('2d'));
@@ -3024,16 +3088,37 @@
      * pixel could make a whole panel vanish.
      */
     /**
-     * A surface tinted by `blend`, cached per (surface, colour, frame). Surfaces
-     * are redrawn every frame, so the cache is stamped with the frame counter
-     * rather than kept indefinitely.
+     * A surface tinted by `blend`, cached per (surface, colour, tint mode) and
+     * validated against the surface's CONTENT VERSION.
+     *
+     * Stamping the cache with the frame counter meant it never hit across
+     * frames, so every tinted surface blit rebuilt a full-size offscreen canvas
+     * — the single most expensive thing the renderer did. But most surfaces are
+     * not actually redrawn every frame: 23 of the 25 tinted surfaces in
+     * Flowery's tower are painted once at launch and then only ever read.
+     *
+     * SURFVER counts writes, bumped in the only three places that can expose a
+     * surface canvas as a DESTINATION (surface_set_target, surfBlit's dest,
+     * bindApplicationSurface) plus create/resize. A version match is therefore a
+     * proof that not one source pixel changed, which makes the cached tint the
+     * byte-for-byte result a rebuild would produce.
+     *
+     * The key carries the tint MODE because drawTinted branches on fog and the
+     * white-flash shader BEFORE it looks at `blend` — without that, a silhouette
+     * built while fog was on could survive into a frame with fog off.
      */
     const surfTintCache = new Map();
     function tintedSurface(id, srcCanvas, blend) {
-      const frame = num(global.$gmlFrame);
-      const key = id + '|' + String(blend);
+      const sid = num(id);
+      // application_surface (id 0) is the live main canvas: its pixels change
+      // continuously outside any set_target, so it can never be cached.
+      const cacheable = sid !== 0;
+      const mode = FOG.on ? 'f' + FOG.css
+        : ((global.$gmlShader && /white|flash/i.test(global.$gmlShader)) ? 'w' : 't');
+      const ver = SURFVER.get(sid) || 0;
+      const key = sid + '|' + String(blend) + '|' + mode;
       const hit = surfTintCache.get(key);
-      if (hit && hit.frame === frame && hit.buf.width === srcCanvas.width
+      if (cacheable && hit && hit.ver === ver && hit.buf.width === srcCanvas.width
           && hit.buf.height === srcCanvas.height) return hit.buf;
       const buf = (hit && hit.buf) || document.createElement('canvas');
       if (buf.width !== srcCanvas.width) buf.width = srcCanvas.width;
@@ -3043,7 +3128,7 @@
       bctx.globalAlpha = 1;
       bctx.globalCompositeOperation = 'source-over';
       drawTinted(bctx, srcCanvas, 0, 0, blend);
-      surfTintCache.set(key, { frame, buf });
+      surfTintCache.set(key, { ver, buf });
       return buf;
     }
 
