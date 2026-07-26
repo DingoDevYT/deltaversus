@@ -2010,7 +2010,20 @@
       const chapter = (rt && rt.$chapter) || 'ch3';
       const isSolid = inst => inst.object_name === 'obj_battlesolid'
         || (oi && oi.isDescendantOf(inst.object_name, 'obj_battlesolid', chapter));
-      const solids = rt.instances.filter(i => i && !i.destroyed && isSolid(i));
+      // A solid PARKED OFFSCREEN is not a wall. `instance_create(-9999, -9999,
+      // ...)` is a standard GML idiom for stowing an object out of view, and
+      // the boxsplitter attack moves obj_growtangle to x = -9999 partway
+      // through. The union-bounds backstop below then dutifully clamped the
+      // heart into that box's bounds and yanked it across the screen — measured
+      // at frame 300 of knight_type99: box at -9999, soul dragged from x 441 to
+      // x 0. Ignore solids whose bounds lie wholly outside the view; the view
+      // clamp at the end still contains the heart when no real box is left.
+      const solids = rt.instances.filter(i => {
+        if (!i || i.destroyed || !isSolid(i)) return false;
+        const px = num(i.x), py = num(i.y);
+        return isFinite(px) && isFinite(py)
+          && px > -2000 && px < 2640 && py > -2000 && py < 2320;
+      });
 
       // The box's mask is a HOLLOW frame whose pixels are decoded lazily from
       // the PNG, and the heart's art is no different. Until BOTH have pixels,
