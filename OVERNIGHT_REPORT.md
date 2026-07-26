@@ -182,6 +182,38 @@ All verified against source, all with the full battery green afterwards.
 
 ---
 
+## The Roaring Knight: both reports fixed
+
+Landon reported two things — wrong background colours ("likely the shader
+translation") and 4 FPS at the end. Neither was a shader.
+
+**The colours were a packing bug.** GameMaker packs colours BGR (`0xBBGGRR`)
+and `toCSSColor` decodes them that way. `gml_helpers.js` overrides
+`global.make_color_rgb` with the correct packing — that was Round 2's fix — but
+`gml_runtime.js` has a module-**local** `make_color_rgb` that still packed RGB,
+and `make_color_hsv` closes over the local rather than the global. So the fix
+never reached it and **every colour `make_color_hsv` produced had red and blue
+swapped.**
+
+`obj_knight_roaring2` tints the full-screen ball surface with
+`make_color_hsv(hsv % 255, 255, 255)`, `hsv` sweeping 128→288 — cyan → blue →
+magenta → red. Swapped, hue 128 packed `0x00FCFF` and decoded to RGB(255,252,0):
+the flat yellow wash over the whole arena. Verified after, against GameMaker's
+0–255 hue range: 0→red, 42→yellow, 85→green, 128→cyan, 170→blue, 213→magenta,
+and the live canvas at timer 320 now reads dominant `rgb(0,255,255)`.
+
+**The frame rate was one object.** Profiling the finale: frames 700-760 cost
+**45.38 ms/frame in draw alone**, and it was not instance count (29 live).
+Per-instance timing put **34.22 ms of that in `obj_knight_roaring2` alone** —
+its Draw shears the ball surface across 480 scanlines *and* shears the knight
+sprite four more times, well over a thousand `draw_surface_part_ext` calls a
+frame, every one unrotated at scale 1. `surfacePart` was doing
+`ctx.save()` + `translate` + `scale` + `restore` for each, and save/restore plus
+transform updates are the two most expensive operations on a 2D context.
+
+Folding the translate into `drawImage`'s destination when there is no rotation
+and scale is 1,1 is mathematically identical: **45.38 → 4.04 ms/frame, 11×.**
+
 ## Five checker bugs, found by the checker's own failures
 
 Worth reading before trusting any spec-suite number. Each of these made a
