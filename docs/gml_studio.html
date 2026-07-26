@@ -1478,6 +1478,24 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         bossInst.rudebusterhitcount = 0;
         H2.scrCall('scr_turntimer', bossInst, [999]);
       } else if (!bossObjectNames.has(objName)) {
+        // THE BOX MUST EXIST BEFORE THE CONTROLLER DOES.
+        //
+        // In the real game the boss's Step creates obj_growtangle in its
+        // `mnfight == 2` block, long before it dispatches an attack, so any
+        // controller reading `obj_growtangle.x` in its Create finds a real box.
+        // The studio was creating its fallback box AFTER the controller, so
+        // controllers that anchor on it read a missing object:
+        // obj_gerson_box_rumble_controller's `anchor_x = obj_growtangle.x`
+        // came out -9999 (and 260 on another run — it varied, which is what
+        // gave it away), and obj_gerson_bell_attack_controller placed its bell
+        // and teleport 60px off. Bosses whose own box block is replayed above
+        // already have one; this only covers the fallback case.
+        if (!runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_growtangle')) {
+          try {
+            H2.ensureClass('obj_growtangle');
+            runtime.growtangle = runtime.createInstance('obj_growtangle', 320, 170);
+          } catch (e) { /* fall through to the adoption block below */ }
+        }
         if (pendingAttack) {
           // Replay the attack's WHOLE dispatcher branch with self = the boss.
           // The branch does everything the real turn does — box tweaks,
