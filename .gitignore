@@ -4,3 +4,8 @@ __pycache__/
 
 /NEW RIP/
 ref/
+
+# graphify code-graph output. Local tooling only — docs/ is the PUBLISHED
+# GitHub Pages directory, and graphify writes its graph next to the sources it
+# indexes, so without this the graph.json and its cache ship to the live site.
+graphify-out/
