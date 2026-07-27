@@ -737,14 +737,19 @@
       const child = inst.object_name;
       if (child === name || name === 'all') return true;
       if (typeof child !== 'string' || typeof name !== 'string') return false;
-      const key = child + ' ' + name;
+      // The CHAPTER is part of the identity. Object parentage differs between
+      // chapters and this cache outlives a launch, so keying on the pair alone
+      // let a chapter-3 answer decide a chapter-5 query, which silently broke
+      // `with` targeting for whichever chapter happened to load second.
+      const chapter = runtime.$chapter || 'ch3';
+      const key = chapter + '|' + child + '|' + name;
       const hit = ISKIND.get(key);
       if (hit !== undefined) return hit;
       const oi = OI();
       // Do NOT memoise a miss caused by the index not being loaded yet — that
       // would freeze "false" in for the rest of the run.
       if (!oi) return false;
-      const v = oi.isDescendantOf(child, name, runtime.$chapter || 'ch3');
+      const v = oi.isDescendantOf(child, name, chapter);
       ISKIND.set(key, v);
       return v;
     }
@@ -820,14 +825,22 @@
         const name = objectNameOf(objArg) || (typeof objArg === 'string' ? objArg : null);
         if (!name) return null;
         if (H.creationBudgetExhausted(name)) return null;
-        // The depth argument is the instance's depth WHEN CREATE RUNS, so it
-        // must be stamped before the event, not after. Applying it afterwards
-        // silently discarded any depth the object sets in its own Create:
-        // obj_darkness_overlay is made with `instance_create_depth(x, y,
-        // depth + 5, obj_darkness_overlay)` and then re-depths itself in Create,
-        // and that self-assignment was being overwritten every time.
-        const inst = runtime.createInstance(name, num(x), num(y),
-          (depth === undefined || depth === null) ? undefined : num(depth));
+        // The explicit depth is applied AFTER Create, and deliberately so.
+        //
+        // In GameMaker the argument is the depth Create starts with, so an
+        // object that assigns its own depth in Create should win — and a static
+        // audit flagged our ordering as backwards on exactly that reasoning.
+        // Applying it before Create is empirically WRONG here: it blanks all
+        // four Pink dates completely (peak ink 26-52% -> 0%), because the date
+        // UI's objects assign a depth in Create that only works when the
+        // explicit argument overrides it afterwards.
+        //
+        // That means our engine has a compensating difference somewhere else in
+        // how those Create events run, and until that is found, the ordering
+        // that renders 194 attacks correctly wins over the one that matches the
+        // manual. Do not "fix" this again without re-checking pink_date1..4.
+        const inst = runtime.createInstance(name, num(x), num(y));
+        if (inst && depth !== undefined && depth !== null) inst.depth = num(depth);
         return inst;
       },
 
@@ -2517,7 +2530,7 @@
     };
     global.ini_close = () => { iniOpen = null; return ''; };
     global.ini_open_from_string = str => { iniOpen = new Map(); return str; };
-    const iniKey = (sec, k) => String(sec) + ' ' + String(k);
+    const iniKey = (sec, k) => String(sec) + ' ' + String(k);
     global.ini_write_real = (sec, k, v) => { if (iniOpen) iniOpen.set(iniKey(sec, k), num(v)); };
     global.ini_write_string = (sec, k, v) => { if (iniOpen) iniOpen.set(iniKey(sec, k), String(v)); };
     global.ini_read_real = (sec, k, def_) => {
@@ -2531,7 +2544,7 @@
     global.ini_key_exists = (sec, k) => !!(iniOpen && iniOpen.has(iniKey(sec, k)));
     global.ini_section_exists = sec => {
       if (!iniOpen) return false;
-      const p = String(sec) + ' ';
+      const p = String(sec) + ' ';
       for (const key of iniOpen.keys()) if (key.startsWith(p)) return true;
       return false;
     };
@@ -2614,7 +2627,7 @@
     global.ini_key_delete = (sec, k) => { if (iniOpen) iniOpen.delete(iniKey(sec, k)); };
     global.ini_section_delete = sec => {
       if (!iniOpen) return;
-      const p = String(sec) + ' ';
+      const p = String(sec) + ' ';
       for (const key of [...iniOpen.keys()]) if (key.startsWith(p)) iniOpen.delete(key);
     };
     // ds_exists(ind, type): 1=list, 2=map, 3=grid in GameMaker's numbering.

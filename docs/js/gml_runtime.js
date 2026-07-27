@@ -433,6 +433,12 @@
       gtInst.image_yscale = 2.0;
       gtInst.image_blend = C_GREEN;
       this.instances.push(gtInst);
+      // MUST be indexed too. This is the one instance that does not go through
+      // createInstance, so without this the id map never learns about the BATTLE
+      // BOX and instanceById(99999) returns null — which makes every $R.d(id)
+      // dereference of the box yield NaN coordinates, and Canvas silently skips
+      // any draw containing a NaN.
+      this.$byId.set(gtInst.id, gtInst);
       this.growtangle = gtInst;
 
       // Player soul

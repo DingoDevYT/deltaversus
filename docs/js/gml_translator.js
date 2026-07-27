@@ -208,6 +208,12 @@
           Object.assign(cg.macros, parsed.macros);
           Object.assign(cg.enums, parsed.enums);
           cg.usedOther = false;
+          // event_inherited() has to name the GENERATED METHOD, not the event
+          // key: the parent's prototype carries `userEvent5`, never `other_15`.
+          // Passing the key looked up a method that cannot exist, so every
+          // inherited event outside create/step/draw/alarm_N silently did
+          // nothing — including other_15, the bullet-hit-the-soul hook.
+          cg.eventMethod = method;
           body = cg.generateEvent(parsed.ast, lower);
         } catch (err) {
           this.errors.push(`[${objectName}.${key}] ${err.message}`);

@@ -1054,7 +1054,7 @@ ${p}}`;
         case 'event_user':
           return `$R.eventUser(${this.self}, ${A(0)})`;
         case 'event_inherited':
-          return `$R.inherited(${this.self}, ${JSON.stringify(this.eventName || 'step')}, ${JSON.stringify(this.objectName || '')})`;
+          return `$R.inherited(${this.self}, ${JSON.stringify(this.eventMethod || this.eventName || 'step')}, ${JSON.stringify(this.objectName || '')})`;
         case 'event_perform':
           return `$R.eventPerform(${this.self}, ${A(0)}, ${A(1)})`;
         case 'draw_self':
