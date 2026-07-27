@@ -4736,7 +4736,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Orange & Green",
   "chapter": "ch5",
   "enemy": "obj_orange_green_controller",
-  "selector": null,
+  "selector": "obj_orange_enemy.uppercut_life",
   "choice": null,
   "name": "COOKING TIME — Green's FAST FOOD (falling food to catch + green flame bullets)",
   "controller": "obj_dbulletcontroller",
@@ -4766,7 +4766,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Orange & Green",
   "chapter": "ch5",
   "enemy": "obj_orange_green_controller",
-  "selector": null,
+  "selector": "obj_orange_enemy.uppercut_life",
   "choice": null,
   "name": "OMEGA-3 uppercut — Orange leaps the box and slams down expanding glove rings",
   "controller": "obj_dbulletcontroller",
@@ -4797,7 +4797,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Orange & Green",
   "chapter": "ch5",
   "enemy": "obj_orange_green_controller",
-  "selector": null,
+  "selector": "obj_orange_enemy.uppercut_life",
   "choice": null,
   "name": "OMEGA-3 SUPER ATTACK — Orange's finale (condescend / Orange-mercy ending)",
   "controller": "obj_dbulletcontroller",
@@ -4827,7 +4827,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Orange & Green",
   "chapter": "ch5",
   "enemy": "obj_orange_green_controller",
-  "selector": null,
+  "selector": "obj_orange_enemy.uppercut_life",
   "choice": null,
   "name": "OMEGA PAN — Green's finale: three orbiting pans firing flame fans (admire / Green-mercy ending)",
   "controller": "obj_dbulletcontroller",
@@ -4949,8 +4949,6 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 371,
   "alsoChoices": [
-   1,
-   1,
    1
   ],
   "hasSpecial": true,
@@ -4970,68 +4968,19 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
-  "choice": 0,
-  "name": "BerdlyTornado",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 112,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"BerdlyTornado\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 112;",
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "queen_type112",
-  "inFight": true,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 3,
   "name": "Stomp",
   "controller": "obj_queen_bulletcontroller",
   "type": 3,
   "usesDifficulty": false,
   "difficultyLiteral": 0,
-  "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"BerdlyFeather\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 7.5;",
-  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "turnTimer": 240,
-  "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "queen_type3",
-  "controllerSet": {
-   "difficulty": 0
-  },
-  "inFight": true,
-  "monsterType": 48,
-  "extraEnemies": [
-   "obj_queenshield_enemy",
-   "obj_berdlyplug_enemy"
-  ]
- },
- {
-  "boss": "queen",
-  "bossLabel": "Queen",
-  "chapter": "ch2",
-  "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
-  "choice": 5,
-  "name": "Plug",
-  "controller": "obj_queen_bulletcontroller",
-  "type": 110,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
   "extraFields": [
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
+   "bufferattack",
    "bufferattack",
    "target",
    "special",
@@ -5040,9 +4989,15 @@ window.GML_ATTACKS = [
   ],
   "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
-  "alsoChoices": [],
+  "turnTimer": 240,
+  "alsoChoices": [
+   3
+  ],
   "hasSpecial": true,
-  "id": "queen_type110",
+  "id": "queen_type3",
+  "controllerSet": {
+   "difficulty": 0
+  },
   "inFight": true,
   "monsterType": 48,
   "extraEnemies": [
@@ -5093,6 +5048,8 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"QuizAttack\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 32;\n                dc.difficulty = quizDifficulty;",
   "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
   "alsoChoices": [
+   1,
+   1,
    1,
    1
   ],
@@ -5213,6 +5170,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapescentipedeharder\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 451;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
+   1,
    1
   ],
   "hasSpecial": false,
@@ -5265,6 +5223,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesbigshotdesperation\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 453;\n                scr_turntimer(430);",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
+   3,
    3
   ],
   "hasSpecial": false,
@@ -5291,6 +5250,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesbigshotaimed\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 454;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
+   4,
    4
   ],
   "hasSpecial": false,
@@ -5343,6 +5303,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"darkshapesintro\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 456;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
+   6,
    6
   ],
   "hasSpecial": false,
@@ -5421,6 +5382,7 @@ window.GML_ATTACKS = [
   "setup": "global.monsterattackname[myself] = \"thehands\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 459;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "alsoChoices": [
+   9,
    9
   ],
   "hasSpecial": false,
@@ -5580,8 +5542,8 @@ window.GML_ATTACKS = [
   "bossLabel": "Watercooler",
   "chapter": "ch3",
   "enemy": "obj_watercooler_enemy",
-  "selector": "rtimer",
-  "choice": 12,
+  "selector": "amimoonwarmer",
+  "choice": 0,
   "name": "Rain",
   "controller": "obj_dbulletcontroller",
   "type": 135,
@@ -5717,7 +5679,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [
    0,
    0,
-   null,
+   0,
    null,
    null
   ],
@@ -5748,7 +5710,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [
    0,
    0,
-   null,
+   0,
    null,
    null
   ],
@@ -6200,7 +6162,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 2,
   "name": "Wine",
   "controller": "obj_queen_bulletcontroller",
@@ -6208,6 +6170,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 0,
   "extraFields": [
+   "bufferattack",
    "bufferattack",
    "bufferattack",
    "bufferattack",
@@ -6222,7 +6185,7 @@ window.GML_ATTACKS = [
   "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 400,
-  "variantOf": "Stomp",
+  "variantOf": "Wine",
   "alsoChoices": [
    2,
    2
@@ -6244,7 +6207,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 2,
   "name": "Wine (tilting glass)",
   "controller": "obj_queen_bulletcontroller",
@@ -6252,6 +6215,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 1,
   "extraFields": [
+   "bufferattack",
    "bufferattack",
    "bufferattack",
    "bufferattack",
@@ -6266,7 +6230,7 @@ window.GML_ATTACKS = [
   "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 400,
-  "variantOf": "Stomp",
+  "variantOf": "Wine",
   "alsoChoices": [
    2,
    2
@@ -6288,7 +6252,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 2,
   "name": "Wine (fast tilt)",
   "controller": "obj_queen_bulletcontroller",
@@ -6296,6 +6260,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": 2,
   "extraFields": [
+   "bufferattack",
    "bufferattack",
    "bufferattack",
    "bufferattack",
@@ -6310,7 +6275,7 @@ window.GML_ATTACKS = [
   "setup": null,
   "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 400,
-  "variantOf": "Stomp",
+  "variantOf": "Wine",
   "alsoChoices": [
    2,
    2
@@ -6332,7 +6297,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 4,
   "name": "NewSocialMedia",
   "controller": "obj_queen_bulletcontroller",
@@ -6372,7 +6337,7 @@ window.GML_ATTACKS = [
   "bossLabel": "Queen",
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
-  "selector": "difficulty",
+  "selector": "rr",
   "choice": 4,
   "name": "NewSocialMedia (hard)",
   "controller": "obj_queen_bulletcontroller",
@@ -6473,6 +6438,70 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": true,
   "id": "queen_type6_1",
+  "controllerSet": {
+   "difficulty": 1
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 7,
+  "name": "BerdlyTornado",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 112,
+  "usesDifficulty": false,
+  "difficultyLiteral": 0,
+  "extraFields": [],
+  "setup": "global.monsterattackname[myself] = \"BerdlyTornado\";\n                        dc = scr_bulletspawner(x, y, obj_queen_bulletcontroller);\n                        dc.type = 112;",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 266,
+  "variantOf": "BerdlyTornado",
+  "alsoChoices": [
+   7
+  ],
+  "hasSpecial": false,
+  "id": "queen_type112",
+  "controllerSet": {
+   "difficulty": 0
+  },
+  "inFight": true,
+  "monsterType": 48,
+  "extraEnemies": [
+   "obj_queenshield_enemy",
+   "obj_berdlyplug_enemy"
+  ]
+ },
+ {
+  "boss": "queen",
+  "bossLabel": "Queen",
+  "chapter": "ch2",
+  "enemy": "obj_queen_enemy",
+  "selector": "rr",
+  "choice": 7,
+  "name": "BerdlyTornado (hard)",
+  "controller": "obj_queen_bulletcontroller",
+  "type": 113,
+  "usesDifficulty": false,
+  "difficultyLiteral": 1,
+  "extraFields": [],
+  "setup": null,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 266,
+  "variantOf": "BerdlyTornado",
+  "alsoChoices": [
+   7
+  ],
+  "hasSpecial": false,
+  "id": "queen_type113",
   "controllerSet": {
    "difficulty": 1
   },
@@ -6600,21 +6629,28 @@ window.GML_ATTACKS = [
   "chapter": "ch2",
   "enemy": "obj_queen_enemy",
   "selector": "rr",
-  "choice": 7,
-  "name": "BerdlyTornado (hard)",
+  "choice": 9,
+  "name": "Plug",
   "controller": "obj_queen_bulletcontroller",
-  "type": 113,
+  "type": 110,
   "usesDifficulty": false,
-  "difficultyLiteral": 1,
-  "extraFields": [],
+  "difficultyLiteral": 0,
+  "extraFields": [
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
   "setup": null,
-  "source": "rosters/queen.json (row not reached by scan)",
-  "turnTimer": 266,
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
+  "turnTimer": 300,
+  "variantOf": "Plug",
   "alsoChoices": [],
-  "hasSpecial": false,
-  "id": "queen_type113",
+  "hasSpecial": true,
+  "id": "queen_type110",
   "controllerSet": {
-   "difficulty": 1
+   "difficulty": 0
   },
   "inFight": true,
   "monsterType": 48,
@@ -6635,12 +6671,19 @@ window.GML_ATTACKS = [
   "type": 111,
   "usesDifficulty": false,
   "difficultyLiteral": 1,
-  "extraFields": [],
+  "extraFields": [
+   "bufferattack",
+   "target",
+   "special",
+   "bufferattack",
+   "bufferattack"
+  ],
   "setup": null,
-  "source": "rosters/queen.json (row not reached by scan)",
+  "source": "gml_Object_obj_queen_enemy_Step_0.gml",
   "turnTimer": 300,
+  "variantOf": "Plug",
   "alsoChoices": [],
-  "hasSpecial": false,
+  "hasSpecial": true,
   "id": "queen_type111",
   "controllerSet": {
    "difficulty": 1
@@ -6673,9 +6716,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [
    0,
    0,
-   0,
-   null,
-   null
+   0
   ],
   "hasSpecial": false,
   "id": "tasque_manager_type20",
@@ -6706,9 +6747,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [
    0,
    0,
-   0,
-   null,
-   null
+   0
   ],
   "hasSpecial": false,
   "id": "tasque_manager_type2",
@@ -6728,13 +6767,17 @@ window.GML_ATTACKS = [
   "name": "QuizAttack — dojo \"Tasque Manager Says\" (special = 1, difficulty 4+)",
   "controller": "obj_dbulletcontroller",
   "type": 32,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "element"
+  ],
   "setup": null,
-  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
-  "variantOf": "RisingDiamonds",
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "variantOf": "MeowWow",
   "alsoChoices": [
+   1,
+   1,
    1
   ],
   "hasSpecial": false,
@@ -6758,13 +6801,17 @@ window.GML_ATTACKS = [
   "name": "MeowWow",
   "controller": "obj_dbulletcontroller",
   "type": 3,
-  "usesDifficulty": false,
-  "difficultyLiteral": null,
-  "extraFields": [],
+  "usesDifficulty": true,
+  "difficultyLiteral": 1,
+  "extraFields": [
+   "element"
+  ],
   "setup": null,
-  "source": "gml_Object_obj_tasque_manager_enemy_Other_24.gml",
-  "variantOf": "RisingDiamonds",
+  "source": "gml_Object_obj_tasque_enemy_Step_0.gml",
+  "variantOf": "MeowWow",
   "alsoChoices": [
+   1,
+   1,
    1
   ],
   "hasSpecial": false,
@@ -7037,13 +7084,7 @@ window.GML_ATTACKS = [
   "variantOf": "darkshapeswithred",
   "alsoChoices": [
    0,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
+   0,
    null,
    null,
    null,
@@ -7075,13 +7116,7 @@ window.GML_ATTACKS = [
   "variantOf": "darkshapeswithred",
   "alsoChoices": [
    0,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
+   0,
    null,
    null,
    null,
@@ -7112,6 +7147,7 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "thehandsfast",
   "alsoChoices": [
+   10,
    10
   ],
   "hasSpecial": false,
@@ -7139,6 +7175,7 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "thehandsfast",
   "alsoChoices": [
+   10,
    10
   ],
   "hasSpecial": false,

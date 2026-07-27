@@ -92,7 +92,13 @@
       if (this._nameCache && this._nameCache.chapter === chapter) return this._nameCache.set;
       const sources = this.scriptSources(chapter);
       const set = new Set(Object.keys(sources));
-      const re = /^\s*function\s+([a-zA-Z_]\w*)\s*\(/gm;
+      // Anchored at COLUMN 0. All 5402 GlobalScript function declarations in the
+      // corpus start there; the only INDENTED ones are five functions nested
+      // inside constructors. Harvesting those made them look like GlobalScripts,
+      // and `fade` is a name ch5 objects use as an ordinary instance variable —
+      // so every object's `fade` collapsed into one process-wide $R.scr slot
+      // shared by obj_bullet_orange_debris and obj_afterimage_grow.
+      const re = /^function\s+([a-zA-Z_]\w*)\s*\(/gm;
       for (const src of Object.values(sources)) {
         let m;
         re.lastIndex = 0;
@@ -235,8 +241,23 @@
       }
 
       // A draw event is not optional at runtime: without one, nothing renders.
+      //
+      // But it must not SHADOW an inherited one. This class extends its GML
+      // parent, so declaring `draw` here overrides a parent that has a real Draw
+      // event — obj_darkshape_centipede_head and _segment have no Draw of their
+      // own and rely on obj_darkshape_parent's, and the fallback replaced it
+      // with a plain drawSelf, losing the Titan's centipede rendering entirely.
+      // Defer to the prototype chain when an ancestor supplies one.
       if (!seen.has('draw')) {
-        methods.push(`  draw(ctx) {\n    this.drawSelf(ctx);\n  }`);
+        const drawingParent = defaults.parent
+          && (global.GML_OBJECT_INDEX
+            ? global.GML_OBJECT_INDEX.parentChain(objectName, chapter)
+            : []).length > 0;
+        methods.push(drawingParent
+          // `super.draw` exists only if some ancestor defined one; the guard
+          // keeps a parentless-in-practice object rendering as before.
+          ? `  draw(ctx) {\n    const $p = Object.getPrototypeOf(Object.getPrototypeOf(this));\n    if ($p && typeof $p.draw === 'function') $p.draw.call(this, ctx);\n    else this.drawSelf(ctx);\n  }`
+          : `  draw(ctx) {\n    this.drawSelf(ctx);\n  }`);
       }
 
       const hoisted = [...cg.instanceVars]
@@ -341,7 +362,13 @@ ${body}
         // a differently-named file (d_triangle lives in ossafe_shapes.gml).
         if (!this._fnFile || this._fnFile.chapter !== chapter) {
           const map = new Map();
-          const re = /^\s*function\s+([a-zA-Z_]\w*)\s*\(/gm;
+          // Anchored at COLUMN 0. All 5402 GlobalScript function declarations in the
+      // corpus start there; the only INDENTED ones are five functions nested
+      // inside constructors. Harvesting those made them look like GlobalScripts,
+      // and `fade` is a name ch5 objects use as an ordinary instance variable —
+      // so every object's `fade` collapsed into one process-wide $R.scr slot
+      // shared by obj_bullet_orange_debris and obj_afterimage_grow.
+      const re = /^function\s+([a-zA-Z_]\w*)\s*\(/gm;
           for (const [fileKey, fileSrc] of Object.entries(sources)) {
             let m;
             re.lastIndex = 0;

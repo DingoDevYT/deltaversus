@@ -766,6 +766,39 @@ function applyRosterRow(a, r, selectorVar) {
 // distinguish them, and the scan's verbatim `setup` block is shared by all.
 for (const j of rosterConfigs) {
   if (!j.selectorVar || !Array.isArray(j.real)) continue;
+
+  // The scan's `selector` and `choice` are only as good as the variable it
+  // guessed from the dispatcher window, and it guesses wrong: nine of Queen's
+  // entries came back keyed on `difficulty` with choice 0/3/5 where the real
+  // chooser is `rr` with choice 7/3/9. Matching those against the roster by
+  // CHOICE therefore missed, and the rows silently never applied — which is
+  // also why their box blocks were wrong, since the box keys on `rr`.
+  //
+  // A controller TYPE is unambiguous, so use it as the primary key and fall
+  // back to choice only for rows that have no type. Rows sharing a type are
+  // left to the choice path, since type alone cannot separate them.
+  const typeCount = new Map();
+  for (const r of j.real) {
+    if (r.type === undefined || r.type === null) continue;
+    typeCount.set(Number(r.type), (typeCount.get(Number(r.type)) || 0) + 1);
+  }
+  const byType = new Map();
+  for (const r of j.real) {
+    if (r.type === undefined || r.type === null) continue;
+    const t = Number(r.type);
+    if (typeCount.get(t) === 1) byType.set(t, r);
+  }
+  for (const a of roster) {
+    if (a.boss !== j.id) continue;
+    if (a.type === undefined || a.type === null) continue;
+    const r = byType.get(Number(a.type));
+    if (!r) continue;
+    // Adopt the roster's view of WHICH branch this is. The setup block the scan
+    // sliced stays as-is; only the identity fields are corrected.
+    a.selector = j.selectorVar;
+    if (typeof r.choice === 'number') a.choice = r.choice;
+  }
+
   const grouped = new Map();
   for (const r of j.real) {
     if (typeof r.choice !== 'number') continue;

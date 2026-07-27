@@ -346,14 +346,14 @@
 <script src="js/gml_object_index.js?v=cdc111fc"></script>
 <script src="js/gml_asset_db.js?v=5a83a304"></script>
 <script src="js/gml_runtime.js?v=537f06ca"></script>
-<script src="js/gml_helpers.js?v=1a68b2fe"></script>
+<script src="js/gml_helpers.js?v=4670745a"></script>
 <script src="js/gml_compiler.js?v=c32f64c8"></script>
 <script src="js/gml_codegen.js?v=6dd11928"></script>
-<script src="js/gml_translator.js?v=f0687b19"></script>
+<script src="js/gml_translator.js?v=31c86c7c"></script>
 <script src="js/gml_presets.js?v=cc81e393"></script>
 <script src="js/gml_scripts.js?v=2a51c899"></script>
 <script src="js/gml_objects.js?v=66796a6c"></script>
-<script src="js/gml_attacks.js?v=e67a61e6"></script>
+<script src="js/gml_attacks.js?v=de4e7dc5"></script>
 <script src="js/gml_sounds.js?v=21214418"></script>
 <script src="js/gml_audio.js?v=8295f2d0"></script>
 <script src="js/sprite_indices.js?v=eea73030"></script>
@@ -1815,7 +1815,19 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           // an unset instance property materialises the truthy auto-array.
           const savedEventUser = H2.eventUser;
           H2.eventUser = function () { return 0; };
+          // The box block is the BOX-BUILDING phase of the turn, and several
+          // are gated on the phase they run in: Orange & Green's whole block
+          // sits inside `if (global.mnfight == 1.5 && endcon == 0)`. Replaying
+          // it with mnfight already at 2 made the gate false, so the body never
+          // ran — the fight silently fell back to the studio's default box
+          // instead of its own 1.5x-wide one, on all five of its turns.
+          // The blocks set mnfight = 2 themselves when they finish.
+          const savedMnfight = window.mnfight;
+          window.mnfight = 1.5;
           runSnippet(boxGML, bossInst, 'box setup');
+          // Only honour a value the block actually chose; otherwise restore, so
+          // a block that never reached its assignment cannot strand the phase.
+          if (Number(window.mnfight) === 1.5) window.mnfight = savedMnfight;
           H2.eventUser = savedEventUser;
           syncGrowtangle();
         }

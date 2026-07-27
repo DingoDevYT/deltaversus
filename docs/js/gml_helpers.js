@@ -4337,9 +4337,45 @@
       ctx.translate(num(x), num(y));
       ctx.scale(num(xs) || 1, num(ys) || 1);
       ctx.globalAlpha = alpha === undefined ? 1 : Math.max(0, Math.min(1, num(alpha)));
-      try { ctx.drawImage(s.img, L, T, W, Hh, dx, dy, W, Hh); } catch (e) {}
+      // Honour the blend colour and the fog/flash shader state, exactly as
+      // draw_sprite_ext does. Drawing the raw image ignored both, so the Roaring
+      // Knight's charge beam — composited additively in c_gray — came out at
+      // full white and roughly twice its intended brightness.
+      try {
+        const tinted = tintSourceFor(s.img, col);
+        ctx.drawImage(tinted, L, T, W, Hh, dx, dy, W, Hh);
+      } catch (e) {}
       ctx.restore();
     };
+    /**
+     * The image draw_sprite_part* should sample from: the sprite recoloured by
+     * the current fog / flash-shader / blend state, or the sprite itself when
+     * none applies. Returned whole so the caller's sub-rectangle still indexes
+     * the original pixel grid.
+     */
+    function tintSourceFor(img, col) {
+      const w = img.naturalWidth || img.width || 0;
+      const h = img.naturalHeight || img.height || 0;
+      if (!(w > 0) || !(h > 0)) return img;
+      if (FOG.on) return recolourCached(img, w, h, 's' + FOG.css, bctx => {
+        bctx.drawImage(img, 0, 0);
+        bctx.globalCompositeOperation = 'source-in';
+        bctx.fillStyle = FOG.css;
+        bctx.fillRect(0, 0, w, h);
+      });
+      if (global.$gmlShader && /white|flash/i.test(global.$gmlShader)) {
+        return recolourCached(img, w, h, 's#ffffff', bctx => {
+          bctx.drawImage(img, 0, 0);
+          bctx.globalCompositeOperation = 'source-in';
+          bctx.fillStyle = '#ffffff';
+          bctx.fillRect(0, 0, w, h);
+        });
+      }
+      if (col === undefined || col === null || col === '#ffffff' || col === 16777215 || col === -1) return img;
+      const ch = channels(col);
+      if (ch[0] === 255 && ch[1] === 255 && ch[2] === 255) return img;
+      return tintedCopy(img, w, h, ch);
+    }
     global.draw_sprite_part = (spr, sub, l, t, w, h, x, y) =>
       global.draw_sprite_part_ext(spr, sub, l, t, w, h, x, y, 1, 1, undefined, 1);
 
