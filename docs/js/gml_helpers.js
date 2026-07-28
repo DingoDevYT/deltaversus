@@ -2532,6 +2532,162 @@
     def('ds_map_find_last', m => (m instanceof Map ? [...m.keys()].pop() : undefined));
     def('ds_map_replace', (m, k, v) => { if (m instanceof Map) m.set(k, v); });
 
+    // ── ds_priority / ds_stack / ds_queue / ds_grid ──────────────────────
+    //
+    // The whole ds_priority family was missing, and it is not decoration:
+    // scr_retro_pal_swapper (ch3 and ch5) keeps its palette entries in one, and
+    // obj_ds_lifetime_manager / scr_ds_manager (ch5) build stacks and queues.
+    // Every call returned 0, so a priority queue WAS the number zero and every
+    // add/find silently did nothing.
+    //
+    // A priority queue is a plain array of {v, p}; GameMaker's find_min/max
+    // return the VALUE, delete_min/max return it and remove it. Ties keep
+    // insertion order, which matches GameMaker closely enough for palette work.
+    const dsPrio = q => (q && Array.isArray(q.$prio) ? q : null);
+    const prioPick = (q, wantMax) => {
+      const p = dsPrio(q);
+      if (!p || !p.$prio.length) return undefined;
+      let best = 0;
+      for (let i = 1; i < p.$prio.length; i++) {
+        const c = p.$prio[i].p, b = p.$prio[best].p;
+        if (wantMax ? c > b : c < b) best = i;
+      }
+      return best;
+    };
+    def('ds_priority_create', () => ({ $prio: [] }));
+    def('ds_priority_destroy', q => { const p = dsPrio(q); if (p) p.$prio.length = 0; });
+    def('ds_priority_clear', q => { const p = dsPrio(q); if (p) p.$prio.length = 0; });
+    def('ds_priority_add', (q, v, pr) => { const p = dsPrio(q); if (p) p.$prio.push({ v, p: num(pr) }); });
+    def('ds_priority_size', q => { const p = dsPrio(q); return p ? p.$prio.length : 0; });
+    def('ds_priority_empty', q => { const p = dsPrio(q); return !p || p.$prio.length === 0; });
+    def('ds_priority_find_min', q => { const i = prioPick(q, false); return i === undefined ? undefined : q.$prio[i].v; });
+    def('ds_priority_find_max', q => { const i = prioPick(q, true); return i === undefined ? undefined : q.$prio[i].v; });
+    def('ds_priority_delete_min', q => { const i = prioPick(q, false); return i === undefined ? undefined : q.$prio.splice(i, 1)[0].v; });
+    def('ds_priority_delete_max', q => { const i = prioPick(q, true); return i === undefined ? undefined : q.$prio.splice(i, 1)[0].v; });
+    def('ds_priority_find_priority', (q, v) => {
+      const p = dsPrio(q); if (!p) return undefined;
+      const hit = p.$prio.find(e => e.v === v);
+      return hit ? hit.p : undefined;
+    });
+    def('ds_priority_change_priority', (q, v, pr) => {
+      const p = dsPrio(q); if (!p) return;
+      const hit = p.$prio.find(e => e.v === v);
+      if (hit) hit.p = num(pr);
+    });
+    def('ds_priority_delete_value', (q, v) => {
+      const p = dsPrio(q); if (!p) return;
+      const i = p.$prio.findIndex(e => e.v === v);
+      if (i >= 0) p.$prio.splice(i, 1);
+    });
+
+    // Stacks and queues are arrays with a tag, so they cannot be confused with a
+    // ds_list (which IS a bare array) by code that checks Array.isArray.
+    const dsArr = (o, tag) => (o && Array.isArray(o[tag]) ? o[tag] : null);
+    def('ds_stack_create', () => ({ $stack: [] }));
+    def('ds_stack_destroy', s => { const a = dsArr(s, '$stack'); if (a) a.length = 0; });
+    def('ds_stack_clear', s => { const a = dsArr(s, '$stack'); if (a) a.length = 0; });
+    def('ds_stack_push', function (s) {
+      const a = dsArr(s, '$stack'); if (!a) return;
+      for (let i = 1; i < arguments.length; i++) a.push(arguments[i]);
+    });
+    def('ds_stack_pop', s => { const a = dsArr(s, '$stack'); return a && a.length ? a.pop() : undefined; });
+    def('ds_stack_top', s => { const a = dsArr(s, '$stack'); return a && a.length ? a[a.length - 1] : undefined; });
+    def('ds_stack_size', s => { const a = dsArr(s, '$stack'); return a ? a.length : 0; });
+    def('ds_stack_empty', s => { const a = dsArr(s, '$stack'); return !a || a.length === 0; });
+
+    def('ds_queue_create', () => ({ $queue: [] }));
+    def('ds_queue_destroy', q => { const a = dsArr(q, '$queue'); if (a) a.length = 0; });
+    def('ds_queue_clear', q => { const a = dsArr(q, '$queue'); if (a) a.length = 0; });
+    def('ds_queue_enqueue', function (q) {
+      const a = dsArr(q, '$queue'); if (!a) return;
+      for (let i = 1; i < arguments.length; i++) a.push(arguments[i]);
+    });
+    def('ds_queue_dequeue', q => { const a = dsArr(q, '$queue'); return a && a.length ? a.shift() : undefined; });
+    def('ds_queue_head', q => { const a = dsArr(q, '$queue'); return a && a.length ? a[0] : undefined; });
+    def('ds_queue_tail', q => { const a = dsArr(q, '$queue'); return a && a.length ? a[a.length - 1] : undefined; });
+    def('ds_queue_size', q => { const a = dsArr(q, '$queue'); return a ? a.length : 0; });
+    def('ds_queue_empty', q => { const a = dsArr(q, '$queue'); return !a || a.length === 0; });
+
+    const dsGrid = g => (g && g.$grid ? g : null);
+    def('ds_grid_create', (w, h) => {
+      const W = Math.max(0, num(w)), H = Math.max(0, num(h));
+      return { $grid: Array.from({ length: H }, () => new Array(W).fill(0)), w: W, h: H };
+    });
+    def('ds_grid_destroy', g => { const G = dsGrid(g); if (G) { G.$grid.length = 0; G.w = 0; G.h = 0; } });
+    def('ds_grid_width', g => { const G = dsGrid(g); return G ? G.w : 0; });
+    def('ds_grid_height', g => { const G = dsGrid(g); return G ? G.h : 0; });
+    def('ds_grid_set', (g, x, y, v) => {
+      const G = dsGrid(g); if (!G) return;
+      const r = G.$grid[num(y)]; if (r) r[num(x)] = v;
+    });
+    def('ds_grid_get', (g, x, y) => {
+      const G = dsGrid(g); if (!G) return 0;
+      const r = G.$grid[num(y)];
+      return r ? r[num(x)] : 0;
+    });
+    def('ds_grid_clear', (g, v) => {
+      const G = dsGrid(g); if (!G) return;
+      for (const r of G.$grid) r.fill(v === undefined ? 0 : v);
+    });
+    def('ds_grid_resize', (g, w, h) => {
+      const G = dsGrid(g); if (!G) return;
+      const W = Math.max(0, num(w)), H = Math.max(0, num(h));
+      const next = Array.from({ length: H }, (_, y) =>
+        Array.from({ length: W }, (_, x) => (G.$grid[y] && G.$grid[y][x] !== undefined ? G.$grid[y][x] : 0)));
+      G.$grid = next; G.w = W; G.h = H;
+    });
+    def('ds_grid_set_region', (g, x1, y1, x2, y2, v) => {
+      const G = dsGrid(g); if (!G) return;
+      for (let y = num(y1); y <= num(y2); y++) {
+        const r = G.$grid[y]; if (!r) continue;
+        for (let x = num(x1); x <= num(x2); x++) if (x >= 0 && x < G.w) r[x] = v;
+      }
+    });
+
+    // ── sprite metadata ──────────────────────────────────────────────────
+    //
+    // sprite_get_bbox_* were a degenerate 0,0,0,0 rect: left/top hard-coded 0
+    // and right/bottom left to the return-0 stub, so ch5's `findsprite` measured
+    // every sprite as having no extent at all. GameMaker reports these in SPRITE
+    // canvas coordinates (not relative to the origin), so a full-canvas box is
+    // 0,0 .. w-1,h-1 — which is also what an untrimmed sprite's real bbox is.
+    const spriteInfo = s => (global.gmlAssets ? global.gmlAssets.getSpriteInfo(s) : null);
+    def('sprite_get_bbox_left', () => 0);
+    def('sprite_get_bbox_top', () => 0);
+    def('sprite_get_bbox_right', s => { const i = spriteInfo(s); return i ? Math.max(0, num(i.width) - 1) : 0; });
+    def('sprite_get_bbox_bottom', s => { const i = spriteInfo(s); return i ? Math.max(0, num(i.height) - 1) : 0; });
+    // The asset db is keyed by name, so the "index" IS the name here.
+    def('sprite_get_name', s => (typeof s === 'string' ? s : str(s)));
+
+    // darctan2 was defined; plain darctan was not, so every call was a silent 0.
+    def('darctan', v => Math.atan(num(v)) * 180 / Math.PI);
+
+    // ── reflection / binding ─────────────────────────────────────────────
+    //
+    // `method(self, f)` binds a function to an instance and is how ch5 stores
+    // callbacks (scr_selfshadow, scr_cutscene_commands). Stubbed to 0, every
+    // method-bound callback in the corpus was dead on arrival.
+    def('method', (self, f) => {
+      if (typeof f !== 'function') return f;
+      const target = self === undefined || self === null ? undefined : (H.d ? H.d(self) : self);
+      const bound = function () { return f.apply(target, arguments); };
+      bound.$boundTo = target;
+      return bound;
+    });
+    def('variable_instance_get_names', inst => {
+      const self = H.d ? H.d(inst) : inst;
+      if (!self || typeof self !== 'object') return [];
+      // Engine internals are $-prefixed precisely so GML can never name them.
+      return Object.keys(self).filter(k => k.charCodeAt(0) !== 36 && k !== '_created');
+    });
+
+    // ── audio streams ────────────────────────────────────────────────────
+    // Streams are just named handles here; the mixer works on names.
+    def('audio_create_stream', f => ({ $stream: str(f) }));
+    def('audio_destroy_stream', () => {});
+    def('audio_get_name', s => (s && s.$stream ? s.$stream : str(s)));
+    def('audio_is_paused', () => false);
+
     // ── .ini files ───────────────────────────────────────────────────────
     // Deltarune keeps settings and save metadata in ini files. There is no disk
     // here, so back them with an in-memory store that persists for the session:
@@ -2690,6 +2846,43 @@
       ctx.fillText(str(s), num(x), num(y));
       ctx.restore();
     });
+    /**
+     * draw_text_colour(x, y, string, c1, c2, c3, c4, alpha) — four corner
+     * colours, blended across the text. c1 is top-left, c2 top-right, c3
+     * bottom-right, c4 bottom-left.
+     *
+     * All five call sites are obj_battlecontroller, and the ch3 one
+     * (Draw_0.gml:676) is the enemy NAME LIST in the FIGHT/ACT target menu — so
+     * with this on the return-0 stub, that menu drew no names at all, in every
+     * chapter. Approximated with a vertical gradient (top pair -> bottom pair),
+     * which is what these call sites actually use it for; a canvas gradient
+     * cannot express four independent corners, and left/right on these is either
+     * equal or a shade apart.
+     */
+    def('draw_text_colour', function (x, y, s, c1, c2, c3, c4, alpha) {
+      const ctx = global.$gmlActiveCtx;
+      if (!ctx) return;
+      const text = str(s);
+      ctx.save();
+      ctx.font = '16px monospace';
+      ctx.textAlign = alignName(global.$gmlHalign);
+      ctx.textBaseline = baselineName(global.$gmlValign);
+      if (alpha !== undefined && alpha !== null) ctx.globalAlpha = Math.max(0, Math.min(1, num(alpha)));
+      const top = global.toCSSColor(c1 === undefined ? global.$gmlDrawColor : c1);
+      const bottom = global.toCSSColor(c4 === undefined ? (c3 === undefined ? c1 : c3) : c4);
+      if (top === bottom) {
+        ctx.fillStyle = top;
+      } else {
+        const h = 16;
+        const g = ctx.createLinearGradient(0, num(y), 0, num(y) + h);
+        g.addColorStop(0, top);
+        g.addColorStop(1, bottom);
+        ctx.fillStyle = g;
+      }
+      ctx.fillText(text, num(x), num(y));
+      ctx.restore();
+    });
+    def('draw_text_color', function () { return global.draw_text_colour.apply(this, arguments); });
     /**
      * The draw_text_ext* family: line breaks and word WRAPPING.
      *
