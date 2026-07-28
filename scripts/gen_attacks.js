@@ -986,6 +986,15 @@ const REAL = {
     ? [0, 1, 2, 3, 4, 6, 7, 9, 12, 13, 14, 19, 47, 53, 55, 56, 70, 72, 220].includes(a.pattern)
     : ['obj_box_throw_controller', 'obj_gerson_shell_kick_controller'].includes(a.controller),
   pink: a => a.launch === 'pink-date' || [200, 202, 208, 209, 203, 199, 210].includes(a.type),
+  // TENNA cannot be judged by type. Three dispatches produce
+  // obj_dbulletcontroller.type = 150 — the CUT choice-20 branch
+  // (Step_0:609-615), the sharpshoot minigame and LIGHT 'EM UP — so a
+  // type-keyed rule stamps the cut one inFight as well, giving 14 real against
+  // the 13 the roster derives. Judge by id and name instead, so the cut
+  // dispatcher branch is visibly cut and the ten declared PHYSICAL CHALLENGE
+  // rows stay in. Drafted in rosters/_SYNTHESIS.md:439 and never applied.
+  tenna: a => ['tenna_type125', 'tenna_type126', 'tenna_type128'].includes(a.id)
+    || /^PHYSICAL CHALLENGE|^LIGHT 'EM UP/.test(a.name || ''),
 };
 // Fights contributed as data carry their own real/cut lists. Match on whatever
 // the derivation actually keyed on — a `type` when the dispatcher uses one, the

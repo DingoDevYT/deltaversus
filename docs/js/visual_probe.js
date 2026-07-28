@@ -124,11 +124,16 @@
       || document.getElementById('rosterSelect') || document.querySelector('select');
     const opt = [...sel.options].find(o => o.value === attackId || o.value.includes(attackId));
     if (!opt) return false;
-    sel.value = opt.value;
-    sel.dispatchEvent(new Event('change'));
     const el = document.getElementById('errorLog');
     if (el) el.textContent = '';
-    document.getElementById('btnTranslate').click();
+    // ONE launch, not two. presetSelect's change handler already ends in
+    // translateAndPlay() on both of its branches, and it is also what sets
+    // pendingAttack and fills the source panes — so dispatching change AND
+    // clicking btnTranslate compiled and spawned the whole attack twice, every
+    // probe run. The measurement then described the second spawn while the first
+    // one's instances had already been thrown away. Halves a full sweep.
+    sel.value = opt.value;
+    sel.dispatchEvent(new Event('change'));
     return true;
   }
 

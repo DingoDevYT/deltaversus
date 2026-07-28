@@ -240,9 +240,12 @@
     // substring — `includes('knight_type10')` also matches `knight_type109`.
     const opt = [...sel.options].find(o => o.value === 'attack:' + id || o.value === id);
     if (!opt) { census.active = false; return { id, error: 'not in roster' }; }
+    // ONE launch, not two: presetSelect's change handler already ends in
+    // translateAndPlay() and is what sets pendingAttack, so also clicking
+    // btnTranslate compiled and spawned the attack a second time and measured
+    // that one. See visual_probe.js's launch() for the same fix.
     sel.value = opt.value;
     sel.dispatchEvent(new Event('change'));
-    document.getElementById('btnTranslate').click();
     // Art decodes asynchronously and a not-yet-decoded sprite draws as a
     // placeholder; settle before measuring, or we measure loading. FREEZE the
     // live loop across that wait — otherwise it advances the game by a

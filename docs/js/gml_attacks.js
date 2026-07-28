@@ -5151,7 +5151,7 @@ window.GML_ATTACKS = [
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "tenna_type150",
-  "inFight": true,
+  "inFight": false,
   "monsterType": 103
  },
  {
