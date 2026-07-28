@@ -1782,7 +1782,13 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // replay; the chart-launch path must not run it a second time.
       let chartPrebuilt = false;
       if (pendingAttack && bossInst && !isDate && bossDispatched) {
-        const boxGML = (window.GML_ATTACKS_BOXSETUP || {})[pendingAttack.boss];
+        // A per-attack box block wins over the per-boss one. A roster covering
+        // more than one encounter of the same boss (berdly: the coaster fight and
+        // the Snowgrave fight) can only key ONE block per boss, so its rows carry
+        // their own — otherwise every attack gets whichever fight happened to own
+        // the boss-level entry.
+        const boxGML = pendingAttack.boxSetup
+          || (window.GML_ATTACKS_BOXSETUP || {})[pendingAttack.boss];
         if (boxGML) {
           // A boss-driven CHART picks its box offset in event_user(0), so that
           // has to run before the box block reads it. Gerson's block ends with
@@ -1982,7 +1988,8 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // terminate check on frame ONE and never spawned a star.
       let turnBlockRan = false;
       if (pendingAttack && bossInst && bossDispatched) {
-        const turnGML = (window.GML_ATTACKS_TURNSETUP || {})[pendingAttack.boss];
+        const turnGML = pendingAttack.turnSetup
+          || (window.GML_ATTACKS_TURNSETUP || {})[pendingAttack.boss];
         if (turnGML) {
           turnBlockRan = true;
           // The block may RAISE the clock but never LOWER what the dispatcher

@@ -194,6 +194,9 @@ for (const j of rosterConfigs) {
     // Per-file announcement scan window, for a Step that holds more than one
     // encounter of the same fight. See scanWindow().
     scanIn: j.scanIn || null,
+    // Rosters covering more than one encounter of the same boss carry a per-fight
+    // block set; rows then select one with their `fight` field. See $fightBlocks.
+    fights: j.fights || null,
     fromRoster: true,
   });
 }
@@ -525,6 +528,29 @@ for (const boss of BOSSES) {
   const tb = extractTurnBlock(dir, boss.turnBlock);
   if (tb) { turnSetups[boss.id] = tb; notes.push(`${boss.id}: turn block ${tb.length} chars`); }
   else if (boss.turnBlock) notes.push(`${boss.id}: TURN BLOCK NOT FOUND — check anchor`);
+
+  // PER-FIGHT box/turn blocks, for a roster that covers more than one encounter.
+  //
+  // berdly is two separate fights in one roster — the coaster fight
+  // (obj_berdlyb_enemy, 3 rows) and the Snowgrave fight with Noelle
+  // (obj_berdlyb2_enemy, 7 rows) — each with its own box block. Only ONE
+  // box block can be keyed per boss, so all ten attacks were getting the
+  // coaster fight's, including the seven that are not that fight: fight 2's
+  // box also rotates 45 degrees for `difficulty == 1 && chosenattack == 0`
+  // (Tornado), which simply never happened.
+  //
+  // berdly.json already described both in a `fights` array, complete with
+  // per-fight boxBlock and turnBlock, and NOTHING read it.
+  if (boss.fights && boss.fights.length) {
+    boss.$fightBlocks = boss.fights.map((f, i) => {
+      const fbb = extractBoxBlock(dir, f.boxBlock);
+      const ftb = extractTurnBlock(dir, f.turnBlock);
+      if (f.boxBlock && !fbb) notes.push(`${boss.id}: fight ${i + 1} BOX BLOCK NOT FOUND — check anchor`);
+      if (f.turnBlock && !ftb) notes.push(`${boss.id}: fight ${i + 1} TURN BLOCK NOT FOUND — check anchor`);
+      return { box: fbb || null, turn: ftb || null };
+    });
+    notes.push(`${boss.id}: ${boss.$fightBlocks.filter(f => f.box).length}/${boss.fights.length} per-fight box blocks`);
+  }
   // Attack dispatch can live in any event of the enemy object — and, for a
   // fight that spans several enemy objects, of any of them. Berdly is two
   // separate encounters (obj_berdlyb_enemy and obj_berdlyb2_enemy) and the
@@ -783,6 +809,19 @@ function parseControllerCell(cell) {
  * goes through verbatim.
  */
 function applyRosterRow(a, r, selectorVar) {
+  // A row that names its `fight` takes THAT encounter's box and turn block
+  // rather than the one keyed per boss. Only berdly needs this today: its
+  // roster is two separate encounters, and all ten attacks were getting the
+  // coaster fight's box — including the seven Snowgrave ones, whose box also
+  // rotates 45 degrees for difficulty 1 Tornado.
+  if (typeof r.fight === 'number') {
+    const boss = BOSSES.find(b => b.id === a.boss);
+    const fb = boss && boss.$fightBlocks && boss.$fightBlocks[r.fight - 1];
+    if (fb) {
+      if (fb.box) a.boxSetup = fb.box;
+      if (fb.turn) a.turnSetup = fb.turn;
+    }
+  }
   const ctl = parseControllerCell(r.controller);
   if (ctl.name && ctl.name !== a.controller) a.controller = ctl.name;
   if (r.type !== undefined && r.type !== null) a.type = r.type;
