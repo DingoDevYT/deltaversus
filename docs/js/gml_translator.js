@@ -110,6 +110,35 @@
     }
 
     /**
+     * Every GlobalScript name in ANY chapter.
+     *
+     * gen_scripts ships a call-graph CLOSURE, not the whole corpus, so the
+     * per-chapter tables are partial (ch1 188/308, ch3 672/976...). A script the
+     * running chapter didn't ship still compiles fine at run time — $R.scr's JIT
+     * scans the other chapters for it — but only if codegen emits $R.scrCall.
+     * When it fell through to a direct call instead, a name that also happens to
+     * be in BUILTIN_FNS landed on ensureBuiltins' return-0 stub with no warning:
+     * scr_afterimage_cut is on disk in ch2/3/4/5 and shipped only in ch2/ch4,
+     * scr_draw_beam on disk in ch2/3/4/5 and shipped only in ch3/4/5.
+     */
+    allScriptNames() {
+      if (this._allNames) return this._allNames;
+      const set = new Set();
+      const byCh = global.GML_SCRIPT_SOURCES_BY_CHAPTER;
+      const chapters = byCh ? Object.keys(byCh) : [];
+      for (const chapter of chapters) {
+        for (const n of this.scriptNames(chapter)) set.add(n);
+      }
+      // No per-chapter split shipped: the flat table is all there is.
+      if (!chapters.length) for (const n of this.scriptNames(null)) set.add(n);
+      // scriptNames memoises one chapter at a time; the loop above left the
+      // cache pointing at whichever chapter came last.
+      this._nameCache = null;
+      this._allNames = set;
+      return set;
+    }
+
+    /**
      * Functions objects define on THEMSELVES (GML 2.3 methods declared in an
      * event, e.g. `function DoFlip(arg0 = -1)` in obj_shutta_photo_attack's
      * Create). A caller reaches them through `with (thing) DoFlip(1)`, so they
@@ -181,6 +210,7 @@
 
       const cg = new global.GMLCodegen({
         scripts: this.scriptNames(chapter),
+        allScripts: this.allScriptNames(),
         methods: this.methodNames(chapter),
         chapter,
       });
@@ -419,7 +449,7 @@ ${body}
      * `scr_obj_movetowards_point` can read bare `x`/`y` and mean the caller's.
      */
     _emitScript(name, declParams, bodyStatements, parsed, known, chapter, src, errors) {
-      const cg = new global.GMLCodegen({ scripts: known, chapter });
+      const cg = new global.GMLCodegen({ scripts: known, allScripts: this.allScriptNames(), chapter });
       cg.objectName = name;
       cg.isScript = true;
       Object.assign(cg.macros, parsed.macros);

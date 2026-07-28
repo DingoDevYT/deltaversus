@@ -102,8 +102,10 @@
     if (rt0) {
       const proto = Object.getPrototypeOf(rt0);
       const origCreate = proto.createInstance;
-      proto.createInstance = function (objType, x, y) {
-        const inst = origCreate.call(this, objType, x, y);
+      // explicitDepth forwarded — an observer that drops an argument changes the
+      // behaviour it is supposed to be observing (see gml_helpers.js:1699).
+      proto.createInstance = function (objType, x, y, explicitDepth) {
+        const inst = origCreate.call(this, objType, x, y, explicitDepth);
         if (state.on && inst) {
           bump(state.spawned, inst.object_name);
           // Only coordinates that CANNOT be intentional.

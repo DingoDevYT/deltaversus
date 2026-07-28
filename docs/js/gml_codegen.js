@@ -294,6 +294,10 @@
     constructor(opts) {
       opts = opts || {};
       this.scripts = opts.scripts || new Set();
+      // Every GlobalScript name in ANY chapter, so a script this chapter's
+      // partial table lacks still routes through $R.scrCall's cross-chapter JIT
+      // instead of a same-named return-0 builtin stub.
+      this.allScripts = opts.allScripts || new Set();
       // Functions objects define on themselves; these resolve against `self` at
       // call time, so they aren't "unknown" even though they aren't globals.
       this.methods = opts.methods || new Set();
@@ -1111,6 +1115,31 @@ ${p}}`;
       // the script table didn't load, so a missing table can't crash the event.
       if (this.scripts.has && this.scripts.has(name)) {
         return `$R.scrCall(${JSON.stringify(name)}, ${this.self}, [${all()}])`;
+      }
+
+      // Same, for a script this chapter's table did not ship but another
+      // chapter's did. gen_scripts emits a call-graph closure, so the tables are
+      // partial by construction, and $R.scr's JIT already resolves across
+      // chapters at call time — it just has to be ASKED. Falling through to the
+      // direct-builtin branch below instead sent any such name that also lives
+      // in BUILTIN_FNS to ensureBuiltins' return-0 stub, silently: no warning,
+      // no miss-cache entry, a real shipped script replaced by `return 0`.
+      //
+      // But ONLY over a hollow builtin. 109 names are both a shipped GlobalScript
+      // and a BUILTIN_FN, and for many of those the native is the one we want:
+      // __view_get / __view_set_internal are a GameMaker 2.2->2.3 compat shim
+      // this engine deliberately bypasses, and camerax/cameray/i_ex are
+      // implemented directly. Preferring the GML there would undo real work. So
+      // defer to the native unless GML_STUBBED_BUILTINS says it returns 0.
+      // If that set is absent (helpers not initialised yet) this reduces to the
+      // previous behaviour rather than guessing.
+      if (this.allScripts && this.allScripts.has && this.allScripts.has(name)) {
+        const stubs = global.GML_STUBBED_BUILTINS;
+        const realNative = (BUILTIN_FNS.has(name) || typeof global[name] === 'function')
+          && !(stubs && stubs.has(name));
+        if (!realNative) {
+          return `$R.scrCall(${JSON.stringify(name)}, ${this.self}, [${all()}])`;
+        }
       }
 
       // A name in BUILTIN_FNS is guaranteed to exist on window, because

@@ -2075,7 +2075,25 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
 
   document.getElementById('btnTranslate').addEventListener('click', translateAndPlay);
   document.getElementById('btnReset').addEventListener('click', () => {
+    // Reset must build the runtime the same way a launch does. It used to do
+    // only `new GMLRuntimeEnvironment()`, which left the new runtime UNPATCHED —
+    // no GML_HELPERS.for(), so no JIT on createInstance, no event-phase order,
+    // no real `soul`/`growtangle` — and left window.activeGMLRuntime pointing at
+    // the OLD one. The rAF loop then stepped the new runtime while SPEC_CHECK and
+    // VISUAL_PROBE measured the dead one (spec_check.js:73,173,186;
+    // visual_probe.js:105,137,164), so every probe after a Reset click reported
+    // on a runtime nothing was driving.
+    if (GML_HELPERS.freeAllSurfaces) GML_HELPERS.freeAllSurfaces();
+    const prevChapter = runtime && runtime.$chapter;
     runtime = new GMLRuntimeEnvironment();
+    window.activeGMLRuntime = runtime;
+    if (prevChapter) runtime.$chapter = prevChapter;
+    translator = new GMLTranslator(runtime);
+    GML_HELPERS.for(runtime);
+    // Same clock contract as a launch: scr_turntimer is a max-clamp, so this
+    // must start at 0 or the next attack's own duration is neutralised.
+    window.turntimer = 0;
+    pendingAttack = null;
     uniqueErrors.clear();
     if (document.getElementById('errCount')) document.getElementById('errCount').textContent = '0';
     errorLogEl.textContent = '';

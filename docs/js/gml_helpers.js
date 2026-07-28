@@ -645,9 +645,16 @@
     if (!list) return;
     builtinsEnsured = true;
     let stubbed = 0;
+    // Which names got a return-0 stub rather than a real implementation. The
+    // codegen needs this to tell "native we deliberately implement" (__view_get,
+    // camerax, i_ex — where the native BEATS the GML source) from "hollow" (where
+    // a shipped GlobalScript of the same name is strictly better).
+    const stubbedNames = new Set();
+    global.GML_STUBBED_BUILTINS = stubbedNames;
     for (const name of list) {
       if (typeof global[name] === 'function') continue;
       stubbed++;
+      stubbedNames.add(name);
       global[name] = function () {
         if (!MISSING_WARNED.has(name)) {
           MISSING_WARNED.add(name);
@@ -825,32 +832,25 @@
         const name = objectNameOf(objArg) || (typeof objArg === 'string' ? objArg : null);
         if (!name) return null;
         if (H.creationBudgetExhausted(name)) return null;
-        // The explicit depth is applied AFTER Create, and deliberately so.
+        // GameMaker semantics: the argument is the depth Create STARTS with, so
+        // an object that assigns its own depth in Create wins over it.
         //
-        // In GameMaker the argument is the depth Create starts with, so an
-        // object that assigns its own depth in Create should win — and a static
-        // audit flagged our ordering as backwards on exactly that reasoning.
-        // Applying it before Create is empirically WRONG here: it blanks all
-        // four Pink dates completely (peak ink 26-52% -> 0%), because the date
-        // UI's objects assign a depth in Create that only works when the
-        // explicit argument overrides it afterwards.
+        // This was previously applied after Create instead, because doing it the
+        // right way round blanked all four Pink dates (peak ink -> 0%) and the
+        // cause could not be found. The cause was not the ordering. The JIT
+        // wrapper on createInstance (see below, ~line 1699) declared three
+        // parameters and forwarded three, so the 4th never arrived and "before
+        // Create" actually meant "never applied at all" — every depth fell back
+        // to the object table, obj_marker's entry is 0, and Pink's two
+        // full-screen black backgrounds (obj_pink_enemy Create_0.gml:8,13, made
+        // at depth+999 and depth+9999) came forward onto everything else. Hence
+        // a black screen that still issued ~1100 sprite draws with no error.
         //
-        // That means our engine has a compensating difference somewhere else in
-        // how those Create events run, and until that is found, the ordering
-        // that renders 194 attacks correctly wins over the one that matches the
-        // manual. Do not "fix" this again without re-checking pink_date1..4.
-        // Set window.$gmlDepthBeforeCreate = true to get the GameMaker ordering
-        // instead. Kept as a switch rather than a comment because the difference
-        // is what has to be MEASURED to find the compensating bug, and rebuilding
-        // that experiment from scratch each time is how it stayed unsolved: flip
-        // the flag, launch pink_date1..4, and diff the per-object depth census.
-        if (global.$gmlDepthBeforeCreate && depth !== undefined && depth !== null) {
-          // createInstance's 4th argument is exactly this: applied before Create.
-          return runtime.createInstance(name, num(x), num(y), num(depth));
-        }
-        const inst = runtime.createInstance(name, num(x), num(y));
-        if (inst && depth !== undefined && depth !== null) inst.depth = num(depth);
-        return inst;
+        // With the wrapper fixed, both orderings render every date, so the one
+        // that matches GameMaker is the one to keep. Measured, all four dates:
+        // 72.81 / 71.80 / 100 / 69.27 % peak ink, no probe flags.
+        return runtime.createInstance(name, num(x), num(y),
+          depth === undefined || depth === null ? undefined : num(depth));
       },
 
       /**
@@ -1695,15 +1695,23 @@
     };
 
     // JIT: compile the object's class the first time anything spawns it.
+    //
+    // `explicitDepth` MUST be forwarded. This wrapper declared three parameters
+    // and passed three, which silently dropped createInstance's 4th argument and
+    // made the whole "apply the depth BEFORE Create" path (gml_runtime.js:534)
+    // dead code — nothing could ever reach it, because every spawn in the studio
+    // goes through this wrapper. That is the compensating difference behind the
+    // Pink instance_create_depth bug: H.create applying the depth AFTER Create
+    // was a workaround for an argument that never arrived.
     const plainCreate = runtime.createInstance.bind(runtime);
-    runtime.createInstance = function (objType, x, y) {
+    runtime.createInstance = function (objType, x, y, explicitDepth) {
       let nm = objType;
       if (nm && typeof nm === 'object' && nm.object_name) nm = nm.object_name;
       if (typeof nm === 'string') {
         nm = nm.replace(/^["']|["']$/g, '');
         if (!runtime.objectDefinitions[nm]) H.ensureClass(nm);
       }
-      return plainCreate(objType, x, y);
+      return plainCreate(objType, x, y, explicitDepth);
     };
 
     // GameMaker runs the Destroy event as part of instance_destroy(), while the
