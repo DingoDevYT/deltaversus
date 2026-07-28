@@ -4564,6 +4564,11 @@
      * the original pixel grid.
      */
     function tintSourceFor(img, col) {
+      // Same order as drawTinted: palette first, then fog/flash/blend on top of
+      // the swapped pixels. scr_draw_in_box_* reaches every boxed sprite through
+      // this path, so skipping it would leave half the palette-swapped draws in
+      // their source colours.
+      img = global.$gmlPalApply(img);
       const w = img.naturalWidth || img.width || 0;
       const h = img.naturalHeight || img.height || 0;
       if (!(w > 0) || !(h > 0)) return img;
@@ -4592,14 +4597,88 @@
     // ── Shader shim ──────────────────────────────────────────────────────
     // Real GLSL is out of scope, but the one shader battle code leans on
     // constantly is the white/flash fill — drawTinted renders a white
-    // silhouette while a *white*/*flash* shader is set. Anything else is a
-    // silent no-op (previously they were ReferenceErrors or dead stubs).
-    global.shader_set = sh => { global.$gmlShader = sh == null ? '' : String(sh); };
-    global.shader_reset = () => { global.$gmlShader = ''; };
+    // silhouette while a *white*/*flash* shader is set.
+    //
+    // The uniforms are no longer thrown away. Deltarune's PALETTE SWAPPER is a
+    // shader whose entire input is a sampler and one index, and both arrive
+    // through these functions, so recording them is enough to reproduce the
+    // effect on the CPU (see palActive/palettise). Uniform and sampler handles
+    // are their own NAMES, which is what makes that possible: the corpus stores
+    // the handle in a struct at init and uses it many frames later, so an opaque
+    // integer would have had to be looked up in a table the shader system does
+    // not have. Every palette path in the game — pal_swap_set,
+    // scr_custom_pal_swapper, obj_screen_channel_change — agrees on the same
+    // four names, so binding at this level covers all of them at once.
+    const SH = { cur: -1, u: Object.create(null), s: Object.create(null) };
+    global.$gmlShaderState = SH;
+    global.shader_set = sh => {
+      global.$gmlShader = sh == null ? '' : String(sh);
+      SH.cur = sh == null ? -1 : sh;
+    };
+    global.shader_reset = () => {
+      global.$gmlShader = '';
+      SH.cur = -1;
+      // GameMaker's sampler bindings do not survive a shader reset, and leaving
+      // u_palTexture bound would palettise every later sprite in the frame.
+      SH.s = Object.create(null);
+      SH.u = Object.create(null);
+    };
+    global.shader_current = () => SH.cur;
     global.shader_is_compiled = () => true;
-    global.shader_get_uniform = () => 0;
-    global.shader_set_uniform_f = () => {};
-    global.shader_set_uniform_i = () => {};
+    global.shader_get_uniform = (sh, name) => 'U:' + name;
+    global.shader_get_sampler_index = (sh, name) => 'S:' + name;
+    const uniName = h => (typeof h === 'string' && h.length > 2 ? h.slice(2) : null);
+    global.shader_set_uniform_f = function (handle) {
+      const n = uniName(handle);
+      if (n) SH.u[n] = Array.prototype.slice.call(arguments, 1).map(num);
+    };
+    global.shader_set_uniform_i = global.shader_set_uniform_f;
+    global.shader_set_uniform_f_array = function (handle, arr) {
+      const n = uniName(handle);
+      if (n) SH.u[n] = (arr || []).map(num);
+    };
+    global.shader_set_uniform_i_array = global.shader_set_uniform_f_array;
+    global.texture_set_stage = function (handle, tex) {
+      const n = uniName(handle);
+      if (n) SH.s[n] = tex;
+    };
+    // A "texture" here is just a tagged reference to the thing it came from —
+    // this engine draws each sprite from its own image rather than from a
+    // texture page, so there is nothing lower-level to hand back.
+    global.sprite_get_texture = (spr, frame) => ({ $spr: sprAlias(spr), $frame: num(frame) || 0 });
+    global.surface_get_texture = surf => ({ $surf: surf });
+    global.font_get_texture = () => null;
+    /**
+     * GameMaker returns the sprite's rectangle WITHIN its texture page, plus its
+     * trim offsets. Every sprite here is its own image, so the rectangle is the
+     * whole texture: [left, top, right, bottom, xoff, yoff, wratio, hratio].
+     */
+    global.sprite_get_uvs = () => [0, 0, 1, 1, 0, 0, 1, 1];
+    global.font_get_uvs = () => [0, 0, 1, 1];
+    function texSize(tex) {
+      if (!tex) return null;
+      if (tex.$surf !== undefined) {
+        const s = tex.$surf;
+        const c = (s && s.canvas) || s;
+        return c && c.width ? [c.width, c.height] : null;
+      }
+      if (tex.$spr) {
+        const img = global.gmlAssets ? global.gmlAssets.getImage(tex.$spr, tex.$frame || 0) : null;
+        if (img && (img.naturalWidth || img.width)) return [img.naturalWidth || img.width, img.naturalHeight || img.height];
+        const info = global.gmlAssets ? global.gmlAssets.getSpriteInfo(tex.$spr) : null;
+        if (info) return [num(info.width), num(info.height)];
+      }
+      return null;
+    }
+    global.texture_get_width = tex => { const d = texSize(tex); return d ? d[0] : 0; };
+    global.texture_get_height = tex => { const d = texSize(tex); return d ? d[1] : 0; };
+    global.texture_get_texel_width = tex => { const d = texSize(tex); return d && d[0] ? 1 / d[0] : 0; };
+    global.texture_get_texel_height = tex => { const d = texSize(tex); return d && d[1] ? 1 / d[1] : 0; };
+    // Layer draw scripts: the palette system offers a per-layer mode the battle
+    // code never enters (it calls pal_swap_set directly, per sprite). Accepting
+    // the call keeps pal_swap_enable_layer from throwing on its way past.
+    global.layer_script_begin = () => 0;
+    global.layer_script_end = () => 0;
 
     // ── draw_sprite_ext ────────────────────────────────────────────────
     // Reimplemented rather than wrapped: the runtime version ignored the `color`
@@ -4759,8 +4838,132 @@
   global.d3d_set_fog = global.gpu_set_fog;
   global.gpu_get_fog = () => [FOG.on, FOG.css, 0, 1];
 
+  // ── Palette swapping ─────────────────────────────────────────────────
+  // Deltarune recolours whole characters with a palette-swap shader rather than
+  // with tints: a LUT sprite whose ROW 0 is the source colours and whose row N
+  // is replacement N. spr_tenna_palette is 2x19 — two key colours, eighteen
+  // alternates; spr_dw_rhythm_stage_palette is 2x11. The generic path is
+  // obj_actor_Draw_0.gml:3, `if (sprite_palette != -1) pal_swap_set(
+  // sprite_palette, current_pal, false)`, so any actor carrying a palette goes
+  // through it; obj_actor_tenna_Draw_0.gml:2 adds its own row-1 swap under
+  // golden_mode. With shader_set a no-op, every one of those draws silently
+  // used row 0 — the source colours — and nothing errored.
+  //
+  // NOTE the swap is often conditional in the source and correctly does not fire:
+  // obj_rhythmgame's palette branch disables itself on the first frame when
+  // bg_con == 1 (Draw_0:52-58 moves palette_pos toward 1 - bg_con = 0, then
+  // `if (palette_pos == 0) palette_active = false`). An unswapped draw there is
+  // fidelity, not a gap.
+  //
+  // The swap is a pure function of (image, LUT sprite, row), so both the LUT and
+  // the recoloured frame are cached; a swapped sprite costs one getImageData
+  // once, then nothing.
+  const PAL_LUT = new Map();          // 'palSprite#row' -> Map(srcRGB -> [r,g,b,a])
+  const PAL_CACHE = new Map();        // image+palette -> canvas, LRU by insertion
+  let palBytes = 0;
+  const PAL_MAX_BYTES = 32 * 1024 * 1024;
+
+  /** The palette binding the current shader state describes, or null. */
+  function palActive() {
+    const SH = global.$gmlShaderState;
+    if (!SH) return null;
+    const tex = SH.s && SH.s.u_palTexture;
+    const idx = SH.u && SH.u.u_paletteId;
+    if (!tex || !tex.$spr || !idx || !idx.length) return null;
+    // Row 0 IS the source row, so a swap to it is the identity — and pal_swap_set
+    // exits before setting the shader at all in that case.
+    const row = Math.round(num(idx[0]));
+    return row > 0 ? { spr: tex.$spr, row } : null;
+  }
+
+  function palLUT(spr, row) {
+    const key = spr + '#' + row;
+    if (PAL_LUT.has(key)) return PAL_LUT.get(key);
+    const img = global.gmlAssets ? global.gmlAssets.getImage(spr, 0) : null;
+    // Undecoded art must NOT be cached as "no palette" — it would pin the wrong
+    // answer for the rest of the session. Return null without recording.
+    if (!img || !img.complete || !(img.naturalWidth > 0)) return null;
+    const w = img.naturalWidth, h = img.naturalHeight;
+    let map = null;
+    try {
+      const buf = document.createElement('canvas');
+      buf.width = w; buf.height = h;
+      const bctx = buf.getContext('2d');
+      bctx.drawImage(img, 0, 0);
+      const d = bctx.getImageData(0, 0, w, h).data;
+      if (row < h) {
+        map = new Map();
+        for (let x = 0; x < w; x++) {
+          const si = x * 4, di = (row * w + x) * 4;
+          if (d[si + 3] === 0) continue;             // an empty LUT slot maps nothing
+          map.set((d[si] << 16) | (d[si + 1] << 8) | d[si + 2],
+            [d[di], d[di + 1], d[di + 2], d[di + 3]]);
+        }
+      } else if (!MISSING_WARNED.has('pal:' + key)) {
+        MISSING_WARNED.add('pal:' + key);
+        console.warn(`[gml] palette row ${row} is outside ${spr} (${w}x${h}) — drawing unswapped`);
+      }
+    } catch (e) { map = null; }
+    PAL_LUT.set(key, map);
+    return map;
+  }
+
+  /** `img` with the active palette applied, or `img` when nothing applies. */
+  global.$gmlPalApply = function (img) {
+    const pal = palActive();
+    if (!pal || !img) return img;
+    const w = img.naturalWidth || img.width || 0;
+    const h = img.naturalHeight || img.height || 0;
+    if (!(w > 0) || !(h > 0)) return img;
+    const map = palLUT(pal.spr, pal.row);
+    if (!map || !map.size) return img;
+    // Sprite frames are immutable so their swap is valid forever; a SURFACE is
+    // repainted every frame, so it always takes the fresh path (same rule the
+    // tint cache follows, and for the same reason).
+    const cacheable = img instanceof HTMLImageElement;
+    const key = cacheable ? imgId(img) + '|' + w + 'x' + h + '|' + pal.spr + '#' + pal.row : null;
+    if (key) {
+      const hit = PAL_CACHE.get(key);
+      if (hit) { PAL_CACHE.delete(key); PAL_CACHE.set(key, hit); return hit; }
+    }
+    let buf;
+    try {
+      buf = document.createElement('canvas');
+      buf.width = w; buf.height = h;
+      const bctx = buf.getContext('2d');
+      bctx.drawImage(img, 0, 0);
+      const id = bctx.getImageData(0, 0, w, h);
+      const d = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] === 0) continue;
+        const to = map.get((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
+        if (!to) continue;
+        d[i] = to[0]; d[i + 1] = to[1]; d[i + 2] = to[2];
+        // The LUT's own alpha scales the source pixel's, so a partly transparent
+        // replacement colour stays partly transparent over a soft edge.
+        if (to[3] !== 255) d[i + 3] = (d[i + 3] * to[3]) / 255;
+      }
+      bctx.putImageData(id, 0, 0);
+    } catch (e) { return img; }
+    if (key) {
+      PAL_CACHE.set(key, buf);
+      palBytes += w * h * 4;
+      while (palBytes > PAL_MAX_BYTES && PAL_CACHE.size) {
+        const oldestKey = PAL_CACHE.keys().next().value;
+        const oldest = PAL_CACHE.get(oldestKey);
+        PAL_CACHE.delete(oldestKey);
+        palBytes -= oldest.width * oldest.height * 4;
+      }
+    }
+    return buf;
+  };
+
   const tintCache = new Map();
   function drawTinted(ctx, img, dx, dy, blend) {
+    // The palette swap happens FIRST: it replaces the sprite's own colours, and
+    // whatever blend or fog follows applies to the swapped result, exactly as a
+    // shader stage precedes the blend stage on the GPU.
+    img = global.$gmlPalApply(img);
     // FOG is GameMaker's fixed-function colourise stage: with it enabled the
     // default shader replaces every fragment's RGB with the fog colour and keeps
     // its alpha — a flat silhouette. Deltarune reaches for it constantly (via
