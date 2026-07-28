@@ -839,6 +839,15 @@
         // how those Create events run, and until that is found, the ordering
         // that renders 194 attacks correctly wins over the one that matches the
         // manual. Do not "fix" this again without re-checking pink_date1..4.
+        // Set window.$gmlDepthBeforeCreate = true to get the GameMaker ordering
+        // instead. Kept as a switch rather than a comment because the difference
+        // is what has to be MEASURED to find the compensating bug, and rebuilding
+        // that experiment from scratch each time is how it stayed unsolved: flip
+        // the flag, launch pink_date1..4, and diff the per-object depth census.
+        if (global.$gmlDepthBeforeCreate && depth !== undefined && depth !== null) {
+          // createInstance's 4th argument is exactly this: applied before Create.
+          return runtime.createInstance(name, num(x), num(y), num(depth));
+        }
         const inst = runtime.createInstance(name, num(x), num(y));
         if (inst && depth !== undefined && depth !== null) inst.depth = num(depth);
         return inst;

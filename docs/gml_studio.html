@@ -1980,9 +1980,11 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // below — which for the Knight's Stars meant `global.turntimer += 30`
       // producing 120 against its own `endtimer` of 120, so it hit its
       // terminate check on frame ONE and never spawned a star.
+      let turnBlockRan = false;
       if (pendingAttack && bossInst && bossDispatched) {
         const turnGML = (window.GML_ATTACKS_TURNSETUP || {})[pendingAttack.boss];
         if (turnGML) {
+          turnBlockRan = true;
           // The block may RAISE the clock but never LOWER what the dispatcher
           // already set, because the two orderings differ per boss and this
           // replay only has one.
@@ -1997,6 +1999,53 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           const before = Number(window.turntimer) || 0;
           runSnippet(turnGML, bossInst, 'turn length');
           if ((Number(window.turntimer) || 0) < before) window.turntimer = before;
+        }
+      }
+
+      // Fall back to what the ROSTER derived for this attack.
+      //
+      // gen_attacks has been emitting these all along and nothing read them:
+      // `turnTimer` (roster-declared, from `turnOverride` or `turn` — 30 attacks
+      // across kround/queen/berdly) and `turntimerHint` (scanned out of the
+      // dispatcher — 17 across lancer/lanino_elnina/orange_green).
+      //
+      // The test is NOT `turntimer <= 0`. A fight's BOX block routinely sets a
+      // generic pre-attack length — orange_green's ends `scr_turntimer(90)` — so
+      // by this point the clock is almost always nonzero and a zero-test hands
+      // every attack that fight's floor instead of its own length. That is the
+      // same failure the Knight had, one layer up: orange_green read 120 against
+      // declared values of 270, 360, 615 and 500.
+      //
+      // So the question is whether anything ATTACK-SPECIFIC has set the clock:
+      //   - the replayed turn block (GML_ATTACKS_TURNSETUP), keyed on the
+      //     selector, or
+      //   - this attack's own `setup` slice, if it sets a turn length.
+      // Both are replayed real GML and win. A box-block value is fight-generic
+      // and does not — the roster's per-attack number is strictly better.
+      if (pendingAttack) {
+        const declared = Number(pendingAttack.turnTimer) > 0
+          ? Number(pendingAttack.turnTimer)
+          : Number(pendingAttack.turntimerHint);
+        // `turnBlockRan`, not "a block exists for this boss". The replay is gated
+        // on bossDispatched, which is false for any fight whose roster has no
+        // selector variable — all 7 Lancer attacks. Testing for existence meant
+        // Lancer skipped its declared values AND never ran its block, so every
+        // one of them landed on the 90-frame floor against declared 999 and 180.
+        const setupSetsTurn = /turntimer/.test(String(pendingAttack.setup || ''));
+        const attackSpecific = turnBlockRan || setupSetsTurn;
+
+        if (declared > 0 && !attackSpecific) {
+          window.turntimer = declared;
+        } else if (declared > 0 && attackSpecific) {
+          // Both sources exist. They should agree; when they do not, one of them
+          // is wrong about this fight, and silently picking the winner is how
+          // that stays hidden. Replayed GML still wins — just say so.
+          const live = Number(window.turntimer) || 0;
+          if (Math.abs(live - declared) > 1) {
+            console.warn('[turntimer] ' + pendingAttack.id + ': replayed GML gives ' + live +
+                         ', roster declares ' + declared + ' — using ' + live +
+                         ' (replayed GML wins). One of the two is wrong about this attack.');
+          }
         }
       }
 

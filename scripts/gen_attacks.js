@@ -68,6 +68,23 @@ const BOSSES = [
     boxBlock: { file: 'gml_Object_obj_hammer_of_justice_enemy_Step_0.gml',
                 anchor: 'if (!instance_exists(obj_growtangle))',
                 endAnchor: 'with (obj_battlecontroller)' },
+    // Gerson has NO turn ladder — he sets one sentinel per enemy turn at
+    // Step_0:658 and ends the turn DYNAMICALLY: Step_0:1060-1063 cuts the clock
+    // to 10 once the chart has dispatched its last row (attackcon 3) and every
+    // obj_spearshot has despawned. So 999 is a CEILING, not a duration.
+    //
+    // Sliced to the single statement. The setter is three lines above
+    // `rr = choose(0, 1)` and an irandom(100) cascade that overwrites rr — his
+    // attack chooser — so anchoring on the enclosing `if (rtimer == 12)` would
+    // swallow it whole: the Jevil trap exactly. The endAnchor cuts one line past
+    // the setter. `attackcon = 1` sits just ABOVE the anchor and stays out too,
+    // so replaying cannot arm the dispatcher or spawn a second controller.
+    //
+    // The scr_turntimer(90) at Step_0:647 is a fossil: it fires on the
+    // mnfight 1.5 -> 2 handoff twelve frames before 999 raises over it.
+    turnBlock: { file: 'gml_Object_obj_hammer_of_justice_enemy_Step_0.gml',
+                 anchor: 'scr_turntimer(999)',
+                 endAnchor: 'global.typer = 6;' },
     // Gerson's controller attacks are dispatched by scr_spearshot's arg3.
     dispatchScript: 'scr_spearshot',
     // His GREEN-SOUL attacks are data charts: Other_10 (event_user(0)) fills
@@ -118,6 +135,18 @@ const BOSSES = [
       { n: 3, name: 'date 3 — scripted, ends in the FINAL ATTACK' },
       { n: 4, name: 'date 4 — the confession, 3 questions' },
     ],
+    // Pink sets one flat turn length for every BULLET attack, at Step_0:1812 —
+    // after her whole myattackchoice if-chain closes at :1810, at the same
+    // nesting level, so it is the turn setter and not a dispatcher arm. Sliced
+    // to the single statement: `turns += 1` and `attacked = 1` follow it and are
+    // state advances the studio must not replay.
+    //
+    // Her four DATES are turn REPLACEMENTS and are not covered: the studio parks
+    // their clock at 999 itself (the isDate branch), and the raise-only guard
+    // around this replay keeps that — 999 > 300, so it is restored.
+    turnBlock: { file: 'gml_Object_obj_pink_enemy_Step_0.gml',
+                 anchor: 'scr_turntimer(300)',
+                 endAnchor: 'if (datecount == 3)' },
     // The tenth bullet attack ("pink final attack", type 210 — the purple
     // node-maze) is announced inside obj_date_controller, not in Pink's Step,
     // so the announcement scan has to look there too.
