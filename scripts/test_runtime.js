@@ -26,6 +26,10 @@ function fakeCtx() {
     beginPath: noop, closePath: noop, moveTo: noop, lineTo: noop, arc: noop,
     fill: noop, stroke: noop, clip: noop, fillText: noop, strokeText: noop,
     measureText: () => ({ width: 8 }), createLinearGradient: () => ({ addColorStop: noop }),
+    // Real canvases have both gradient constructors. Omitting the radial one made
+    // every object that draws a glow (the Roaring Knight's orbs and circles) look
+    // like an engine failure headlessly while being fine in a browser.
+    createRadialGradient: () => ({ addColorStop: noop }),
     setTransform: noop, transform: noop, rect: noop, ellipse: noop, quadraticCurveTo: noop,
     getImageData: () => ({ data: new Uint8Array(4) }), putImageData: noop,
     globalAlpha: 1, globalCompositeOperation: 'source-over',
@@ -50,6 +54,11 @@ function makeSandbox() {
   };
   // Images never load headlessly, which exercises the placeholder path.
   sb.Image = function () { this.complete = false; this.naturalWidth = 0; this.naturalHeight = 0; };
+  // In a browser `new Image()` IS an HTMLImageElement, and the tint cache asks
+  // exactly that (gml_helpers.js:4627 — only sprite images may be cached, never
+  // surfaces). Without the global the check threw ReferenceError out of the whole
+  // Draw event, so the cache path went untested and 3 presets reported as broken.
+  sb.HTMLImageElement = sb.Image;
   vm.createContext(sb);
 
   const load = f => vm.runInContext(fs.readFileSync(path.join(JS, f), 'utf8'), sb, { filename: f });

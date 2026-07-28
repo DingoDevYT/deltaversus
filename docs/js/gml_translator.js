@@ -254,9 +254,18 @@
             ? global.GML_OBJECT_INDEX.parentChain(objectName, chapter)
             : []).length > 0;
         methods.push(drawingParent
-          // `super.draw` exists only if some ancestor defined one; the guard
-          // keeps a parentless-in-practice object rendering as before.
-          ? `  draw(ctx) {\n    const $p = Object.getPrototypeOf(Object.getPrototypeOf(this));\n    if ($p && typeof $p.draw === 'function') $p.draw.call(this, ctx);\n    else this.drawSelf(ctx);\n  }`
+          // Must be `super.draw`, NOT a prototype walk from `this`.
+          // `Object.getPrototypeOf(Object.getPrototypeOf(this))` is computed from
+          // the INSTANCE, so it yields the same prototype at every level of the
+          // chain and never advances. When two objects in a chain both land on
+          // this fallback — obj_sneo_cshot -> obj_basicbullet_sneo ->
+          // obj_collidebullet all do — the parent's copy recomputes the identical
+          // prototype and calls itself: infinite recursion, every frame, for 28
+          // presets across Spamton NEO, Gerson and the Roaring Knight.
+          // `super` is bound to the method's home object, so it walks up exactly
+          // one level per class. GMLInstance.prototype.draw (gml_runtime.js:368)
+          // terminates the chain by calling drawSelf.
+          ? `  draw(ctx) {\n    const $s = super.draw;\n    if (typeof $s === 'function') $s.call(this, ctx);\n    else this.drawSelf(ctx);\n  }`
           : `  draw(ctx) {\n    this.drawSelf(ctx);\n  }`);
       }
 
