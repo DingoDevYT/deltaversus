@@ -9,9 +9,10 @@
 
   "boxBlock": {
     "file": "gml_Object_obj_titan_enemy_Step_0.gml",
-    "anchor": "if (!instance_exists(obj_growtangle))",
-    "ifElse": false,
-    "_verified": "extractBoxBlock() run against the real file: anchor occurs exactly ONCE (Step_0:153) and slices to 415 chars — the growtangle if plus its internal if/else, nothing more.",
+    "anchor": "if (myattackchoice == 20)",
+    "ifElse": true,
+    "_verified": "extractBoxBlock() run against the real file: this anchor occurs TWICE (Step_0:148 and Step_0:305) and indexOf takes the FIRST, which is the box guard; 305 is inside the ending sequence. With ifElse the slice runs Step_0:148-163 — the empty choice-20 arm, the else, the growtangle if with its internal 250,200 / 320,170 split, and the scr_moveheart call.",
+    "_whyGuard": "The old anchor (`if (!instance_exists(obj_growtangle))`, Step_0:153) started INSIDE the else arm, so the guard that makes a heal turn boxless was left behind and the studio replayed the creation unconditionally. Caught by titan_titan_heal's `absent(obj_growtangle)` assertion. An enclosing condition is part of the box logic and has to come with the slice.",
     "_note": "Step_0:153-159. Choices 2/3/4 (the big-blast attacks) get the box at view+(250,200); every other choice gets view+(320,170), because the blasts are fired from obj_growtangle.x + 240 and need room to cross. The whole block already sits inside `if (myattackchoice == 20) { } else { ... }` (Step_0:148-163), so a heal turn creates NO box at all (and Step_0:61 likewise skips obj_darkener). maxxscale/maxyscale stay at obj_growtangle's default except types 468 (2.125) and 469 (2.25), which the CONTROLLER sets itself (obj_dbulletcontroller_Step_0.gml:3867-3871, 3893-3897) — the studio gets those for free by actually spawning the controller."
   },
 

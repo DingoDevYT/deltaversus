@@ -1242,6 +1242,17 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
     // Knight's scanline-wobbled body never appeared: all 160 strips per frame
     // were computed at x = NaN.
     window.time = (Number(window.time) || 0) + 1;
+    // obj_heart's Step does `global.inv -= 1` UNCONDITIONALLY every frame
+    // (obj_heart_Step_0.gml:271); only damage pushes it back up (global.inv =
+    // 60). So a few frames into any turn it is comfortably negative, and the
+    // corpus's many `if (global.inv < 0)` tests are TRUE for almost the whole
+    // turn. This studio drives its own soul instead of running obj_heart's Step,
+    // so global.inv stayed undefined and every one of those tests was false.
+    // Found by the Titan's spec suite: obj_darkshape_light_aura's Begin Step
+    // picks `radius_goal = light_radius` when inv < 0 and `light_radius * 0.8`
+    // otherwise, so the Titan's light radius settled at 38.4 instead of 48 —
+    // a fifth too small — across five of his attacks.
+    window.inv = (Number(window.inv) || 0) - 1;
     // ch5 box-depth rule (obj_darkness_overlay_Step_0.gml:1-25): grown box
     // parks at depth 20 (behind obj_purplecontrols' depth-4 arena), closing
     // box at depth 5. Runs regardless of phase, like the real overlay.
@@ -1781,6 +1792,10 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // Set when the chart boss's event_user(0) already ran before the box
       // replay; the chart-launch path must not run it a second time.
       let chartPrebuilt = false;
+      // Did the fight's OWN box block run to completion? If it did, its outcome
+      // is the answer — including "no box at all" — and the fallback below must
+      // not overrule it. See the fallback for what that cost.
+      let boxBlockRan = false;
       if (pendingAttack && bossInst && !isDate && bossDispatched) {
         // A per-attack box block wins over the per-boss one. A roster covering
         // more than one encounter of the same boss (berdly: the coaster fight and
@@ -1830,7 +1845,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           // The blocks set mnfight = 2 themselves when they finish.
           const savedMnfight = window.mnfight;
           window.mnfight = 1.5;
-          runSnippet(boxGML, bossInst, 'box setup');
+          boxBlockRan = !!runSnippet(boxGML, bossInst, 'box setup');
           // Only honour a value the block actually chose; otherwise restore, so
           // a block that never reached its assignment cannot strand the phase.
           if (Number(window.mnfight) === 1.5) window.mnfight = savedMnfight;
@@ -1894,7 +1909,16 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         // gave it away), and obj_gerson_bell_attack_controller placed its bell
         // and teleport 60px off. Bosses whose own box block is replayed above
         // already have one; this only covers the fallback case.
-        if (!runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_growtangle')) {
+        //
+        // A block that RAN and made no box has answered the question: some turns
+        // genuinely have none. The Titan's heal turn is
+        // `if (myattackchoice == 20) { } else { ...create the box... }`
+        // (obj_titan_enemy_Step_0.gml:148-163) — an empty arm — and this fallback
+        // handed it a box anyway, so a turn the game plays boxless was drawn with
+        // one. Only fabricate a box when no block ran at all, or when the block
+        // failed to replay.
+        if (!boxBlockRan
+            && !runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_growtangle')) {
           try {
             H2.ensureClass('obj_growtangle');
             runtime.growtangle = runtime.createInstance('obj_growtangle', 320, 170);
@@ -1961,9 +1985,14 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // Adopt whatever box the replayed GML created; only if NO code made one
       // (raw objects, replay failures) fall back to a default box — the real
       // object still, so its Create/Step run the grow machine either way.
+      // A block that RAN and created nothing has already answered: the Titan's
+      // heal turn is `if (myattackchoice == 20) { } else { ...box... }`
+      // (obj_titan_enemy_Step_0.gml:148-163), an EMPTY arm, and the same arm is
+      // why it never calls scr_moveheart either. Fabricating a box here drew a
+      // turn the game plays boxless with one, and re-centred the soul into it.
       if (!isDate) {
         let gt = syncGrowtangle();
-        if (!gt) {
+        if (!gt && !boxBlockRan) {
           H2.ensureClass('obj_growtangle');
           gt = runtime.createInstance('obj_growtangle', 320, 170);
           runtime.growtangle = gt;
@@ -1971,7 +2000,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         // Purple attacks: obj_purplecontrols owns the soul (canmove = 0).
         // Everyone else starts centred in the box, as scr_moveheart leaves it.
         // Centred means the soul's MIDDLE, not its top-left anchor.
-        if (Number(runtime.soul.canmove) !== 0 || isNaN(runtime.soul.x)) {
+        if (gt && (Number(runtime.soul.canmove) !== 0 || isNaN(runtime.soul.x))) {
           centreSoulOn(gt.x, gt.y);
         }
       }
