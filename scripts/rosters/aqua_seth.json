@@ -5,6 +5,12 @@
   "label": "Aqua & Seth",
   "enemy": "obj_aqua_enemy",
   "extraEnemies": ["obj_purple_enemy"],
+  "scanIn": {
+    "gml_Object_obj_aqua_enemy_Step_0.gml": {
+      "scanFrom": "else if (fight_type == \"seth\")",
+      "_why": "obj_aqua_enemy Step_0 holds BOTH encounters: the SOLO Aqua fight (fight_type == \"solo\", :389-472) and this PAIRED fight (fight_type == \"seth\", :474-541). Same attack names, same obj_dbulletcontroller types, different turn lengths and setup — so the first-wins announcement scan silently took all 9 entries from the SOLO arm, and type 300 came back carrying scr_turntimer(300) from :424 instead of the paired arm 245 at :511. _shapeNote (4) already recorded this and said to take the second occurrence; scanFrom is how."
+    }
+  },
 
   "_shapeNote": "READ THIS BEFORE WIRING THE FIGHT. (1) Seth is obj_purple_enemy — objects.tsv gives `obj_purple_enemy / spr_seth_battle / obj_monsterparent`. There is no obj_seth_enemy. obj_seth_shi_controller and obj_seth_shinobeetle_controller are Seth CAMEOS in unrelated encounters and have nothing to do with this fight. (2) The fight is encounter 223 (gml_Object_obj_dw_cliff_sethaqua_battle_Step_0.gml:327, `scr_battle(223, 3, seth_marker, aqua_marker, 0);`); gml_GlobalScript_scr_encountersetup.gml:852-863 puts obj_purple_enemy in monster slot 0 and obj_aqua_enemy in slot 1. (3) BOTH monsters own a `myattackchoice` dispatcher and BOTH fire in the same bullet phase on turns 1 and 3 — two live obj_dbulletcontroller instances at once. A one-attack-per-turn model does not cover this fight. (4) `enemy` is obj_aqua_enemy because 10 of the 13 monsterattackname announcements live in her Step. The announcement scan over obj_aqua_enemy_* will therefore emit TEN entries with DUPLICATE (name, choice, type) triples: entries 0-3 are the SOLO Aqua fight (encounter 220) and entries 4-9 are this fight. Take the SECOND occurrence of choices 0/1/2/3. See `cut`. (5) The battle-box owner CHANGES mid-fight: Aqua's block runs turns 0-4, Seth's runs turns 5-6 after Aqua is removed. See boxBlock / boxBlockLate / mechanics.",
 

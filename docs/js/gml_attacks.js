@@ -3227,11 +3227,9 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"OmegaKnife\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 300;\n                    scr_turntimer(300);",
+  "setup": "global.monsterattackname[myself] = \"OmegaKnife\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 300;\n                    scr_turntimer(245);",
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
-  "alsoChoices": [
-   3
-  ],
+  "alsoChoices": [],
   "hasSpecial": false,
   "id": "aqua_seth_type300",
   "inFight": true,
@@ -5673,11 +5671,10 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    scr_turntimer(240);",
+  "setup": "global.monsterattackname[myself] = \"KnifeChain\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 308;\n                    \n                    if (turns == 4)\n                        scr_turntimer(260);\n                    else\n                        scr_turntimer(240);",
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifeChain",
   "alsoChoices": [
-   0,
    0,
    0,
    null,
@@ -5710,7 +5707,6 @@ window.GML_ATTACKS = [
   "alsoChoices": [
    0,
    0,
-   0,
    null,
    null
   ],
@@ -5739,7 +5735,6 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "FanOfKnives",
   "alsoChoices": [
-   1,
    1
   ],
   "hasSpecial": false,
@@ -5767,7 +5762,6 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "FanOfKnives",
   "alsoChoices": [
-   1,
    1
   ],
   "hasSpecial": false,
@@ -5795,7 +5789,6 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifePetal",
   "alsoChoices": [
-   2,
    2
   ],
   "hasSpecial": false,
@@ -5823,7 +5816,6 @@ window.GML_ATTACKS = [
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifePetal",
   "alsoChoices": [
-   2,
    2
   ],
   "hasSpecial": false,

@@ -191,6 +191,9 @@ for (const j of rosterConfigs) {
     extraAttackFiles: j.extraAttackFiles || [],
     controllerSet: j.controllerSet || null,
     monsterType: j.monsterType === undefined ? null : j.monsterType,
+    // Per-file announcement scan window, for a Step that holds more than one
+    // encounter of the same fight. See scanWindow().
+    scanIn: j.scanIn || null,
     fromRoster: true,
   });
 }
@@ -361,6 +364,39 @@ function extractTurnBlock(dir, cfg) {
  * From each announcement, look forward over the rest of its branch for the
  * controller spawn and the `.type` that selects the attack inside it.
  */
+/**
+ * Narrow the text an announcement scan sees, for bosses whose Step holds SEVERAL
+ * ENCOUNTERS of the same fight.
+ *
+ * obj_aqua_enemy's Step is `if (fight_type == "solo") { ... } else if
+ * (fight_type == "seth") { ... }` — the same attack names and the same
+ * dbulletcontroller types in both arms, with different turn lengths and setup.
+ * The scan takes the first announcement of each name, so all 9 Aqua & Seth
+ * entries came from the SOLO encounter: type 300 carried scr_turntimer(300) from
+ * :424 instead of the paired arm's 245 at :511. Identical names made it invisible.
+ *
+ * A roster declares `scanFrom` / `scanTo` (per file via `scanIn`) to point the
+ * scan at the right arm. Anchors are plain substrings of the raw source; a
+ * missing anchor is reported rather than silently ignored, because silently
+ * scanning the whole file is exactly the bug.
+ */
+function scanWindow(src, boss, file, notes) {
+  const cfg = boss.scanIn && boss.scanIn[file] ? boss.scanIn[file] : null;
+  if (!cfg) return src;
+  let from = 0, to = src.length;
+  if (cfg.scanFrom) {
+    const i = src.indexOf(cfg.scanFrom);
+    if (i === -1) { notes.push(`${boss.id}: scanFrom NOT FOUND in ${file} — scanning whole file`); return src; }
+    from = i;
+  }
+  if (cfg.scanTo) {
+    const j = src.indexOf(cfg.scanTo, from + 1);
+    if (j === -1) { notes.push(`${boss.id}: scanTo NOT FOUND in ${file} — scanning to end`); }
+    else to = j;
+  }
+  return src.slice(from, to);
+}
+
 function attackAnnouncements(src) {
   const clean = strip(src);
   const out = [];
@@ -500,8 +536,9 @@ for (const boss of BOSSES) {
 
   let found = 0;
   for (const f of eventFiles) {
-    const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    let src = fs.readFileSync(path.join(dir, f), 'utf8');
     if (!/monsterattackname/.test(src)) continue;
+    src = scanWindow(src, boss, f, notes);
     for (const a of attackAnnouncements(src)) {
       // An announcement with no controller isn't a bullet attack (a scripted
       // cutscene beat, or a name reset) — skip rather than invent one.
