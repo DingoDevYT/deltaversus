@@ -92,6 +92,74 @@
       }
     }
 
+    /**
+     * GML 2.3 template string: emit `$"a{x}b"` as the tokens for
+     * `("a" + string(x) + "b")`.
+     *
+     * Done in the LEXER rather than as an AST node so every downstream pass —
+     * codegen, the macro expander, the `+` string/number dispatch in $R.add —
+     * sees an ordinary concatenation and needs no new case. Braces are doubled
+     * to escape ({{ and }}), matching GameMaker.
+     *
+     * `string()` is what GML uses to stringify, and it is already implemented,
+     * so numeric and struct interpolands format the same way they do in game.
+     */
+    pushInterpolated(raw, quote) {
+      const parts = [];
+      let lit = '';
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw[i];
+        if ((ch === '{' && raw[i + 1] === '{') || (ch === '}' && raw[i + 1] === '}')) {
+          lit += ch; i++; continue;
+        }
+        if (ch === '{') {
+          let depth = 1, j = i + 1, expr = '';
+          for (; j < raw.length; j++) {
+            const c2 = raw[j];
+            if (c2 === '{') depth++;
+            else if (c2 === '}') { depth--; if (depth === 0) break; }
+            expr += c2;
+          }
+          parts.push({ lit });
+          parts.push({ expr });
+          lit = '';
+          i = j;
+          continue;
+        }
+        lit += ch;
+      }
+      parts.push({ lit });
+
+      // No interpolation actually present: a plain string, so stay a plain string.
+      if (!parts.some(p => p.expr !== undefined)) {
+        this.push('string', Lexer.unescape(parts.map(p => p.lit || '').join('')));
+        return;
+      }
+
+      this.push('punct', '(');
+      let emitted = 0;
+      for (const p of parts) {
+        if (p.expr !== undefined) {
+          const inner = p.expr.trim();
+          if (!inner) continue;
+          if (emitted++) this.push('punct', '+');
+          this.push('ident', 'string');
+          this.push('punct', '(');
+          // Nested lex: the interpoland is ordinary GML.
+          const sub = new Lexer(inner).tokenize().filter(t => t.type !== 'eof');
+          for (const t of sub) this.tokens.push({ ...t, line: this.line, col: this.col });
+          this.push('punct', ')');
+          continue;
+        }
+        if (!p.lit) continue;
+        if (emitted++) this.push('punct', '+');
+        this.push('string', Lexer.unescape(p.lit));
+      }
+      // `$""` or `$"{}"` — nothing to concatenate, so the value is "".
+      if (!emitted) this.push('string', '');
+      this.push('punct', ')');
+    }
+
     tokenize() {
       const src = this.src;
       while (this.pos < src.length) {
@@ -151,6 +219,22 @@
           if (m) {
             this.push('number', parseInt(m[1], 16));
             this.advance(m[0].length);
+            continue;
+          }
+          // GML 2.3 string interpolation: $"text {expr} more".
+          // This used to throw, and a throw in the LEXER kills the entire event.
+          // Rewritten as string_concat of its pieces so the braces evaluate:
+          // "a{x}b" -> ("a" + string(x) + "b"). Doubled braces are literal.
+          if (src[this.pos + 1] === '"' || src[this.pos + 1] === "'") {
+            const quote = src[this.pos + 1];
+            let j = this.pos + 2;
+            let raw = '';
+            while (j < src.length && src[j] !== quote) {
+              if (src[j] === '\\' && j + 1 < src.length) { raw += src[j] + src[j + 1]; j += 2; continue; }
+              raw += src[j++];
+            }
+            this.advance((j < src.length ? j + 1 : j) - this.pos);
+            this.pushInterpolated(raw, quote);
             continue;
           }
           this.error('unexpected $');
@@ -243,6 +327,24 @@
 
       // Unknown directive — skip the line rather than fail the whole event.
       while (this.pos < src.length && src[this.pos] !== '\n') this.advance(1);
+    }
+
+    /** The escape rules of lexString, for text already sliced out of the source. */
+    static unescape(text) {
+      let out = '';
+      for (let p = 0; p < text.length; p++) {
+        if (text[p] !== '\\') { out += text[p]; continue; }
+        const e = text[p + 1];
+        if (e === 'n') out += '\n';
+        else if (e === 't') out += '\t';
+        else if (e === 'r') out += '\r';
+        else if (e === '\\') out += '\\';
+        else if (e === '"') out += '"';
+        else if (e === "'") out += "'";
+        else out += e === undefined ? '' : e;
+        p++;
+      }
+      return out;
     }
 
     lexString(quote) {
@@ -626,9 +728,23 @@
       let name = null;
       if (this.cur.type === 'ident') name = this.next().value;
       const params = this.parseParams();
+      // GML 2.3 constructor INHERITANCE: `function Child(a) : Parent(a) constructor {}`
+      // The parser went straight from the parameter list to parseBlock, whose
+      // expectPunct('{') threw "expected '{'" on the colon — and a throw here
+      // kills the WHOLE event, not just the declaration.
+      const parent = this.parseCtorParent();
       const isCtor = this.eatKeyword('constructor');
       const body = this.parseBlock();
-      return { type: 'FunctionDecl', name, params, body, isConstructor: isCtor };
+      return { type: 'FunctionDecl', name, params, body, isConstructor: isCtor, parent };
+    }
+
+    /** `: Parent(args)` after a function's parameter list, or null. */
+    parseCtorParent() {
+      if (!this.isPunct(':')) return null;
+      this.i++;
+      const pname = this.cur.type === 'ident' ? this.next().value : null;
+      const args = this.isPunct('(') ? this.parseArgs() : [];
+      return pname ? { name: pname, args } : null;
     }
 
     parseParams() {
@@ -846,9 +962,10 @@
           let name = null;
           if (this.cur.type === 'ident') name = this.next().value;
           const params = this.parseParams();
+          const parent = this.parseCtorParent();
           const isCtor = this.eatKeyword('constructor');
           const body = this.parseBlock();
-          return { type: 'FunctionExpr', name, params, body, isConstructor: isCtor };
+          return { type: 'FunctionExpr', name, params, body, isConstructor: isCtor, parent };
         }
       }
 

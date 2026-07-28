@@ -916,12 +916,39 @@ ${p}}`;
         params.push(nm);
         if (prm.default) defaults.push(`if (${nm} === undefined) ${nm} = ${this.genExpr(prm.default)};`);
       }
+      // A CONSTRUCTOR is not a method, and both halves of that matter.
+      //
+      // It was emitted as an arrow like everything else, which fails twice:
+      // arrows are not constructible, so `new Vec(3, 4)` throws outright and
+      // takes the whole event with it (the error is caught per-event and the
+      // event silently does nothing); and an arrow keeps the ENCLOSING self, so
+      // the body's `xx = a` assigned to the calling instance instead of the new
+      // struct — `$s0.xx = a` where GameMaker means the struct being built.
+      //
+      // So: a real function expression, whose `this` is the new object under
+      // `new`, with `self` rebound to `this` for the body. Everything else —
+      // methods, plain callbacks — keeps the arrow, which is exactly right for
+      // GML 2.3 methods because they DO see the enclosing self.
+      const isCtor = !!node.isConstructor;
+      if (isCtor) {
+        this.selfStack.push({ self: 'this', other: this.selfStack[this.selfStack.length - 1].other });
+      }
       this.indent++;
       const hoist = this.hoistDecl(node.body.body);
       const body = this.genStatements(node.body.body);
       this.indent--;
+      if (isCtor) this.selfStack.pop();
       this.popScope();
       const dp = (defaults.length ? '  '.repeat(this.indent + 1) + defaults.join(' ') + '\n' : '') + hoist;
+      if (isCtor) {
+        // `function Child(a) : Parent(a) constructor {}` — run the parent's body
+        // against the same `this` first, which is what GameMaker's inheritance
+        // does: one struct, parent fields initialised before the child's.
+        const inherit = node.parent
+          ? `${this.pad()}  ${this.resolveIdent(node.parent.name)}.call(this${node.parent.args.length ? ', ' + node.parent.args.map(a => this.genExpr(a)).join(', ') : ''});\n`
+          : '';
+        return `(function (${params.join(', ')}) {\n${dp}${inherit}${body}\n${this.pad()}})`;
+      }
       // An arrow keeps the enclosing self binding, which is what GML 2.3 methods do.
       return `((${params.join(', ')}) => {\n${dp}${body}\n${this.pad()}})`;
     }
