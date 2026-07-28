@@ -1675,7 +1675,20 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       const diff = Number((document.getElementById('diffSelect') || { value: 1 }).value);
       const hell = !!(document.getElementById('hellChk') || {}).checked;
       if (bossInst) {
-        bossInst.difficulty = diff;
+        // An attack that pins a literal difficulty IS that difficulty — the same
+        // rule the controller path applies below, and it has to hold here too
+        // because the BOX BLOCK and the dispatcher branch read the BOSS's copy.
+        // The Queen picks Plug's variant on it directly
+        // (`if (difficulty == 0) dc.type = 110; if (difficulty == 1) dc.type = 111;`
+        // obj_queen_enemy_Step_0.gml:957-961), and rr 9's box block then does
+        // `if (difficulty == 1) { maxxscale = 1.5; maxyscale = 2 }` (:752-756).
+        // With the UI value winning, queen_type111 — the HARD Plug — drew the
+        // easy 150x150 box instead of its 112x150 one. 24 roster entries pin a
+        // non-zero difficulty and every one of them was being overridden.
+        bossInst.difficulty = (pendingAttack
+          && pendingAttack.difficultyLiteral !== null
+          && pendingAttack.difficultyLiteral !== undefined)
+          ? pendingAttack.difficultyLiteral : diff;
         bossInst.mytarget = 0;
         // Always a number: the sneo dispatcher READS hellmode (`dc.special =
         // hellmode`), and an unset read would materialise a truthy auto-array.

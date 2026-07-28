@@ -1,0 +1,259 @@
+{
+  "_what": "Hand-corrected specs, merged LAST by build_attack_specs.js so they win the by-id merge. attack_specs.js is generated and must never be hand-edited; a correction found by triaging a failure belongs here, held to the same evidence bar as an authored assertion — a file:line that states the fact.",
+  "_careful": "The merge replaces a spec WHOLESALE by id, so every entry here must carry the attack's COMPLETE assertion list, not just the corrected one. Regenerate with scripts/make_spec_overrides.js rather than editing by hand.",
+  "_when": "ONLY when the assertion is wrong about the GAME. An assertion that fails because the ENGINE is wrong must stay, and the engine must be fixed instead.",
+  "specs": [
+    {
+      "id": "queen_type110",
+      "name": "Plug",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 300,
+          "tol": 2,
+          "why": "rr case 9 ends in scr_turntimer(300)",
+          "src": "gml_Object_obj_queen_enemy_Step_0.gml:963"
+        },
+        {
+          "kind": "box",
+          "w": 150,
+          "h": 150,
+          "tol": 3,
+          "why": "rr 9 creates the box with the default maxxscale/maxyscale 2 on the 75x75 sprite; only difficulty 1 rescales it, and type 110 IS the difficulty-0 variant",
+          "src": "gml_Object_obj_queen_enemy_Step_0.gml:750"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_electric",
+          "byFrame": 3,
+          "why": "made starts at 0 so the electrified box is created on the controller's first step",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:938"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 60,
+          "min": 1,
+          "max": 1,
+          "why": "made = 1 latches the branch, so exactly one electric box exists for the turn",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:945"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 5,
+          "name": "type",
+          "eq": 0,
+          "why": "type 110 leaves the electric box at type 0 â only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:942"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 5,
+          "name": "maxamplitude",
+          "eq": 60,
+          "why": "the box's horizontal sway tops out at 60px",
+          "src": "gml_Object_obj_growtangle_electric_Create_0.gml:23"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_electric_pushin",
+          "byFrame": 3,
+          "why": "the electric box's Create immediately spawns the pusher that shoves the soul back inside",
+          "src": "gml_Object_obj_growtangle_electric_Create_0.gml:18"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 30,
+          "min": 0,
+          "max": 0,
+          "why": "con only flips to 1 after 25 frames and the first shot needs 8 more, so nothing fires before frame 32",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:49"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_spark",
+          "byFrame": 42,
+          "why": "shotthreshold is 8 at type 0, so the first spark leaves the box wall around frame 32",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 60,
+          "min": 3,
+          "max": 5,
+          "why": "a spark every 8 frames from frame 32 gives four by frame 60 â type 111's 15-frame threshold gives only two",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 60,
+          "name": "gravity",
+          "eq": 0.3,
+          "why": "every spark is launched with gravity 0.3 so it arcs rather than flying straight",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:114"
+        },
+        {
+          "kind": "sprite",
+          "name": "spr_growtangle_elecbullet",
+          "byFrame": 45,
+          "why": "the spark's sprite is reassigned to spr_growtangle_elecbullet as it is fired",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:126"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_growtangle_electric_plug",
+          "atFrame": 60,
+          "xscale": 2,
+          "yscale": 2,
+          "alpha": 1,
+          "minCalls": 2,
+          "maxCalls": 2,
+          "why": "type != 1 draws BOTH plugs at 2x, one on each side of the box, at full plugalpha once timer passes 15; type 111 draws only one",
+          "src": "gml_Object_obj_growtangle_electric_Draw_0.gml:14"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 60,
+          "name": "image_angle",
+          "eq": 0,
+          "tol": 3,
+          "why": "at type 0 nothing rotates obj_growtangle â the += 1.9565 sits inside the type == 1 guard â so the electric box copies back a settled image_angle of 0",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
+        }
+      ],
+      "note": "Box POSITION is not assertable on this attack. The controller branch creates obj_growtangle_electric on top of the box (obj_queen_bulletcontroller_Step_0.gml:934-947), and that object drives the box around BY DESIGN: obj_growtangle_electric_Step_0.gml:33-34 sets obj_growtangle.x = xstart + random_range((-35 + timer) / 2, (35 - timer) / 2) — a decaying RANDOM shake — and :140/:145 then slide it to xstart + moveamount. So x/y have no single right answer once the attack runs; 320,200 is true only at the instant of creation. The SIZE is fully determined and is kept."
+    },
+    {
+      "id": "queen_type111",
+      "name": "Plug (hard)",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 300,
+          "tol": 2,
+          "why": "rr case 9 ends in scr_turntimer(300) at either difficulty",
+          "src": "gml_Object_obj_queen_enemy_Step_0.gml:963"
+        },
+        {
+          "kind": "box",
+          "w": 112,
+          "h": 150,
+          "tol": 3,
+          "why": "rr 9 at difficulty 1 rescales obj_growtangle to maxxscale 1.5 / maxyscale 2; the custom-box quantiser snaps 1.5 to 56/37.5, so the 75x75 sprite measures 112 wide by 150 tall",
+          "src": "gml_Object_obj_queen_enemy_Step_0.gml:754"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_electric",
+          "byFrame": 3,
+          "why": "made starts at 0 so the electrified box is created on the controller's first step",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:938"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 60,
+          "min": 1,
+          "max": 1,
+          "why": "made = 1 latches the branch, so exactly one electric box exists for the turn",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:945"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 5,
+          "name": "type",
+          "eq": 1,
+          "why": "type 111 is the only branch that sets the electric box to type 1 â the flag that spins the box and slows the spark rate",
+          "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:943"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 5,
+          "name": "maxamplitude",
+          "eq": 60,
+          "why": "the box's horizontal sway tops out at 60px",
+          "src": "gml_Object_obj_growtangle_electric_Create_0.gml:23"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_electric_pushin",
+          "byFrame": 3,
+          "why": "the electric box's Create immediately spawns the pusher that shoves the soul back inside",
+          "src": "gml_Object_obj_growtangle_electric_Create_0.gml:18"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 35,
+          "min": 0,
+          "max": 0,
+          "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 â type 110 already has one at 32",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_growtangle_spark",
+          "byFrame": 50,
+          "why": "con flips to 1 at 25 frames and the 15-frame shot gate then fires around frame 39",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:76"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 60,
+          "min": 1,
+          "max": 3,
+          "why": "a spark every 15 frames from frame 39 gives only two by frame 60, where type 110's 8-frame gate gives four",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_spark",
+          "atFrame": 60,
+          "name": "gravity",
+          "eq": 0.3,
+          "why": "every spark is launched with gravity 0.3 so it arcs rather than flying straight",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:114"
+        },
+        {
+          "kind": "sprite",
+          "name": "spr_growtangle_elecbullet",
+          "byFrame": 55,
+          "why": "the spark's sprite is reassigned to spr_growtangle_elecbullet as it is fired",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:126"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_growtangle_electric_plug",
+          "atFrame": 60,
+          "xscale": 2,
+          "yscale": 2,
+          "alpha": 1,
+          "minCalls": 1,
+          "maxCalls": 1,
+          "why": "the `if (type != 1)` guard suppresses the left plug, so type 111 draws exactly ONE plug at 2x instead of type 110's two",
+          "src": "gml_Object_obj_growtangle_electric_Draw_0.gml:14"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_growtangle_electric",
+          "atFrame": 60,
+          "name": "image_angle",
+          "min": 40,
+          "max": 100,
+          "why": "type 1 rotates obj_growtangle by 1.9565 degrees every con-1 frame from frame 25 on and the electric box copies that angle back, so ~36 frames of spin puts it near 70 degrees",
+          "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
+        }
+      ],
+      "note": "Same as queen_type110: obj_growtangle_electric shakes and then slides the box (Step_0:33-34, :140, :145), so only the SIZE is assertable. The width is the half that matters anyway — it is what proves the difficulty-1 branch ran."
+    }
+  ]
+}

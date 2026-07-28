@@ -7,7 +7,7 @@
  * file and line it came from, so a failure can be argued with rather than
  * guessed at. Nothing here is a judgement about how an attack should feel.
  *
- * 142 attacks, 1846 assertions.
+ * 276 attacks, 3577 assertions.
  */
 window.ATTACK_SPECS = [
  {
@@ -17166,6 +17166,16255 @@ window.ATTACK_SPECS = [
     "max": 1,
     "why": "the fallback dispatcher branch spawns exactly one obj_sneo_bulletcontroller",
     "src": "gml_Object_obj_spamton_neo_enemy_Step_0.gml:892"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type300",
+  "name": "OmegaKnife",
+  "note": "Paired arm only: 'else if (fight_type == seth)' sets turntimer 245, and the solo-only 'global.turntimer = 480' inside the type==300 branch is skipped. myattackchoice==3 also enlarges the box to maxscale 3.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 245,
+    "why": "seth arm sets scr_turntimer(245) for OmegaKnife",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:511"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 225,
+    "h": 225,
+    "tol": 3,
+    "why": "growtangle spawns at view+320,+170 and myattackchoice==3 sets maxxscale/maxyscale = 3 on a 75x75 box sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:375"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_omega_knife",
+    "byFrame": 5,
+    "why": "knives only spawn at btimer == 109 and btimer starts at 99, so 10 steps must pass",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3332"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_knife",
+    "byFrame": 15,
+    "min": 36,
+    "max": 36,
+    "why": "a 6x6 nested loop creates exactly 36 obj_omega_knife",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3342"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_knife",
+    "atFrame": 60,
+    "min": 36,
+    "max": 36,
+    "why": "knives wrap around the box (x/y +-600) instead of being destroyed",
+    "src": "gml_Object_obj_omega_knife_Step_0.gml:28"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_knife",
+    "atFrame": 200,
+    "min": 36,
+    "max": 36,
+    "why": "the wrap keeps all 36 alive for the whole turn",
+    "src": "gml_Object_obj_omega_knife_Step_0.gml:35"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_knife",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 1.65,
+    "why": "spawner pins image_xscale = 1.65",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3349"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_knife",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "eq": 1.65,
+    "why": "spawner pins image_yscale = 1.65",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3350"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_knife",
+    "atFrame": 30,
+    "name": "spinspeed",
+    "eq": -3,
+    "why": "spinspeed = -3 and the lerp-to-zero is gated behind fight_type == solo",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3352"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_knife",
+    "atFrame": 60,
+    "name": "speed",
+    "eq": 4,
+    "tol": 0.01,
+    "why": "spawner pins speed = 4 and can_done is false whenever fight_type != solo, so speed never lerps down",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3354"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_knife",
+    "atFrame": 30,
+    "name": "grazepoints",
+    "eq": 2,
+    "why": "scr_bullet_inherit_from(id, 820, -1, 2) sets grazepoints = 2",
+    "src": "gml_Object_obj_omega_knife_Create_0.gml:12"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_stolen_knife",
+    "byFrame": 20,
+    "why": "each knife's sprite_index is set to spr_stolen_knife",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3347"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_stolen_knife",
+    "atFrame": 60,
+    "xscale": 1.65,
+    "yscale": 1.65,
+    "minCalls": 20,
+    "why": "36 knives all draw spr_stolen_knife at 1.65x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3349"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type311",
+  "name": "Everything",
+  "note": "Seth-arm exclusive (myattackchoice 4 exists only in the paired branch). obj_attack_knife_everything is a two-phase composite: fan + leafling for 160 frames, then those are torn down and two knifechain managers take over.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 244,
+    "why": "seth arm sets scr_turntimer(244) for Everything",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:519"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:369"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "obj_attack_knife_everything Create makes exactly one fan manager",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "name": "knife_number",
+    "eq": 2,
+    "why": "Everything overrides the fan manager's Create default of 4 down to 2",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "name": "cooldown",
+    "eq": 53,
+    "why": "fan manager Create cooldown 41 plus Everything's cooldown += 12",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:4"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "obj_attack_knife_everything Create makes exactly one leafling",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "name": "knife_number",
+    "eq": 6,
+    "why": "Everything overrides the leafling's Create default of 12 down to 6",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "name": "cooldown",
+    "eq": 38,
+    "why": "leafling Create cooldown 26 plus Everything's cooldown += 12",
+    "src": "gml_Object_obj_attack_knife_everything_Create_0.gml:10"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_aquabullet",
+    "byFrame": 22,
+    "min": 6,
+    "max": 6,
+    "why": "leafling alarm[0]=10 fires one ring and the ring emits one petal per frame while num > 0, num starting at knife_number 6",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:44"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_attack_knifechain_manager2",
+    "byFrame": 150,
+    "why": "the chain phase only starts when the everything timer reaches 160",
+    "src": "gml_Object_obj_attack_knife_everything_Step_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_knifechain_manager2",
+    "byFrame": 170,
+    "min": 2,
+    "max": 2,
+    "why": "timer == 160 creates two knifechain managers, at knife_direction 145 and 215",
+    "src": "gml_Object_obj_attack_knife_everything_Step_0.gml:10"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 170,
+    "max": 0,
+    "why": "instance_destroy(obj_attack_knifefan_manager) runs at timer == 160",
+    "src": "gml_Object_obj_attack_knife_everything_Step_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 170,
+    "name": "knife_number",
+    "eq": 6,
+    "why": "knife_setup arg6 = 6 overrides the manager's Create default of 8",
+    "src": "gml_Object_obj_attack_knife_everything_Step_0.gml:11"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type312",
+  "name": "Duck",
+  "note": "Seth-arm exclusive. The type==312 branch has no 'made' guard: it fires once at btimer == 119 and spawns a single duck. There is no other bullet logic in the chain.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 180,
+    "why": "seth arm sets scr_turntimer(180) for Duck",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:527"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:369"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_thrash_duck_bullet",
+    "byFrame": 14,
+    "why": "the duck spawns at btimer == 119 and btimer starts at 99, so 20 steps must pass",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3543"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_thrash_duck_bullet",
+    "byFrame": 26,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one duck is created, at scr_get_box(0)+75 / scr_get_box(5)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3545"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "destroyonhit is false and the duck is still crossing the box at frame 100",
+    "src": "gml_Object_obj_thrash_duck_bullet_Create_0.gml:3"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 60,
+    "y": 170,
+    "tol": 3,
+    "why": "spawn y is scr_get_box(5) = growtangle.y = 170 and gravity stays 0 until x passes the left box edge (x < 245)",
+    "src": "gml_Object_obj_thrash_duck_bullet_Step_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 40,
+    "name": "speed",
+    "eq": 2,
+    "why": "the spawner pins speed = 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3548"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 40,
+    "name": "direction",
+    "eq": 180,
+    "why": "the spawner pins direction = 180, so the duck travels leftwards",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3549"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 40,
+    "name": "damage",
+    "eq": 1,
+    "why": "the spawner pins damage = 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3546"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 40,
+    "name": "grazepoints",
+    "eq": 1,
+    "why": "the spawner pins grazepoints = 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3551"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_thrash_duck_bullet",
+    "atFrame": 60,
+    "name": "spin",
+    "eq": 0,
+    "why": "Create sets spin = 0 and it only becomes 7 once the duck clears the left box edge",
+    "src": "gml_Object_obj_thrash_duck_bullet_Create_0.gml:2"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_thrash_duckshot",
+    "byFrame": 30,
+    "why": "the spawner sets sprite_index = spr_thrash_duckshot",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3550"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type308",
+  "name": "KnifeChain",
+  "note": "Seth pairing changes the knife_setup call: 6 knives spaced 60 apart per chain instead of the solo 8 spaced 50, and the turn is 240 (260 only on turns == 4). Manager x/y are not asserted because both managers lerp to the anchor and then jitter by ax/ay each swing; the anchors themselves are fixed.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "seth arm sets scr_turntimer(240) for KnifeChain on every turn except turns == 4",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:487"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:369"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_knifechain_manager2",
+    "byFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "the branch creates two chain managers, one at knife_direction 145 and one at 215",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3470"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "both managers persist for the whole turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3478"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 5,
+    "name": "knife_number",
+    "eq": 6,
+    "why": "the seth path passes arg6 = 6, overriding the manager Create default of 8",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3474"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 5,
+    "name": "knife_distance",
+    "eq": 60,
+    "why": "the seth path passes arg5 = 60 (solo passes 50), the spacing between links",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3474"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 5,
+    "name": "knife_offset",
+    "eq": 45,
+    "why": "knife_setup arg4 = 45 sets the first link's distance from the hub",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3474"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 5,
+    "name": "knife_arc",
+    "eq": 0.35,
+    "why": "knife_setup arg7 = 0.35 sets the chain's arc",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3474"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 30,
+    "name": "anchor_x",
+    "eq": 510,
+    "why": "anchor_x = scr_get_box(4) + 190 = 320 + 190",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Create_0.gml:27"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifechain_manager2",
+    "atFrame": 30,
+    "name": "anchor_y",
+    "eq": 100,
+    "why": "anchor_y = scr_get_box(5) - 70 = 170 - 70",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Create_0.gml:28"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_knife",
+    "byFrame": 5,
+    "min": 12,
+    "max": 12,
+    "why": "each knife_setup loops arg6 = 6 times and there are two managers",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Create_0.gml:44"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_bullet_knife",
+    "atFrame": 60,
+    "min": 12,
+    "max": 12,
+    "why": "chained knives set destroyonhit = false and orbit for the whole turn",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Create_0.gml:71"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_attack_knifechain",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 6,
+    "why": "each chained knife is spr_attack_knifechain at scr_darksize scale 2; frame 40 sits between the first swing's revert (~26) and the second swing (~52)",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Create_0.gml:69"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_aqua_chainswing_front",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 2,
+    "why": "while im_done is false each manager draws the front swing arm at scr_darksize scale 2",
+    "src": "gml_Object_obj_attack_knifechain_manager2_Draw_0.gml:9"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type313",
+  "name": "SupportFire",
+  "note": "Dispatched from obj_purple_enemy (Seth) under fight_type == \"aqua\", not from obj_aqua_enemy. No turntimer assertion: Seth's SupportFire branch calls no scr_turntimer at all, it rides the 90 set during mnfight 1.5 and whatever Aqua's simultaneous attack raises it to. No pos assertion either: the reticle drifts by x += sin(global.time * 0.2) / y += cos(global.time * 0.15) with a global-phase clock, so its live offset from the anchor is unbounded in a way the source does not pin. anchor_x is not asserted either: scr_get_box(0) depends on the growtangle's live sprite_width, which is still growing when the reticle is created.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_purple_enemy_Step_0.gml:1206"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_purple_aim_attack",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 313 branch creates exactly one reticle behind a made guard",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3561"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "explode() only resets state and rearms alarm[0], it never destroys the reticle",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:31"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 5,
+    "name": "anchor_y",
+    "eq": 170,
+    "why": "spawned at scr_get_box(5) = growtangle.y = 170 and Create latches anchor_y = y",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Create pins image_xscale = 2",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 5,
+    "name": "image_yscale",
+    "eq": 2,
+    "why": "Create pins image_yscale = 2",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 10,
+    "name": "state",
+    "eq": "idle",
+    "why": "state starts idle and alarm[0] = 30 is the first thing that changes it",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_purple_aim_attack",
+    "atFrame": 40,
+    "name": "state",
+    "eq": "attack",
+    "why": "alarm[0] at frame 30 sets moving and arms alarm[1] = 5, which sets attack at frame 35",
+    "src": "gml_Object_obj_purple_aim_attack_Alarm_1.gml:1"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_seth_aim",
+    "atFrame": 10,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 0.75,
+    "why": "the idle draw is draw_sprite_ext(sprite_index, 0, x, y, image_xscale, image_yscale, image_angle, image_blend, 0.75)",
+    "src": "gml_Object_obj_purple_aim_attack_Draw_0.gml:2"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_explosive_shockwave",
+    "byFrame": 80,
+    "why": "explode() fires 28 frames after the attack state begins (frame ~63) and spawns a shockwave bullet",
+    "src": "gml_Object_obj_purple_aim_attack_Create_0.gml:35"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type309",
+  "name": "FanOfKnives",
+  "note": "obj_netskie_enemy does not exist in this fight, so the else-if branch runs and fight_type == \"seth\" bumps knife_number to 3. Volley timing: timer starts at 30 and fires at timer >= cooldown, so volley 1 lands ~frame 11, volley 2 ~frame 49 after cooldown approaches 38.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "seth arm sets scr_turntimer(240) for FanOfKnives",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:495"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:369"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_knifefan_manager",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "with no netskie present exactly one fan manager is created",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3509"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "name": "knife_number",
+    "eq": 3,
+    "why": "fight_type == seth overrides the manager Create default of 4 to 3",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3513"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "name": "cooldown",
+    "eq": 41,
+    "why": "Create sets cooldown = 41 and nothing in this branch changes it before the first volley",
+    "src": "gml_Object_obj_attack_knifefan_manager_Create_0.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the manager calls scr_darksize() on itself in Create",
+    "src": "gml_Object_obj_attack_knifefan_manager_Create_0.gml:10"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_bullet_knife",
+    "byFrame": 8,
+    "why": "timer starts at 30 and the first volley needs timer >= cooldown 41, i.e. 11 steps",
+    "src": "gml_Object_obj_attack_knifefan_manager_Create_0.gml:14"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_knife",
+    "byFrame": 16,
+    "min": 3,
+    "max": 3,
+    "why": "the volley loop runs knife_number = 3 times",
+    "src": "gml_Object_obj_attack_knifefan_manager_Step_0.gml:27"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_bullet_knife",
+    "atFrame": 30,
+    "min": 3,
+    "max": 3,
+    "why": "volley 1's three knives are still lerping into place (alarm[0] = 20 fires at frame 31) and volley 2 has not fired",
+    "src": "gml_Object_obj_attack_knifefan_manager_Create_0.gml:67"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knifefan_manager",
+    "atFrame": 20,
+    "name": "cooldown",
+    "eq": 38,
+    "why": "after the first volley cooldown = scr_approach(41, 32, 3) = 38",
+    "src": "gml_Object_obj_attack_knifefan_manager_Step_0.gml:12"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_knife",
+    "byFrame": 56,
+    "min": 6,
+    "max": 6,
+    "why": "volley 2 fires 38 frames after volley 1 and adds three more knives",
+    "src": "gml_Object_obj_attack_knifefan_manager_Step_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_attack_knifechain_spin",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 3,
+    "why": "fan_knife spawns each knife with spr_attack_knifechain_spin and scr_darksize scale 2",
+    "src": "gml_Object_obj_attack_knifefan_manager_Create_0.gml:60"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_attack_knifechain",
+    "atFrame": 45,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 3,
+    "why": "alarm[0] = attack_speed 20 swaps each knife to spr_attack_knifechain when it launches",
+    "src": "gml_Object_obj_bullet_knife_Alarm_0.gml:2"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type306",
+  "name": "OmegaBook",
+  "note": "Seth's myattackchoice == 1. The controller only applies the EX multipliers when variable_instance_exists(id, \"omega_ex_mode\"), and obj_dbulletcontroller's Create never declares that variable, so this run keeps the base constants. Box w/h are not asserted because obj_omega_book_manager rotates obj_growtangle.image_angle every step; only the centre is fixed.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "Seth's OmegaBook branch sets scr_turntimer(300)",
+    "src": "gml_Object_obj_purple_enemy_Step_0.gml:1236"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "tol": 2,
+    "why": "growtangle is created at view+320 / view+170 and the manager only rotates it",
+    "src": "gml_Object_obj_purple_enemy_Step_0.gml:1206"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_book_manager",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 306 branch creates one manager at the growtangle centre behind a made guard",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3441"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_book",
+    "byFrame": 3,
+    "min": 12,
+    "max": 12,
+    "why": "the manager's Create has twelve instance_create blocks, six at xoff -112 and six at xoff 113",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_book",
+    "atFrame": 120,
+    "min": 12,
+    "max": 12,
+    "why": "books wrap their yoff at +-255 instead of being destroyed",
+    "src": "gml_Object_obj_omega_book_manager_Step_0.gml:82"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "angle_speed_goal",
+    "eq": 1,
+    "why": "angle_speed_goal = choose(1, 1) = 1 with no EX x4 applied",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "angle_speed_change",
+    "eq": 0.005,
+    "why": "angle_speed_change = 0.005 with no EX x2 applied",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 20,
+    "name": "angle_speed",
+    "eq": 0.1,
+    "tol": 0.02,
+    "why": "angle_speed approaches the goal by angle_speed_change per step, so 20 x 0.005 = 0.1",
+    "src": "gml_Object_obj_omega_book_manager_Step_0.gml:58"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 20,
+    "name": "scroll_speed",
+    "eq": -2,
+    "why": "scroll_speed starts at -2 and its goal is -2, so it never moves",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the manager's containment mask is scaled to 2 in Create",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book",
+    "atFrame": 5,
+    "name": "xoff",
+    "eq": -112,
+    "why": "the first book created is the left column at xoff = -112, and xoff never changes",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:20"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_omega_book",
+    "atFrame": 40,
+    "xscale": -1,
+    "minCalls": 6,
+    "why": "the six right-hand books are horizontally mirrored with image_xscale = -1",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:58"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_omega_book_word",
+    "byFrame": 15,
+    "why": "the earliest word alarm is alarm[0] = 20",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:12"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_book_word",
+    "atFrame": 60,
+    "min": 4,
+    "max": 4,
+    "why": "alarms 0/3/1/4 fire at 20/30/40/50 and every word alarm refuses to spawn past four live words",
+    "src": "gml_Object_obj_omega_book_manager_Alarm_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type310",
+  "name": "KnifePetal",
+  "note": "Ring centres are RNG (random(25)+65 at a random bearing from the box centre) so no position is asserted; the petal COUNT per ring is pinned by knife_number, which the seth pairing halves from 12 to 6.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "seth arm sets scr_turntimer(240) for KnifePetal",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:503"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "growtangle at view+320,+170 with default maxxscale/maxyscale 2 on a 75x75 sprite",
+    "src": "gml_Object_obj_aqua_enemy_Step_0.gml:369"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_knife_leafling",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 310 branch creates one leafling behind a made guard",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3523"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "name": "knife_number",
+    "eq": 6,
+    "why": "fight_type == seth overrides the leafling Create default of 12 to 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3527"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "name": "cooldown",
+    "eq": 26,
+    "why": "Create sets cooldown = 26 before the first ring fires",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the leafling calls scr_darksize() on itself in Create",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:5"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_aquabullet",
+    "byFrame": 9,
+    "why": "the first ring only fires on alarm[0] = 10",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:7"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_aquabullet",
+    "byFrame": 22,
+    "min": 6,
+    "max": 6,
+    "why": "the ring's funct emits one petal per frame while num > 0, num starting at knife_number = 6",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:44"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_aquabullet",
+    "atFrame": 20,
+    "min": 6,
+    "max": 6,
+    "why": "all six petals of ring 1 exist and none can be destroyed before they are activated",
+    "src": "gml_Object_obj_attack_knife_leafling_Create_0.gml:80"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_knife_leafling",
+    "atFrame": 20,
+    "name": "cooldown",
+    "eq": 24,
+    "why": "after the first ring cooldown = scr_approach(26, 20, 2) = 24",
+    "src": "gml_Object_obj_attack_knife_leafling_Alarm_0.gml:6"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_aquabullet",
+    "byFrame": 50,
+    "min": 12,
+    "max": 12,
+    "why": "ring 2 fires 26 frames after ring 1 and adds another six petals",
+    "src": "gml_Object_obj_attack_knife_leafling_Alarm_0.gml:5"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_attack_knife_parted",
+    "byFrame": 25,
+    "why": "the leafling's Draw event redraws every flowery bullet as spr_attack_knife_parted",
+    "src": "gml_Object_obj_attack_knife_leafling_Draw_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_attack_knife_parted",
+    "atFrame": 20,
+    "minCalls": 6,
+    "why": "six petals are alive and the Draw event issues a call for each in both of its loops",
+    "src": "gml_Object_obj_attack_knife_leafling_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "aqua_seth_type306_omegabookex",
+  "name": "OmegaBookEx",
+  "note": "Same controller type as OmegaBook; the only difference is dc.omega_ex_mode = true, which makes variable_instance_exists(id, \"omega_ex_mode\") true and multiplies the three cadence constants. Those three ivars plus the 480 turn are what separate this spec from aqua_seth_type306. Box w/h are not asserted because the manager rotates obj_growtangle every step.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 480,
+    "why": "Seth's OmegaBookEx branch sets scr_turntimer(480)",
+    "src": "gml_Object_obj_purple_enemy_Step_0.gml:1245"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "tol": 2,
+    "why": "growtangle is created at view+320 / view+170 and the manager only rotates it",
+    "src": "gml_Object_obj_purple_enemy_Step_0.gml:1206"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_book_manager",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 306 branch creates one manager at the growtangle centre",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3441"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_book",
+    "byFrame": 3,
+    "min": 12,
+    "max": 12,
+    "why": "the manager's Create has twelve instance_create blocks regardless of EX mode",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_book",
+    "atFrame": 120,
+    "min": 12,
+    "max": 12,
+    "why": "books wrap their yoff at +-255 instead of being destroyed",
+    "src": "gml_Object_obj_omega_book_manager_Step_0.gml:82"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "angle_speed_goal",
+    "eq": 4,
+    "why": "EX mode multiplies the base angle_speed_goal of 1 by 4",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3448"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "angle_speed_change",
+    "eq": 0.01,
+    "why": "EX mode multiplies the base angle_speed_change of 0.005 by 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3449"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "scroll_speed_goal",
+    "eq": -4,
+    "why": "EX mode multiplies the base scroll_speed_goal of -2 by 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3450"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 20,
+    "name": "scroll_speed",
+    "eq": -4,
+    "why": "scroll_speed approaches -4 from -2 by scroll_speed_change 1, so it arrives within two steps",
+    "src": "gml_Object_obj_omega_book_manager_Step_0.gml:57"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 20,
+    "name": "angle_speed",
+    "eq": 0.2,
+    "tol": 0.04,
+    "why": "angle_speed climbs by angle_speed_change per step, so 20 x 0.01 = 0.2, double the non-EX rate",
+    "src": "gml_Object_obj_omega_book_manager_Step_0.gml:58"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_book_manager",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the manager's containment mask is scaled to 2 in Create",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:2"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_omega_book",
+    "atFrame": 40,
+    "xscale": -1,
+    "minCalls": 6,
+    "why": "the six right-hand books are horizontally mirrored with image_xscale = -1",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:58"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_omega_book_word",
+    "byFrame": 15,
+    "why": "the earliest word alarm is alarm[0] = 20",
+    "src": "gml_Object_obj_omega_book_manager_Create_0.gml:12"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_book_word",
+    "atFrame": 60,
+    "min": 4,
+    "max": 4,
+    "why": "alarms 0/3/1/4 fire at 20/30/40/50 and every word alarm refuses to spawn past four live words",
+    "src": "gml_Object_obj_omega_book_manager_Alarm_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type8",
+  "name": "Tornado (fight 1, difficulty 0)",
+  "note": "Fight 1 = obj_berdlyb_enemy, rr == 0 (dc.type 8, dc.difficulty 0, scr_turntimer(210)). The type-8 difficulty-0 branch derives every spawn coordinate from obj_growtangle's LIVE size (xx = maxx + 30, yy = miny + 22, yshift = sprite_height/3 - 14), and the studio creates the box and the controller in the same launch, so obj_growtangle is still growing (image_xscale ramps 0 -> 2 over 15 frames) when the controller's init block measures minx/maxx/miny/maxy. No position assertion is made on the tornadoes for that reason; the cadence, counts and per-bullet constants below are all box-independent. The four tornadoes are seeded flipTimer = i - 4, i.e. four CONSECUTIVE phases of an 8-phase flip cycle, so there are draw frames on which all four are mirrored and draw frames on which none is -- no per-frame xscale is asserted here (only the 8-bullet difficulty-1 ring covers all 8 phases at once).",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:170"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 210,
+    "why": "rr == 0 in fight 1 ends with scr_turntimer(210) and the type-8 difficulty-0 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:190"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "min": 4,
+    "max": 4,
+    "why": "the difficulty-0 branch loops i < 4 exactly once, and Create's btimer = 99 means the first wave fires on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:289"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 30,
+    "min": 4,
+    "max": 4,
+    "why": "btimer is reset to 10 or 0 and must climb past 45 again, so the second wave cannot land before frame 37",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:379"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 50,
+    "min": 8,
+    "max": 8,
+    "why": "the second wave lands between frames 37 (btimer 10) and 47 (btimer 0), the third no earlier than 73, and difficulty 0 never despawns a tornado mid-flight",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:268"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "maxSpeed",
+    "eq": 6,
+    "why": "Create sets maxSpeed = 8 and the branch overwrites it with 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 5,
+    "why": "d.grazepoints = 5 over scr_bullet_init's default of 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:295"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 180,
+    "why": "d.direction = 180 (straight left) and spindir stays 0, so the Step_0 orbit branch that rewrites direction never runs",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:296"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "maxdistance",
+    "eq": 400,
+    "why": "only the difficulty-1 branch sets maxdistance = 240; difficulty 0 keeps Create's 400",
+    "src": "gml_Object_obj_berdlyb_tornado_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "middespawn",
+    "eq": 0,
+    "why": "difficulty 0 leaves Create's middespawn = 0, so no tornado vanishes part-way across the box",
+    "src": "gml_Object_obj_berdlyb_tornado_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 1,
+    "name": "timer",
+    "eq": -10,
+    "tol": 1,
+    "why": "startDelay begins at -10, so the first tornado of the wave is stalled 10 frames before it starts moving",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:294"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_berdlyb_tornado",
+    "atFrame": 5,
+    "yscale": 1,
+    "angle": 0,
+    "minCalls": 4,
+    "why": "the object's only draw call is draw_sprite_ext(sprite_index, 0, x, y, xflip, 1, 0, ...) -- yscale 1 and rotation 0 on every call, one call per live tornado and four are alive at frame 5",
+    "src": "gml_Object_obj_berdlyb_tornado_Draw_0.gml:19"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type8_tornado_fight",
+  "name": "Tornado (fight 2, difficulty 1)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, chosenattack == 0 with difficulty 1 (scr_monsterpop() == 1). This is the only berdly row whose controller LOWERS the clock: obj_dbulletcontroller_Step_0.gml:265 assigns global.turntimer = 200 directly, after the boss's scr_turntimer(260). The turntimer assertion is therefore a band, because the checker keeps the PEAK. The ring positions are obj_growtangle.x/y + lengthdir(240, startDir) with startDir = irandom(360), so no position is asserted; the box CENTRE is used, not its size, so the ring geometry is correct even while the box grows. Fight 2 also rotates the box 45 degrees on this row (target_angle += 45), which sprite_width/height do not see, so the box assertion stays 150x150.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2; the 45-degree target_angle does not change sprite_width",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "min": 200,
+    "max": 260,
+    "why": "the boss calls scr_turntimer(260) and the type-8 difficulty-1 init then assigns global.turntimer = 200 directly",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:265"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 1,
+    "min": 8,
+    "max": 8,
+    "why": "the difficulty-1 branch loops i < 8 (spawnDir 45 degrees per step, a full ring), and Create's btimer = 99 fires it on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:328"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 3,
+    "min": 16,
+    "max": 16,
+    "why": "special == 1 on the first ring takes the branch that does NOT reset btimer, so a second ring of 8 fires on the very next step and the third is gated behind btimer 0 -> 45",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:368"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 20,
+    "min": 8,
+    "why": "maxdistance is 240 and both rings start stalled (timer -10/-25) and halve their speed below traveldistance 110, so nothing has despawned this early",
+    "src": "gml_Object_obj_berdlyb_tornado_Step_1.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 3,
+    "name": "maxdistance",
+    "eq": 240,
+    "why": "Create sets maxdistance = 400; the difficulty-1 branch overwrites it with 240, the radius it spawned at",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:338"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 3,
+    "name": "middespawn",
+    "eq": 1,
+    "why": "only difficulty 1 sets middespawn = 1, which is what destroys a tornado once it has crossed 240px",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:361"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 3,
+    "name": "maxSpeed",
+    "eq": 6,
+    "why": "Create sets maxSpeed = 8 and the branch overwrites it with 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:335"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 3,
+    "name": "grazepoints",
+    "eq": 5,
+    "why": "d.grazepoints = 5 over scr_bullet_init's default of 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:336"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 1,
+    "name": "firstwave",
+    "eq": 1,
+    "tol": 1,
+    "why": "special == 1 marks every bullet of the opening ring firstwave, which is what makes it rush inward once and then hold",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:355"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 1,
+    "name": "timer",
+    "eq": -10,
+    "tol": 1,
+    "why": "startDelay begins at -10 for i == 0 before the +/-15 alternation staggers the rest of the ring",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:337"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_berdlyb_tornado",
+    "atFrame": 2,
+    "xscale": -1,
+    "yscale": 1,
+    "angle": 0,
+    "why": "Draw passes xflip = -1 while flipTimer < 0, and a ring of 8 is seeded flipTimer = i - 4, i.e. all 8 phases of the flip cycle, so some tornado is mirrored on every frame -- never rotated, never vertically flipped",
+    "src": "gml_Object_obj_berdlyb_tornado_Draw_0.gml:19"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type8_tornado_fight2",
+  "name": "Tornado (fight 2, difficulty 0)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, chosenattack == 0 with difficulty 0 (the werewires are still alive, so scr_monsterpop() != 1). Same controller branch as fight 1's Tornado, only the boss's turn length differs: fight 2 always calls scr_turntimer(260), and the difficulty-1 override at obj_dbulletcontroller_Step_0.gml:265 does NOT run here. Box-derived spawn coordinates (maxx + 30, miny + 22, sprite_height/3 - 14) are not asserted because the studio launches the box and the controller together, so obj_growtangle is still scaling up when init measures it. Per-frame xscale is not asserted: four tornadoes seeded flipTimer = i - 4 occupy four consecutive phases of an 8-phase cycle, so whole frames exist where all four share one flip state.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2; difficulty 0 skips the 45-degree rotation",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and only the difficulty-1 type-8 init lowers it",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "min": 4,
+    "max": 4,
+    "why": "the difficulty-0 branch loops i < 4 exactly once, and Create's btimer = 99 means the first wave fires on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:289"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 30,
+    "min": 4,
+    "max": 4,
+    "why": "btimer is reset to 10 or 0 and must climb past 45 again, so the second wave cannot land before frame 37",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:379"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 50,
+    "min": 8,
+    "max": 8,
+    "why": "the second wave lands between frames 37 (btimer 10) and 47 (btimer 0), the third no earlier than 73, and difficulty 0 never despawns a tornado mid-flight",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:268"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "maxSpeed",
+    "eq": 6,
+    "why": "Create sets maxSpeed = 8 and the branch overwrites it with 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:293"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 5,
+    "why": "d.grazepoints = 5 over scr_bullet_init's default of 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:295"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 180,
+    "why": "d.direction = 180 (straight left) and spindir stays 0, so the Step_0 orbit branch that rewrites direction never runs",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:296"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "maxdistance",
+    "eq": 400,
+    "why": "only the difficulty-1 branch sets maxdistance = 240; difficulty 0 keeps Create's 400",
+    "src": "gml_Object_obj_berdlyb_tornado_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "middespawn",
+    "eq": 0,
+    "why": "difficulty 0 leaves Create's middespawn = 0, so no tornado vanishes part-way across the box",
+    "src": "gml_Object_obj_berdlyb_tornado_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_tornado",
+    "atFrame": 5,
+    "name": "spindir",
+    "eq": 0,
+    "why": "only difficulty 1 assigns spindir, so the difficulty-0 tornadoes never orbit the box centre",
+    "src": "gml_Object_obj_berdlyb_tornado_Create_0.gml:18"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_berdlyb_tornado",
+    "atFrame": 5,
+    "yscale": 1,
+    "angle": 0,
+    "minCalls": 4,
+    "why": "the object's only draw call is draw_sprite_ext(sprite_index, 0, x, y, xflip, 1, 0, ...) -- yscale 1 and rotation 0 on every call, one call per live tornado and four are alive at frame 5",
+    "src": "gml_Object_obj_berdlyb_tornado_Draw_0.gml:19"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type9",
+  "name": "SpearBlast (fight 1, difficulty 1)",
+  "note": "Fight 1 = obj_berdlyb_enemy, rr == 1 (dc.type 9, dc.difficulty 1, scr_turntimer(200)). Every position here is anchored on the CONTROLLER, which scr_bulletspawner creates at the boss's x,y (the studio stands obj_berdlyb_enemy at 520,180), so the spearblaster and the launchers are box-independent. The launchers' flight paths use random_range(-80*i, 80*i) + obj_growtangle.y per node, so no path point is asserted. NOTE the 200-frame turn: at the difficulty>=1 cadence (gate 50, btimer reset 10 = 41 frames) launchers land on frames 1, 42, 83, 124 and 165, and the SIXTH would land on 206 -- after the turn has already ended -- so this attack only ever shows five.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:170"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 200,
+    "why": "rr == 1 in fight 1 ends with scr_turntimer(200) and the type-9 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:198"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the init block creates exactly one blaster and nothing destroys it during the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "x": 502,
+    "y": 66,
+    "tol": 2,
+    "why": "instance_create(x - 18, y - 114) off the controller, which sits on the boss at 520,180; the blaster's Step only plays sounds",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "Create's btimer = 99 is already past the gate, so the first launcher appears on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 41,
+    "min": 1,
+    "max": 1,
+    "why": "btimer is reset to 10 and difficulty >= 1 needs it above 50, so the second launcher cannot arrive before frame 42",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 45,
+    "min": 2,
+    "max": 2,
+    "why": "the 41-frame gap puts launcher two at frame 42 and launcher three no earlier than 83",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 190,
+    "min": 5,
+    "max": 5,
+    "why": "the 41-frame gate puts launchers on 1, 42, 83, 124 and 165, none of them is ever destroyed, and made < 6 plus the 200-frame turn means the sixth (frame 206) never happens",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "x": 544,
+    "y": 210,
+    "tol": 2,
+    "why": "instance_create(x + 24, y + 30) off the controller at 520,180; the launcher has no speed and only draws its path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:396"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "pathLifetime",
+    "eq": 2,
+    "why": "Create sets pathLifetime = 1 and the branch overwrites it with 2, doubling how long the aiming line lingers before it fires",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:403"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 2,
+    "why": "Create sets grazepoints = 4 and the branch overwrites it with 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:397"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "special",
+    "eq": 1,
+    "why": "d.special = difficulty, and special is what later becomes each second bullet's spawnchild count",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:408"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_bullet",
+    "byFrame": 60,
+    "why": "once progressLoop passes pathLifetime + 1 the launcher fires one bullet every other draw, up to bulletCount 10",
+    "src": "gml_Object_obj_berdlyb_spearblast_Draw_0.gml:15"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_mini",
+    "byFrame": 90,
+    "why": "special 1 gives the launcher's second bullet spawnchild = 1, which sheds a mini every two frames",
+    "src": "gml_Object_obj_berdlyb_spearblast_bullet_Step_0.gml:33"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type10",
+  "name": "Chirashi (fight 2, difficulty 1)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, the else branch (dc.type 10, dc.difficulty = difficulty = 1, scr_turntimer(260)). difficulty 1 is the only value that raises maxmake to 3 and the only one that is NOT flipped by 'if (difficulty < 1) difficulty = -1 - difficulty' between storms, so all three storms are aimed the same way. The storm reads obj_growtangle.x/.y (position only, never its size) for originx/originy, so those are safe to pin; the per-bullet scatter is irandom(35) and is asserted only as a band.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and the type-10 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "x": 566,
+    "y": 220,
+    "tol": 2,
+    "why": "instance_create(x + 46, y + 40) off the controller, which scr_bulletspawner puts on the boss at 520,180; the storm has no movement at all",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:425"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "originx",
+    "eq": 400,
+    "why": "originx = obj_growtangle.x + 80 = 320 + 80, the left edge of the 4-column plate the bullets fly out to",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "originy",
+    "eq": 30,
+    "why": "originy = obj_growtangle.y - 140 = 170 - 140, well above the box",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "d.difficulty = the controller's 1, and 1 is not < 1 so the between-storm flip never fires",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:428"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "btimer resets to 0 and the gate is 50, so storms land at frames 1, 51 and 101",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:423"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 120,
+    "min": 3,
+    "max": 3,
+    "why": "difficulty 1 sets maxmake = 3, so exactly three storms are ever made and none is destroyed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 3,
+    "min": 12,
+    "max": 12,
+    "why": "each storm's init runs iy < 3 by ix < 4 and creates one bullet per cell",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 55,
+    "min": 24,
+    "max": 24,
+    "why": "the second storm lands at frame 51 and adds its own 12; chirashi bullets have no self-destruct and their Step does not inherit the parent's wall check",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:7"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 120,
+    "min": 36,
+    "max": 36,
+    "why": "three storms of 12 is the whole attack at difficulty 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "startx",
+    "eq": 566,
+    "why": "the bullets are created at the storm's own x and lerp from there out to the plate",
+    "src": "gml_Object_obj_berdlyb_chirashibullet_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 4,
+    "why": "scr_bullet_init sets grazepoints = 1 and the storm overwrites it with the controller's 4",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "___myrememberx",
+    "min": 400,
+    "max": 435,
+    "why": "the first cell's destination is originx + 0 + 0 + irandom(35), a band the randomness cannot leave, over Create's scr_rememberxy value of 566",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:8"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type10_chirashi_fight",
+  "name": "Chirashi (fight 2, difficulty 0)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, the else branch with difficulty 0. The type-10 init immediately rerolls difficulty to choose(-1, 0) and then flips it (-1 <-> 0) after every storm, so the two storms aim differently (0 = at the soul, -1 = the box-relative fan) and WHICH comes first is random. The storm's difficulty is therefore asserted only as the -1..0 band, and the aim itself is not asserted at all. maxmake is 2 for both values.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and the type-10 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "x": 566,
+    "y": 220,
+    "tol": 2,
+    "why": "instance_create(x + 46, y + 40) off the controller, which scr_bulletspawner puts on the boss at 520,180; the storm has no movement at all",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:425"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "originx",
+    "eq": 400,
+    "why": "originx = obj_growtangle.x + 80 = 320 + 80, the left edge of the 4-column plate the bullets fly out to",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "originy",
+    "eq": 30,
+    "why": "originy = obj_growtangle.y - 140 = 170 - 140, well above the box",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "difficulty",
+    "min": -1,
+    "max": 0,
+    "why": "init rerolls a controller difficulty of 0 into choose(-1, 0) and passes that straight to the storm",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:417"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "btimer resets to 0 and the gate is 50, so the two storms land at frames 1 and 51",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:423"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 120,
+    "min": 2,
+    "max": 2,
+    "why": "maxmake is 2 for every difficulty except 1, so no third storm ever appears",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 3,
+    "min": 12,
+    "max": 12,
+    "why": "each storm's init runs iy < 3 by ix < 4 and creates one bullet per cell",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 120,
+    "min": 24,
+    "max": 24,
+    "why": "two storms of 12 is the whole attack, and chirashi bullets have no self-destruct",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "startx",
+    "eq": 566,
+    "why": "the bullets are created at the storm's own x and lerp from there out to the plate",
+    "src": "gml_Object_obj_berdlyb_chirashibullet_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 4,
+    "why": "scr_bullet_init sets grazepoints = 1 and the storm overwrites it with the controller's 4",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "___myrememberx",
+    "min": 400,
+    "max": 435,
+    "why": "the first cell's destination is originx + 0 + 0 + irandom(35), a band the randomness cannot leave, over Create's scr_rememberxy value of 566",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:8"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chirashi_bullet",
+    "byFrame": 5,
+    "why": "the storm's only product is obj_berdlyb_chirashibullet, which has no Draw event and so renders its own spr_chirashi_bullet",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:7"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type10_chirashi_fight2",
+  "name": "Chirashi (fight 1, difficulty 2)",
+  "note": "Fight 1 = obj_berdlyb_enemy, the else branch of the rr ladder (dc.type 10, dc.difficulty = 2, scr_turntimer(180)). Difficulty 2 is the one value that survives init untouched: it is not 0 so it is not rerolled, it is not 1 so maxmake stays 2, and it is not < 1 so the between-storm flip never fires. Both storms therefore run the bullet's third aiming branch (point_direction to the box centre, mirrored about 210).",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:170"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 180,
+    "why": "the fight-1 else branch (Chirashi) ends with scr_turntimer(180), the shortest turn Berdly sets",
+    "src": "gml_Object_obj_berdlyb_enemy_Step_0.gml:206"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "x": 566,
+    "y": 220,
+    "tol": 2,
+    "why": "instance_create(x + 46, y + 40) off the controller, which scr_bulletspawner puts on the boss at 520,180; the storm has no movement at all",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:425"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "difficulty",
+    "eq": 2,
+    "why": "d.difficulty = the controller's 2, and 2 is neither rerolled at init nor flipped between storms",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:428"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 2,
+    "name": "originx",
+    "eq": 400,
+    "why": "originx = obj_growtangle.x + 80 = 320 + 80, the left edge of the 4-column plate the bullets fly out to",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Create_0.gml:3"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "btimer resets to 0 and the gate is 50, so the two storms land at frames 1 and 51",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:423"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashistorm",
+    "atFrame": 120,
+    "min": 2,
+    "max": 2,
+    "why": "maxmake is 2 for every difficulty except 1, so no third storm ever appears",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 3,
+    "min": 12,
+    "max": 12,
+    "why": "each storm's init runs iy < 3 by ix < 4 and creates one bullet per cell",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:5"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 120,
+    "min": 24,
+    "max": 24,
+    "why": "two storms of 12 is the whole attack, and chirashi bullets have no self-destruct",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 2,
+    "why": "the storm stamps its own difficulty onto every bullet, which selects the box-centre aiming branch",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "startx",
+    "eq": 566,
+    "why": "the bullets are created at the storm's own x and lerp from there out to the plate",
+    "src": "gml_Object_obj_berdlyb_chirashibullet_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 4,
+    "why": "scr_bullet_init sets grazepoints = 1 and the storm overwrites it with the controller's 4",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_chirashibullet",
+    "atFrame": 5,
+    "name": "___myremembery",
+    "min": 30,
+    "max": 65,
+    "why": "the first cell's destination is originy + 0 + irandom(35), a band the randomness cannot leave, over Create's scr_rememberxy value of 220",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:9"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chirashi_bullet",
+    "byFrame": 5,
+    "why": "the storm's only product is obj_berdlyb_chirashibullet, which has no Draw event and so renders its own spr_chirashi_bullet",
+    "src": "gml_Object_obj_berdlyb_chirashistorm_Step_0.gml:7"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type9_spearblast_fig",
+  "name": "SpearBlast (fight 2, difficulty 1)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, chosenattack == 1 with difficulty 1 (dc.difficulty = sideb_route ? 2 : difficulty; on the normal route that is 1). Same controller branch as fight 1's SpearBlast, only the turn length differs: fight 2 always calls scr_turntimer(260), which is what lets the sixth launcher (frame 206) actually appear. Which launchers get aim_at_player alternates on 'made % 2 == special' with special = choose(0,1), so that flag is not asserted here.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2; chosenattack 1 skips the 45-degree rotation",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and the type-9 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the init block creates exactly one blaster and nothing destroys it during the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "x": 502,
+    "y": 66,
+    "tol": 2,
+    "why": "instance_create(x - 18, y - 114) off the controller, which sits on the boss at 520,180; the blaster's Step only plays sounds",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "Create's btimer = 99 is already past the gate, so the first launcher appears on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 41,
+    "min": 1,
+    "max": 1,
+    "why": "btimer is reset to 10 and difficulty >= 1 needs it above 50, so the second launcher cannot arrive before frame 42",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 45,
+    "min": 2,
+    "max": 2,
+    "why": "the 41-frame gap puts launcher two at frame 42 and launcher three no earlier than 83",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 215,
+    "min": 6,
+    "max": 6,
+    "why": "made < 6 caps the attack at six launchers, the sixth landing at frame 206 inside the 260-frame turn, and none of them is ever destroyed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "x": 544,
+    "y": 210,
+    "tol": 2,
+    "why": "instance_create(x + 24, y + 30) off the controller at 520,180; the launcher has no speed and only draws its path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:396"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "pathLifetime",
+    "eq": 2,
+    "why": "Create sets pathLifetime = 1 and the branch overwrites it with 2, doubling how long the aiming line lingers before it fires",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:403"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "childgraze",
+    "eq": 1,
+    "why": "Create sets childgraze = 4 and the branch overwrites it with 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:398"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "special",
+    "eq": 1,
+    "why": "d.special = difficulty, and special is what later becomes each second bullet's spawnchild count",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:408"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_bullet",
+    "byFrame": 60,
+    "why": "once progressLoop passes pathLifetime + 1 the launcher fires one bullet every other draw, up to bulletCount 10",
+    "src": "gml_Object_obj_berdlyb_spearblast_Draw_0.gml:15"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_mini",
+    "byFrame": 90,
+    "why": "special 1 gives the launcher's second bullet spawnchild = 1, which sheds a mini every two frames",
+    "src": "gml_Object_obj_berdlyb_spearblast_bullet_Step_0.gml:33"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type9_spearblast_fig2",
+  "name": "SpearBlast (fight 2, difficulty 0)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, chosenattack == 1 while the werewires are still alive, so difficulty is 0. Difficulty 0 is what separates this from every other SpearBlast row: the launcher gate drops from 50 to 30 (a 21-frame cadence instead of 41) and d.special = 0, so no bullet ever gets spawnchild and obj_berdlyb_spearblast_mini never exists.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and the type-9 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the init block creates exactly one blaster and nothing destroys it during the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "x": 502,
+    "y": 66,
+    "tol": 2,
+    "why": "instance_create(x - 18, y - 114) off the controller, which sits on the boss at 520,180; the blaster's Step only plays sounds",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "Create's btimer = 99 is already past the gate, so the first launcher appears on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 21,
+    "min": 1,
+    "max": 1,
+    "why": "btimer is reset to 10 and difficulty 0 needs it above 30, so the second launcher cannot arrive before frame 22",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 25,
+    "min": 2,
+    "max": 2,
+    "why": "the 21-frame gap puts launcher two at frame 22 and launcher three no earlier than 43",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 115,
+    "min": 6,
+    "max": 6,
+    "why": "made < 6 caps the attack at six launchers, the sixth landing at frame 106",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "x": 544,
+    "y": 210,
+    "tol": 2,
+    "why": "instance_create(x + 24, y + 30) off the controller at 520,180; the launcher has no speed and only draws its path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:396"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "pathLifetime",
+    "eq": 2,
+    "why": "Create sets pathLifetime = 1 and the branch overwrites it with 2, doubling how long the aiming line lingers before it fires",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:403"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 2,
+    "why": "Create sets grazepoints = 4 and the branch overwrites it with 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:397"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "special",
+    "eq": 0,
+    "why": "d.special = difficulty = 0, which is the flag the Draw event tests before handing a bullet spawnchild",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:408"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_berdlyb_spearblast_mini",
+    "byFrame": 115,
+    "why": "the child-spawn line is gated on special >= 1, so at difficulty 0 spawnchild stays 0 and no mini is ever made",
+    "src": "gml_Object_obj_berdlyb_spearblast_Draw_0.gml:22"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_bullet",
+    "byFrame": 60,
+    "why": "once progressLoop passes pathLifetime + 1 the launcher fires one bullet every other draw, up to bulletCount 10",
+    "src": "gml_Object_obj_berdlyb_spearblast_Draw_0.gml:15"
+   }
+  ]
+ },
+ {
+  "id": "berdly_type9_spearblast_wei",
+  "name": "SpearBlast (Weird Route)",
+  "note": "Fight 2 = obj_berdlyb2_enemy, chosenattack == 1 on the Snowgrave route, where the dispatcher writes dc.difficulty = sideb_route ? 2 : difficulty. Difficulty 2 is the only value that makes EVERY launcher aim at the soul (the 'made % 2 == special' coin flip is bypassed) and the only one that gives each second bullet spawnchild = 2, so the minis come out in mirrored pairs. Cadence is the same 41-frame gate as difficulty 1.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is created at view+320, view+170 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:427"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "fight 2 ends every dispatch with scr_turntimer(260) and the type-9 branch never touches the clock",
+    "src": "gml_Object_obj_berdlyb2_enemy_Step_0.gml:464"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the init block creates exactly one blaster and nothing destroys it during the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblaster",
+    "atFrame": 5,
+    "x": 502,
+    "y": 66,
+    "tol": 2,
+    "why": "instance_create(x - 18, y - 114) off the controller, which sits on the boss at 520,180; the blaster's Step only plays sounds",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:387"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 41,
+    "min": 1,
+    "max": 1,
+    "why": "btimer is reset to 10 and difficulty >= 1 needs it above 50, so the second launcher cannot arrive before frame 42",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 45,
+    "min": 2,
+    "max": 2,
+    "why": "the 41-frame gap puts launcher two at frame 42 and launcher three no earlier than 83",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 215,
+    "min": 6,
+    "max": 6,
+    "why": "made < 6 caps the attack at six launchers, the sixth landing at frame 206 inside the 260-frame turn, and none of them is ever destroyed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:394"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "x": 544,
+    "y": 210,
+    "tol": 2,
+    "why": "instance_create(x + 24, y + 30) off the controller at 520,180; the launcher has no speed and only draws its path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:396"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "aim_at_player",
+    "eq": 1,
+    "why": "difficulty == 2 short-circuits the made % 2 == special test, so every launcher on this route tracks the soul",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:405"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "special",
+    "eq": 2,
+    "why": "d.special = difficulty = 2, which becomes spawnchild 2 on each launcher's second bullet",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:408"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "pathLifetime",
+    "eq": 2,
+    "why": "Create sets pathLifetime = 1 and the branch overwrites it with 2, doubling how long the aiming line lingers before it fires",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:403"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdlyb_spearblast",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 2,
+    "why": "Create sets grazepoints = 4 and the branch overwrites it with 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:397"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdlyb_spearblast_mini",
+    "byFrame": 90,
+    "why": "spawnchild 2 makes the second bullet of each launcher shed a mirrored pair of minis every two frames",
+    "src": "gml_Object_obj_berdlyb_spearblast_bullet_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spearblast_trail",
+    "atFrame": 90,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "why": "obj_berdlyb_spearblast_mini's Create halves both scales, so the minis are drawn at half the size of the launcher's muzzle trail",
+    "src": "gml_Object_obj_berdlyb_spearblast_mini_Create_0.gml:4"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type21",
+  "name": "Side Spades I (slow alternating edges)",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "obj_growtangle is created at (xx+320, yy+170) with the camera at the origin, and its default spr_battlebg_0 is 75x75 grown to xscale/yscale 2",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:7"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 190,
+    "tol": 2,
+    "why": "attack 1 pins global.turntimer = 190",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:15"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 12,
+    "min": 0,
+    "max": 0,
+    "why": "btimer is set to -8 by the dispatcher and must climb to bmax 9, so no spade can exist before step 17",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:14"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 20,
+    "why": "the first side spade is created the step btimer reaches bmax",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "one spade has fired (step 17) and the next is not due until step 26",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:388"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 30,
+    "min": 2,
+    "max": 2,
+    "why": "type 21 sets bmax = 9, so spades land every 9 steps: 17 and 26",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:388"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 50,
+    "min": 4,
+    "max": 4,
+    "why": "spades at steps 17/26/35/44; the fifth is not due until 53 and none has crossed the wall_destroy edge yet",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 20,
+    "name": "bmax",
+    "eq": 9,
+    "why": "type 21 is the slow cadence: bmax 9, against type 23's 7 and type 25's 4",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:388"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 20,
+    "name": "side",
+    "eq": 0,
+    "why": "the dispatcher starts side at 1 and the first spade flips it to 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:427"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 30,
+    "name": "side",
+    "eq": 1,
+    "why": "the second spade flips side back to 1, which is what makes the edges alternate",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:429"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 20,
+    "angle": 180,
+    "maxCalls": 1,
+    "why": "side 1 spawns at camerax()+560 with direction 180 and image_angle = direction, so the only spade on screen faces left",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:412"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 30,
+    "angle": 0,
+    "minCalls": 2,
+    "maxCalls": 2,
+    "why": "the second spade uses side 0, entering from camerax()+80 with direction 0, so exactly two spades are drawn and one of them faces right",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:409"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type1",
+  "name": "Chain Wave I (slow swing)",
+  "note": "No box assertion: this attack uses obj_nonsolid_growtangle, and the checker's box probe samples obj_growtangle only (spec_check.js:372). The box geometry is covered by a pos assertion on obj_nonsolid_growtangle instead. Positions derived from the king rely on obj_king_boss standing at (520, 180) — confirmed as the studio's own enemy placement (gml_studio.html:1632), the same fixture the existing specs use.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "tol": 2,
+    "why": "the chain attacks pin global.turntimer = 999 and end themselves from the chain",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:35"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_nonsolid_growtangle",
+    "atFrame": 2,
+    "x": 200,
+    "y": 175,
+    "tol": 2,
+    "why": "the wave box is created at (xx+200, yy+175) with the camera at the origin and nothing moves it until the chain latches on",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_wavechain",
+    "byFrame": 12,
+    "why": "the king plays spr_chainking_toss at image_speed 0.5 and releases the chain once image_index reaches 3",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_finalchain",
+    "byFrame": 120,
+    "why": "obj_finalchain is created only on the chainking's type 2 branch; this attack sets type 1",
+    "src": "gml_Object_obj_chainking_Step_0.gml:37"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "y": 284,
+    "tol": 2,
+    "why": "the chain is created at chainking.y + 104 = 180 + 104 and flies at direction 180, so only x changes; x is omitted for that reason",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "speed",
+    "eq": 10,
+    "why": "the chain extends at a flat speed 10 until it reaches the box",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 0,
+    "why": "the king copies its subtype onto the chain, and attack 2 sets subtype 0 (the slowest swing, sin(siner/12))",
+    "src": "gml_Object_obj_chainking_Step_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "tmax",
+    "eq": 220,
+    "why": "the wave runs 220 steps before it tears itself and the king down",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:8"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chainpiece",
+    "atFrame": 60,
+    "min": 29,
+    "max": 33,
+    "why": "one link is dropped every step while the chain flies the 296 px from x 496 to the box at x 200 at speed 10, so the finished chain is about 31 links",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chainking_toss_idle",
+    "atFrame": 20,
+    "x": 520,
+    "y": 180,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "once the chain is released the king holds the toss-idle pose, still at the Create scale of 2 and still at the spawn point because the swing has not begun",
+    "src": "gml_Object_obj_chainking_Step_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 60,
+    "why": "btimer starts at 20 so a spade fires on the very first swing step, roughly 36 steps after the chain appears",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:64"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_regularbullet",
+    "atFrame": 55,
+    "y": 175,
+    "tol": 2,
+    "why": "spades enter at (camerax()-20, initboxy) with hspeed only, so y stays at the box's creation y of 175; x is omitted because it slides right at 4 px/step",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:66"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 120,
+    "min": 4,
+    "max": 4,
+    "why": "wave type 0 fires a spade every 20 steps from the start of the swing (about steps 44/64/84/104) and nothing destroys them before t reaches tmax",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:64"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 120,
+    "name": "y",
+    "min": 100,
+    "max": 260,
+    "why": "the swing drives the king to initkingy + sin(siner/12)*80, i.e. 180 +/- 80 and never outside it",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:61"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type34",
+  "name": "Sky Chains I (rain, 28f gap)",
+  "note": "Every skychain spawn point is RNG (choose(0,1,2,3) picks an edge, then random(300)/random(320) picks the offset) and its heading is move_towards_point on the live soul (obj_skychain Create:4), so no pos assertion is possible on the chains themselves; the cadence and the fadechain trail carry the check instead. Also worth knowing: the type 34 branch calls scr_bullet_inherit(255) instead of scr_bullet_inherit(chain) — a real corpus bug, but not assertable without guessing what instance_exists(255) resolves to, so it is left out.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "obj_growtangle is created at (xx+320, yy+170) with the camera at the origin, and its default spr_battlebg_0 is 75x75 grown to xscale/yscale 2",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:40"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 210,
+    "tol": 2,
+    "why": "attack 3 pins global.turntimer = 210, against attack 7's 220 for the faster rain",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:47"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_skychain",
+    "atFrame": 12,
+    "min": 0,
+    "max": 0,
+    "why": "btimer starts at 10 and must reach 28, so the first chain cannot exist before step 18",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:46"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_skychain",
+    "byFrame": 22,
+    "why": "the first sky chain drops the step btimer reaches 28",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:702"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_skychain",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "the gap is 28 steps, so chain 1 lands at step 18 and chain 2 not until step 46",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:702"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_skychain",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "chains at steps 18 and 46; the first does not self-destruct until it has shed 31 fadechains, about step 80",
+    "src": "gml_Object_obj_skychain_Step_0.gml:21"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_fadechain",
+    "byFrame": 26,
+    "why": "each sky chain drops an obj_fadechain trail piece the step its timer reaches 2",
+    "src": "gml_Object_obj_skychain_Step_0.gml:10"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_fadechain",
+    "atFrame": 40,
+    "min": 8,
+    "max": 13,
+    "why": "one trail piece every 2 steps from about step 20, and none dies until 30 steps plus a 10-step fade after its own creation, so about 11 are alive",
+    "src": "gml_Object_obj_skychain_Step_0.gml:7"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chainfront",
+    "byFrame": 25,
+    "why": "obj_skychain's Draw is draw_self() and its object sprite is spr_chainfront",
+    "src": "gml_Object_obj_skychain_Draw_0.gml:1"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chainpiece",
+    "byFrame": 26,
+    "why": "the fadechain trail is drawn with obj_fadechain's spr_chainpiece",
+    "src": "gml_Object_obj_skychain_Step_0.gml:10"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 60,
+    "why": "the type 34 branch only ever creates obj_skychain; no spade bullet belongs to this attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:726"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type5",
+  "name": "Bouncing Box I (slow drift)",
+  "note": "The bouncer's heading is choose(45,135,225,315), so every position after the first couple of frames is RNG. The box's own position is pinned at frame 2 (before it has drifted a pixel) and everything else is asserted through the deterministic bounce bounds, the acceleration cap and the spike draw calls.",
+  "assertions": [
+   {
+    "kind": "box",
+    "w": 118,
+    "h": 118,
+    "tol": 2,
+    "why": "the box sprite is overridden to spr_battlebg_2 (59x59) and obj_growtangle grows it to xscale/yscale 2; x and y are omitted because the bouncer drags obj_growtangle to its own position every End Step",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:54"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_growtangle",
+    "atFrame": 2,
+    "x": 310,
+    "y": 165,
+    "tol": 3,
+    "why": "the box is created at (xx+310, yy+165) with the camera at the origin, and the bouncer that drags it starts at speed 0.1 so it has moved a fraction of a pixel by step 2",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:53"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "tol": 2,
+    "why": "attack 4 pins global.turntimer = 999 and lets the bouncer end the turn from event_user(2)",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:66"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_bouncer",
+    "byFrame": 2,
+    "why": "the damage box is created straight onto the battle box in the dispatcher",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:62"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 5,
+    "why": "Create sets type = 0 and the dispatcher overwrites it with 5, which is what selects the slow 30 px inset variant",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:63"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 1.96,
+    "why": "the bouncer sits at 1.96x, deliberately a hair under the battle box's 2x, and nothing in its End Step rewrites the scale",
+    "src": "gml_Object_obj_growtangle_bouncer_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 20,
+    "name": "lx",
+    "eq": 170,
+    "why": "lx starts at camerax()+140 and the type 5 con 0 block insets it by 30",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:237"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 20,
+    "name": "rx",
+    "eq": 450,
+    "why": "rx starts at camerax()+480 and the type 5 con 0 block insets it by 30",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:238"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 20,
+    "name": "ux",
+    "eq": 30,
+    "why": "ux starts at cameray()+0 and the type 5 con 0 block insets it by 30",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:235"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 20,
+    "name": "dx",
+    "eq": 290,
+    "why": "dx starts at cameray()+320 and the type 5 con 0 block insets it by 30",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:236"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 20,
+    "name": "minitimer",
+    "eq": 14,
+    "why": "type 5 idles at con 0.4 for 14 End Steps before it starts accelerating, then minitimer stops",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:246"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 60,
+    "name": "speed",
+    "min": 3.9,
+    "max": 4.3,
+    "why": "speed climbs 0.2 per End Step from 0.1 and stops at the type 5 cap of 4 (landing on 4.1), well below type 3's 4.4 cap and type 4's 7",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:250"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 20,
+    "xscale": -1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the right-hand spike column is drawn MIRRORED at xscale -1 while the left column is +1; fadein has been capped at 10 since step 10 so alpha is 1",
+    "src": "gml_Object_obj_growtangle_bouncer_Draw_0.gml:20"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 20,
+    "minCalls": 40,
+    "maxCalls": 40,
+    "why": "spikecount = floor(sprite_width/11) = floor(59*1.96/11) = 10, and the loop draws four spikes (one per edge) per index",
+    "src": "gml_Object_obj_growtangle_bouncer_Draw_0.gml:13"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type1_chain_wave_ii",
+  "name": "Chain Wave II (medium swing)",
+  "note": "Identical machinery to Chain Wave I; the only difference the dispatcher makes is subtype 1, which selects the wavechain's type 1 branch: sin(siner/10) instead of sin(siner/12) and an 18-step spade gap instead of 20. The spade count at frame 120 is the assertion that separates the two.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "tol": 2,
+    "why": "attack 5 pins global.turntimer = 999 and lets the chain end the turn",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:80"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_nonsolid_growtangle",
+    "atFrame": 2,
+    "x": 200,
+    "y": 175,
+    "tol": 2,
+    "why": "the wave box is created at (xx+200, yy+175) with the camera at the origin and nothing moves it until the chain latches on",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:76"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_wavechain",
+    "byFrame": 12,
+    "why": "the king plays spr_chainking_toss at image_speed 0.5 and releases the chain once image_index reaches 3",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_finalchain",
+    "byFrame": 120,
+    "why": "obj_finalchain is created only on the chainking's type 2 branch; this attack sets type 1",
+    "src": "gml_Object_obj_chainking_Step_0.gml:37"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "y": 284,
+    "tol": 2,
+    "why": "the chain is created at chainking.y + 104 = 180 + 104 and flies at direction 180, so only x changes; x is omitted for that reason",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 1,
+    "why": "the king copies subtype 1 onto the chain, overwriting the Create default of 0 — this is what picks the medium swing",
+    "src": "gml_Object_obj_chainking_Step_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "speed",
+    "eq": 10,
+    "why": "the chain extends at a flat speed 10 until it reaches the box",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 20,
+    "name": "tmax",
+    "eq": 220,
+    "why": "the wave runs 220 steps before it tears itself and the king down",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:8"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chainpiece",
+    "atFrame": 60,
+    "min": 29,
+    "max": 33,
+    "why": "one link is dropped every step while the chain flies the 296 px from x 496 to the box at x 200 at speed 10, so the finished chain is about 31 links",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chainking_toss_idle",
+    "atFrame": 20,
+    "x": 520,
+    "y": 180,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "once the chain is released the king holds the toss-idle pose, still at the Create scale of 2 and still at the spawn point because the swing has not begun",
+    "src": "gml_Object_obj_chainking_Step_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 60,
+    "why": "btimer starts at 20 so a spade fires on the very first swing step, roughly 36 steps after the chain appears",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:83"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_regularbullet",
+    "atFrame": 55,
+    "y": 175,
+    "tol": 2,
+    "why": "spades enter at (camerax()-20, initboxy) with hspeed only, so y stays at the box's creation y of 175; x is omitted because it slides right at 4 px/step",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:85"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 120,
+    "min": 5,
+    "max": 5,
+    "why": "wave type 1 fires every 18 steps rather than 20 (about steps 44/62/80/98/116), which is one more spade than Chain Wave I has by this frame",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:83"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 120,
+    "name": "y",
+    "min": 100,
+    "max": 260,
+    "why": "the swing drives the king to initkingy + sin(siner/10)*80, i.e. 180 +/- 80 and never outside it",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:80"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type2",
+  "name": "Chain Drag (spiked box hauled around)",
+  "note": "obj_king_boss.chain_dragging is 0 on a fresh launch, so the dispatcher's subtype stays 5 (the `if (chain_dragging >= 1) subtype = 2` fallback never fires). Frame 60 is used for the spike assertions because that is inside chaincon 2.3 (entered about step 45, leaving for chaincon 3 about step 74), where the box has been restored to its creation point and is not yet being dragged; every drag target after that is RNG (random(140)/random(120)), so no position is assertable once chaincon reaches 3.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "tol": 2,
+    "why": "attack 6 pins global.turntimer = 999 and lets obj_finalchain end the turn",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:105"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_nonsolid_growtangle",
+    "atFrame": 2,
+    "x": 205,
+    "y": 170,
+    "tol": 2,
+    "why": "the drag box is created at (xx+205, yy+170) with the camera at the origin — 5 px right and 5 px up from the wave box",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:101"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_finalchain",
+    "byFrame": 12,
+    "why": "chainking type 2 tosses obj_finalchain once spr_chainking_toss reaches image_index 3",
+    "src": "gml_Object_obj_chainking_Step_0.gml:37"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_wavechain",
+    "byFrame": 120,
+    "why": "obj_wavechain is the type 1 chain; the drag runs type 2 and must never create one",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_finalchain",
+    "atFrame": 20,
+    "y": 284,
+    "tol": 2,
+    "why": "created at chainking.y + 104 = 180 + 104 and flying at direction 180, so only x changes during the extend phase",
+    "src": "gml_Object_obj_chainking_Step_0.gml:37"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 20,
+    "name": "speed",
+    "eq": 10,
+    "why": "the chain extends at a flat speed 10 until it reaches the box",
+    "src": "gml_Object_obj_finalchain_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 30,
+    "name": "type",
+    "eq": 5,
+    "why": "Create sets type = 1 and the chainking then copies subtype 5 over it, which is what gives this drag movetime 30 and maxmove 22",
+    "src": "gml_Object_obj_chainking_Step_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 30,
+    "name": "maxtimer",
+    "eq": 300,
+    "why": "maxtimer is raised from 200 to 300 by the `if (type == 1)` test inside Create, which runs while type is still 1 — before subtype 5 is copied in — so the 300 sticks",
+    "src": "gml_Object_obj_finalchain_Create_0.gml:29"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chainpiece",
+    "atFrame": 60,
+    "min": 29,
+    "max": 33,
+    "why": "one link per step over the 291 px from x 496 to the box at x 205 at speed 10, about 31 links, under the 40-link cap, and the extra target links are not created until chaincon 3 at about step 74",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:12"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet_permanent",
+    "byFrame": 70,
+    "why": "the spike overlay is created the step chaincon reaches 2.2, after the chain has latched on and the shake has run out",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:71"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_permanent",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "type 5 fails the `type <= 1` test, so the 5x5 aimed spade grid is never built and the spike box is the only permanent bullet on screen",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:87"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battlebg_spikes",
+    "atFrame": 60,
+    "x": 205,
+    "y": 170,
+    "tol": 3,
+    "why": "the spike overlay is pinned to obj_nonsolid_growtangle every step, and during chaincon 2.3 the box sits back on its creation point after the shake restores remx_box/remy_box",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:317"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battlebg_spikes",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 0.08,
+    "why": "the spike starts at box.image_xscale * 0.96 = 1.92 and creeps 0.005 per step through chaincon 2.3, so it is just about 2 by frame 60 — a spike ring at 1x or 4x is the visible failure",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:83"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 60,
+    "maxCalls": 0,
+    "why": "the finalchain's own spike-drawing loop sits behind `chaincon >= 9999`, which can never be true, so this sprite is dead code and must not render",
+    "src": "gml_Object_obj_finalchain_Draw_0.gml:3"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type35",
+  "name": "Sky Chains II (rain, 22f gap)",
+  "note": "Dispatcher branch attack==7. Thin spawner: default obj_growtangle box + obj_dbulletcontroller type 35, which rains obj_skychain every 22 frames; each skychain trails obj_fadechain every 2 frames. The spawn edge and offset are RNG, so counts and the inherited graze/time points carry the spec.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 220,
+    "why": "the branch pins the turn length to 220",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:119"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "instance_create(xx+320, yy+170, obj_growtangle) with xx/yy = camerax()/cameray() = 0, and spr_battlebg_0 is 75x75 grown to image_xscale 2",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:115"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 35,
+    "why": "dd.type = 35 selects the 22-frame sky-chain branch",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:118"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_skychain",
+    "byFrame": 20,
+    "why": "btimer starts at 10 and the branch fires at >= 22, so the first chain drops on frame 12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:734"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_skychain",
+    "atFrame": 45,
+    "min": 2,
+    "max": 2,
+    "why": "the 22-frame gap puts chains at frames 12 and 34; the third is not due until 56 and a chain only self-destructs once sons >= 30, i.e. 62 frames after it spawns",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:734"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_skychain",
+    "atFrame": 20,
+    "name": "grazepoints",
+    "eq": 1,
+    "why": "scr_bullet_inherit(chain) at Step:759 overwrites the chain's Create value of 3 with the controller's grazepoints of 1",
+    "src": "gml_Object_obj_dbulletcontroller_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_skychain",
+    "atFrame": 20,
+    "name": "timepoints",
+    "eq": 1,
+    "why": "the same inherit call raises timepoints from the chain's Create 0 to the controller's 1",
+    "src": "gml_Object_obj_dbulletcontroller_Create_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_fadechain",
+    "byFrame": 20,
+    "why": "every skychain drops a fadechain link every 2 frames while con == 0, so the frame-12 chain trails one by frame 14",
+    "src": "gml_Object_obj_skychain_Step_0.gml:10"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chainfront",
+    "byFrame": 20,
+    "why": "obj_skychain renders with draw_self() on its default sprite spr_chainfront",
+    "src": "gml_Object_obj_skychain_Draw_0.gml:1"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chainpiece",
+    "byFrame": 20,
+    "why": "the trailing obj_fadechain links draw their default spr_chainpiece",
+    "src": "gml_Object_obj_skychain_Step_0.gml:10"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 45,
+    "why": "the type 35 branch only ever creates obj_skychain - no spade bullets in this attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:732"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type3",
+  "name": "Bouncing Box II (fast, jittered heading)",
+  "note": "Dispatcher branch attack==8. The box itself is the attack: obj_growtangle (spr_battlebg_2, keep=1) plus an obj_growtangle_bouncer damagebox of type 3 that drags the box around inside an inset white rectangle. The initial heading is choose(45,135,225,315) plus a random jitter, so no heading or position is asserted - the inset borders, the 1.96 scale, the spike ring and the terminal speed are all literals.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the branch pins the turn clock to 999 and lets the bouncer end the turn",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:141"
+   },
+   {
+    "kind": "box",
+    "w": 118,
+    "h": 118,
+    "tol": 2,
+    "why": "box.sprite_index = spr_battlebg_2 (59x59) grown to image_xscale 2; x/y are omitted because the bouncer drags the box every End Step",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:129"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 3,
+    "why": "damagebox.type = 3 selects the fast 4.4-cap branch, not the type 5 slow one",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:138"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 1.96,
+    "why": "Create pins the damagebox to 1.96, deliberately just inside the 2.0 box",
+    "src": "gml_Object_obj_growtangle_bouncer_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "lx",
+    "eq": 190,
+    "why": "Create sets lx = 140 + camerax() = 140, then the type 3 init insets it by 50",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:164"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "rx",
+    "eq": 430,
+    "why": "Create sets rx = 480 + camerax() = 480, then the type 3 init insets it by 50",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:165"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "ux",
+    "eq": 50,
+    "why": "Create sets ux = 0 + cameray() = 0, then the type 3 init insets it by 50",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:162"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "dx",
+    "eq": 270,
+    "why": "Create sets dx = 320 + cameray() = 320, then the type 3 init insets it by 50",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:163"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 30,
+    "name": "minitimer",
+    "eq": 14,
+    "why": "type 3 holds con at 0.4 until minitimer >= 14, which flips con to 0.5 and freezes minitimer at exactly 14",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:172"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_bouncer",
+    "atFrame": 60,
+    "name": "speed",
+    "min": 4.3,
+    "max": 4.7,
+    "why": "speed starts at 0.1 and climbs 0.2 per frame while < 4.4, settling at 4.5 (type 5 settles at 4.1); bounces only negate hspeed/vspeed",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:176"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 30,
+    "minCalls": 40,
+    "maxCalls": 40,
+    "why": "spikecount = floor(sprite_width/11) = floor(59*1.96/11) = 10, and the loop draws 4 spikes per iteration",
+    "src": "gml_Object_obj_growtangle_bouncer_Draw_0.gml:13"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 30,
+    "xscale": -1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the right-edge spike column is drawn MIRRORED at xscale -1; fadein has capped at 10 so alpha is 1",
+    "src": "gml_Object_obj_growtangle_bouncer_Draw_0.gml:20"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bouncebox_spike",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 270,
+    "alpha": 1,
+    "why": "the top edge's spikes are rotated 270 degrees",
+    "src": "gml_Object_obj_growtangle_bouncer_Draw_0.gml:18"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_shake",
+    "byFrame": 60,
+    "why": "every wall bounce creates obj_shake, and the worst-case heading needs only ~68 px of travel, reached around frame 40",
+    "src": "gml_Object_obj_growtangle_bouncer_Step_2.gml:310"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type23",
+  "name": "Side Spades II (fast alternating edges)",
+  "note": "Dispatcher branch attack==9. obj_dbulletcontroller type 23 alternates a spade in from the right edge (x 560, heading 180) and the left edge (x 80, heading 0) every 7 frames. The spawn Y is random inside the box height, so only counts, the alternation parity and the two headings are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 200,
+    "why": "the branch pins the turn length to 200",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:150"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "instance_create(xx+320, yy+170, obj_growtangle) with xx/yy = 0, and spr_battlebg_0 is 75x75 grown to image_xscale 2",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:146"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 23,
+    "why": "dd.type = 23 selects bmax 7, the fast side-spade cadence (type 21 uses 9)",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:149"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 10,
+    "min": 0,
+    "max": 0,
+    "why": "btimer starts at -8 and climbs 1 per step to bmax 7, so nothing can be fired before frame 15",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:153"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 20,
+    "why": "the first spade fires when btimer reaches 7, i.e. frame 15",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 45,
+    "min": 5,
+    "max": 5,
+    "why": "bmax 7 puts spades at frames 15, 22, 29, 36 and 43, and none has crossed the view (destroy at x < -40 or x > 680) by then",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:391"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 45,
+    "name": "side",
+    "eq": 0,
+    "why": "side starts at 1 and flips on every shot; after the five shots due by frame 45 it reads 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:426"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 30,
+    "angle": 180,
+    "why": "side 1 spawns at camerax()+560 with direction 180 and image_angle = direction, so it faces left",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:412"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 30,
+    "angle": 0,
+    "why": "side 0 spawns at camerax()+80 with direction 0, so the alternate spade faces right",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:409"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 20,
+    "name": "speed",
+    "min": 5.2,
+    "max": 5.9,
+    "why": "spades launch at speed 5 with friction -0.1; frame 20 is sampled because only the frame-15 spade exists then, giving 5 + 0.1*5 = 5.5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:421"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 30,
+    "name": "grazepoints",
+    "eq": 5,
+    "why": "this branch copies only damage and target - there is no scr_bullet_inherit - so every spade keeps obj_regularbullet's Create value of 5",
+    "src": "gml_Object_obj_regularbullet_Create_0.gml:2"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type1_chain_wave_iii",
+  "name": "Chain Wave III (fast swing)",
+  "note": "Dispatcher branch attack==10. Box is obj_nonsolid_growtangle (spr_battlebg_wavechain), so no `box` assertion is possible - the checker only measures obj_growtangle. obj_chainking type 1 subtype 2 tosses an obj_wavechain whose type 2 branch swings on sin(siner/9) and rains a spade every 16 frames. The chain's travel distance depends on where the boss stands, so bullet timing is only bounded, never pinned.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the branch pins the turn clock to 999 and lets the wavechain end the turn",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:174"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_nonsolid_growtangle",
+    "atFrame": 5,
+    "x": 200,
+    "y": 175,
+    "tol": 2,
+    "why": "instance_create(xx+200, yy+175, obj_nonsolid_growtangle) with xx/yy = 0; neither of its Step events moves itself, and the chain does not exist until ~frame 7",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:164"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 1,
+    "why": "chainking.type = 1 is what makes it toss an obj_wavechain rather than an obj_finalchain",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:162"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 5,
+    "name": "subtype",
+    "eq": 2,
+    "why": "subtype 2 is the only thing separating Chain Wave III from waves I (0) and II (1)",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:163"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 6,
+    "why": "the dispatcher raises grazepoints from the chainking's Create value of 3 to 6",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:161"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chainking_toss",
+    "atFrame": 3,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the chainking's first Step swaps to spr_chainking_toss, drawn at the Create scale of 2 (image_speed 0.5 keeps image_index under 3 until ~frame 7)",
+    "src": "gml_Object_obj_chainking_Step_0.gml:3"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chainking_toss_idle",
+    "atFrame": 30,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "once image_index passes 3 (image_speed 0.5, so ~frame 7) it holds spr_chainking_toss_idle at scale 2",
+    "src": "gml_Object_obj_chainking_Step_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_wavechain",
+    "byFrame": 15,
+    "why": "the toss animation releases the chain at image_index >= 3, about frame 7 at image_speed 0.5",
+    "src": "gml_Object_obj_chainking_Step_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 15,
+    "name": "type",
+    "eq": 2,
+    "why": "chain.type = subtype hands the wavechain type 2, the sin(siner/9) swing with a 16-frame spade gap",
+    "src": "gml_Object_obj_chainking_Step_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 15,
+    "name": "speed",
+    "eq": 10,
+    "why": "the wavechain flies out at speed 10 and only zeroes it on reaching the box, which is ~24 frames of travel away",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_wavechain",
+    "atFrame": 15,
+    "name": "image_angle",
+    "eq": 180,
+    "why": "Create pins direction and image_angle to 180 - the chain flies leftwards",
+    "src": "gml_Object_obj_wavechain_Create_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chainpiece",
+    "byFrame": 15,
+    "why": "the wavechain lays down one obj_chainpiece link per frame the whole way across",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:10"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 90,
+    "why": "once chaincon reaches 3 the type 2 branch fires a spade from camerax()-20 every 16 frames, and btimer starts at 20 so the first one is immediate",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:104"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 90,
+    "why": "each rained bullet has its sprite_index overwritten to spr_spadebullet",
+    "src": "gml_Object_obj_wavechain_Step_0.gml:105"
+   }
+  ]
+ },
+ {
+  "id": "chaosking_type2_final_chain_dr",
+  "name": "Final Chain Drag (spikes + closing spade ring)",
+  "note": "Dispatcher branch attack==11. obj_chainking type 2 subtype 1 tosses an obj_finalchain, whose type 1 satisfies BOTH `type >= 1` and `type <= 1` in the chaincon 2.2 block - so it makes the spr_battlebg_spikes overlay AND the 5x5 grid of closing spades, 26 obj_regularbullet_permanent in total. The box is obj_nonsolid_growtangle, so no `box` assertion is possible. Chain travel time depends on where the boss stands, so the late-phase checks use generous frames.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the branch pins the turn clock to 999 and lets the finalchain end the turn",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:189"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_nonsolid_growtangle",
+    "atFrame": 5,
+    "x": 205,
+    "y": 170,
+    "tol": 2,
+    "why": "instance_create(xx+205, yy+170, obj_nonsolid_growtangle) with xx/yy = 0; the box is not dragged until the chain locks on",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:185"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 2,
+    "why": "chainking.type = 2 is what makes it toss an obj_finalchain instead of a wavechain",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainking",
+    "atFrame": 5,
+    "name": "subtype",
+    "eq": 1,
+    "why": "subtype 1 is what separates the final drag from the earlier subtype 5 drag",
+    "src": "gml_Object_obj_king_boss_Other_15.gml:184"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chainking_toss",
+    "atFrame": 3,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the chainking's first Step swaps to spr_chainking_toss, drawn at the Create scale of 2",
+    "src": "gml_Object_obj_chainking_Step_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_finalchain",
+    "byFrame": 15,
+    "why": "the toss animation releases the chain at image_index >= 3, about frame 7 at image_speed 0.5",
+    "src": "gml_Object_obj_chainking_Step_0.gml:37"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 15,
+    "name": "type",
+    "eq": 1,
+    "why": "chain.type = subtype hands the finalchain type 1, which sets maxmove 22 and both bullet phases",
+    "src": "gml_Object_obj_chainking_Step_0.gml:40"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 15,
+    "name": "maxtimer",
+    "eq": 300,
+    "why": "Create starts maxtimer at 200 and its own type == 1 block (type defaults to 1 at Create:22) raises it to 300",
+    "src": "gml_Object_obj_finalchain_Create_0.gml:29"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 15,
+    "name": "speed",
+    "eq": 10,
+    "why": "the finalchain flies out at speed 10 until it reaches the box, ~24 frames of travel away",
+    "src": "gml_Object_obj_finalchain_Create_0.gml:2"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_finalchain",
+    "atFrame": 15,
+    "name": "image_angle",
+    "eq": 180,
+    "why": "Create pins direction and image_angle to 180 - the chain flies leftwards",
+    "src": "gml_Object_obj_finalchain_Create_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chainpiece",
+    "byFrame": 15,
+    "why": "the finalchain lays down one red obj_chainpiece link per frame, up to 41 of them",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:12"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_permanent",
+    "atFrame": 120,
+    "min": 26,
+    "max": 26,
+    "why": "type 1 passes both guards in chaincon 2.2: one spike overlay plus a 5x5 grid of spades = 26, and nothing is destroyed until `ended`, which needs mytimer past 290",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:93"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_battlebg_spikes",
+    "byFrame": 120,
+    "why": "the spike overlay's sprite_index is set to spr_battlebg_spikes and tracks the box",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:81"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 90,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "tol": 0.05,
+    "why": "the 25 grid spades are created at half scale and creep up by only 0.0005 a frame (cap 0.68)",
+    "src": "gml_Object_obj_finalchain_Step_0.gml:98"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type620",
+  "name": "FloweryDeflect1",
+  "note": "Thin spawner: obj_orangeheart + obj_debug_orangeheartcontroller. Controller keeps its Create default attacktype = 5, whose Step spawns obj_orangeheart_floweryjarona on its first frame; the jarona's Create then relocates itself onto obj_flowery_enemy (520,180 in the studio) and sits there for waittime = 30 frames before charging.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75, and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3790"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_debug_orangeheartcontroller",
+    "byFrame": 3,
+    "why": "the branch creates the sidescroller controller at (0,0)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3793"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 5,
+    "why": "type 620 never overrides attacktype, so the Create default 5 (the jarona duel) stands",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attack_speed",
+    "eq": 20,
+    "why": "the branch pins attack_speed = 20 on the controller",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3798"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 40,
+    "name": "scale_factor",
+    "eq": 1,
+    "why": "Create lerps scale_factor 0 -> 1.1 over 12 frames then the delayed lerp brings 1.1 -> 1 over 4, so it rests at 1",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:39"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 5,
+    "why": "attacktype 5 spawns the jarona on the controller's first step (timer == 1)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "x": 520,
+    "y": 180,
+    "tol": 2,
+    "why": "its Create overwrites the spawn position with obj_flowery_enemy.x/.y and it does not move until timer == waittime",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:41"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "attack_speed",
+    "eq": 20,
+    "why": "the controller copies its own attack_speed onto the jarona at timer == 1",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "do_bullets",
+    "eq": 0,
+    "why": "type 620 leaves the controller's do_bullets false, which is copied onto the jarona",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:968"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the jarona's Create calls scr_size(2, 2), so it is drawn at double size",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 40,
+    "xscale": 8,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orangeheart_outline",
+    "atFrame": 40,
+    "x": 245,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated",
+    "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
+   },
+   {
+    "kind": "turntimer",
+    "min": 3000,
+    "max": 3300,
+    "why": "the dispatcher calls scr_turntimer(3200) for the deflect duel",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1223"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type634",
+  "name": "FloweryDeflect3",
+  "note": "Same spawner shape as type 620, but the branch overwrites three Create defaults on the controller (difficulty 0 -> 1, attack_speed 20 -> 26, do_bullets false -> true) and attacktype 5 copies all three onto the jarona on its first step. Those copies are the load-bearing assertions.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = 320 - 75, and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4233"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "the branch overwrites the Create default difficulty = 0 with 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4240"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "the branch overwrites the Create default attack_speed = 20 with 26",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4241"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "do_bullets",
+    "eq": 1,
+    "why": "the branch overwrites the Create default do_bullets = false with true",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4242"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 5,
+    "why": "type 634 never overrides attacktype, so the Create default 5 (the jarona duel) stands",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 5,
+    "why": "attacktype 5 spawns the jarona on the controller's first step (timer == 1)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "x": 520,
+    "y": 180,
+    "tol": 2,
+    "why": "its Create overwrites the spawn position with obj_flowery_enemy.x/.y and it holds there until timer == waittime",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:41"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "the controller copies attack_speed onto the jarona, replacing the jarona Create's own 20",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "the controller copies difficulty onto the jarona, replacing the jarona Create's own 0",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:966"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "do_bullets",
+    "eq": 1,
+    "why": "the controller copies do_bullets onto the jarona, replacing the jarona Create's own false",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:968"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 10,
+    "name": "waittime",
+    "eq": 30,
+    "why": "the jarona idles waittime = 30 frames before its first charge; nothing re-rolls it until then",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 40,
+    "xscale": 8,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orangeheart_outline",
+    "atFrame": 40,
+    "x": 245,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated",
+    "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
+   },
+   {
+    "kind": "turntimer",
+    "min": 3000,
+    "max": 3300,
+    "why": "the dispatcher calls scr_turntimer(3200) for the deflect duel",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1239"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type623",
+  "name": "FloweryWallsTutorial",
+  "note": "attacktype 0 / difficulty 0 auto-scroller. The controller's timer starts at 20 and climbs by abs(fakecamxspeedbase/16) = 1 per frame, so the first bamboo wall appears once timer >= 40 (~frame 20). wall_tutorial_counter only advances when the player dashes through a wall, so with no input exactly one wall is alive at a time, always spawned at screenspace + 40 = 720.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3863"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "the branch sets attacktype = 0 on the freshly created controller, replacing the Create default 5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3868"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 0,
+    "why": "type 623 pins nothing, so the Create default difficulty = 0 selects the tutorial wall pattern",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 40,
+    "name": "wall_tutorial_counter",
+    "eq": 0,
+    "why": "it only advances inside obj_orangeheart_wall's do_hit_event, which needs a player dash",
+    "src": "gml_Object_obj_orangeheart_wall_Create_0.gml:170"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wall",
+    "byFrame": 30,
+    "why": "difficulty 0 calls wall_create(screenspace + 40, ...) once timer >= 40, about 20 frames in",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "the spawn is gated on !i_ex(obj_orangeheart_wall), so the tutorial keeps exactly one wall alive",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:37"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 40,
+    "y": 50,
+    "tol": 3,
+    "why": "wall_create's arg5 == arg3 path places it at arg1 - arg3*0.5 = 170 - 120, and walls have vsp 0 so y never changes",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 40,
+    "name": "image_yscale",
+    "eq": 240,
+    "why": "scr_size(arg2, arg3) = scr_size(16, 240) makes a full-height 240px bamboo wall",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 40,
+    "name": "image_xscale",
+    "eq": 16,
+    "why": "wall_create's scr_size(16, 240) sets the wall 16px wide, overwriting the wall Create's own scr_size(16, 40)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bamboo_wall",
+    "atFrame": 40,
+    "y": 50,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "bamboo walls draw via draw_sprite_part_ext(spr_bamboo_wall, 0, 0, bamboo_counter, 16, image_yscale, x, y, 1, 1, ...) at unit scale and no rotation",
+    "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 40,
+    "xscale": 8,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 60,
+    "why": "the branch destroys any jarona and attacktype 0 never creates one",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3872"
+   },
+   {
+    "kind": "turntimer",
+    "min": 250,
+    "max": 330,
+    "why": "the dispatcher calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1247"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type624",
+  "name": "FloweryChase",
+  "note": "attacktype 0 / difficulty 1. Two chains: obj_orangeheart_chaseattack (spawned by the controller because difficulty is truthy) and a stream of vase-topped bamboo walls whose height is 80 - open_chase_difficulty*15. obj_flowery_enemy.open_chase_counter is 0 in its Create, so open_chase_difficulty is 0 and every derived literal keeps its unreduced value. Wall x/y are time- and sine-driven, so only the pinned scales are asserted.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3888"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "the branch sets attacktype = 0, replacing the Create default 5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3892"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "the branch pins difficulty = 1, which selects the open-chase wall case",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3893"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "open_chase_difficulty",
+    "eq": 0,
+    "why": "it is copied from obj_flowery_enemy.open_chase_counter, which that boss's Create sets to 0",
+    "src": "gml_Object_obj_flowery_enemy_Create_0.gml:161"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 5,
+    "why": "difficulty is truthy and not 7/8/9, so the controller creates the chase wall at camerax() - 40",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_chaseattack",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "the spawn is gated on !i_ex(obj_orangeheart_chaseattack), so there is only ever one",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_chaseattack",
+    "atFrame": 30,
+    "name": "mymaxspeed",
+    "eq": 18,
+    "why": "Create sets 18 and difficulty 1 adds open_chase_difficulty * 0.35 = 0",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_chaseattack",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": -40,
+    "why": "its Create calls scr_size(-40, 480) — a negative x scale, i.e. a mirrored 40px-wide hitbox",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chasewall",
+    "atFrame": 30,
+    "xscale": -2,
+    "yscale": -2,
+    "angle": 0,
+    "alpha": 1,
+    "minCalls": 2,
+    "why": "the chase wall draws spr_chasewall twice; the upper copy is flipped on BOTH axes at -2,-2",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wall",
+    "byFrame": 30,
+    "why": "difficulty 1 calls wall_create once timer >= 6, and timer starts at -12 climbing 1 per frame",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:106"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "eq": 80,
+    "why": "the first five walls per cycle are wall_create(..., 16, 80 - open_chase_difficulty*15, ...) = 80 tall",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:106"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_flowery_vase",
+    "atFrame": 40,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "vase walls cap themselves with draw_sprite_ext(spr_flowery_vase, cactus, ..., 1, 1, 0, image_blend, image_alpha)",
+    "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:46"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 60,
+    "why": "the branch destroys any jarona and attacktype 0 never creates one",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3899"
+   },
+   {
+    "kind": "turntimer",
+    "min": 250,
+    "max": 330,
+    "why": "the dispatcher calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1255"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type630",
+  "name": "FloweryBoxesEasy",
+  "note": "attacktype 3 (the boxed dash section). The branch hand-places the whole opening set: a widened first box, a second box registered as new_box, one word manager and one helpful flower keyed off new_box.x = camerax() + 1200. Everything with orangeheartControlled slides left at fakecamxspeed, so x is asserted only where the source pins it before movement; the y-anchored splash draw is the stable visual.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "name": "brakespeed",
+    "eq": 1,
+    "why": "the branch overwrites obj_orangeheart's Create default brakespeed = 2 with 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4047"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4046"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 3,
+    "why": "the branch sets attacktype = 3, replacing the Create default 5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4051"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "fakecamxspeedbase_original",
+    "eq": -8,
+    "why": "the branch halves the Create default -16 to -8, so this section scrolls at half speed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4052"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "fakecamxspeedbase",
+    "eq": -8,
+    "why": "obj_orangeheart's Step copies fakecamxspeedbase_original onto fakecamxspeedbase every frame",
+    "src": "gml_Object_obj_orangeheart_Step_0.gml:55"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_square",
+    "atFrame": 10,
+    "min": 2,
+    "max": 2,
+    "why": "the branch creates exactly two boxes; the next is only queued once new_box.x < camerax() + 640",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4061"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_square",
+    "atFrame": 10,
+    "name": "box_width",
+    "eq": 175,
+    "why": "the first box multiplies its Create default box_width = 70 by 2.5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4065"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_square",
+    "atFrame": 10,
+    "name": "stopper",
+    "eq": 0,
+    "why": "the first box overrides its Create default stopper = true with false",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4064"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_word_manager",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "difficulty 0 opens with a single word manager at (new_box.x + 150) - 30",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4075"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_word_manager",
+    "atFrame": 5,
+    "name": "timer_goal",
+    "eq": 24,
+    "why": "the branch pins timer_goal = 24, the word-drop cadence",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4077"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_helpful_flower",
+    "byFrame": 5,
+    "why": "the branch places one helpful flower at new_box.x + 150 + 30",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4085"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_helpful_flower",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 0.54,
+    "why": "its Create pins image_xscale = 0.54 (with image_angle 270)",
+    "src": "gml_Object_obj_orangeheart_helpful_flower_Create_0.gml:3"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_flowery_splash",
+    "atFrame": 20,
+    "y": 170,
+    "xscale": -1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "minCalls": 4,
+    "why": "each box draws its entry splash MIRRORED at xscale -1 on splash_y = scr_get_box(5) = 170; two boxes give four splash calls",
+    "src": "gml_Object_obj_orangeheart_square_Draw_0.gml:15"
+   },
+   {
+    "kind": "turntimer",
+    "min": 250,
+    "max": 330,
+    "why": "the dispatcher calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1303"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type631",
+  "name": "FloweryBoxesMedium",
+  "note": "The harder twin of type 630: same attacktype 3 scaffold, but difficulty 1, a narrower first box (box_width * 2 instead of * 2.5), new_box seeded 150px closer at camerax() + 1050, and TWO word managers at b_speed 7 / timer_goal 20 instead of one at 6 / 24.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "name": "brakespeed",
+    "eq": 1,
+    "why": "the branch overwrites obj_orangeheart's Create default brakespeed = 2 with 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4097"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 5,
+    "x": 245,
+    "tol": 2,
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4096"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "attacktype",
+    "eq": 3,
+    "why": "the branch sets attacktype = 3, replacing the Create default 5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4101"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "the branch pins difficulty = 1, which is what selects the two-word-manager case",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 5,
+    "name": "fakecamxspeedbase_original",
+    "eq": -8,
+    "why": "the branch halves the Create default -16 to -8",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4102"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "fakecamxspeedbase",
+    "eq": -8,
+    "why": "obj_orangeheart's Step copies fakecamxspeedbase_original onto fakecamxspeedbase every frame",
+    "src": "gml_Object_obj_orangeheart_Step_0.gml:55"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_square",
+    "atFrame": 10,
+    "min": 2,
+    "max": 2,
+    "why": "the branch creates exactly two boxes before the queue_box loop can add a third",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4112"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_square",
+    "atFrame": 10,
+    "name": "box_width",
+    "eq": 140,
+    "why": "the first box doubles its Create default box_width = 70 (not 2.5x as in type 630)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4116"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_word_manager",
+    "atFrame": 5,
+    "min": 2,
+    "max": 2,
+    "why": "the branch creates two word managers, at new_box.x + 115 and new_box.x + 185",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4129"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_word_manager",
+    "atFrame": 5,
+    "name": "b_speed",
+    "eq": 7,
+    "why": "both managers overwrite the Create default b_speed = 6 with 7",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4131"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_word_manager",
+    "atFrame": 5,
+    "name": "timer_goal",
+    "eq": 20,
+    "why": "both branches of the dir comparison set timer_goal = 20, replacing the Create default 24",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4154"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_helpful_flower",
+    "byFrame": 5,
+    "why": "one helpful flower is placed at new_box.x + 150",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4149"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_flowery_splash",
+    "atFrame": 20,
+    "y": 170,
+    "xscale": -1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "minCalls": 4,
+    "why": "each box draws its entry splash MIRRORED at xscale -1 on splash_y = scr_get_box(5) = 170; two boxes give four splash calls",
+    "src": "gml_Object_obj_orangeheart_square_Draw_0.gml:15"
+   },
+   {
+    "kind": "turntimer",
+    "min": 250,
+    "max": 330,
+    "why": "the dispatcher calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1311"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type637",
+  "name": "FloweryDashTutorial",
+  "note": "FEWER assertions on purpose. This is a dialogue-driven tutorial, not a bullet pattern: attacktype 0 / difficulty 7 runs a case that is almost entirely msgset_add callbacks, and every wall it eventually creates is gated behind the player charging a dash (scrolling flips from false to true only inside obj_orangeheart's chargetype 1 branch). With no input the attack is a static tableau, so the assertions cover exactly what the branch pins: the soul reskin, the frozen scroll state, and the green backdrop marker. The obj_flowery_towery parallax tower is NOT asserted — it is boss scenery built by obj_flowery_enemy's own Create out of shaders and surfaces, identical across all Flowery attacks and not produced by this branch.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 20,
+    "x": 245,
+    "y": 170,
+    "tol": 2,
+    "why": "created at (scr_get_box(4) - 75, scr_get_box(5)) = (245, 170); canmovevertically is false and tutorial_clamp's range [60, 260] leaves 170 untouched",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4315"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 20,
+    "name": "image_angle",
+    "eq": -90,
+    "why": "the branch turns the soul on its side with image_angle = -90",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4328"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 20,
+    "name": "cancharge",
+    "eq": 0,
+    "why": "the branch overwrites obj_orangeheart's Create default cancharge = true with false",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4330"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 20,
+    "name": "canmovevertically",
+    "eq": 0,
+    "why": "the branch overwrites the Create default canmovevertically = true with false",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4331"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart",
+    "atFrame": 20,
+    "name": "drawafterimages",
+    "eq": 0,
+    "why": "the branch overwrites the Create default drawafterimages = true with false, killing the 10-frame trail",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4332"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "difficulty",
+    "eq": 7,
+    "why": "the branch pins difficulty = 7, the tutorial case of the attacktype 0 switch",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4320"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "scrolling",
+    "eq": 0,
+    "why": "the branch overwrites the Create default scrolling = true with false; only a player dash flips it back",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4323"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "do_lines",
+    "eq": 0,
+    "why": "the branch overwrites the Create default do_lines = 0.25 with false, so the parallax lines are fully transparent",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4322"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 20,
+    "name": "tutorial_clamp",
+    "eq": 1,
+    "why": "the difficulty 7 case sets tutorial_clamp = true on its first step, overwriting the Create default false",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:356"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battlebg_tiny",
+    "atFrame": 20,
+    "x": 255,
+    "y": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the green backdrop marker is placed at (obj_orangeheart.x + 10, obj_orangeheart.y + 10) = (255, 180) and its angle/alpha lerps land on 0 and 1 after 5 frames",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4337"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orangeheart_centered",
+    "atFrame": 20,
+    "x": 255,
+    "y": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "maxCalls": 1,
+    "why": "with scrolling false the soul draws once at (x + 10, y + 10 - height) and the local _angle is reset to 0; drawafterimages false means exactly one call, not eleven",
+    "src": "gml_Object_obj_orangeheart_Draw_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orangeheart_outline",
+    "atFrame": 20,
+    "maxCalls": 0,
+    "why": "the outline pass is gated on sprite_index == spr_orangeheart_white, and this branch swapped it to spr_orangeheart_centered",
+    "src": "gml_Object_obj_orangeheart_Draw_0.gml:121"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 60,
+    "why": "the branch destroys any jarona and attacktype 0 never creates one",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4349"
+   },
+   {
+    "kind": "turntimer",
+    "min": 100000,
+    "why": "the dispatcher calls scr_turntimer(9999999) so the tutorial never times out",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:515"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type632",
+  "name": "FloweryChase2Random",
+  "note": "attacktype 0 / difficulty 4 = the bamboo-and-cactus runner lane plus the left-edge chase wall. Wall x, the bamboo y and the cactus/bamboo choice are all sin(global.time)/irandom driven, so only the pinned scr_size() dimensions and the draw parameters are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 320,
+    "why": "the dispatcher branch calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1319"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "Create sets attacktype = 5 and the type-632 init block overwrites it with 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4185"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "difficulty",
+    "eq": 4,
+    "why": "Create sets difficulty = 0, the branch pins 4 which selects the bamboo/cactus case",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4186"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75; chargetype 1 never moves x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4181"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 6,
+    "why": "difficulty 4 is not 7/8/9 and do_chase is true, so the chase wall is created on the first step",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_chaseattack",
+    "atFrame": 40,
+    "name": "image_xscale",
+    "eq": -40,
+    "why": "scr_size(-40, 480) — the negative xscale is a deliberate horizontal flip of the 1px mask",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chasewall",
+    "atFrame": 40,
+    "xscale": -2,
+    "yscale": -2,
+    "why": "the chase wall's first draw is mirrored on BOTH axes (-2, -2)",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chasewall",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the second draw of the same sprite is unmirrored at 2x",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wall",
+    "byFrame": 20,
+    "why": "case 4 fires wall_create once timer >= 5, i.e. about 5 frames in",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:208"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 16,
+    "why": "wall_create's arg2 = 16 reaches scr_size, overwriting Create's scr_size(16, 40)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:115"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "eq": 60,
+    "why": "case 4 passes length 60 - open_chase_difficulty*10 = 60 with gap == length, the solid-bamboo path",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:208"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bamboo_wall",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "bamboo walls draw the stalk part-sprite at 1:1, unscaled",
+    "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_flowery_vase",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "vase = true on every case-4 wall, drawn unrotated at 1:1",
+    "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:46"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type622",
+  "name": "FloweryDeflect2point5",
+  "note": "attacktype stays at Create's 5, so there is NO wall generator at all — the whole attack is the Jarona (Flowery-in-your-face) charging at attack_speed 36. The Jarona's Create overwrites its spawn x/y with obj_flowery_enemy.x/y, so its position is not assertable; its tuning constants are.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 3200,
+    "why": "the dispatcher branch calls scr_turntimer(3200)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1335"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 5,
+    "why": "the type-622 block never touches attacktype, so Create's 5 (the Jarona branch) stands",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "difficulty",
+    "eq": 2,
+    "why": "the branch pins difficulty = 2 over Create's 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3844"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attack_speed",
+    "eq": 36,
+    "why": "Create sets attack_speed = 20 and the branch overwrites it with 36",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3845"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "do_bullets",
+    "eq": 1,
+    "why": "Create sets do_bullets = false and the branch turns it on",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3846"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart",
+    "byFrame": 5,
+    "why": "the branch creates the orange soul at the box centre minus 75",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3837"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x is never moved on this attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3837"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 8,
+    "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "attack_speed",
+    "eq": 36,
+    "why": "the controller hands its attack_speed down; the Jarona's own Create default is 20",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "difficulty",
+    "eq": 2,
+    "why": "difficulty is copied from the controller; difficulty >= 2 shortens the recovery window to 4",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:966"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Jarona Create calls scr_size(2, 2) — it is drawn at double size",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "waittime",
+    "eq": 30,
+    "why": "Create's waittime = 30 is the wind-up before the first lunge, only re-rolled at con 0 -> 1",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:10"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 60,
+    "why": "the chase wall is only created inside the attacktype == 0 block, and this attack runs attacktype 5",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type635",
+  "name": "FloweryChaseBlueYellow",
+  "note": "difficulty 6 with wall_counter primed to -3 and timer to -12. That priming is what makes the cadence assertable: walls land at timer >= 5 (first at ~frame 17), timer resets to -1 except every 4th which resets to -20, and the blue bomb flower fires on the spawn where wall_counter reaches 0 — the 4th wall.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 320,
+    "why": "the dispatcher branch calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1343"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "Create sets attacktype = 5; the type-635 init block overwrites it with 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4263"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "difficulty",
+    "eq": 6,
+    "why": "difficulty 6 selects the vase-wall + blue bomb-flower case",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4264"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4259"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 6,
+    "why": "do_chase is true and difficulty 6 is not 7/8/9, so the chase wall is created on the first step",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_chaseattack",
+    "atFrame": 40,
+    "name": "mymaxspeed",
+    "eq": 18,
+    "why": "difficulty >= 5 pins mymaxspeed to 18",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:26"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chasewall",
+    "atFrame": 40,
+    "xscale": -2,
+    "yscale": -2,
+    "why": "the chase wall's leading draw is mirrored on both axes (-2, -2)",
+    "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wall",
+    "byFrame": 30,
+    "why": "timer starts at -12 and rises 1/frame, so the first wall_create lands around frame 17",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:337"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 45,
+    "min": 2,
+    "max": 4,
+    "why": "walls at ~17, ~23, ~29 then a 25-frame gap (wall_counter hits 0 so timer = -20); none reach x < -40 yet",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:345"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 45,
+    "name": "image_yscale",
+    "eq": 100,
+    "why": "wall_create length = 100 - open_chase_difficulty*10 = 100, and gap == length takes the solid path",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:337"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 45,
+    "name": "tensionvalue",
+    "eq": 1,
+    "why": "obj_orangeheart_wall Create sets tensionvalue = 4; the case-6 with-block overwrites it with 1",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:339"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wallflower",
+    "byFrame": 80,
+    "why": "wall_counter runs -3,-2,-1,0 and the flower fires on the spawn where (wall_counter % 5) == 0",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:248"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wallflower",
+    "atFrame": 80,
+    "name": "direction",
+    "eq": 180,
+    "why": "the bomb flower is launched straight left (direction = 180)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:253"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type636",
+  "name": "FloweryDeflectOrange",
+  "note": "attacktype stays at Create's 5, so no wall generator runs; the attack is the Jarona at attack_speed 26 with orange_dopple on, which spawns the tag-in double (obj_marker_fancy, spr_orange_animepunch_finished_cent). The double's position is derived from obj_flowery_enemy.x/y, so only its scale is asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 3200,
+    "why": "the dispatcher branch calls scr_turntimer(3200)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1351"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 5,
+    "why": "the type-636 block never sets attacktype, so Create's 5 (the Jarona branch) stands",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "Create sets attack_speed = 20; the branch overwrites it with 26",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4295"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "orange_dopple",
+    "eq": 1,
+    "why": "Create sets orange_dopple = false; the branch turns it on, which is what creates the double",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4296"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart",
+    "byFrame": 5,
+    "why": "the branch creates the orange soul at the box centre minus 75",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4286"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4286"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 8,
+    "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "the controller hands 26 down over the Jarona's own Create default of 20",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Jarona Create calls scr_size(2, 2)",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_marker_fancy",
+    "byFrame": 8,
+    "why": "orange_dopple true makes the Jarona create its double as an obj_marker_fancy",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:972"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orange_animepunch_finished_cent",
+    "atFrame": 30,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the double is scr_darksize()'d to 2x and drawn unrotated by obj_marker_fancy's draw_self",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:979"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 60,
+    "why": "the chase wall only exists inside the attacktype == 0 block, and this attack runs attacktype 5",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type638",
+  "name": "JustKidding",
+  "note": "FEWER ASSERTIONS ON PURPOSE. The controller branch for 638 is byte-identical to 636 (attack_speed 26 + orange_dopple); the thing that makes it JustKidding is `_jarona.can_kidding = true`, which is set in the boss's turn-setup block (gml_Object_obj_flowery_enemy_Step_0.gml:1129-1130) — a different part of the Step from the dispatcher branch the studio replays. So the fake-out lunge (attack_speed_jk = attack_speed + 8, x *= 0.725 decay, the spr_green_shrug decoy) is not reachable from this dispatcher alone and nothing about it is asserted here.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 3800,
+    "why": "the dispatcher branch calls scr_turntimer(3800) — the longest of the Jarona turns",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1367"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 5,
+    "why": "the type-638 block never sets attacktype, so Create's 5 (the Jarona branch) stands",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "Create sets attack_speed = 20; the branch overwrites it with 26",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4369"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "orange_dopple",
+    "eq": 1,
+    "why": "Create sets orange_dopple = false; the branch turns it on, which creates the tag-in double",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4370"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart",
+    "byFrame": 5,
+    "why": "the branch creates the orange soul at the box centre minus 75",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4360"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4360"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_floweryjarona",
+    "byFrame": 8,
+    "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "attack_speed",
+    "eq": 26,
+    "why": "the controller hands 26 down over the Jarona's own Create default of 20",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_floweryjarona",
+    "atFrame": 12,
+    "name": "attack_speed_limit",
+    "eq": 36,
+    "why": "Create's ceiling the lunge speed ramps toward on each deflect; 638 does not raise it",
+    "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:31"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_marker_fancy",
+    "byFrame": 8,
+    "why": "orange_dopple true makes the Jarona create its double as an obj_marker_fancy",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:972"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orange_animepunch_finished_cent",
+    "atFrame": 30,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the double is scr_darksize()'d to 2x and drawn unrotated by obj_marker_fancy's draw_self",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:979"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 60,
+    "why": "the chase wall only exists inside the attacktype == 0 block, and this attack runs attacktype 5",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type639",
+  "name": "SuperJarona",
+  "note": "difficulty 8 = case 8, a ONE-SHOT corridor: at timer >= 12 a single for-loop fires 9 wall_create calls at x = 660 + running _counter with _add closing 640 -> 290 (step 140) and the gate closing 140 -> 36 (step 30). Each call splits into 3 walls (top / breakable gate / bottom), so the whole lane exists by ~frame 15. The second half of case 8 (timer >= 196, flip to the Jarona) is not covered: that Jarona is created by the boss's turn-setup block, not by this dispatcher branch, so it does not exist here.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 9999,
+    "why": "the dispatcher branch calls scr_turntimer(9999) — the corridor ends on its own, not on the clock",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1375"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "Create sets attacktype = 5; the type-639 block overwrites it with 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4394"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 30,
+    "name": "difficulty",
+    "eq": 8,
+    "why": "difficulty 8 selects the one-shot 9-gate corridor",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4395"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 60,
+    "why": "the chase-wall guard explicitly excludes difficulty 7, 8 and 9",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:21"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart",
+    "byFrame": 5,
+    "why": "the branch creates the orange soul at the box centre minus 75",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4385"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 30,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4385"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_wall",
+    "byFrame": 25,
+    "why": "the whole corridor is built in one for-loop the first frame timer reaches 12",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:601"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "min": 25,
+    "max": 27,
+    "why": "9 wall_create calls x 3 segments; only the a=1 gate can clamp its top segment to zero length and be skipped, and nothing has reached x < -40 yet",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:603"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "y": 50,
+    "tol": 2,
+    "why": "the first wall is created at arg1 - arg3*0.5 = scr_get_box(5) - 120 = 170 - 120; walls never move in y",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:148"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 16,
+    "why": "wall_create arg2 = 16 overwrites obj_orangeheart_wall Create's scr_size(16, 40)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:152"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orangeheart_wall",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "min": 95,
+    "max": 100,
+    "why": "first segment length = clamp(180 + sin*15, 70, 170) - 70, and the sin term cannot take it outside 95..100",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:603"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bamboo_wall",
+    "atFrame": 30,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "every corridor segment is bamboo = true and draws the stalk part-sprite at 1:1",
+    "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 60,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "flowery_type641",
+  "name": "AquaKnives",
+  "note": "difficulty 10 = case 10, lilypads on a 28-frame beat with knife curtains from the second pad on. timer is primed to 5 and timer_goal cut from Create's 30 to 28, so pad #1 lands around frame 25 and pad #2 plus the ten knives around frame 53. Knife x and y both move (orangeheartControlled drift plus vspeed -5 with a 375px wrap), so only counts, scales and the angle are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 320,
+    "why": "the dispatcher branch calls scr_turntimer(320)",
+    "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1391"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 32,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "Create sets attacktype = 5; the type-641 block overwrites it with 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4450"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 32,
+    "name": "difficulty",
+    "eq": 10,
+    "why": "difficulty 10 selects the lilypad/knife case",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4451"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 32,
+    "name": "do_chase",
+    "eq": 0,
+    "why": "Create sets do_chase = true; this is the one branch of the seven that turns it off",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4448"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_debug_orangeheartcontroller",
+    "atFrame": 32,
+    "name": "timer_goal",
+    "eq": 28,
+    "why": "Create sets timer_goal = 30 and the branch overwrites it with 28 — the pad cadence",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4452"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_orangeheart_chaseattack",
+    "byFrame": 62,
+    "why": "do_chase is false, so the chase wall is never created",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:19"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart",
+    "atFrame": 32,
+    "x": 245,
+    "tol": 2,
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4444"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_jumppad",
+    "byFrame": 35,
+    "why": "timer starts at 5 and rises 1/frame, so timer > timer_goal (28) first fires around frame 25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:690"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_orangeheart_jumppad",
+    "atFrame": 32,
+    "y": 170,
+    "tol": 2,
+    "why": "the first pad is created at scr_get_box(5) = obj_growtangle.y and gets no vspeed (wall_counter < 2)",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:690"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_orangeheart_lillypad",
+    "atFrame": 32,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "the pad is scr_darksize()'d to 2x and drawn unrotated on the box centre line",
+    "src": "gml_Object_obj_orangeheart_jumppad_Create_0.gml:2"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orangeheart_bullet",
+    "byFrame": 62,
+    "why": "the second pad (wall_counter 1) also fires two rows of five knives, about 28 frames after the first",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:712"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orangeheart_bullet",
+    "atFrame": 62,
+    "min": 5,
+    "max": 10,
+    "why": "two for-loops of 5 knives each, 75px apart, the second row offset by 37.5",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:743"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_attack_knifechain",
+    "atFrame": 62,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 90,
+    "why": "scr_darksize() puts the knives at 2x and image_angle = sign(-vspeed)*90 = 90 for the odd wall_counter row",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:722"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pxwhite",
+    "atFrame": 62,
+    "xscale": 8,
+    "yscale": 217,
+    "angle": 0,
+    "alpha": 0.25,
+    "minCalls": 5,
+    "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+    "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type146",
+  "name": "jack 1",
+  "note": "Ghost-house maze. The branch is one big builder: it repaints obj_growtangle with spr_ghost_house_starter, teleports the soul to the maze entrance, and lays out dots/lock/key/exit. It is the only jack maze that fires NO bullets at all.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_starter",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "the branch repaints the box with the starter house; growtangle finishes growing at maxxscale/maxyscale 2, angle target_angle 0, alpha 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1843"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_starter_inner",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "the solid inner wall layer is an obj_battlesolid at the box origin scaled 2x2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1872"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "min": 6,
+    "max": 6,
+    "why": "_linex 0..149 step 36 gives 5 dots and _liney 12..27 step 24 gives 1 more",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1864"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "x": 248,
+    "y": 194,
+    "tol": 2,
+    "why": "first dot is obj_heart.x+40, obj_heart.y+3 with the soul just parked at (320-112, 170+21); dots never move",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1865"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 460,
+    "y": 196,
+    "xscale": 2,
+    "yscale": 3.2,
+    "tol": 2,
+    "why": "the lock is obj_growtangle.x+140, obj_growtangle.y+26 with image_xscale 2 / image_yscale 3.2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1856"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_ghosthouse_key",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one key is created at obj_growtangle.x, obj_growtangle.y-36",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1878"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 45,
+    "x": 320,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "tol": 2,
+    "why": "key drawn at its x with default 1x scale and literal alpha 1; y omitted because the key Draw adds 3*sin(float)",
+    "src": "gml_Object_obj_ghosthouse_key_Draw_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "eq": 4,
+    "why": "the exit is stretched to image_yscale 4 at obj_ghosthouse_lock.x+8, .y+8",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1881"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_ghosthouse_cleaner",
+    "byFrame": 5,
+    "why": "every jack maze creates one cleaner so the solids/triggers are torn down at turn end",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1853"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gh_fireball_linear",
+    "byFrame": 200,
+    "why": "the whole type 146 branch (1831-1883) creates no fireball of any kind and has no per-frame code — the starter maze is bulletless",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1831"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gh_bouncebarrier",
+    "byFrame": 200,
+    "why": "no bounce barriers are created anywhere in the type 146 branch",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1831"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "the branch pins global.turntimer to 999999; the maze ends when the soul reaches the exit",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1852"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type147",
+  "name": "jack 2",
+  "note": "3x2 ghost house. The branch nudges the whole box down 40px, so every position in this attack is 40 lower than the other jack mazes.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_3x2",
+    "atFrame": 45,
+    "x": 320,
+    "y": 210,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "box repainted with spr_ghost_house_3x2 and moved obj_growtangle.y += 40 (170 -> 210), grown to 2x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1900"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_3x2_inner",
+    "atFrame": 45,
+    "x": 320,
+    "y": 210,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "inner wall obj_battlesolid sits on the shifted box origin at 2x2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1938"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "min": 13,
+    "max": 13,
+    "why": "1 lone dot + 6 from the _linex 0..87 step 21 zigzag (42 skipped, _flip pattern 2/1/-/1/2) + 6 from the two _flip rows of 3",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1944"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "x": 192,
+    "y": 210,
+    "tol": 2,
+    "why": "first dot is obj_growtangle.x-128, obj_growtangle.y = (192,210) after the +40 shift; dots never move",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1934"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "min": 3,
+    "max": 3,
+    "why": "the _flip3 loop (1,0,-1) runs only on the _flip == 1 pass, so exactly three linear fireballs",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1997"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "width",
+    "eq": 45,
+    "why": "first linear (_flip3 = 1) overrides Create's width 60 with 45*(1-2*0)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1999"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 60,
+    "why": "cycle_length overwritten from Create's 120 to 60",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2000"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "y": 264,
+    "tol": 2,
+    "why": "created at obj_growtangle.y + 34 + 20 = 264; type 0 only rewrites x, so y is fixed (x omitted, it oscillates)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1997"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_pumpkin_horizontal",
+    "byFrame": 20,
+    "why": "obj_gh_fireball_linear's End Step swaps its spr_ghost_house_bullet for the horizontal pumpkin on the first frame (type 0)",
+    "src": "gml_Object_obj_gh_fireball_linear_Step_2.gml:8"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_bouncebarrier",
+    "atFrame": 30,
+    "min": 3,
+    "max": 3,
+    "why": "three barriers: yscale 50 rotated 90 at x-64, and two yscale 24 uprights at x-60 and x+60",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1969"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gh_fireball_bouncy",
+    "byFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "two scr_fire_bullet calls (each creates exactly one bullet), hspeed/vspeed forced to (1,1) and (-1.5,0.5)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1957"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 468,
+    "y": 228,
+    "xscale": 2,
+    "yscale": 4.5,
+    "tol": 2,
+    "why": "lock at obj_growtangle.x+148, .y+18 with image_xscale 2 / image_yscale 4.5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1918"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 45,
+    "x": 420,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "tol": 2,
+    "why": "key at obj_heart.x+8 = 412+8 with default 1x scale; y omitted (bobs on 3*sin(float))",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2006"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch pins global.turntimer to 999999 — the maze ends at the exit, not on a clock",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1907"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type151",
+  "name": "jack 3",
+  "note": "Standard ghost house. Two nested rings of square-orbit fireballs on the box centre, a column of three linear fireballs 100px left, and a lamp lightsource.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_normal",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "box repainted with spr_ghost_house_normal at the unmoved box origin, grown to maxxscale/maxyscale 2 with alpha 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2474"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_normal_inner",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "inner wall obj_battlesolid on the box origin at 2x2 with image_speed 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2534"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "min": 9,
+    "max": 9,
+    "why": "3 dots per _flip pass (2 passes) plus one dot dropped by each of the three linear fireballs",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2499"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "x": 359,
+    "y": 170,
+    "tol": 2,
+    "why": "first dot of the _flip = 1 pass is obj_growtangle.x+39, obj_growtangle.y; dots never move",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2499"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "min": 4,
+    "max": 4,
+    "why": "2 _flip passes x 2 _layer values = four square-orbit fireballs, all based on the box centre",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2505"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "width",
+    "eq": 39,
+    "why": "first square (_flip 1, _layer 0) overwrites Create's width 27 with (39+0)*1 — the inner ring radius",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2508"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 84,
+    "why": "first square overwrites Create's cycle_length 40 with (84+0)*1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2509"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "min": 3,
+    "max": 3,
+    "why": "_y runs -32, 0, 32 giving three linear fireballs on the x-100 column",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2524"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 40,
+    "why": "cycle_length overwritten from Create's 120 to 40",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2527"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "y": 138,
+    "tol": 2,
+    "why": "first linear is created at obj_growtangle.y-32 = 138; type 0 only rewrites x, so y is fixed (x omitted, it oscillates +-20)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2524"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_pumpkin_horizontal",
+    "byFrame": 20,
+    "why": "obj_gh_fireball_linear's End Step swaps spr_ghost_house_bullet for the horizontal pumpkin because type is 0",
+    "src": "gml_Object_obj_gh_fireball_linear_Step_2.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 450,
+    "y": 246,
+    "xscale": 2,
+    "yscale": 4,
+    "tol": 2,
+    "why": "lock at obj_growtangle.x+130, .y+76 with image_xscale 2 / image_yscale 4",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2544"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 45,
+    "x": 220,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "tol": 2,
+    "why": "key at obj_growtangle.x-100 with default 1x scale; y omitted (bobs on 3*sin(float))",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2542"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch pins global.turntimer to 999999 — the maze ends at the exit, not on a clock",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2483"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type150",
+  "name": "jack 4",
+  "note": "Chimney house. Densest jack maze: seven square-orbit fireballs, two mobius orbiters whose trail orbs are created then immediately destroyed (trail_length 0), a long linear sweeper and a decorative tree solid 240px right of the box.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_chimney",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "box repainted with spr_ghost_house_chimney at the unmoved box origin, grown to 2x with alpha 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2325"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_chimney_inner",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "inner wall obj_battlesolid on the box origin at 2x2 with image_speed 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2436"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_tree",
+    "atFrame": 45,
+    "x": 560,
+    "y": 194,
+    "xscale": 1,
+    "yscale": 1,
+    "tol": 2,
+    "why": "tree solid at pumpkin_x = obj_growtangle.x+240, pumpkin_y-40 = obj_growtangle.y+64-40, left at default 1x scale",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2340"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "min": 7,
+    "max": 7,
+    "why": "one square below the box plus 3 _range values x 2 _flip passes",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2360"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "width",
+    "eq": 15,
+    "why": "first square (at obj_growtangle.y+70) overwrites Create's width 27 with 15",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2350"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_mobius",
+    "atFrame": 40,
+    "min": 2,
+    "max": 2,
+    "why": "one mobius orbiter per _flip pass, at obj_growtangle.x -/+ 120",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2371"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_mobius",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 32,
+    "why": "cycle_length overwritten from Create's 90 to 32",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2376"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one linear sweeper is created, at obj_growtangle.y+32",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2425"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "width",
+    "eq": 91,
+    "why": "width overwritten from Create's 60 to 91 — the widest sweep in the jack set",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2427"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 101,
+    "why": "cycle_length overwritten from Create's 120 to 101",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2428"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "y": 202,
+    "tol": 2,
+    "why": "created at obj_growtangle.y+32 = 202; type 0 only rewrites x, so y is fixed (x omitted, it sweeps +-91)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2425"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_bouncebarrier",
+    "atFrame": 30,
+    "min": 2,
+    "max": 2,
+    "why": "two visible barriers: yscale 12 rotated 90 at x-72, and yscale 6 flat at x-24",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2402"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 444,
+    "y": 218,
+    "xscale": 2,
+    "yscale": 5.5,
+    "tol": 2,
+    "why": "lock at obj_growtangle.x+124, .y+48 with image_xscale 2 / image_yscale 5.5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2445"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch pins global.turntimer to 999999 — the maze ends at the exit, not on a clock",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2334"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type148",
+  "name": "jack 5",
+  "note": "The 'toolong' house: a three-row corridor built from 13 rotated obj_battlesolid bars plus two dot rows, each row patrolled by one linear and one square fireball. This is the branch that spawns obj_jackendummy in the bullet-test room only.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_toolong",
+    "atFrame": 45,
+    "x": 320,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "box repainted with spr_ghost_house_toolong at the unmoved box origin, grown to 2x with alpha 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2026"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "min": 10,
+    "max": 10,
+    "why": "_liney 8 and 48 x _linex -10..100 step 25 (5 values) = ten dots and nothing else drops a dot",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2171"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "x": 220,
+    "y": 188,
+    "tol": 2,
+    "why": "first dot is (obj_growtangle.x-80) + (-10*2), obj_growtangle.y+10+8; dots never move",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2172"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "min": 2,
+    "max": 2,
+    "why": "one linear per _liney pass (8 and 48)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2174"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "width",
+    "eq": -130,
+    "why": "first linear (_liney 8) gets 130*(1-2*1) = -130, so the top row sweeps in the opposite phase to the bottom",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2176"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 120,
+    "why": "cycle_length pinned to 120 (same as Create's default) for both rows",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2177"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "y": 188,
+    "tol": 2,
+    "why": "created at obj_growtangle.y+10+8 = 188; type 0 only rewrites x, so y is fixed (x omitted, it sweeps +-130)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2174"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "min": 2,
+    "max": 2,
+    "why": "one square-orbit fireball per _liney pass",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2180"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 150,
+    "why": "cycle_length overwritten from Create's 40 to 150 — a much slower box orbit than jack 3's",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2186"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "hflip",
+    "eq": -1,
+    "why": "first square (_liney 8) gets hflip = sign(8-20) = -1, mirroring its orbit against the lower row's +1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2184"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar",
+    "atFrame": 45,
+    "x": 304,
+    "y": 168,
+    "xscale": 2,
+    "yscale": 3.75,
+    "angle": 90,
+    "tol": 2,
+    "why": "first corridor wall: obj_battlesolid at obj_growtangle.x-16, .y-2, image_xscale 2 / image_yscale 3.75 rotated 90",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2052"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 460,
+    "y": 250,
+    "xscale": 2,
+    "yscale": 3.75,
+    "tol": 2,
+    "why": "lock at obj_growtangle.x+140, .y+80 with image_xscale 2 / image_yscale 3.75",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2190"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 45,
+    "x": 320,
+    "xscale": 3,
+    "yscale": 0.75,
+    "alpha": 1,
+    "tol": 2,
+    "why": "this maze's key is the 'long' one — image_xscale 3, image_yscale 0.75 instead of 1x1; y omitted (bobs on 3*sin(float))",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2201"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch pins global.turntimer to 999999 — the maze ends at the exit, not on a clock",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2035"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type153",
+  "name": "jack 6",
+  "note": "The 'nopumpkin' house. The branch shifts the whole box 26px right before anything else is placed, then walks a 4x4 lattice (_xx 1..-2, _yy -3..3 step 2) dropping a dot at every cell except two, with a bullet keyed to specific cells. The two bouncy fireballs pick direction = 30*irandom(12)+15, so nothing about their heading is asserted.",
+  "assertions": [
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_nopumpkin",
+    "atFrame": 45,
+    "x": 346,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 2,
+    "why": "box repainted with spr_ghost_house_nopumpkin AND moved obj_growtangle.x += 26 (320 -> 346), then grown to 2x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2769"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ghost_house_nopumpkin_inner",
+    "atFrame": 45,
+    "x": 346,
+    "y": 170,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "inner wall obj_battlesolid on the shifted box origin at 2x2 with image_speed 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2878"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 30,
+    "min": 17,
+    "max": 18,
+    "why": "14 lattice dots (16 cells minus the (0,-3) and (-2,3) exclusions) plus 4 dropped beside the two (_yy -3, _xx 1) linears; the soul starts at (237,243) overlapping the (242,248) dot, so one may be collected on contact",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2786"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "min": 5,
+    "max": 5,
+    "why": "linears at cells (-1,3), (1,3), (-2,-3) and two at (1,-3) — five in total",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2863"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "width",
+    "eq": -15,
+    "why": "first linear created is the _flip = 1 one at cell (1,-3): width = -15*1, overwriting Create's 60",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2865"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "name": "cycle_length",
+    "eq": 27,
+    "why": "every linear in this maze overwrites Create's cycle_length 120 with 27 — the fastest sweep of the jack set",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2866"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 40,
+    "y": 107,
+    "tol": 2,
+    "why": "first linear is at obj_growtangle.y + (26*-3) + 15 = 107; type 0 only rewrites x, so y is fixed (x omitted, it sweeps +-15)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2863"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_pumpkin_horizontal",
+    "byFrame": 20,
+    "why": "the three type-0 linears swap spr_ghost_house_bullet for the horizontal pumpkin in their End Step",
+    "src": "gml_Object_obj_gh_fireball_linear_Step_2.gml:8"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_pumpkin_vertical",
+    "byFrame": 20,
+    "why": "the two linears given type = 1 (cells (-1,3) and (-2,-3)) swap to the VERTICAL pumpkin instead",
+    "src": "gml_Object_obj_gh_fireball_linear_Step_2.gml:10"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "min": 4,
+    "max": 4,
+    "why": "squares at cells (-2,-1), (0,-1), (1,-1) and (-2,1)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2811"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 40,
+    "name": "width",
+    "eq": -15,
+    "why": "first square created is cell (1,-1): width overwritten from Create's 27 to -15",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2814"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_solid_bar_end",
+    "atFrame": 45,
+    "x": 426,
+    "y": 224,
+    "xscale": 2,
+    "yscale": 6,
+    "tol": 2,
+    "why": "lock at obj_growtangle.x+80, .y+54 (from the shifted 346) with image_xscale 2 / image_yscale 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2898"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 45,
+    "x": 346,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "tol": 2,
+    "why": "key on the shifted box centre at default 1x scale; y omitted (bobs on 3*sin(float))",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2896"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "tol": 2,
+    "why": "branch pins global.turntimer to 999999 — the maze ends at the exit, not on a clock",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2777"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type149",
+  "name": "jack 7",
+  "note": "Ghost-house maze room 'twopumpkins'. The type==149 branch is one big !made block that builds the whole room at once; there is no per-frame logic, so every assertion is a build-time literal. obj_growtangle sits at (camerax()+320, cameray()+170) = (320,170) per gml_Object_obj_baseenemy_Step_0.gml:46, and every position below is growtangle-relative.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "why": "the maze rooms run on an untimed turn, ended by touching the exit",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2234"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gh_fireball_hop",
+    "byFrame": 1,
+    "min": 10,
+    "max": 10,
+    "why": "_linex runs -38..50 step 20 (5 values) inside the _flip = -1,+1 loop",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2274"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_gh_fireball_mobius",
+    "byFrame": 1,
+    "min": 2,
+    "max": 2,
+    "why": "one mobius orbiter per _flip pass",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2268"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 1,
+    "min": 10,
+    "max": 10,
+    "why": "6 breadcrumb dots on the hop line ((_linex+38)%40==0 for 3 of 5 slots, twice) plus 2 trail orbs per mobius (trail_length = 2 in obj_gh_fireball_mobius Create)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2283"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_gh_fireball_hop",
+    "atFrame": 1,
+    "name": "cycle_length",
+    "eq": 60,
+    "why": "the branch halves the Create default of 120, doubling the hop rate",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2278"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "min": 2,
+    "max": 2,
+    "why": "two invisible room triggers are placed, one alternate and one plain",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2249"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "name": "image_xscale",
+    "eq": 3,
+    "why": "the with-block overwrites the trigger's Create default of 5, proving init ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2251"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "x": 420,
+    "y": 216,
+    "tol": 1,
+    "why": "obj_growtangle.x+100 = 420, obj_growtangle.y+46 = 216; the lock never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2300"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 4.75,
+    "why": "the lock bar is stretched to 4.75x vertically",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2303"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_key",
+    "atFrame": 1,
+    "x": 392,
+    "y": 104,
+    "tol": 2,
+    "why": "obj_heart.x was just set to obj_growtangle.x+70 = 390, so key x = 392; y = obj_growtangle.y-66 = 104",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2298"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_battle_key",
+    "atFrame": 20,
+    "x": 392,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "tol": 2,
+    "why": "the key draws itself at unscaled 1x, fully opaque, bobbing only in y",
+    "src": "gml_Object_obj_ghosthouse_key_Draw_0.gml:3"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 1,
+    "x": 426,
+    "y": 228,
+    "tol": 1,
+    "why": "obj_ghosthouse_lock.x+6 = 426, obj_ghosthouse_lock.y+12 = 228",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2308"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 9,
+    "why": "the exit trigger is a 9x tall bar",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2309"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_pumpkin_vertical",
+    "byFrame": 5,
+    "why": "obj_gh_fireball_hop's default sprite, which its own Step animates by hop direction",
+    "src": "gml_Object_obj_gh_fireball_hop_Step_1.gml:5"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type152",
+  "name": "jack 8",
+  "note": "Ghost-house maze room 'yourtutu'. Whole room built in one !made block; the nine obj_gh_fireball_square bullets all run hand-built paths (init = true suppresses their own default square path), so their positions are path-driven and only their count is asserted. obj_growtangle is at (320,170).",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "why": "the maze rooms run on an untimed turn, ended by touching the exit",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2584"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 1,
+    "min": 9,
+    "max": 9,
+    "why": "three single path bullets, four from the _angle 0..270 loop, then two more sharing (374,185)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2633"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 1,
+    "min": 13,
+    "max": 13,
+    "why": "2 + 2 breadcrumbs on the first two paths, 4 on the _angle==0 ring, 5 around the (374,185) path",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2642"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "min": 2,
+    "max": 2,
+    "why": "one 45-degree trigger and one tutu trigger are placed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2597"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "both with-blocks overwrite the trigger's Create default of 5, proving init ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2599"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_key",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one key (re-sprited as the tutu) is placed in the room",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2719"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tutu",
+    "atFrame": 20,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "why": "the key's sprite is swapped to spr_tutu and its Draw event draws it at image_xscale/yscale (untouched, so 1) and hardcoded alpha 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2721"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "x": 470,
+    "y": 246,
+    "tol": 1,
+    "why": "obj_growtangle.x+150 = 470, obj_growtangle.y+76 = 246; the lock never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2731"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 4,
+    "why": "the lock bar is stretched to 4x vertically",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2734"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 1,
+    "x": 478,
+    "y": 242,
+    "tol": 1,
+    "why": "obj_ghosthouse_lock.x+8 = 478, obj_ghosthouse_lock.y-4 = 242",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2747"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 6,
+    "why": "the exit trigger is a 6x tall bar",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2750"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gh_fireball_hop",
+    "byFrame": 150,
+    "why": "the tutu room uses only path-driven squares, never a hopping pumpkin",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2560"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type154",
+  "name": "jack 9",
+  "note": "Ghost-house maze room 'final' — the biggest one. The branch shifts the battle box (+24 x, -24 y) before building, so every literal below is measured off obj_growtangle at (344,146), not (320,170). The three obj_gh_fireball_bouncy bullets are fired at irandom offsets so nothing is asserted about them, and obj_gh_fireball_bouncy is the parent object of hop/square/mobius so it is never counted.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_growtangle",
+    "atFrame": 1,
+    "x": 344,
+    "y": 146,
+    "tol": 1,
+    "why": "the branch moves the box by +24 x and -24 y from its (320,170) default before anything else is placed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2926"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 999999,
+    "why": "the maze rooms run on an untimed turn, ended by touching the exit",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2934"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_hop",
+    "atFrame": 1,
+    "min": 11,
+    "max": 11,
+    "why": "6 from the _xx = -3..2 step-1 loop plus 5 from the _xx = -3..3 step-1.5 while loop",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3036"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_linear",
+    "atFrame": 1,
+    "min": 7,
+    "max": 7,
+    "why": "4 from the _yy = 1..5 step-1.25 while loop plus 3 from the _yy = 1,3,5 loop",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3082"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_gh_fireball_square",
+    "atFrame": 1,
+    "min": 4,
+    "max": 4,
+    "why": "_range runs 0,10,20,30 producing four nested square orbiters at (499,172)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3196"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 1,
+    "min": 25,
+    "max": 25,
+    "why": "9 laid around the soul, 6 on the first hop row, 7 on the second, 3 above the trigger — the branch even debug-prints instance_number(obj_ghosthouse_dot)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3223"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "this room places exactly one trigger",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3113"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 1,
+    "why": "overwrites the trigger's Create default of 5, proving init ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3116"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_trigger",
+    "atFrame": 1,
+    "name": "alternate",
+    "eq": 2,
+    "why": "this trigger uses alternate mode 2, overwriting the Create default of false",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3119"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_key",
+    "atFrame": 1,
+    "x": 280,
+    "y": 56,
+    "tol": 1,
+    "why": "obj_growtangle.x-64 = 280, obj_growtangle.y-90 = 56 after the box shift",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3207"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "x": 148,
+    "y": 244,
+    "tol": 1,
+    "why": "obj_growtangle.x-196 = 148, obj_growtangle.y+98 = 244; the lock never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3209"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "name": "image_xscale",
+    "eq": -2,
+    "why": "this lock is horizontally flipped because it sits on the left wall",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3211"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_lock",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 5.5,
+    "why": "the left-wall lock bar is stretched to 5.5x vertically",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3212"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_exit",
+    "atFrame": 1,
+    "x": 144,
+    "y": 240,
+    "tol": 1,
+    "why": "obj_ghosthouse_lock.x-4 = 144, obj_ghosthouse_lock.y-4 = 240",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3217"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_bullet_small",
+    "byFrame": 5,
+    "why": "all seven linear bullets are re-sprited to the small bullet",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3089"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type155",
+  "name": "jack lightup",
+  "note": "Deliberately few assertions. This branch spawns NO bullets at all — it is a one-object chase/mercy minigame (obj_ghosthouse_jackolantern_merciful) whose whole behaviour is driven by the soul's live distance to the pumpkin and by global.mercymod, neither of which is deterministic under a harness. Only the build-time literals, the pumpkin's pre-motion position, and the two negative facts (no bullets, no dots) are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 900,
+    "why": "the only jack attack with a finite pinned turn length",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3254"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_ghosthouse_jackolantern_merciful",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "exactly one merciful jack-o-lantern is the entire attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3283"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_ghosthouse_jackolantern_merciful",
+    "atFrame": 15,
+    "x": 320,
+    "y": 10,
+    "tol": 2,
+    "why": "created at (obj_growtangle.x, obj_growtangle.y-160); it is unfeared and far outside light_distance, so its Step takes the speed = min(sqrt(max(0,timer-30)),4)/(1+ticks) branch, which is 0 for the first 30 steps",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3283"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightsource_heartlight",
+    "atFrame": 1,
+    "name": "radius",
+    "eq": 60,
+    "why": "the branch shrinks the soul's light from its Create default of 80 to 60 — the visible 'lightup' setup",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3258"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightsource_heartlight",
+    "atFrame": 1,
+    "name": "biggerrad",
+    "eq": 15,
+    "why": "overwrites the Create default of 12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3259"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_heartlight_beam",
+    "byFrame": 25,
+    "min": 1,
+    "why": "supercharged = true makes the heartlight emit a beam once super_timer (starting at 3) passes 12 + random(5), i.e. by step 16 at worst",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3260"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_ghosthouse_jackolantern_merciful",
+    "atFrame": 5,
+    "name": "run_threshold",
+    "eq": 5,
+    "why": "five completed 7-tick chains are what ends the minigame",
+    "src": "gml_Object_obj_ghosthouse_jackolantern_merciful_Create_0.gml:14"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_cleaner",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "the cleaner is created once inside !made here, unlike type 156 which creates one every step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3269"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_ghosthouse_dot",
+    "byFrame": 200,
+    "why": "nothing in the type == 155 branch ever creates a dot",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3233"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_gh_fireball_hop",
+    "byFrame": 200,
+    "why": "this attack spawns no fireball bullets of any kind",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3233"
+   }
+  ]
+ },
+ {
+  "id": "jackenstein_type156",
+  "name": "jack 10",
+  "note": "The only jack attack with per-frame logic: no maze room, just a rain of big pumpkin bullets and dots down the box. All spawn x/y are randomised, so the cadence is asserted as the frame windows the two timers force (timer1/timer2 both start at -15) and the x span as a min/max band the randomness cannot leave.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "the only fixed 420-frame jack turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3291"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_growtangle",
+    "atFrame": 1,
+    "x": 320,
+    "y": 194,
+    "tol": 1,
+    "why": "the branch drops the box 24px (170 + 24) and never touches its x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3305"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_lightsource_firebar",
+    "atFrame": 1,
+    "x": 320,
+    "y": 60,
+    "tol": 1,
+    "why": "created at obj_growtangle.y-110 BEFORE the box is shifted, so y = 170-110 = 60, not 84",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3303"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightsource_heartlight",
+    "atFrame": 1,
+    "name": "radius",
+    "eq": 52,
+    "why": "overwrites the heartlight's Create default of 80",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3301"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightsource_heartlight",
+    "atFrame": 1,
+    "name": "biggerrad",
+    "eq": 16,
+    "why": "overwrites the Create default of 12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3302"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 18,
+    "max": 0,
+    "why": "timer1 starts at -15 and must exceed 8 + irandom(7), so the earliest possible first shot is step 24",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3306"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 36,
+    "min": 1,
+    "why": "the worst-case threshold 8 + 7 fires the first shot at step 31",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3323"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 40,
+    "name": "x",
+    "min": 254,
+    "max": 386,
+    "why": "(obj_growtangle.x + irandom(22)*6) - 66 spans 254..386, and direction 270 leaves x fixed",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3331"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 40,
+    "name": "speed",
+    "eq": 5,
+    "why": "scr_fire_bullet's 5th argument sets speed 5 straight down and nothing changes it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3331"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_dot",
+    "atFrame": 15,
+    "max": 0,
+    "why": "timer2 starts at -15 and must exceed 5 + irandom(6), so the earliest dot volley is step 21",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3307"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_ghosthouse_dot",
+    "byFrame": 32,
+    "min": 1,
+    "why": "the worst-case threshold 5 + 6 fires the first dot volley at step 27",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3347"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_ghosthouse_cleaner",
+    "atFrame": 30,
+    "min": 20,
+    "why": "the cleaner spawn sits OUTSIDE the !made block here, so one is created on every step of the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3321"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ghost_house_bullet_big",
+    "byFrame": 45,
+    "why": "the falling bullets are re-sprited to the big pumpkin bullet by scr_fire_bullet's 6th argument",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3331"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_ghosthouse_key",
+    "byFrame": 200,
+    "why": "type 156 builds no maze room, so there is no key/lock/exit to collect",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3287"
+   }
+  ]
+ },
+ {
+  "id": "kround_checkers_leap",
+  "name": "leapmode 0 - Stomp (3 leaps onto the box floor, body is the hitbox)",
+  "note": "obj_checkers_leap's leapmode 0 block spawns NO bullets at all - the leaping body is the hitbox (obj_checkers_leap's parent is obj_collidebullet and its Other_15 calls scr_damage). Frame timings come from the 20-frame crouch (jumpmax 20 on the first leap, 10 after) plus a vspeed -17 / gravity 1 arc from the enemy's y down to the box floor.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the checkers turn sets a 999-frame clock when it dispatches obj_checkers_leap",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:94"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "box made at view+320,+170 and grown to 2x the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:32"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 140,
+    "why": "the whole leapmode 0 block creates only obj_shake, never a bullet",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 19,
+    "name": "jumpcon",
+    "eq": 0,
+    "why": "jumpmax is 20 on the first leap so the crouch is still running at frame 19",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:45"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 20,
+    "name": "jumpcon",
+    "eq": 1,
+    "why": "jumptimer reaches jumpmax 20 and the leap starts",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:55"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 25,
+    "name": "amt",
+    "eq": 1,
+    "why": "amt counts leaps and only one has been taken by frame 25",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:56"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 25,
+    "name": "gravity",
+    "eq": 1,
+    "why": "the leap arc is driven by gravity 1 while airborne",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:64"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_checkers_leap",
+    "byFrame": 25,
+    "why": "the jump swaps the sprite to spr_checkers_leap",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:57"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkers_leap",
+    "atFrame": 25,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "Create pins image_xscale/image_yscale to 2, so it is drawn double size",
+    "src": "gml_Object_obj_checkers_leap_Create_0.gml:4"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_checkers_leap",
+    "atFrame": 49,
+    "y": 77,
+    "tol": 3,
+    "why": "lands with its feet on the box floor: 170 + 150/2 - (84*2) = 77",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:11"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_shake",
+    "byFrame": 55,
+    "why": "every landing creates obj_shake",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkers_crouch",
+    "atFrame": 49,
+    "y": 77,
+    "tol": 3,
+    "why": "on impact the sprite becomes spr_checkers_crouch, still standing on the box floor",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:16"
+   }
+  ]
+ },
+ {
+  "id": "kround_checkers_leap_leapmode_1_sla",
+  "name": "leapmode 1 - Slam (2 hover-slams, 6 shrapnel fanned from each impact)",
+  "note": "Timeline: 20-frame crouch, vspeed -17 rise, gravity/vspeed zeroed into a 15-frame hover (jumpcon 2), then vspeed 32 dive (jumpcon 3) that fans 6 obj_regularbullet on impact. amt >= 3 ends the turn, so exactly two slams land. Bullet directions and speeds are randomised (130 - random(10) - 70*(i/5), 6 + random(1)) so only the count and the pinned scale/gravity are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the checkers turn sets a 999-frame clock when it dispatches obj_checkers_leap",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:94"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "box made at view+320,+170 and grown to 2x the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:32"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 25,
+    "name": "jumpcon",
+    "eq": 1,
+    "why": "the leap fires at jumptimer 20 and is still rising at frame 25",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:143"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 45,
+    "name": "jumpcon",
+    "eq": 2,
+    "why": "the rise ends in a hover as soon as vspeed reaches 0",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:170"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 45,
+    "name": "gravity",
+    "eq": 0,
+    "why": "the hover zeroes gravity so it hangs mid-air before the slam",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:167"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 40,
+    "max": 0,
+    "why": "shrapnel only exists once the slam has landed; frame 40 is still the hover",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:202"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 65,
+    "min": 6,
+    "max": 6,
+    "why": "shrapmax is 6, so one impact fans exactly six shrapnel",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:198"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 65,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "why": "each shrapnel is stamped image_xscale 1.5",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:205"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 65,
+    "name": "gravity",
+    "eq": 0.25,
+    "why": "the fan arcs back down under gravity 0.25",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:210"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkershrapnel",
+    "atFrame": 65,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "minCalls": 6,
+    "why": "all six shrapnel carry spr_checkershrapnel at 1.5x",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:208"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_checkers_leap",
+    "atFrame": 65,
+    "y": 77,
+    "tol": 3,
+    "why": "the slam parks it on the box floor: 170 + 150/2 - (84*2) = 77",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:215"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_shake",
+    "byFrame": 60,
+    "why": "the impact creates obj_shake",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:200"
+   }
+  ]
+ },
+ {
+  "id": "kround_checkers_leap_leapmode_2_mag",
+  "name": "leapmode 2 - Magnificent Ascent (floats up-left raining shrapnel, 2 homing)",
+  "note": "spr_checkers_magnificent plays at image_speed 0.5 until image_index 4 (about 8 frames), then the body floats up-left on hspeed -4 with NEGATIVE gravity -0.12 and a sin wobble, dropping one shrapnel every 3 frames (s_timer hits 24, resets to 21). The magamt 6 and magamt 12 drops instead home on the soul at speed 3 with gravity 0 - not asserted, because only the FIRST live bullet is sampled and it is always a non-homing one.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the checkers turn sets a 999-frame clock when it dispatches obj_checkers_leap",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:94"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "box made at view+320,+170 and grown to 2x the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:32"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 3,
+    "name": "jumpcon",
+    "eq": 1,
+    "why": "the first step swaps to the magnificent animation and moves to jumpcon 1",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:231"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_checkers_magnificent",
+    "byFrame": 5,
+    "why": "leapmode 2 opens on spr_checkers_magnificent",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:229"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkers_magnificent",
+    "atFrame": 5,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "Create pins image_xscale/image_yscale to 2, so the pose is drawn double size",
+    "src": "gml_Object_obj_checkers_leap_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 20,
+    "name": "jumpcon",
+    "eq": 2,
+    "why": "image_index reaching 4 (8 frames at image_speed 0.5) starts the ascent",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:246"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 20,
+    "name": "hspeed",
+    "eq": -4,
+    "why": "the ascent drifts LEFT at 4 px per frame",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:244"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 20,
+    "name": "gravity",
+    "eq": -0.12,
+    "why": "gravity is negative - that is what makes it rise off the top of the screen",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:245"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 20,
+    "max": 0,
+    "why": "the first drop waits for s_timer to reach 24, about frame 32",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:260"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 60,
+    "min": 6,
+    "max": 13,
+    "why": "s_timer resets to 21 after each drop, so one shrapnel falls every 3 frames",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:282"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 60,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "why": "each drop is stamped image_xscale 1.5",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:265"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 60,
+    "name": "gravity",
+    "eq": 0.06,
+    "why": "the first drop is magamt 0, so it keeps the 0.06 drift gravity",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:269"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkershrapnel",
+    "atFrame": 60,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "minCalls": 6,
+    "why": "every drop carries spr_checkershrapnel at 1.5x",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:263"
+   }
+  ]
+ },
+ {
+  "id": "kround_checkers_leap_leapmode_3_leg",
+  "name": "leapmode 3 - Leg Sweep (4 volleys x 4 aimed shrapnel)",
+  "note": "The body never moves: spr_checkers_leg plays at image_speed 0.5, and the single frame where image_index == 3 (frame 7 of each ~30-frame cycle) fires 4 obj_regularbullet from (x-40, y+100). Directions are aimed at the soul with a per-index random spread and speeds are 3.5 + random(1.8), so only counts, the speed band and the per-frame 0.01 growth are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the checkers turn sets a 999-frame clock when it dispatches obj_checkers_leap",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:94"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "box made at view+320,+170 and grown to 2x the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_checkers_enemy_Step_0.gml:32"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 5,
+    "name": "jumpcon",
+    "eq": 1,
+    "why": "the first step starts the leg-sweep animation and moves to jumpcon 1",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:359"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_checkers_leap",
+    "atFrame": 20,
+    "name": "jumpcon",
+    "eq": 2,
+    "why": "image_index reaching 5 (10 frames at image_speed 0.5) ends the swing",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:384"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_checkers_leg",
+    "byFrame": 5,
+    "why": "leapmode 3 swaps to spr_checkers_leg on its first step",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:356"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkers_leg",
+    "atFrame": 5,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "Create pins image_xscale/image_yscale to 2, so the sweep is drawn double size",
+    "src": "gml_Object_obj_checkers_leap_Create_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 12,
+    "why": "the volley fires on the single frame image_index == 3, about frame 7",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:371"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 25,
+    "min": 4,
+    "max": 4,
+    "why": "the loop runs i = 0..3, so one volley is exactly 4 shrapnel",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:369"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 50,
+    "min": 8,
+    "max": 8,
+    "why": "the ~30-frame cycle (10 swing + 20 recovery) has fired two volleys by frame 50",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:398"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 25,
+    "name": "speed",
+    "min": 3.5,
+    "max": 5.3,
+    "why": "shrapnel speed is 3.5 + random(1.8) and nothing accelerates it afterwards",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:374"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 25,
+    "name": "image_xscale",
+    "min": 1.1,
+    "max": 1.28,
+    "why": "leapmode 3 grows every live bullet by 0.01 per frame, so ~18 frames of growth by frame 25",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:350"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_checkershrapnel",
+    "atFrame": 25,
+    "minCalls": 4,
+    "why": "all four of the volley's bullets carry spr_checkershrapnel",
+    "src": "gml_Object_obj_checkers_leap_Step_0.gml:372"
+   }
+  ]
+ },
+ {
+  "id": "lancer_lancerbike",
+  "name": "Bike Race — honk, then drive-by across the screen",
+  "note": "Dispatcher: obj_lancerboss Step, attacks==0 branch creates obj_lancerbike with racecon=1. racecon 2 hovers vertically for a RANDOM 15..40 frames (maxr = 15 + random(25)) before the honk, so absolute frames after that point drift; only frame-robust facts are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the boss pins the turn to 999 when it launches the bike",
+    "src": "gml_Object_obj_lancerboss_Step_0.gml:89"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lancerbike",
+    "atFrame": 10,
+    "x": 520,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "Create sets image_xscale/yscale = 2 and racecon 2 never touches x or image_angle",
+    "src": "gml_Object_obj_lancerbike_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "name": "topy",
+    "eq": 120,
+    "why": "topy = cameray() + 120 = 120",
+    "src": "gml_Object_obj_lancerbike_Create_0.gml:27"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "name": "bottomy",
+    "eq": 250,
+    "why": "bottomy = cameray() + 250 = 250",
+    "src": "gml_Object_obj_lancerbike_Create_0.gml:28"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "name": "hspeed",
+    "eq": 0,
+    "why": "racecon 2 only ever sets vspeed — the bike hovers, it does not drift sideways",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:246"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 10,
+    "name": "y",
+    "min": 115,
+    "max": 258,
+    "why": "vspeed reverses only AFTER the step that crosses topy+10 / bottomy-10, so y is confined to 118..250 either way the opening choose(1,-1) falls",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:246"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 10,
+    "why": "Create sets grazepoints = 10 for the bike itself",
+    "src": "gml_Object_obj_lancerbike_Create_0.gml:2"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_afterimage_grow",
+    "byFrame": 60,
+    "max": 2,
+    "why": "racecon 3 spawns a honk afterimage at rtimer 5 and rtimer 10 — twice, never more",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:269"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_lancernoise",
+    "byFrame": 60,
+    "why": "the honk afterimage is given spr_lancernoise",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:272"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 60,
+    "why": "the race attack fires no bullets at all — the bike itself is the hazard",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:211"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_lancerbike",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "one bike, and it is not destroyed until endcon after the return pass",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:328"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 70,
+    "name": "image_angle",
+    "min": -50,
+    "max": 0,
+    "why": "the drive-by tilt is image_angle = -ang with ang clamped to 50, and every neighbouring phase holds it at 0",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:301"
+   }
+  ]
+ },
+ {
+  "id": "lancer_lancerbike_bike_loop_loop",
+  "name": "Bike Loop — loop-de-loop around the view, trailing spades",
+  "note": "Dispatcher: obj_lancerboss Step, attacks!=0 branch creates obj_lancerbike with lcon=1. The loop itself is deterministic but its phase boundaries are distance-driven (speed caps at 16 and the corners are camera-edge tests), so the later frames are asserted only where the value holds across a whole phase.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the boss pins the turn to 999 when it launches the bike",
+    "src": "gml_Object_obj_lancerboss_Step_0.gml:89"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "name": "lcon",
+    "eq": 1.5,
+    "why": "lcon 1 immediately becomes 1.5, a 10-frame idle before snd_cardrive",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:8"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_lancerbike",
+    "atFrame": 5,
+    "x": 520,
+    "y": 180,
+    "tol": 1,
+    "why": "lcon 1.5 only ticks ltimer — the bike is still parked on the boss for 10 frames",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:11"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lancerbike",
+    "atFrame": 5,
+    "x": 520,
+    "y": 180,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "Create sets image_xscale/yscale = 2; nothing has squashed or rotated it yet",
+    "src": "gml_Object_obj_lancerbike_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 15,
+    "name": "image_yscale",
+    "min": 0.5,
+    "max": 1.35,
+    "why": "lcon 2 squashes the bike with image_yscale = 2 - sin(ltimer/5)*(8/shrinktimer)",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:62"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike",
+    "atFrame": 60,
+    "name": "speed",
+    "eq": 16,
+    "why": "lcon 5 ramps speed 4 -> 16 in steps of 2 and nothing lowers it again until lcon 10",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:84"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lancerbike",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "leaving lcon 2 restores image_yscale = 2 — the bike is unsquashed for the loop",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:76"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 110,
+    "why": "the lcon 6..9 corners drop a spade every 10 frames, sprite_index = spr_spadebullet",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:46"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 100,
+    "name": "friction",
+    "eq": -0.4,
+    "why": "each trailing spade gets friction = -0.4, so it accelerates toward the soul",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:49"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_lancerbike",
+    "atFrame": 100,
+    "min": 1,
+    "max": 1,
+    "why": "one bike; endcon only fires after lcon 11's 30-frame outro",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:204"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_axebullet",
+    "byFrame": 110,
+    "why": "the loop throws spades, never axes",
+    "src": "gml_Object_obj_lancerbike_Step_0.gml:46"
+   }
+  ]
+ },
+ {
+  "id": "lancer_type20",
+  "name": "Falling Spades",
+  "note": "Dispatcher: obj_lancerboss2 Step turns 0/2 -> dc.type = 20, turntimer 180. The whistle latch at :327 is gated on instance_exists(obj_lancerboss3); obj_lancerboss3 is NOT in obj_lancerboss2's encounter (scr_encountersetup.gml:245), but type 20 is equally obj_susieenemy's attacktype 1 (obj_susieenemy_Step_0.gml:45-59) and that encounter does carry him (scr_encountersetup.gml:387-391), which is also the fixture the studio spawns. Spawn x is obj_heart.x + random, so no position is asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 180,
+    "why": "the type-20 branch raises the 140-frame default to 180",
+    "src": "gml_Object_obj_lancerboss2_Step_0.gml:76"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 5,
+    "name": "bmax",
+    "eq": 8,
+    "why": "type 20 sets bmax = 8 — a spade every 8 frames",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:354"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 25,
+    "min": 3,
+    "max": 5,
+    "why": "btimer starts at 99 so spades land on frames 1, 9, 17, 25 — four by frame 25",
+    "src": "gml_Object_obj_dbulletcontroller_Create_0.gml:1"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 49,
+    "min": 6,
+    "max": 8,
+    "why": "the 8-frame cadence gives 7 spades by frame 49, and the first is only at y = 477 against a destroy line of cameray()+520",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:359"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "gravity",
+    "eq": 0.3,
+    "why": "each falling spade is given gravity = 0.3",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:370"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "each falling spade is rotated to 270 so it points down",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:369"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 20,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 270,
+    "alpha": 1,
+    "why": "obj_regularbullet never scales and its Create sets image_alpha = 1, so the spade draws 1:1 at angle 270",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:368"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 20,
+    "why": "the falling bullets are spades",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:368"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 20,
+    "name": "made",
+    "eq": 1,
+    "why": "made latches to 1 on the whistle and holds while whistletimer counts to 30",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:333"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 35,
+    "name": "made",
+    "eq": 2,
+    "why": "whistletimer >= 30 puts Lancer's sprite back and sets made = 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:348"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_axebullet",
+    "byFrame": 49,
+    "why": "type 20 drops spades only — axes belong to type 85",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:362"
+   }
+  ]
+ },
+ {
+  "id": "lancer_type21",
+  "name": "Side Spades — alternating left/right lanes",
+  "note": "Dispatcher: obj_lancerboss2 Step turn 1 -> dc.type = 21, turntimer 180. Lane y is (growtangle.y - h/2) + random(h), so only the x-side, the heading and the cadence are asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 180,
+    "why": "the type-21 branch raises the 140-frame default to 180",
+    "src": "gml_Object_obj_lancerboss2_Step_0.gml:89"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 5,
+    "name": "bmax",
+    "eq": 9,
+    "why": "type 21 sets bmax = 9 — a spade every 9 frames",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:388"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 5,
+    "name": "side",
+    "eq": 0,
+    "why": "side starts at 1 (right lane, x = camerax()+560) and flips to 0 after the first spade",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:426"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 180,
+    "why": "the first spade is the side==1 one and is aimed left",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:412"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "friction",
+    "eq": -0.1,
+    "why": "side spades start at speed 5 with friction -0.1, so they accelerate across",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:422"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 46,
+    "min": 5,
+    "max": 7,
+    "why": "btimer starts at 99, so spades land on frames 1, 10, 19, 28, 37, 46",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:399"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 6,
+    "angle": 180,
+    "xscale": 1,
+    "yscale": 1,
+    "why": "image_angle = direction, so the right-lane spade draws rotated 180",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:423"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 15,
+    "angle": 0,
+    "xscale": 1,
+    "yscale": 1,
+    "why": "the second spade is the side==0 one at x = camerax()+80, direction 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:409"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 20,
+    "why": "the side bullets are spades",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:420"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is spr_battlebg_0 (75x75) grown to image scale 2 at (320,170); its sprite_height IS the lane spread this attack samples",
+    "src": "gml_Object_obj_growtangle_Step_0.gml:17"
+   }
+  ]
+ },
+ {
+  "id": "lancer_type24",
+  "name": "Homing Falling Spades",
+  "note": "Dispatcher: obj_lancerboss2 Step turns>=3 -> dc.type = 24, turn length left at the 140-frame default. NO cadence assertion: bmax = difficulty + 5 and the dispatcher writes dc.difficulty = turns * 2 (:95), whose reachable values are 6/8/10/30 — the spawn interval is unpinned at 11/13/15/35 frames. The homing steers toward obj_heart.x, so only its clamp is asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 140,
+    "why": "the type-24 branch never raises the 140 the dispatcher already set",
+    "src": "gml_Object_obj_lancerboss2_Step_0.gml:64"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "gravity",
+    "eq": 0.3,
+    "why": "each falling spade is given gravity = 0.3",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:514"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 5,
+    "name": "image_angle",
+    "eq": 270,
+    "why": "each falling spade is rotated to 270 so it points down",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:513"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 40,
+    "name": "hspeed",
+    "min": -5.5,
+    "max": 5.5,
+    "why": "the homing nudge is +-0.4 per frame gated on hspeed < 5 / > -5, so |hspeed| cannot pass 5.4",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:447"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_spadebullet",
+    "atFrame": 20,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 270,
+    "alpha": 1,
+    "why": "obj_regularbullet never scales and its Create sets image_alpha = 1, so the spade draws 1:1 at angle 270",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:512"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_spadebullet",
+    "byFrame": 20,
+    "why": "the homing bullets are spades",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:512"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_axebullet",
+    "byFrame": 49,
+    "why": "type 24 drops spades only",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:506"
+   }
+  ]
+ },
+ {
+  "id": "lancer_type85",
+  "name": "Susie's Axes — Lancer cheers from the sideline",
+  "note": "Dispatcher: obj_susieenemy Step attacktype==2 -> dc.type = 85, turntimer 180. The two stand-in figures are plain obj_bulletparent props with active = 0 and no Step, so they never move. Their y is obj_battlesolid.y +160/-40 (the battle box), which is not a camera literal, so only x is asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 180,
+    "why": "Susie's dispatcher sets the turn to 180 before creating the controller",
+    "src": "gml_Object_obj_susieenemy_Step_0.gml:27"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_dbulletcontroller",
+    "atFrame": 10,
+    "name": "made",
+    "eq": 1,
+    "why": "the made latch fires once and builds the two stand-ins exactly once",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:923"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_bulletparent",
+    "atFrame": 5,
+    "min": 2,
+    "max": 2,
+    "why": "exactly two props: fake Lancer and fake Susie",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:898"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_bulletparent",
+    "atFrame": 5,
+    "x": 580,
+    "tol": 2,
+    "why": "fake Lancer is made first, at camerax() + 580 = 580, and never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:898"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susie_enemy_attack",
+    "atFrame": 20,
+    "x": 530,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "fake Susie sits at camerax() + 530 = 530 drawn at 2x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:911"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_lancerbike",
+    "byFrame": 60,
+    "why": "fake Lancer is drawn as spr_lancerbike on the sideline",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:906"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_axebullet",
+    "atFrame": 20,
+    "min": 1,
+    "max": 1,
+    "why": "the volley loop is `for (i = 0; i < 1; i += 1)` — ONE axe per throw, not a fan",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:991"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_axebullet",
+    "atFrame": 50,
+    "min": 2,
+    "max": 2,
+    "why": "btimer >= 27 with btimer starting at 99 throws on frames 1 and 28; the third is frame 55 and obj_axebullet only self-destroys past x = 700",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:983"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_axebullet",
+    "atFrame": 1,
+    "name": "hspeed",
+    "min": -9.2,
+    "max": -7.3,
+    "why": "obj_axebullet Create gives hspeed = -7.6 - random(1.5): the axe always flies LEFT",
+    "src": "gml_Object_obj_axebullet_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_axebullet",
+    "atFrame": 5,
+    "name": "gravity",
+    "eq": 0.13,
+    "why": "gravity 0.13 with gravity_direction 0 pulls the axe back rightward, so it arcs",
+    "src": "gml_Object_obj_axebullet_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_axebullet_b",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "obj_axebullet Create sets image_xscale/yscale = 2",
+    "src": "gml_Object_obj_axebullet_Create_0.gml:1"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 50,
+    "why": "type 85 throws axes only — no spades in this attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:993"
+   }
+  ]
+ },
+ {
+  "id": "lancer_lancerbike_neo",
+  "name": "Susie rides the bike — axe barrage from Lancer's bike",
+  "note": "Dispatcher: obj_susieenemy Step attacktype==0 -> obj_lancerbike_neo at obj_lancerboss3's position, turntimer 999. racecon 0..2 is fully deterministic (16 frames of landing squash, then 30 frames of honking) and the bike has no speed for any of it, so early positions are exact; the axe barrage that follows starts on frame ~46 and is asserted as a band.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "Susie's dispatcher pins the turn to 999 for the bike ride",
+    "src": "gml_Object_obj_susieenemy_Step_0.gml:70"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_lancerbike_neo",
+    "atFrame": 10,
+    "x": 520,
+    "y": 180,
+    "tol": 1,
+    "why": "racecon 1 only ticks rtimer — the bike never gets a speed until rtimer 30",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:35"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet_permanent",
+    "byFrame": 5,
+    "max": 1,
+    "why": "racecon 0 makes exactly one rider prop, at obj_susieenemy's position",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:13"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_susiel_dark",
+    "byFrame": 10,
+    "why": "the rider prop is drawn as spr_susiel_dark while she leaps onto the bike",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike_neo",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 2.4,
+    "tol": 0.15,
+    "why": "rtimer 13..16 applies image_xscale += 0.1 four times from the Create value 2",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:48"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lancerbike_neo",
+    "atFrame": 30,
+    "name": "image_yscale",
+    "eq": 1.4,
+    "tol": 0.2,
+    "why": "the same four frames apply image_yscale -= 0.15 — the landing squash",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:49"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lancerbike",
+    "atFrame": 30,
+    "x": 520,
+    "y": 180,
+    "xscale": 2.4,
+    "yscale": 1.4,
+    "angle": 0,
+    "tol": 0.2,
+    "why": "the squashed bike sits still at the boss position through the whole honk phase",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:46"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_afterimage_grow",
+    "atFrame": 27,
+    "min": 1,
+    "max": 2,
+    "why": "racecon 2 honks at rtimer 5 and rtimer 10 (frames 20 and 25) and never more; fade 0.1/frame keeps both alive at 27",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:134"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_afterimage_grow",
+    "atFrame": 27,
+    "x": 460,
+    "y": 140,
+    "tol": 2,
+    "why": "the honk is made at (x - 60, y - 40) with the bike parked at 520,180 and it never moves",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:138"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_lancernoise",
+    "byFrame": 30,
+    "why": "the honk afterimage is given spr_lancernoise",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:141"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_axebullet",
+    "byFrame": 60,
+    "max": 3,
+    "why": "s_attack turns on at rtimer 30 and throws its first axe the next frame",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:78"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_axebullet",
+    "atFrame": 80,
+    "min": 4,
+    "max": 6,
+    "why": "s_timer resets at 8 while ax_timer <= 60, so an axe leaves every 8 frames from ~46",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:114"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_susie_enemy_attack",
+    "byFrame": 60,
+    "why": "throwing swaps the rider prop to spr_susie_enemy_attack",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:102"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_regularbullet",
+    "byFrame": 80,
+    "why": "the ride fires axes only; the rider is an obj_regularbullet_permanent prop, not a bullet",
+    "src": "gml_Object_obj_lancerbike_neo_Step_0.gml:78"
+   }
+  ]
+ },
+ {
+  "id": "lanino_elnina_type130",
+  "name": "Weather Report — twin mascots, opposing bullets KISS on contact",
+  "note": "type 130 is a pure spawner: everything lives in obj_elnina_mascotattack, whose attacktype = dbulletcontroller.special and favored = dbulletcontroller.side. side defaults to 1 (Create_0.gml:20) and the boss dispatcher's else-branch also sets side = 1 (_lanino_favored is false with lastchosen == \"\" and sunboost == 0), so ELNINA (the cloud, index 1) is the favored mascot. Box is obj_growtangle at (320,170) (controller Step_0.gml:1052, turns < 7). The mascots' x drifts every step by sin(siner/8) + 0.1, ~1px per frame at siner 60 and therefore frame-alignment sensitive — x is NOT asserted on either drifting mascot; y is, and it is exactly frozen in attacktype 0. Lanino's bullet sprite is left unasserted because the forecast override can select bs[3] (sun) or bs[4] (moon).",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_elnina_mascotattack",
+    "byFrame": 4,
+    "why": "the type == 130 branch's !made block creates obj_elnina_mascotattack on the controller's very first Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2618"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "attacktype",
+    "eq": 0,
+    "why": "the branch copies the controller's special onto the mascot attack, and special is 0 for this row",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2619"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "favored",
+    "eq": 1,
+    "why": "favored = side and obj_dbulletcontroller's Create pins side = 1, so the cloud (Elnina) is the favored mascot",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2620"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_marker",
+    "atFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "the con == 0 init makes exactly two markers, one per mascot, and nothing else in this fight creates obj_marker before the heart at siner 168",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_normal",
+    "atFrame": 4,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "mascot[0] = scr_dark_marker(growtangle.x + 72, growtangle.y - 116, ms[0][0] = spr_ch3_mascot_moon_normal) puts it at y = 170 - 116 = 54 at scr_dark_marker's 2x, and attacktype 0 only ever touches x",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_cloud_normal",
+    "atFrame": 4,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "mascot[1] = scr_dark_marker(growtangle.x - 72, growtangle.y - 116, ms[1][0] = spr_ch3_mascot_cloud_normal) shares the same y = 54 and the same 2x",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:34"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_normal",
+    "atFrame": 60,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the drift block only writes mascot[i].x, so sixty frames in the moon is still at y = 54 and still 2x",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:135"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_cloud_normal",
+    "atFrame": 60,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the same mirrored drift touches only x, so the cloud holds y = 54 at 2x",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:135"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ch3_mascot_moon_kiss",
+    "byFrame": 175,
+    "why": "at siner == 162 with attacktype 0 and dummy false both mascots swap to ms[i][1]; ms[0][1] = 2176 = spr_ch3_mascot_moon_kiss",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:139"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ch3_mascot_cloud_kiss",
+    "byFrame": 175,
+    "why": "the same siner == 162 swap applies to mascot[1]; ms[1][1] = 4612 = spr_ch3_mascot_cloud_kiss",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:139"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_bullet_heart",
+    "atFrame": 178,
+    "x": 320,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "at siner == 168 a heart marker is made at (growtangle.x, growtangle.y - 120) = (320,50) at scr_dark_marker's 2x; it only carries vspeed, so x stays 320 (y omitted — it rises with friction)",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:190"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 40,
+    "min": 4,
+    "max": 8,
+    "why": "shotrate is 11 for both mascots with no extrabulletrate term, so three volleys of two have fired by frame 40 and none is doomed until frame ~91",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:197"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ch3_bullet_ice",
+    "byFrame": 20,
+    "why": "Elnina's bullets take sprite bs[3 - (1*2)] = bs[1] = 3812 = spr_ch3_bullet_ice, and the only turn-0 forecast override for i == 1 (snow, 1650) also selects bs[1]",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:281"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "firebulletcount",
+    "eq": 2000,
+    "why": "Create pins firebulletcount = 2000 and only the rematch fight (obj_lanino_rematch_enemy) lowers it, so no red spr_lanino_fire bullet may appear here",
+    "src": "gml_Object_obj_elnina_mascotattack_Create_0.gml:26"
+   }
+  ]
+ },
+ {
+  "id": "lanino_elnina_type130_the_favored_on",
+  "name": "The favored one grows — 2.25x mascot holds still, partner keeps drifting",
+  "note": "special 1. favored = dbulletcontroller.side = 1, so the CLOUD grows to 2.25 and is excluded from the drift block; the moon keeps the attacktype-0 drift. The moon's x is not asserted (per-frame sin(siner/8) accumulation, ~1px/frame by frame 60); its y is frozen and is asserted instead. Lanino's bullet sprite is left unasserted (bs[3] vs a forecast override).",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_elnina_mascotattack",
+    "byFrame": 4,
+    "why": "the type == 130 branch's !made block creates obj_elnina_mascotattack on the controller's first Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2618"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "attacktype",
+    "eq": 1,
+    "why": "the branch copies the controller's special onto the mascot attack, and special is 1 for this row",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2619"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "favored",
+    "eq": 1,
+    "why": "favored = side and obj_dbulletcontroller's Create pins side = 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2620"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_marker",
+    "atFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "the con == 0 init makes exactly two markers, one per mascot, and attacktype 1 adds no others",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_cloud_normal",
+    "atFrame": 40,
+    "x": 248,
+    "y": 54,
+    "xscale": 2.25,
+    "yscale": 2.25,
+    "why": "attacktype 1 blows the favored mascot up to 2.25 and the drift block excludes it (!(attacktype == 1 && favored == i)), so it is still pinned at growtangle.x - 72 = 248, growtangle.y - 116 = 54 forty frames in",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:39"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_normal",
+    "atFrame": 4,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the unfavored moon keeps scr_dark_marker's 2x and ms[0][0] = spr_ch3_mascot_moon_normal at growtangle.y - 116 = 54; the drift only writes x",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_normal",
+    "atFrame": 60,
+    "y": 54,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the drift block writes only mascot[i].x, so the partner is still at y = 54 at 2x sixty frames in",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:135"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_kiss",
+    "atFrame": 175,
+    "maxCalls": 0,
+    "why": "the siner == 162 kiss swap is gated on attacktype == 0, so the kiss pose must never appear in special 1",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:138"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_bullet_ice",
+    "atFrame": 16,
+    "xscale": 1.25,
+    "yscale": 1.25,
+    "why": "attacktype 1 && favored == i scales the favored mascot's bullets to 1.25; Elnina's bullets are bs[1] = spr_ch3_bullet_ice and the first volley fires at shottimer 11",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:352"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 40,
+    "min": 4,
+    "max": 8,
+    "why": "shotrate is 11 for both mascots (attacktype 1 re-sets shotrate[favored] to the same 11), so three volleys of two have fired by frame 40 and none is doomed until ~frame 91",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:216"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "firebulletcount",
+    "eq": 2000,
+    "why": "Create pins firebulletcount = 2000 and only the rematch fight lowers it, so no red spr_lanino_fire bullet may appear",
+    "src": "gml_Object_obj_elnina_mascotattack_Create_0.gml:26"
+   }
+  ]
+ },
+ {
+  "id": "lanino_elnina_type130_smug_vs_scared",
+  "name": "Smug vs. Scared — favored mascot big and fast, partner shrinking away",
+  "note": "special 2. favored = side = 1, so the CLOUD is smug (ms[1][2] = spr_ch3_mascot_cloud_large_smug, 1.7x, y-10) and the MOON is scared (ms[0][4] = spr_ch3_mascot_moon_scared, 1.5x, y+10, x pulled 30px inward). shotrate[0] carries an extrabulletrate term read from global.elninalosscount, which the boss controller's Create increments once per launch, so only shotrate[favored] = 8 (a bare literal) is relied on tightly and every bullet count uses a band. The scared mascot's x drifts by 0.2*facing + random_range(-1,1) per frame, so its x carries a tolerance wide enough to cover the whole random walk up to frame 5.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_elnina_mascotattack",
+    "byFrame": 4,
+    "why": "the type == 130 branch's !made block creates obj_elnina_mascotattack on the controller's first Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2618"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "attacktype",
+    "eq": 2,
+    "why": "the branch copies the controller's special onto the mascot attack, and special is 2 for this row",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2619"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "favored",
+    "eq": 1,
+    "why": "favored = side and obj_dbulletcontroller's Create pins side = 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2620"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_marker",
+    "atFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "the con == 0 init makes exactly two markers, one per mascot; attacktype 2 only re-poses them",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_cloud_large_smug",
+    "atFrame": 20,
+    "y": 44,
+    "xscale": 1.7,
+    "yscale": 1.7,
+    "why": "the favored branch sets image_xscale/yscale 1.7, sprite_index ms[1][2] = spr_ch3_mascot_cloud_large_smug and y -= 10, so the smug cloud sits at growtangle.y - 116 - 10 = 44 and never moves in y (x omitted: it swings on sin(siner/6)*3)",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:49"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_scared",
+    "atFrame": 3,
+    "y": 64,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "why": "the unfavored branch sets image_xscale/yscale 1.5, sprite_index ms[0][4] = spr_ch3_mascot_moon_scared and y += 10, so the scared moon sits at growtangle.y - 116 + 10 = 64 and never moves in y",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:56"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_scared",
+    "atFrame": 3,
+    "x": 362,
+    "tol": 7,
+    "why": "x -= 30 * facing[0] moves it from growtangle.x + 72 = 392 to 362 before it starts creeping at 0.2*facing[0] + random_range(-1,1) per frame; five steps of that walk cannot carry it more than 6px from 362, so a miss means the 30px inward pull is missing",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:60"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 12,
+    "min": 1,
+    "max": 2,
+    "why": "attacktype 2 pins shotrate[favored] = 8 while the partner waits 14 + extrabulletrate, so Elnina's first bullet is alive by frame 12 no matter what extrabulletrate is",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:222"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_bullet_ice",
+    "atFrame": 12,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "why": "attacktype 2 scales the favored mascot's bullets to 1.5 (the partner's to 0.8); Elnina's bullets are bs[1] = spr_ch3_bullet_ice",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:360"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 12,
+    "name": "grazepoints",
+    "eq": 3,
+    "why": "attacktype 2 raises grazepoints from obj_regularbullet_elnina's Create default of 2 to 3",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:285"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 40,
+    "min": 4,
+    "max": 9,
+    "why": "five volleys from the favored mascot at shotrate 8 plus at most two from the partner at 14 + extrabulletrate, and nothing is doomed before frame ~88",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:220"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "firebulletcount",
+    "eq": 2000,
+    "why": "Create pins firebulletcount = 2000 and only the rematch fight lowers it, so no red spr_lanino_fire bullet may appear",
+    "src": "gml_Object_obj_elnina_mascotattack_Create_0.gml:26"
+   }
+  ]
+ },
+ {
+  "id": "lanino_elnina_type130_chase_both_mas",
+  "name": "Chase — both mascots fly and ricochet inside the box, bullets aimed at centre",
+  "note": "special 3. favored = side = 1, so the CLOUD is the big smug flier (2x, speed 6) and the MOON is the small scared one (speed 4.4) whose image_xscale is multiplied by -1 — a horizontal FLIP. facing[favored] = facing[1] = -1, so direction = 90 + 90*(-1) = 0 for BOTH mascots: they launch rightward with no vertical speed and only turn once they cross the ricochet threshold (140 for the favored, 110 for the partner — the moon needs 9 steps to reach it). x positions are omitted because 4.4 and 6 px/frame make them frame-alignment sensitive; y is asserted instead, which is exactly frozen until the first bounce. Both shotrates carry an extrabulletrate term (global.elninalosscount) and attacktype-3 bullets converge on the box centre where opposite-sprite bullets annihilate each other, so the bullet count gets a wide band.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_elnina_mascotattack",
+    "byFrame": 4,
+    "why": "the type == 130 branch's !made block creates obj_elnina_mascotattack on the controller's first Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2618"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "attacktype",
+    "eq": 3,
+    "why": "the branch copies the controller's special onto the mascot attack, and special is 3 for this row",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2619"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "favored",
+    "eq": 1,
+    "why": "favored = side and obj_dbulletcontroller's Create pins side = 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2620"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "chasecon",
+    "eq": 0,
+    "why": "chasecon is created ONLY by the attacktype == 3 init block and is never written again, so reading 0 proves that branch ran rather than one of the others",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:67"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_marker",
+    "atFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "the con == 0 init makes exactly two markers, one per mascot; the chase re-poses them but adds none",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_scared",
+    "atFrame": 5,
+    "y": 74,
+    "xscale": -1,
+    "yscale": 1,
+    "why": "the unfavored chase branch sets scale 1, sprite ms[0][4] = spr_ch3_mascot_moon_scared, y += 20 (growtangle.y - 116 + 20 = 74) and then image_xscale *= -1 — the moon is MIRRORED, and direction 0 keeps y frozen until the first bounce at step 9",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:86"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_cloud_large_smug",
+    "atFrame": 5,
+    "y": 38,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the favored chase branch sets scale 2, sprite ms[1][2] = spr_ch3_mascot_cloud_large_smug and y -= 16 (growtangle.y - 116 - 16 = 38); direction 0 gives it no vspeed, so y holds until it crosses the 140px threshold ~35 steps in",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:73"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_marker",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 0,
+    "why": "direction = 90 + (90 * facing[favored]) with favored 1 and facing[1] = -1 gives 0 for BOTH mascots — they fly straight right before any ricochet",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:87"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_marker",
+    "atFrame": 5,
+    "name": "speed",
+    "eq": 4.4,
+    "why": "mascot[0] is created first (Step_0.gml:33 precedes :34) so it is the first live obj_marker, and the unfavored chase branch gives it speed 4.4 (the favored one gets 6)",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:88"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_bullet_ice",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "attacktype 3 doubles the favored mascot's bullets and slows them to speed 1 aimed at the box centre; Elnina's bullets are bs[1] = spr_ch3_bullet_ice",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:387"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 20,
+    "name": "grazepoints",
+    "eq": 3,
+    "why": "attacktype 3 raises grazepoints from obj_regularbullet_elnina's Create default of 2 to 3 for every bullet in the loop",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:288"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet_elnina",
+    "atFrame": 30,
+    "min": 1,
+    "max": 9,
+    "why": "shotrate is 6 + extrabulletrate for the favored mascot and 13 + extrabulletrate for the partner, gravity is zeroed so nothing has left the room, but opposite-sprite bullets meeting at the centre destroy each other",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:229"
+   }
+  ]
+ },
+ {
+  "id": "lanino_elnina_type130_final_attack_t",
+  "name": "FINAL ATTACK — the partner is erased, the favored mascot fills the box",
+  "note": "DELIBERATELY SHORT (8 assertions). Two things make this attack's late half unassertable. (1) The clock. In game this is turn 7, the only turn that calls scr_turntimer(850) (controller Step_0.gml:1169) and the only turn that builds the box at cameray()+190 (Step_0.gml:1055). The studio replays this unit's box and turn blocks against a boss whose turns is still 0, so the replayed ladder yields scr_turntimer(260) and a box at (320,170). Under 260 the global.turntimer < 500 branch is live from frame ONE, so the favored mascot's sprite is ms[1][7] immediately and ms[1][3] (huge_gloat) never renders; under 850 it is the reverse until ~frame 351. Every assertion below is true under BOTH clocks — the frame-6 favored-mascot draw was dropped for exactly this reason. (2) The partner's fade (image_alpha/xscale/yscale -= 0.05 per shot) is keyed on shotrate[0] = 21 + extrabulletrate, and extrabulletrate reads global.elninalosscount, which the boss controller's Create increments on every launch — so no fade step can be pinned to a frame. Frame 6 is used instead, which is before the first fade under any extrabulletrate.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_elnina_mascotattack",
+    "byFrame": 4,
+    "why": "the type == 130 branch's !made block creates obj_elnina_mascotattack on the controller's first Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2618"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "attacktype",
+    "eq": 4,
+    "why": "the branch copies the controller's special onto the mascot attack, and special is 4 for this row — the only value that also unlocks the dialogue ladder below the branch",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2619"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "favored",
+    "eq": 1,
+    "why": "favored = side and obj_dbulletcontroller's Create pins side = 1, so Elnina's cloud is the survivor and Lanino's moon is the one erased",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2620"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_marker",
+    "atFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "both mascots are still created by the con == 0 init; the partner is erased by fading, not by never existing",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_mascot_moon_chase_small",
+    "atFrame": 6,
+    "x": 200,
+    "y": 34,
+    "xscale": -1,
+    "yscale": 1,
+    "alpha": 1,
+    "maxCalls": 1,
+    "why": "the unfavored attacktype-4 branch sets scale 1, sprite ms[0][6] = spr_ch3_mascot_moon_chase_small, y -= 20 (growtangle.y - 116 - 20 = 34), image_xscale *= -1 (a horizontal FLIP), speed 0 and x = growtangle.x - 120 = 200; its fade cannot start before shotrate[0] = 21 + extrabulletrate frames",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:117"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ch3_mascot_cloud_large_smug_sad",
+    "byFrame": 400,
+    "why": "once global.turntimer < 500 the with(mascot[favored]) block replaces the gloat pose with ms[1][7] = spr_ch3_mascot_cloud_large_smug_sad; this holds whether the clock starts at the replayed 260 (immediately) or the in-game 850 (about frame 351)",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:256"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet_elnina",
+    "byFrame": 60,
+    "why": "the partner still reaches its shotrate of 21 + extrabulletrate and creates a bullet (which attacktype 4 then hides and destroys in the same frame), so the object must appear even though none may survive",
+    "src": "gml_Object_obj_elnina_mascotattack_Step_0.gml:276"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_mascotattack",
+    "atFrame": 6,
+    "name": "firebulletcount",
+    "eq": 2000,
+    "why": "Create pins firebulletcount = 2000 and only the rematch fight lowers it, so no red spr_lanino_fire bullet may appear",
+    "src": "gml_Object_obj_elnina_mascotattack_Create_0.gml:26"
+   }
+  ]
+ },
+ {
+  "id": "orange_green_type131",
+  "name": "COOKING TIME — Green's FAST FOOD",
+  "note": "powerup is 0 on a standalone launch (obj_orange_green_controller Create:43), so timermax = 12 and foodtype stays 0: an egg every 12 frames except every third drop, which is a green flame.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 270,
+    "why": "the dispatcher sets the turn to 270 when it hands type 131 to the bullet controller",
+    "src": "gml_Object_obj_orange_green_controller_Step_0.gml:605"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_green_cookingtime",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type 131 branch creates exactly one cooking-time actor on its first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1595"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_attack_green_cookingtime",
+    "atFrame": 30,
+    "x": 472,
+    "y": 96,
+    "tol": 2,
+    "why": "Create pins x = camerax()+472 = 472 and y = (cameray()+176)-80 = 96 and the object has no Step event and never moves itself",
+    "src": "gml_Object_obj_attack_green_cookingtime_Create_0.gml:5"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_green_witharmandpan",
+    "atFrame": 30,
+    "x": 472,
+    "y": 96,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "scr_darksize() sets 2x scale and the Draw event draw_self()s at the fixed 472,96",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:195"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_healing",
+    "byFrame": 14,
+    "min": 1,
+    "why": "timer reaches timermax = 12 on frame 12 and mode2count 1 is not a multiple of 3, so the first drop is a healing egg",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:127"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_healing",
+    "byFrame": 100,
+    "min": 6,
+    "why": "drops land every 12 frames and 6 of the first 8 (all but mode2count 3 and 6) are eggs",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:54"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 38,
+    "min": 1,
+    "why": "the third drop (mode2count % 3 == 0, frame 36) is the green flame, an obj_regularbullet",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:58"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 76,
+    "min": 2,
+    "why": "flames fire on mode2count 3 and 6, i.e. frames 36 and 72",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:54"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_bullet_green_egg",
+    "byFrame": 16,
+    "why": "the healing drop is given spr_bullet_green_egg the frame it is created",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:128"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bullet_green_flame",
+    "atFrame": 42,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "the flame bullet is created at 2x scale on both axes",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:62"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 42,
+    "name": "damage",
+    "eq": 96,
+    "why": "candy.damage = 96 on the flame bullet",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:66"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 42,
+    "name": "gravity",
+    "eq": 0.35,
+    "tol": 0.001,
+    "why": "candy.gravity = 0.35 and the powerup >= 1 re-roll on line 75 never applies at powerup 0",
+    "src": "gml_Object_obj_attack_green_cookingtime_Draw_0.gml:64"
+   }
+  ]
+ },
+ {
+  "id": "orange_green_type314",
+  "name": "OMEGA-3 uppercut — Orange leaps the box and slams down expanding glove rings",
+  "note": "The dispatcher pins difficulty = 8 (obj_orange_green_controller_Step_0.gml:590), so the `if (difficulty == 0) difficulty = 9` fallback at dbulletcontroller:3571 does NOT apply and every glove_manager gets 8 gloves. Orange's leap target is randomised (obj_growtangle.x +/- (56 + random(24))), so no position is asserted. The mytimer nudge at (mytimer % 56) == 30 is 3 * (obj_heart.wspeed - 4) and obj_heart Create pins wspeed = global.sp = 4, so the 56-frame cadence is unshifted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "both the dispatcher's scr_turntimer(360) and the branch's global.turntimer = 360 pin 360",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3574"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_glove_manager",
+    "byFrame": 28,
+    "min": 1,
+    "max": 1,
+    "why": "the first slam fires at (mytimer % 56) == 25 and creates exactly one glove manager",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3693"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_glove_manager",
+    "atFrame": 30,
+    "name": "bullets",
+    "eq": 8,
+    "why": "bullets = other.difficulty and the boss dispatcher pinned __dc.difficulty = 8 (obj_orange_green_controller_Step_0.gml:590); glove_manager Create also defaults bullets = 8",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3695"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orange_glove",
+    "atFrame": 30,
+    "min": 8,
+    "max": 8,
+    "why": "event_user(0) loops i < bullets = 8 creating one obj_orange_glove each, and destroyonhit is false",
+    "src": "gml_Object_obj_glove_manager_Other_10.gml:3"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_omega_glove",
+    "atFrame": 30,
+    "minCalls": 8,
+    "why": "each of the 8 gloves is given spr_omega_glove and draws itself",
+    "src": "gml_Object_obj_glove_manager_Other_10.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_orange_glove",
+    "atFrame": 30,
+    "name": "target",
+    "eq": 4,
+    "why": "every glove is created with target = 4, and the manager it inherits from also has target = 4",
+    "src": "gml_Object_obj_glove_manager_Other_10.gml:23"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_glove_manager",
+    "byFrame": 84,
+    "min": 2,
+    "why": "the slam repeats on a 56-frame cycle, so the second ring lands at mytimer 81",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3691"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_orange_glove",
+    "byFrame": 84,
+    "min": 16,
+    "why": "two managers x 8 gloves each by the second slam",
+    "src": "gml_Object_obj_glove_manager_Other_10.gml:1"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_orange_glove",
+    "atFrame": 90,
+    "min": 16,
+    "why": "gloves have destroyonhit = false and their manager only culls them once it falls past obj_growtangle.y + 170, which at vspeed approaching 2.7 from 0 is far later than frame 90",
+    "src": "gml_Object_obj_glove_manager_Step_0.gml:39"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_orange_screenpunchfist",
+    "byFrame": 26,
+    "why": "the punch bullet spawned at (mytimer % 56) == 22 carries spr_orange_screenpunchfist",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3668"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_glove_manager",
+    "atFrame": 30,
+    "name": "turn",
+    "min": -135,
+    "max": 135,
+    "why": "turn starts at 135 and is multiplied by the +/-1 gloveflip, so it is exactly +135 or -135 and the Step never touches it",
+    "src": "gml_Object_obj_glove_manager_Create_0.gml:6"
+   }
+  ]
+ },
+ {
+  "id": "orange_green_type132",
+  "name": "OMEGA-3 SUPER ATTACK — Orange's finale (condescend ending)",
+  "note": "All of the attack's logic lives in obj_attack_orange_superattack's Draw event (its Step is a bare `exit`). Its x/y are lerped from frame 1 onward so only scales, counts and sprites are asserted. Phase timing: con 1 starts at frame ~16 (15-frame delayed scr_var), the flash fires at ~34, obj_oflash lives ~19 frames at flashspeed 0.5, con 2 lands at ~54 and con 3 runs ~56-96.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 615,
+    "why": "the type 132 branch overrides the dispatcher's 300 with global.turntimer = 615",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1626"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_attack_orange_superattack",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one superattack actor at depth -1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1628"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_attack_orange_superattack",
+    "atFrame": 10,
+    "name": "foodcollected",
+    "eq": 10,
+    "why": "Create pins foodcollected = 10 and nothing ever reassigns it",
+    "src": "gml_Object_obj_attack_orange_superattack_Create_0.gml:19"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_orange_idle_base",
+    "atFrame": 10,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize() puts Orange at 2x on both axes and the trailing draw_self() renders him during the 15-frame jump",
+    "src": "gml_Object_obj_attack_orange_superattack_Create_0.gml:13"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bullet_green_egg",
+    "atFrame": 25,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "minCalls": 10,
+    "maxCalls": 10,
+    "why": "the con == 1 ring draws exactly foodcollected = 10 eggs at 1x, angle 0",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:51"
+   },
+   {
+    "kind": "box",
+    "w": 225,
+    "tol": 6,
+    "why": "the box's image_xscale is lerped to 3 and spr_battlebg_0 is 75px wide, so the box widens to 225",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:36"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_enemy_orange_prepare",
+    "byFrame": 50,
+    "why": "when the shrinking egg ring passes foodlength < 25 Orange switches to spr_enemy_orange_prepare",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:57"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_oflash",
+    "byFrame": 50,
+    "min": 1,
+    "why": "the same flash step calls scr_oflash() with flashspeed 0.5",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:58"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_enemy_orange_fly_withfist",
+    "byFrame": 80,
+    "why": "once the ring closes and the flash ends Orange becomes spr_enemy_orange_fly_withfist for the launch",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:64"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_bullet_orange_debris",
+    "byFrame": 130,
+    "min": 100,
+    "max": 100,
+    "why": "createrocks runs a 10x10 grid (xx and yy each -500..400 step 100) exactly once",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:286"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_orange_energytrail",
+    "atFrame": 80,
+    "xscale": 1.3,
+    "yscale": 2,
+    "why": "the hovering aura trail is drawn at 1.3 by 2 during con 2/3",
+    "src": "gml_Object_obj_attack_orange_superattack_Draw_0.gml:119"
+   }
+  ]
+ },
+ {
+  "id": "orange_green_type307",
+  "name": "OMEGA PAN — Green's finale: three orbiting pans firing flame fans",
+  "note": "obj_omega_pan_manager's timer starts at -8 and fires when it hits 35, so volleys land on frames 43 and 78. Pan positions ride global.time through cos/sin, so only the distance band is asserted.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 500,
+    "why": "the admire-ending dispatcher calls scr_turntimer(500) with type 307",
+    "src": "gml_Object_obj_orange_green_controller_Step_0.gml:874"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_pan_manager",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates one manager at the box centre",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3460"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_omega_pan",
+    "atFrame": 10,
+    "min": 3,
+    "max": 3,
+    "why": "Create makes pan_1, pan_2 and pan_3 at 0, -120 and 120 degrees and nothing destroys them",
+    "src": "gml_Object_obj_omega_pan_manager_Create_0.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_pan_manager",
+    "atFrame": 20,
+    "name": "pan_distance",
+    "min": 114,
+    "max": 126,
+    "why": "Create's 140 is overwritten every step by 120 + 6*cos(...), which cannot leave 114..126",
+    "src": "gml_Object_obj_omega_pan_manager_Step_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_pan_manager",
+    "atFrame": 20,
+    "name": "angle_change",
+    "eq": 0.5,
+    "why": "the ring rotates 0.5 degrees per step and angle_change is never reassigned",
+    "src": "gml_Object_obj_omega_pan_manager_Create_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_green_omegapan_1",
+    "atFrame": 30,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "minCalls": 3,
+    "why": "each pan is created at 1.5x and draws itself, so all three pans render",
+    "src": "gml_Object_obj_omega_pan_Create_0.gml:1"
+   },
+   {
+    "kind": "box",
+    "w": 160,
+    "h": 160,
+    "tol": 4,
+    "why": "the manager swaps the box sprite to spr_battlebg_round (80x80) and obj_growtangle's maxxscale/maxyscale default to 2 (Create:13-14), so the box reads 160x160",
+    "src": "gml_Object_obj_omega_pan_manager_Create_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_pan_fire",
+    "byFrame": 50,
+    "min": 3,
+    "max": 3,
+    "why": "the first volley (timer == 35, frame 43) fires a fan of exactly 3 flames from one pan",
+    "src": "gml_Object_obj_omega_pan_manager_Step_0.gml:26"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_omega_pan_fire",
+    "byFrame": 85,
+    "min": 6,
+    "why": "timer resets to 0 after firing, so the next pan volleys 35 frames later (frame 78)",
+    "src": "gml_Object_obj_omega_pan_manager_Step_0.gml:53"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_bullet_green_flame",
+    "byFrame": 50,
+    "why": "scr_fire_bullet is handed spr_bullet_green_flame for the pan fire",
+    "src": "gml_Object_obj_omega_pan_manager_Step_0.gml:28"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_pan_fire",
+    "atFrame": 55,
+    "name": "damage",
+    "eq": 92,
+    "why": "obj_omega_pan_fire Create pins damage = 92 after event_inherited(), and scr_fire_bullet's inherit flag defaults false",
+    "src": "gml_Object_obj_omega_pan_fire_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_pan_fire",
+    "atFrame": 55,
+    "name": "target",
+    "eq": 4,
+    "why": "obj_omega_pan_fire Create pins target = 4 (hit everyone)",
+    "src": "gml_Object_obj_omega_pan_fire_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_omega_pan_fire",
+    "atFrame": 55,
+    "name": "gravity",
+    "eq": -0.3,
+    "tol": 0.001,
+    "why": "each flame gets gravity = -0.3 along its own direction so it accelerates outward",
+    "src": "gml_Object_obj_omega_pan_manager_Step_0.gml:34"
+   }
+  ]
+ },
+ {
+  "id": "orange_green_green_egg_heal",
+  "name": "HEALING EGG — turn REPLACEMENT: no controller, no bullets, no box, no soul",
+  "note": "This is a turn REPLACEMENT, not an attack. obj_green_egg_heal is created directly by the boss controller (obj_orange_green_controller_Step_0.gml:1616/1627) instead of an obj_dbulletcontroller; it has no Step event, no bullets, no box change and no soul interaction, and its whole script is a 58-frame Draw-event animation. Only 6 assertions are emitted because there is genuinely nothing else in the source to check. Its x/y ride obj_green_enemy's position and scr_move_to_point_over_time, so no position is asserted. Turn length is also not asserted: global.turntimer = 999 is held by the boss controller's healing_egg_con state machine (Step_0.gml:1633), which does not exist when this is launched standalone.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_healing_egg",
+    "byFrame": 8,
+    "min": 1,
+    "max": 1,
+    "why": "at timer == 5 exactly one obj_healing_egg is created at (x-45, y+34)",
+    "src": "gml_Object_obj_green_egg_heal_Draw_0.gml:6"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bullet_green_egg",
+    "atFrame": 10,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "candy.image_xscale and image_yscale are both set to 2 on the thrown egg, which draw_self()s",
+    "src": "gml_Object_obj_green_egg_heal_Draw_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_healing_egg",
+    "atFrame": 7,
+    "name": "vspeed",
+    "eq": -20,
+    "why": "the egg is launched straight up at vspeed = -20 and only flips once it passes cameray() - 20, which takes ~8 frames from the enemy's height",
+    "src": "gml_Object_obj_healing_egg_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_green_witharmandpan",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize() puts Green at 2x and the Draw event ends in draw_self()",
+    "src": "gml_Object_obj_green_egg_heal_Create_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_green_egg_heal",
+    "atFrame": 20,
+    "name": "target_enemy",
+    "eq": "orange",
+    "why": "Create defaults target_enemy to \"orange\", which is the branch the timings below follow",
+    "src": "gml_Object_obj_green_egg_heal_Create_0.gml:13"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_green_egg_heal",
+    "atFrame": 70,
+    "max": 0,
+    "why": "the \"orange\" branch destroys the caster at timer == 58, so nothing survives to frame 70",
+    "src": "gml_Object_obj_green_egg_heal_Draw_0.gml:20"
+   }
+  ]
+ },
+ {
+  "id": "watercooler_type135",
+  "name": "Rain (CHAPTER 3 — obj_watercooler_enemy)",
+  "note": "CHAPTER 3 fight, read from DELTARUNE Chapter 3 - GML. First turn, so the dispatcher pins dc.special = 0 (and obj_dbulletcontroller Create already defaults special = 0), which is the only special that leaves the rainball motionless at the box centre. scr_turntimer takes the max of its argument and the current turn, so the rainball's Create value of 300 wins over the enemy's 140.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "obj_watercooler_bullet_rainball's Create calls scr_turntimer(300), and scr_turntimer only ever raises the turn, so it overrides the enemy's 140",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Create_0.gml:11"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_watercooler_bullet_rainball",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type 135 branch creates exactly one rainball at the box centre",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2755"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_watercooler_bullet_rainball",
+    "atFrame": 30,
+    "x": 320,
+    "y": 170,
+    "tol": 2,
+    "why": "created at obj_growtangle.x/y (the box is made at view+320, view+170) and only special 1-4 ever move it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2755"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_watercooler_bullet_rainball",
+    "atFrame": 10,
+    "name": "special",
+    "eq": 0,
+    "why": "the dispatcher sets dc.special = 0 and only raises it on later turns",
+    "src": "gml_Object_obj_watercooler_enemy_Step_0.gml:93"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_watercooler_bullet_rainball",
+    "atFrame": 10,
+    "name": "threshold",
+    "eq": 3,
+    "why": "threshold 3 is the firing cadence — one raindrop every 3 frames (only special 3/4 raise it to 8)",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_watercooler_bullet_rainball",
+    "atFrame": 10,
+    "name": "amount",
+    "eq": 1,
+    "why": "type 135 leaves amount at its Create default of 1 (only type 136 raises it to 2)",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_watercooler_bullet_rainball",
+    "atFrame": 30,
+    "name": "size",
+    "eq": 1,
+    "tol": 0.001,
+    "why": "size only grows by 0.05 per absorbed drop and the first drop needs ~37 frames to close the 150px at 0.2/frame acceleration",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ball",
+    "atFrame": 30,
+    "x": 320,
+    "y": 170,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "tol": 2,
+    "why": "the Draw event forces image_xscale/yscale to size/2 = 0.5 before draw_self()",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Draw_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 6,
+    "min": 1,
+    "why": "timer reaches threshold 3 on frame 3 and fires the first raindrop",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Step_0.gml:21"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 34,
+    "min": 10,
+    "why": "timer resets to 0 after every shot, so a raindrop appears every 3 frames",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Step_0.gml:32"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_raindrop",
+    "byFrame": 12,
+    "why": "bulletsprite = 857 is spr_raindrop (Chapter 3 sprites.tsv row 857) and is assigned to every fired bullet",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Step_0.gml:22"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 12,
+    "name": "mybulletgravity",
+    "eq": 0.2,
+    "tol": 0.001,
+    "why": "each raindrop accelerates inward at 0.2 per frame from 150px out",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Step_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 12,
+    "name": "grazepoints",
+    "eq": 1,
+    "why": "every raindrop is created with grazepoints = 1",
+    "src": "gml_Object_obj_watercooler_bullet_rainball_Step_0.gml:29"
+   }
+  ]
+ },
+ {
+  "id": "pink_date1",
+  "name": "date 1 — \"a date!?\" (4 boxes, UP to confirm)",
+  "note": "Turn REPLACEMENT, no battle box and no bullets — obj_date_controller is the whole attack, so NO box assertion is emitted. con==2 (the choice carousel) is not reached until draw_box_timer >= 232, i.e. frame ~250, so every assertion targets the intro/portrait phase that actually renders in the sampled window. Alpha is omitted on the ui_alpha-driven draws because `if (ui_alpha < 1) ui_alpha += 0.1` overshoots to ~1.1 in double precision. Frames 19-23 carry an obj_shake offset on xx/yy (scr_shakescreen fires on the con 0 -> 1 transition and obj_shake dies once shakex hits 0), so no draw assertion samples earlier than frame 27.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the controller re-pins global.turntimer = 999 on every Step, so the date never times out",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "boxcount",
+    "eq": 4,
+    "why": "Create pins boxcount = 4 and the `datecount > 1 -> 3` override does not run on date 1",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:63"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "questiondowntime",
+    "eq": 20,
+    "why": "Create sets 20 and only overwrites it to 10 when datecount > 1",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 15,
+    "name": "con",
+    "eq": 0,
+    "why": "the split-screen intro is still sliding: surface1_x starts at camerax()-320 = -320 and gains -grav with grav-- each step, so it is still negative at frame 15",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 25,
+    "name": "con",
+    "eq": 1,
+    "why": "surface1_x reaches camx on frame 19 (accelerating slide) and that transition sets con = 1",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:22"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_shinobeetle_smokecloud",
+    "byFrame": 40,
+    "why": "the 23-puff smoke burst at the con 0 -> 1 transition is gated on datecount > 1, so date 1 must produce none",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:39"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_date_heart",
+    "atFrame": 30,
+    "x": 319,
+    "y": 385,
+    "why": "Create makes the date soul at heart_x/heart_y = 319/385 (the -1 y offset is date 3 only) and obj_date_heart's Step is a bare `exit;`, so nothing moves it",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:333"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_heart",
+    "atFrame": 60,
+    "name": "image_alpha",
+    "eq": 0,
+    "why": "obj_date_heart Create pins image_alpha = 0 and on date 1 the soul only fades in during draw_box_timer 221..231 (frame ~239)",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:146"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_shocked_origin_adjusted",
+    "atFrame": 40,
+    "x": 210,
+    "y": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "pinkportrait = 982 drawn at pinkportrait_x/pinkportrait_y = 210/40, portrait_xscale 2, and pinkportraitalpha has finished its 20 x 0.05 fade-in by frame 38",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:234"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_tail",
+    "atFrame": 40,
+    "maxCalls": 0,
+    "why": "the speaker tail is drawn only for pinkportrait 5218/7353/6552/200; date 1 opens on 982, and both flash timers stay 0 forever",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:231"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_bg",
+    "atFrame": 40,
+    "x": 106,
+    "y": 24,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the dating-sim panel is drawn unconditionally at camera+106,+24 at 2x, full alpha",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:94"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_nodiamonds",
+    "atFrame": 40,
+    "x": 0,
+    "y": 0,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "minCalls": 4,
+    "maxCalls": 4,
+    "why": "the frame is drawn four times per frame (subimages 0, __a, 1, __b, lines 460/466/576/577) and the two opaque passes sit at the camera origin at 2x",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:460"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_time_bar",
+    "atFrame": 40,
+    "x": 186,
+    "y": 416,
+    "xscale": 300,
+    "yscale": 2,
+    "why": "the date clock is drawn at camera+186,+416 with xscale lerp(0,300,datetimeleft/datetimeleftmax) = 300 while the timer is untouched (it only counts down under con == 2)",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:594"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_heart",
+    "atFrame": 40,
+    "x": 14,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "minCalls": 3,
+    "maxCalls": 3,
+    "why": "questioncount == 0 draws exactly three score hearts at 1x, spaced 22px from x = 14",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:599"
+   }
+  ]
+ },
+ {
+  "id": "pink_date2",
+  "name": "date 2 — split in two, 3 of 12 questions",
+  "note": "Turn REPLACEMENT, no battle box. Date 2's scripted intro runs to draw_box_timer 911 before con == 2 (draw_box_timer jumps 12 -> 81 on frame 30, so dbt = frame + 51), so the choice carousel is hundreds of frames away; the checkable behaviour is the datecount>1 branch of Create (boxcount/questiondowntime/ui_alpha overwrites), the impact smoke burst, and the two-portrait layout with the ghost half still at alpha 0 (pinkportraitalpha2 only leaves 0 at draw_box_timer 500).",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the controller re-pins global.turntimer = 999 on every Step",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "boxcount",
+    "eq": 3,
+    "why": "Create sets boxcount = 4 then the datecount > 1 line overwrites it with 3 — proof the date-2 init ran",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:66"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "questiondowntime",
+    "eq": 10,
+    "why": "Create sets 20 then overwrites it with 10 for datecount > 1",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "ui_alpha",
+    "eq": 1,
+    "why": "Create sets ui_alpha = 0 then overwrites it with 1 for datecount > 1, so date 2 opens with the UI already solid instead of fading in",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:392"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 25,
+    "name": "con",
+    "eq": 1,
+    "why": "the split-screen slide finishes on frame 19 and pins con = 1",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:22"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shinobeetle_smokecloud",
+    "atFrame": 22,
+    "min": 23,
+    "max": 23,
+    "why": "the datecount > 1 impact spawns 15 dust puffs down the screen centre plus 8 more on the even i, and none has faded out three frames later (fadespeed 0.1 / 0.06 against alpha ~1)",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:41"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_date_heart",
+    "atFrame": 30,
+    "x": 319,
+    "y": 385,
+    "why": "Create makes the date soul at heart_x/heart_y = 319/385 and obj_date_heart's Step is a bare `exit;`",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:333"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_talk_happy",
+    "atFrame": 40,
+    "x": 210,
+    "y": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "Create pins pinkportrait = 200 for datecount == 2, drawn at pinkportrait_x/_y = 210/40 at 2x with pinkportraitalpha finished (10 x 0.1 over draw_box_timer 1..10)",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:234"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_tail",
+    "atFrame": 40,
+    "x": 210,
+    "y": 21,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "minCalls": 1,
+    "maxCalls": 1,
+    "why": "pinkportrait == 200 is one of the four portraits that get the speaker tail, drawn 19px above the head at 2x, exactly once (both flash-timer copies stay gated off)",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:232"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_angry",
+    "atFrame": 40,
+    "x": 220,
+    "y": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 0,
+    "why": "Create sets pinkportrait2 = 7504 then overwrites it with 5428 for datecount == 2; the second portrait is drawn at pinkportrait2_x + 10 = 220 but at pinkportraitalpha2 * 0.7 = 0, because alpha2 only rises at draw_box_timer >= 500",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:180"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_bg",
+    "atFrame": 40,
+    "x": 106,
+    "y": 24,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the dating-sim panel is drawn unconditionally at camera+106,+24 at 2x, full alpha",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:94"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_time_bar",
+    "atFrame": 40,
+    "x": 186,
+    "y": 416,
+    "xscale": 300,
+    "yscale": 2,
+    "alpha": 1,
+    "why": "dates 1 and 2 draw the clock; xscale is lerp(0,300,datetimeleft/datetimeleftmax) = 300 (datetimeleft only counts down under con == 2) and ui_alpha is exactly 1 on date 2",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:594"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_heart",
+    "atFrame": 40,
+    "x": 14,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 3,
+    "maxCalls": 3,
+    "why": "questioncount == 0 draws exactly three score hearts at 1x from x = 14, at ui_alpha which is 1 on date 2",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:599"
+   }
+  ]
+ },
+ {
+  "id": "pink_date3",
+  "name": "date 3 — scripted, ends in the FINAL ATTACK",
+  "note": "Turn REPLACEMENT with NO choice phase at all — date 3 never leaves con == 1; it runs a scripted timeline (draw_box_timer jumps 12 -> 42 on frame 30, so dbt = frame + 12) and at draw_box_timer >= 340 (frame ~328) hands off to obj_dbulletcontroller type 210. Frames sampled here sit inside the clutching-head sequence. pinkportrait_x gets a tol-3 band because Step jitters it with irandom(4)-2, and the portrait's alpha is omitted because the second fade clause overshoots 1.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the controller re-pins global.turntimer = 999 on every Step",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "boxcount",
+    "eq": 3,
+    "why": "Create sets boxcount = 4 then the datecount > 1 line overwrites it with 3",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:66"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "pinkportrait_x",
+    "eq": 230,
+    "why": "Create sets pinkportrait_x = 210 and the trailing datecount == 3 block overwrites it with 230 — proof the date-3 tail init ran",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:411"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "pinkportrait2",
+    "eq": 5450,
+    "why": "Create sets pinkportrait2 = 7504 then the datecount == 3 block overwrites it with 5450 (spr_nothing): date 3 has no ghost portrait",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:412"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 25,
+    "name": "con",
+    "eq": 1,
+    "why": "the split-screen slide finishes on frame 19 and pins con = 1; date 3 stays on con 1 for its whole scripted run",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:22"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shinobeetle_smokecloud",
+    "atFrame": 22,
+    "min": 23,
+    "max": 23,
+    "why": "the datecount > 1 impact spawns 15 dust puffs plus 8 on the even i, all still alive three frames later",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:41"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_date_heart",
+    "atFrame": 30,
+    "x": 319,
+    "y": 384,
+    "why": "date 3 alone creates the soul one pixel higher: instance_create(heart_x, heart_y - 1, obj_date_heart) = 319, 384, and its Step is a bare `exit;`",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:331"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 40,
+    "name": "date3con",
+    "eq": 1,
+    "why": "the scripted timeline reaches draw_box_timer 12 on frame 30 and sets date3con = 1 (first clutching-head line); it only becomes 2 at draw_box_timer 102 (frame 90)",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:584"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 60,
+    "name": "finalattackcon",
+    "eq": 0,
+    "why": "the type-210 finale is only armed at draw_box_timer >= 340, i.e. frame ~328, so it must not have fired at frame 60",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:676"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_clutch",
+    "atFrame": 27,
+    "x": 230,
+    "y": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "pinkportrait = 1034 for datecount == 3, drawn at pinkportrait_x/_y = 230/40 at 2x before the draw_box_timer >= 12 jitter starts on frame 30",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:234"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_clutch",
+    "atFrame": 40,
+    "x": 230,
+    "y": 40,
+    "tol": 3,
+    "why": "from draw_box_timer 12 the portrait shakes with pinkportrait_x = 230 + irandom(4) - 2, a band of 228..232 the randomness cannot leave",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:615"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_bg_inverted_2x",
+    "atFrame": 40,
+    "minCalls": 140,
+    "maxCalls": 140,
+    "why": "date 3 only: the inverted panel is redrawn as horizontal strips by `for (i = 0; i < 280; i += thickness)` with thickness = 2, i.e. exactly 140 draw_sprite_part_ext calls per frame",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:103"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_time_bar",
+    "atFrame": 40,
+    "maxCalls": 0,
+    "why": "dates 3 and 4 take the empty branch — the date clock is not drawn at all",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:589"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_heart",
+    "atFrame": 40,
+    "x": 14,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 3,
+    "maxCalls": 3,
+    "why": "questioncount == 0 draws exactly three score hearts at 1x from x = 14, at ui_alpha which is 1 for datecount > 1",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:599"
+   }
+  ]
+ },
+ {
+  "id": "pink_date4",
+  "name": "date 4 — the confession, 3 questions",
+  "note": "Turn REPLACEMENT, no battle box; con == 2 is not reached until draw_box_timer >= 403 (frame ~421, dbt = frame - 18 with no jumps). The valuable date-4 behaviour is the Create block that overwrites four portrait fields and MIRRORS the ghost half (portrait2_xscale = -2), then the portraitscon split on frame 30 which mirrors the Mew half too (_scale = -1 once pinkportraitalpha2 > 0). Alphas are omitted where the fade is mid-flight and x is omitted where scr_lerpvar is sliding it.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 999,
+    "why": "the controller re-pins global.turntimer = 999 on every Step",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "boxcount",
+    "eq": 3,
+    "why": "Create sets boxcount = 4 then the datecount > 1 line overwrites it with 3",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:66"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "pinkportrait2",
+    "eq": 3412,
+    "why": "the datecount > 3 block sets pinkportrait2 = 7274 and the later datecount == 4 block overwrites it with 3412 (spr_pinkghost_sad) — proof the date-4 init ran last",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:363"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "portrait2_xscale",
+    "eq": -2,
+    "why": "date 4 alone flips the ghost portrait horizontally: portrait2_xscale = -2 instead of the default 2",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:365"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "pinkportrait_x",
+    "eq": 200,
+    "why": "Create sets pinkportrait_x = 210 then the datecount == 4 block overwrites it with 200",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:366"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 5,
+    "name": "pinkportrait2_x",
+    "eq": 414,
+    "why": "Create sets pinkportrait2_x = 210 then the datecount == 4 block overwrites it with 414, putting the ghost on the right half",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:367"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_date_controller",
+    "atFrame": 25,
+    "name": "con",
+    "eq": 1,
+    "why": "the split-screen slide finishes on frame 19 and pins con = 1",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:22"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shinobeetle_smokecloud",
+    "atFrame": 22,
+    "min": 23,
+    "max": 23,
+    "why": "the datecount > 1 impact spawns 15 dust puffs plus 8 on the even i, all still alive three frames later",
+    "src": "gml_Object_obj_date_controller_Step_0.gml:41"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_date_heart",
+    "atFrame": 30,
+    "x": 319,
+    "y": 385,
+    "why": "Create makes the date soul at heart_x/heart_y = 319/385 and obj_date_heart's Step is a bare `exit;`",
+    "src": "gml_Object_obj_date_controller_Create_0.gml:333"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_date4_idle",
+    "atFrame": 27,
+    "x": 200,
+    "y": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "before the ghost splits out (pinkportraitalpha2 still 0, so _scale = 1) the Mew portrait sits unmirrored at pinkportrait_x/_y = 200/40 at 2x",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:234"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkghost_sad",
+    "atFrame": 27,
+    "x": 424,
+    "y": 40,
+    "xscale": -2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 0,
+    "why": "the ghost half is drawn MIRRORED at pinkportrait2_x + portrait_offset_x = 414 + 10 = 424, y 40, and still fully transparent because pinkportraitalpha2 * 0.7 = 0 until portraitscon starts on frame 30",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:180"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_pinkspeaker_date4_idle",
+    "atFrame": 45,
+    "y": 40,
+    "xscale": -2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "once pinkportraitalpha2 > 0 (portraitscon adds 0.2 a frame from frame 30) the Draw sets _scale = -1, so the Mew half mirrors to portrait_xscale * -1 = -2 (x omitted: scr_lerpvar is sliding pinkportrait_x 200 -> 100 and the offset gains 224)",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:224"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_time_bar",
+    "atFrame": 40,
+    "maxCalls": 0,
+    "why": "dates 3 and 4 take the empty branch — the date clock is not drawn at all",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:589"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_datingsim_ui_heart",
+    "atFrame": 40,
+    "x": 14,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 3,
+    "maxCalls": 3,
+    "why": "questioncount == 0 draws exactly three score hearts at 1x from x = 14, at ui_alpha which is 1 for datecount > 1",
+    "src": "gml_Object_obj_date_controller_Draw_0.gml:599"
+   }
+  ]
+ },
+ {
+  "id": "queen_type1",
+  "name": "QueenUltimate",
+  "note": "Controller branch is a two-line spawner gated on init==1, so it fires on the controller's SECOND step; all behaviour lives in obj_queen_ultimate_attack_controller -> obj_queen_explodinghead_intro -> obj_queen_explodinghead. Frame estimates come from con0 ending at step 91 (timer>90) and every downstream constant being a literal.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 200,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "rr==1 puts obj_growtangle at view+320,+200 and its 75x75 spr_battlebg_0 grows to maxxscale/maxyscale 2",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:736"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_ultimate_attack_controller",
+    "atFrame": 2,
+    "x": 320,
+    "y": 200,
+    "tol": 2,
+    "why": "created at obj_growtangle.x/y and never moved by its Step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:339"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_ultimate_attack_controller",
+    "atFrame": 2,
+    "name": "variant",
+    "eq": 0,
+    "why": "Create sets variant = 0 and obj_queen_enemy.ultimateattackused starts 0, so the slow 90-frame download variant runs",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Create_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_hiddenheart",
+    "byFrame": 2,
+    "min": 1,
+    "why": "the branch creates one obj_hiddenheart on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:340"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_poppup_error",
+    "byFrame": 110,
+    "min": 1,
+    "why": "con flips to 1 at timer>90 and the first error pops two frames later",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Step_0.gml:43"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_poppup_error",
+    "byFrame": 160,
+    "min": 14,
+    "max": 14,
+    "why": "poppupcount 0..13 are the only cases that create one, so exactly 14 ever appear",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Step_0.gml:86"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 140,
+    "min": 1,
+    "why": "first intro head is created at con-1 timer == 24",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Step_0.gml:96"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 275,
+    "min": 9,
+    "max": 9,
+    "why": "nine literal timer gates 24,40,56,72,88,104,120,136,152 each create exactly one intro",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Step_0.gml:152"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead",
+    "byFrame": 160,
+    "min": 1,
+    "why": "the intro spirals in (length 70 losing 6/step with first==1) and becomes an explodinghead",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Step_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead",
+    "atFrame": 200,
+    "name": "ultimate",
+    "eq": 1,
+    "why": "the ultimate controller pins ultimate = 1 on every intro it spawns and the intro forwards it to the head",
+    "src": "gml_Object_obj_queen_ultimate_attack_controller_Step_0.gml:99"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_bufferbullet",
+    "byFrame": 220,
+    "min": 30,
+    "why": "ultimate==1 heads burst 10 bullets each and at least three heads have detonated by then",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:47"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 205,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the ultimate burst overwrites the bullet's Create-time 0.5 scale with 2",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:63"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_queen_wireframe",
+    "atFrame": 200,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 0.5,
+    "why": "the intro head draws a half-transparent unrotated wireframe ghost behind itself",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Draw_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 371,
+    "why": "ultimateattackused == 0 selects scr_turntimer(371)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:799"
+   }
+  ]
+ },
+ {
+  "id": "queen_type3",
+  "name": "Stomp",
+  "note": "The leg's own event_user(0) decompiles to a bare exit, so shootbullets produces nothing; the leg body IS the hitbox. Leg y is deliberately not asserted because it is derived from obj_growtangle.sprite_height at the controller's first step, which depends on how far the box has grown by then.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "rr==3 falls to the else branch: obj_growtangle at view+320,+170, 75x75 sprite at maxscale 2",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_leg",
+    "byFrame": 1,
+    "min": 1,
+    "why": "btimer starts at 99 and the type-3 branch is not init-gated, so the btimer>=30 gate fires on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:471"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_leg",
+    "atFrame": 5,
+    "x": 320,
+    "tol": 47,
+    "why": "the three lanes are obj_growtangle.x + -47, 0 and +47, so x is always within 47 of 320",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:504"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_leg",
+    "atFrame": 5,
+    "name": "shootbullets",
+    "eq": 1,
+    "why": "the type-3 branch overwrites the Create default 0 with 1",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:521"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_leg",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 270,
+    "why": "type 3 keeps the Create direction 270 (stomping down from the box ceiling), unlike 3.1 which sets 180",
+    "src": "gml_Object_obj_queen_leg_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_leg",
+    "atFrame": 5,
+    "name": "stompspeed",
+    "eq": 0.1,
+    "tol": 0.001,
+    "why": "stomplerp advances 0.1 per frame once the 15-frame stompwait telegraph ends",
+    "src": "gml_Object_obj_queen_leg_Create_0.gml:9"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_leg",
+    "atFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "the next leg is 21 frames away, so exactly one leg is live during the first telegraph",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:524"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_leg",
+    "byFrame": 25,
+    "min": 2,
+    "max": 2,
+    "why": "btimer is reset to 9 and must climb to 30, giving a 21-frame cadence: legs at frame 1 and 22 only",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:524"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_leg",
+    "byFrame": 90,
+    "min": 5,
+    "max": 5,
+    "why": "the 21-frame cadence puts legs at frames 1, 22, 43, 64 and 85",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:524"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_exclamation_mark_appear",
+    "atFrame": 5,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "why": "the falling-leg telegraph draws the warning mark on the box centre line at obj_growtangle.y",
+    "src": "gml_Object_obj_queen_leg_Draw_0.gml:12"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_leg",
+    "byFrame": 30,
+    "why": "the leg draws its default spr_queen_leg through scr_drawinbulletbox once it has descended into the box (3.1 would swap it for spr_queen_leg_side)",
+    "src": "gml_Object_obj_queen_leg_Draw_0.gml:29"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 240,
+    "why": "difficulty 0 keeps scr_turntimer(240); only difficulty 3 shortens it to 190",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:834"
+   }
+  ]
+ },
+ {
+  "id": "queen_type2",
+  "name": "Wine",
+  "note": "The droplet loop is gated on controller init == 3, which is only set by obj_queen_enemy's wineglasscon 1->3 throw sequence. Because init never reaches 3, prefill stays 0, so fill stays 0 and the glass image_angle stays 0 for every Wine variant. No box assertion: rr==2 blanks obj_growtangle to spr_nothing and hides it. The init==1 branch runs on the controller's second step, so glass state is sampled from frame 3.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 3,
+    "x": 320,
+    "y": 228,
+    "tol": 2,
+    "why": "Create overrides the spawn point to obj_growtangle.x, obj_growtangle.y + 58 = 320, 170+58",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the glass is drawn at double size",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:15"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "threshold",
+    "eq": 9,
+    "why": "plain type 2 leaves the Create default 9 droplet-spacing threshold untouched",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "wineadd",
+    "eq": 4,
+    "why": "plain type 2 leaves the Create default fill-per-droplet of 4",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnamount",
+    "eq": 10,
+    "why": "type 2 never multiplies turnamount, so the glass does not tilt (2.1 uses 12, 2.2 uses 20)",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnperiod",
+    "eq": 15,
+    "why": "the sin() period for the tilt is a Create constant shared by all three Wine variants",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:10"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_winewave",
+    "atFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "the glass Create makes exactly two wave instances, one drifting -3 and one +4",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_wineflass_pushin",
+    "byFrame": 2,
+    "min": 1,
+    "why": "the invisible push-in collider that shoves the soul back into the glass is made with it",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:23"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 6,
+    "x": 220,
+    "y": 282,
+    "tol": 2,
+    "why": "created at glass x-100 and pinned each End Step to glass.y + 54 - fill, with fill still 0",
+    "src": "gml_Object_obj_queen_wineglass_Step_2.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 40,
+    "why": "the 10px hitbox sprite is stretched 40x wide to span the wine surface",
+    "src": "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 3,
+    "name": "image_yscale",
+    "eq": 20,
+    "why": "and 20x tall",
+    "src": "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 55,
+    "name": "state",
+    "eq": 1,
+    "why": "starttimer counts draws and flips state to 1 at 43",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_queen_wine_box1",
+    "atFrame": 60,
+    "x": 320,
+    "y": 228,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "once state==1 the glass draw_self()s at double scale, unrotated for plain type 2",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:355"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 400,
+    "why": "all three Wine variants share scr_turntimer(400)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:826"
+   }
+  ]
+ },
+ {
+  "id": "queen_type2_1",
+  "name": "Wine (tilting glass)",
+  "note": "Same chain as type 2; the only things the 2.1 branch changes are threshold 8, turnamount x1.2 and obj_queen_enemy.beatwine2nodamage. Droplet/fill/tilt behaviour is gated on init==3 (set by the boss's wineglasscon sequence) so it is not asserted here.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "threshold",
+    "eq": 8,
+    "why": "type 2.1 overwrites the Create default 9 with 8, so droplets come one frame faster",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:357"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "wineadd",
+    "eq": 4,
+    "why": "type 2.1 re-states wineadd = 4, unlike 2.2 which drops it to 3",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:358"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnamount",
+    "eq": 12,
+    "tol": 0.001,
+    "why": "turnamount *= 1.2 turns the Create default 10 into a 12-degree tilt amplitude",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:359"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnperiod",
+    "eq": 15,
+    "why": "the tilt period stays the Create constant 15; only the amplitude changes between variants",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_enemy",
+    "atFrame": 3,
+    "name": "beatwine2nodamage",
+    "eq": 1,
+    "why": "only the 2.1 branch flips the boss flag from its Create value of 0",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:360"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 3,
+    "x": 320,
+    "y": 228,
+    "tol": 2,
+    "why": "Create overrides the spawn point to obj_growtangle.x, obj_growtangle.y + 58",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:8"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_winewave",
+    "atFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "the glass Create makes exactly two wave instances",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_wineflass_pushin",
+    "byFrame": 2,
+    "min": 1,
+    "why": "the invisible push-in collider is created with the glass",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:23"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 6,
+    "x": 220,
+    "y": 282,
+    "tol": 2,
+    "why": "created at glass x-100 and pinned each End Step to glass.y + 54 - fill, with fill still 0",
+    "src": "gml_Object_obj_queen_wineglass_Step_2.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 3,
+    "name": "image_xscale",
+    "eq": 40,
+    "why": "the 10px hitbox sprite is stretched 40x wide to span the wine surface",
+    "src": "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 55,
+    "name": "state",
+    "eq": 1,
+    "why": "starttimer counts draws and flips state to 1 at 43",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_queen_wine_box1",
+    "atFrame": 60,
+    "x": 320,
+    "y": 228,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "once state==1 the glass draw_self()s at double scale on the box centre",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:355"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 400,
+    "why": "all three Wine variants share scr_turntimer(400)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:826"
+   }
+  ]
+ },
+ {
+  "id": "queen_type2_2",
+  "name": "Wine (fast tilt)",
+  "note": "Same chain as type 2; 2.2 is the harshest variant - threshold 6, wineadd 3, turnamount doubled to 20 - and it deliberately does NOT set beatwine2nodamage. Droplet/fill/tilt behaviour is gated on init==3 (set by the boss's wineglasscon sequence) so it is not asserted here.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "threshold",
+    "eq": 6,
+    "why": "type 2.2 overwrites the Create default 9 with 6, the fastest droplet cadence of the three",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:365"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "wineadd",
+    "eq": 3,
+    "why": "2.2 is the only Wine variant that lowers fill-per-droplet from 4 to 3",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:366"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnamount",
+    "eq": 20,
+    "tol": 0.001,
+    "why": "turnamount *= 2 doubles the Create default 10 into a 20-degree tilt amplitude",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:367"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "turnperiod",
+    "eq": 15,
+    "why": "the tilt period stays the Create constant 15; only the amplitude changes between variants",
+    "src": "gml_Object_obj_queen_bulletcontroller_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_enemy",
+    "atFrame": 3,
+    "name": "beatwine2nodamage",
+    "eq": 0,
+    "why": "only 2.1 sets this flag; 2.2 must leave the Create value 0",
+    "src": "gml_Object_obj_queen_enemy_Create_0.gml:53"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 3,
+    "x": 320,
+    "y": 228,
+    "tol": 2,
+    "why": "Create overrides the spawn point to obj_growtangle.x, obj_growtangle.y + 58",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:8"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_winewave",
+    "atFrame": 3,
+    "min": 2,
+    "max": 2,
+    "why": "the glass Create makes exactly two wave instances",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_wineflass_pushin",
+    "byFrame": 2,
+    "min": 1,
+    "why": "the invisible push-in collider is created with the glass",
+    "src": "gml_Object_obj_queen_wineglass_Create_0.gml:23"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 6,
+    "x": 220,
+    "y": 282,
+    "tol": 2,
+    "why": "created at glass x-100 and pinned each End Step to glass.y + 54 - fill, with fill still 0",
+    "src": "gml_Object_obj_queen_wineglass_Step_2.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wine_attack_bottom_hurtbox",
+    "atFrame": 3,
+    "name": "image_yscale",
+    "eq": 20,
+    "why": "the 10px hitbox sprite is stretched 20x tall",
+    "src": "gml_Object_obj_queen_wine_attack_bottom_hurtbox_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_wineglass",
+    "atFrame": 55,
+    "name": "state",
+    "eq": 1,
+    "why": "starttimer counts draws and flips state to 1 at 43",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_queen_wine_box1",
+    "atFrame": 60,
+    "x": 320,
+    "y": 228,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "once state==1 the glass draw_self()s at double scale on the box centre",
+    "src": "gml_Object_obj_queen_wineglass_Draw_0.gml:355"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 400,
+    "why": "all three Wine variants share scr_turntimer(400)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:826"
+   }
+  ]
+ },
+ {
+  "id": "queen_type106",
+  "name": "NewSocialMedia",
+  "note": "Avatars fall in from y=-80 with vspeed 5 and never change x, so x is the safe axis. The lane offset (125) and the 20-frame cadence are the two things that separate 106 from 107.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "rr==4 falls to the else branch: obj_growtangle at view+320,+170 at maxscale 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "timerthreshold",
+    "eq": 20,
+    "why": "type 106 raises the shared threshold from 15 to 20, the slower avatar cadence",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:888"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 1,
+    "min": 1,
+    "why": "btimer starts at 99 and the branch is not init-gated, so the first avatar drops on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:916"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_socialmedia_avatar",
+    "atFrame": 5,
+    "x": 320,
+    "tol": 125,
+    "why": "the lane is obj_growtangle.x + 125*side with side = choose(-1,1), and avatars have no hspeed",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:916"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_socialmedia_avatar",
+    "atFrame": 3,
+    "name": "vspeed",
+    "eq": 5,
+    "why": "every avatar is given vspeed 5 as it is created",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:918"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 50,
+    "min": 3,
+    "max": 3,
+    "why": "btimer resets to 0 and must reach 20, so avatars land on frames 1, 21 and 41",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:930"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 95,
+    "min": 5,
+    "max": 5,
+    "why": "the 20-frame cadence continues uncapped: frames 1, 21, 41, 61, 81, with the sixth not due until 101",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:930"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_social_media_attack_fade_heroes",
+    "byFrame": 1,
+    "min": 1,
+    "why": "the branch creates the hero-fade controller on its first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:883"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_social_media_attack_fade_heroes",
+    "atFrame": 30,
+    "min": 1,
+    "max": 1,
+    "why": "the create is guarded by !instance_exists so only one ever lives",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:882"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_wordbullet",
+    "byFrame": 45,
+    "min": 1,
+    "why": "an avatar's timer starts at 30, already past 19-myhspeed, and times(1) is below offset(2 or 3), so it flings a word on its first step",
+    "src": "gml_Object_obj_socialmedia_avatar_Step_0.gml:82"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_pfps",
+    "byFrame": 10,
+    "why": "the avatar's Draw alternates spr_queen_pfps and spr_queen_pfps_mouth_open on a 4-frame cadence",
+    "src": "gml_Object_obj_socialmedia_avatar_Draw_0.gml:35"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 250,
+    "why": "difficulty 0 selects type 106 with scr_turntimer(250)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:858"
+   }
+  ]
+ },
+ {
+  "id": "queen_type107",
+  "name": "NewSocialMedia (hard)",
+  "note": "107 differs from 106 in three checkable ways: 15-frame cadence, 160px lanes instead of 125, and a hard cap of 7 avatars with the 5th replaced by the isqueen face, which is created at growtangle.x+125 and then teleported to camerax()+640 by its own Step to slide in at hspeed -4.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "rr==4 falls to the else branch: obj_growtangle at view+320,+170 at maxscale 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bulletcontroller",
+    "atFrame": 3,
+    "name": "timerthreshold",
+    "eq": 15,
+    "why": "107 keeps the base threshold of 15, five frames tighter than 106",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:885"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 1,
+    "min": 1,
+    "why": "btimer starts at 99 and the branch is not init-gated, so the first avatar drops on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:914"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_socialmedia_avatar",
+    "atFrame": 5,
+    "x": 320,
+    "tol": 160,
+    "why": "107 widens the lane to obj_growtangle.x + 160*side, and avatars have no hspeed",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:914"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_socialmedia_avatar",
+    "atFrame": 3,
+    "name": "vspeed",
+    "eq": 5,
+    "why": "every avatar is given vspeed 5 as it is created",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:918"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 50,
+    "min": 4,
+    "max": 4,
+    "why": "the 15-frame cadence puts avatars on frames 1, 16, 31 and 46",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:930"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_socialmedia_avatar",
+    "byFrame": 140,
+    "min": 7,
+    "max": 7,
+    "why": "made>=7 kills the spawn and made==4 swaps a normal avatar for the queen one, totalling exactly 7",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:903"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_q_socialface_queen",
+    "atFrame": 80,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the isqueen avatar created at made==4 draws the queen face unscaled and unrotated at full alpha",
+    "src": "gml_Object_obj_socialmedia_avatar_Draw_0.gml:19"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_social_media_attack_fade_heroes",
+    "byFrame": 1,
+    "min": 1,
+    "why": "the branch creates the hero-fade controller on its first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:883"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_wordbullet",
+    "byFrame": 40,
+    "min": 1,
+    "why": "an avatar's timer starts at 30, already past 19-myhspeed, and times(1) is below offset(2 or 3), so it flings a word on its first step",
+    "src": "gml_Object_obj_socialmedia_avatar_Step_0.gml:82"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_pfps",
+    "byFrame": 10,
+    "why": "the avatar's Draw alternates spr_queen_pfps and spr_queen_pfps_mouth_open on a 4-frame cadence",
+    "src": "gml_Object_obj_socialmedia_avatar_Draw_0.gml:35"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "difficulty 1 selects type 107 and re-calls scr_turntimer(300)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:863"
+   }
+  ]
+ },
+ {
+  "id": "queen_type6",
+  "name": "Explosion",
+  "note": "obj_queen_enemy.bufferattack is false at Create, so the branch takes the non-buffer path and spawns obj_queen_explodinghead_intro, which spirals in and becomes obj_queen_explodinghead. Head spawn positions are irandom-derived on both axes and the intro also moves every step, so no position is asserted.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "rr==6 falls to the else branch: obj_growtangle at view+320,+170 at maxscale 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 1,
+    "min": 1,
+    "why": "btimer starts at 99 and the branch is not init-gated, so the btimer>30 gate fires on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:723"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead_intro",
+    "atFrame": 3,
+    "name": "first",
+    "eq": 1,
+    "why": "the init==2 block marks only the opening head first, tripling its spiral speed",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:744"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead_intro",
+    "atFrame": 3,
+    "name": "laugh",
+    "eq": 1,
+    "why": "every Explosion head is created with laugh = 1",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:733"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 20,
+    "min": 2,
+    "max": 2,
+    "why": "the opening head sets btimer to 15 (not 2), so the second head waits until btimer climbs past 30 at frame 17",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:748"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 80,
+    "min": 4,
+    "max": 4,
+    "why": "after the opening pair btimer resets to 2 for type 6, a 29-frame cadence: heads at 1, 17, 46, 75",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:737"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead",
+    "byFrame": 20,
+    "min": 1,
+    "why": "the first==1 intro loses 6 length per step from 70, so it converts after 12 steps",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Step_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead",
+    "atFrame": 20,
+    "name": "ultimate",
+    "eq": 0,
+    "why": "the head's Create default is 0 and only QueenUltimate overwrites it, so Explosion heads take the 14-shot path",
+    "src": "gml_Object_obj_queen_explodinghead_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 0,
+    "why": "head type is only raised to 1 when the controller is 6.1, so plain type 6 keeps the Create default 0",
+    "src": "gml_Object_obj_queen_explodinghead_Create_0.gml:20"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_bufferbullet",
+    "byFrame": 48,
+    "min": 13,
+    "max": 14,
+    "why": "the type-0 head bursts a 14-shot ring (one shot can become a banana bullet on a 1-in-501 roll)",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:74"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 44,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "tol": 0.001,
+    "why": "the 14-shot burst overwrites the bullet's Create-time 0.5 scale with 1.5, not the ultimate's 2",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:90"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 44,
+    "name": "slowdown",
+    "eq": 1,
+    "why": "with buffer == 0 every shot is flagged to decelerate",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:96"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_wireframe_temp_bullet",
+    "byFrame": 48,
+    "why": "the burst replaces the bullet's default spr_spadebullet with the wireframe shard",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:93"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "Explosion always calls scr_turntimer(300)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:891"
+   }
+  ]
+ },
+ {
+  "id": "queen_type6_1",
+  "name": "Explosion (slow cadence)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "tol": 2,
+    "why": "rr case 6 ends in scr_turntimer(300) for both difficulty 0 and 1",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:891"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "rr 6 falls to the else branch, obj_growtangle at (camerax()+320, cameray()+170) with the default maxxscale/maxyscale 2 on the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 3,
+    "why": "btimer is 99 from Create so the `btimer > 30` gate is already open on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:723"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_explodinghead_intro",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "type 6.1 resets btimer to 15 after a spawn, so the second head cannot appear until btimer climbs back past 30",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:740"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_explodinghead_intro",
+    "atFrame": 60,
+    "min": 1,
+    "max": 3,
+    "why": "a 16-frame spawn cadence (btimer 15 -> 31) against a 35-step intro life leaves about two intros spiralling at once",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:740"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_queen_wireframe",
+    "atFrame": 5,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 0.5,
+    "why": "the intro draws its mirrored wireframe ghost at 1x, unrotated, alpha 0.5 (position is the RNG spawn point so it is omitted)",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Draw_0.gml:2"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead",
+    "byFrame": 20,
+    "why": "the first intro carries first = 1, so `repeat (3)` shrinks length 70 by 6 per step and it converts after 12 steps",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Step_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 1,
+    "why": "the head reads the controller and sets type = 1 because obj_queen_bulletcontroller.type == 6.1 — this is what picks the 9-shot ring over the 14-shot one",
+    "src": "gml_Object_obj_queen_explodinghead_Create_0.gml:22"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_wireframe_laugh",
+    "byFrame": 25,
+    "why": "the head swaps to the laughing wireframe when its timer counts down to 20, four frames after it forms",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:23"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_bufferbullet",
+    "byFrame": 50,
+    "why": "the head detonates when its 24-frame timer reaches 0",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:41"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 45,
+    "min": 9,
+    "max": 9,
+    "why": "type 1 fires `for (i = 0; i < 9; i++)` — exactly 9 bullets per explosion, and they live 60 frames before fading",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:101"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 45,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "why": "bufferbullet Create sets image_xscale 0.5 and the explosion overwrites it to 1.5, so 1.5 proves the explosion path ran",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:117"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_queen_wireframe_temp_bullet",
+    "byFrame": 50,
+    "why": "every explosion bullet has its sprite reassigned to spr_queen_wireframe_temp_bullet",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:120"
+   }
+  ]
+ },
+ {
+  "id": "queen_type112",
+  "name": "BerdlyTornado",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 266,
+    "tol": 2,
+    "why": "rr case 7 ends in scr_turntimer(266)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:923"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 200,
+    "w": 150,
+    "h": 112,
+    "tol": 3,
+    "why": "rr 7 puts obj_growtangle at (320, 200) with maxxscale 2 and maxyscale 1.5; the custom-box quantiser snaps 1.5 to 56/37.5, so the 75x75 sprite measures 150 x 112",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:744"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdly_tornadomaker",
+    "byFrame": 3,
+    "why": "the type 112 branch creates Berdly on the controller's first step because made starts at 0",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:953"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "made = 1 latches the branch, so exactly one tornadomaker exists for the whole turn",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:958"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "x": 320,
+    "tol": 3,
+    "why": "created at obj_growtangle.x = 320; y is omitted because Create does y -= 200 and the Step lerps it back in",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:953"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "type 112 leaves the Create default of 1 — only type 113 overrides it to 3",
+    "src": "gml_Object_obj_berdly_tornadomaker_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Berdly is drawn at 2x",
+    "src": "gml_Object_obj_berdly_tornadomaker_Create_0.gml:3"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 22,
+    "min": 0,
+    "max": 0,
+    "why": "difficulty 1 needs 15 frames of con 0 plus 15 of con 1 before con 2 spawns anything",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:22"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "byFrame": 45,
+    "why": "the first volley lands once con reaches 2, about 29 frames in",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:95"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 45,
+    "min": 6,
+    "max": 6,
+    "why": "the difficulty 1/3 branch loops i = 0..2 creating a left and a right tornado each — six per volley",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:93"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 80,
+    "min": 5,
+    "max": 8,
+    "why": "con 3 holds for 33 frames at difficulty 1, so the second volley is not out yet and only the first six are alive",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:148"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 45,
+    "name": "image_xscale",
+    "eq": 1.15,
+    "why": "tornado Create pins image_xscale 1.15",
+    "src": "gml_Object_obj_berdly_tornadomaker_tornado_Create_0.gml:11"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_berdlyb_tornado_queen",
+    "atFrame": 45,
+    "yscale": 1.1,
+    "angle": 0,
+    "why": "the tornado draws itself at yscale 1.1 unrotated, with an xscale that flips between +1.1 and -1.1 every 4 frames",
+    "src": "gml_Object_obj_berdly_tornadomaker_tornado_Draw_0.gml:11"
+   }
+  ]
+ },
+ {
+  "id": "queen_type113",
+  "name": "BerdlyTornado (hard)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 266,
+    "tol": 2,
+    "why": "rr case 7 ends in scr_turntimer(266) at every difficulty",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:923"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 200,
+    "w": 150,
+    "h": 112,
+    "tol": 3,
+    "why": "rr 7 puts obj_growtangle at (320, 200) with maxxscale 2 and maxyscale 1.5; the custom-box quantiser snaps 1.5 to 56/37.5, so the 75x75 sprite measures 150 x 112",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:744"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdly_tornadomaker",
+    "byFrame": 3,
+    "why": "the type 113 branch creates Berdly on the controller's first step because made starts at 0",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:953"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 3,
+    "why": "type 113 is the only thing that overwrites the tornadomaker's Create default of 1 with 3",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:956"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Berdly is drawn at 2x",
+    "src": "gml_Object_obj_berdly_tornadomaker_Create_0.gml:3"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 5,
+    "x": 320,
+    "tol": 3,
+    "why": "created at obj_growtangle.x = 320; y is omitted because Create does y -= 200 and the Step lerps it back in over 10 frames at difficulty 3",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:953"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "made = 1 latches the branch, so exactly one tornadomaker exists for the whole turn",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:958"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "byFrame": 40,
+    "why": "difficulty 3 shortens con 0 to 10 frames, so the first volley lands about 24 frames in — five frames earlier than difficulty 1",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:25"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 32,
+    "min": 6,
+    "max": 6,
+    "why": "six tornadoes are already out by frame 32 at difficulty 3, where difficulty 1 still has none",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:93"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 80,
+    "min": 10,
+    "max": 12,
+    "why": "difficulty 3 cuts con 3 to 24 frames, giving a 49-frame cycle, so the second volley of six is already out by frame 80",
+    "src": "gml_Object_obj_berdly_tornadomaker_Step_0.gml:151"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_berdly_tornadomaker_tornado",
+    "atFrame": 40,
+    "name": "image_xscale",
+    "eq": 1.15,
+    "why": "tornado Create pins image_xscale 1.15",
+    "src": "gml_Object_obj_berdly_tornadomaker_tornado_Create_0.gml:11"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_berdlyb_tornado_queen",
+    "atFrame": 40,
+    "yscale": 1.1,
+    "angle": 0,
+    "why": "the tornado draws itself at yscale 1.1 unrotated, with an xscale that flips between +1.1 and -1.1 every 4 frames",
+    "src": "gml_Object_obj_berdly_tornadomaker_tornado_Draw_0.gml:11"
+   }
+  ]
+ },
+ {
+  "id": "queen_type100",
+  "name": "QueenLaser",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 245,
+    "tol": 2,
+    "why": "rr case 8 ends in scr_turntimer(245)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:947"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "rr 8 falls to the else branch, obj_growtangle at (320, 170) with default maxxscale/maxyscale 2 on the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_lasergun",
+    "byFrame": 3,
+    "why": "btimer is 99 from Create so the `btimer >= 15` gate is already open on the first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:782"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 20,
+    "min": 2,
+    "max": 2,
+    "why": "type 100 resets btimer to 0 and refires at 15, so a second gun exists by frame 16 while the guns live ~48 frames",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:763"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 45,
+    "min": 2,
+    "max": 4,
+    "why": "a gun every 15 frames against a 15+15+~18 frame lifetime holds three of them on screen",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:763"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_search_window",
+    "byFrame": 5,
+    "why": "each lasergun's Create spawns a search window with search = 99 as its reticle",
+    "src": "gml_Object_obj_queen_lasergun_Create_0.gml:16"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 40,
+    "name": "maxsize",
+    "eq": 1.2,
+    "why": "type 100 leaves the Create default 1.2 — the 101/102 grid variants overwrite it with 1",
+    "src": "gml_Object_obj_queen_lasergun_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 40,
+    "name": "randomshot",
+    "eq": 1,
+    "why": "type 100 leaves randomshot on, so each gun jitters its aim by up to +-20 degrees; 101/102 set it to 0",
+    "src": "gml_Object_obj_queen_lasergun_Create_0.gml:11"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lasergun_laser_telegraph",
+    "atFrame": 40,
+    "xscale": 999,
+    "yscale": 1,
+    "alpha": 0.3,
+    "why": "while con == 1 the gun paints its aim line stretched 999x horizontally at alpha 0.3 (position and angle are RNG so they are omitted)",
+    "src": "gml_Object_obj_queen_lasergun_Draw_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_laser",
+    "byFrame": 45,
+    "why": "aimtime 15 then waittime 15 means the first gun fires around frame 29",
+    "src": "gml_Object_obj_queen_lasergun_Step_0.gml:61"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_laser",
+    "atFrame": 35,
+    "name": "image_yscale",
+    "eq": 1,
+    "why": "the laser inherits the gun's shotsize, which type 100 leaves at the Create default 1 (101/102 halve it to 0.5); it only starts thickening once image_xscale passes 6",
+    "src": "gml_Object_obj_queen_lasergun_Step_0.gml:64"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_lasergun",
+    "byFrame": 20,
+    "why": "the gun draw_self()s its spr_lasergun body every frame after the telegraph block",
+    "src": "gml_Object_obj_queen_lasergun_Draw_0.gml:7"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_queen_leg",
+    "byFrame": 120,
+    "why": "plain type 100 has no ctimer leg schedule — legs are the difficulty 4/5 variants 115 and 116",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:761"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 120,
+    "why": "plain type 100 has no dtimer head schedule — heads are the difficulty 5 variant 116",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:761"
+   }
+  ]
+ },
+ {
+  "id": "queen_type115",
+  "name": "QueenLaser + legs",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 245,
+    "tol": 2,
+    "why": "rr case 8 ends in scr_turntimer(245) at every difficulty",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:947"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "rr 8 falls to the else branch, obj_growtangle at (320, 170) with default maxxscale/maxyscale 2 on the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_lasergun",
+    "byFrame": 3,
+    "why": "btimer is 99 from Create so the `btimer >= 30` gate is already open on the first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1038"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 25,
+    "min": 1,
+    "max": 1,
+    "why": "type 115 doubles the gun gate to 30 frames, so only one gun exists at frame 25 where type 100 already has two",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1019"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 20,
+    "name": "maxsize",
+    "eq": 1.2,
+    "why": "type 115 leaves the gun's Create default 1.2",
+    "src": "gml_Object_obj_queen_lasergun_Create_0.gml:8"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lasergun_laser_telegraph",
+    "atFrame": 20,
+    "xscale": 999,
+    "yscale": 1,
+    "alpha": 0.3,
+    "why": "while con == 1 the gun paints its aim line stretched 999x horizontally at alpha 0.3 (position and angle are RNG so they are omitted)",
+    "src": "gml_Object_obj_queen_lasergun_Draw_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_laser",
+    "byFrame": 45,
+    "why": "aimtime 15 then waittime 15 means the first gun fires around frame 29",
+    "src": "gml_Object_obj_queen_lasergun_Step_0.gml:61"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_leg",
+    "atFrame": 40,
+    "min": 0,
+    "max": 0,
+    "why": "the leg is gated on ctimer reaching 50, so nothing stomps before frame 50",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1044"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_leg",
+    "byFrame": 58,
+    "why": "ctimer counts up from 0 and hits 50 on frame 50, dropping one leg",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1051"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_leg",
+    "atFrame": 56,
+    "min": 1,
+    "max": 1,
+    "why": "the leg block is `repeat (1)` — a single leg per 50-frame cycle, unlike type 3.4's repeat (2)",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1048"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_exclamation_mark_appear",
+    "atFrame": 56,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "during its 15-frame stompwait a downward leg flashes the warning mark at 1x on obj_growtangle.y = 170 (its x is one of three random lanes so it is omitted)",
+    "src": "gml_Object_obj_queen_leg_Draw_0.gml:12"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_leg",
+    "atFrame": 105,
+    "min": 1,
+    "max": 2,
+    "why": "ctimer resets to 0 after each leg, so the second leg lands on frame 100 while the first has already retracted",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1066"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 130,
+    "why": "type 115 has no dtimer head schedule — exploding heads are only added at difficulty 5 (type 116)",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1017"
+   }
+  ]
+ },
+ {
+  "id": "queen_type116",
+  "name": "QueenLaser + legs + heads",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 245,
+    "tol": 2,
+    "why": "rr case 8 ends in scr_turntimer(245) at every difficulty",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:947"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 2,
+    "why": "rr 8 falls to the else branch, obj_growtangle at (320, 170) with default maxxscale/maxyscale 2 on the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:760"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead_intro",
+    "byFrame": 3,
+    "why": "the made == 0 init seeds dtimer to 64, so dtimer++ hits 65 on the very first step and a head spirals in immediately",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1128"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 3,
+    "min": 0,
+    "max": 0,
+    "why": "type 116 raises the gun gate to btimer >= 105 and btimer only starts at 99, so no gun exists for the first five frames — type 100 and 115 both spawn one on frame 1",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1079"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_lasergun",
+    "byFrame": 14,
+    "why": "btimer climbs 99 -> 105 by frame 6 and the first gun appears",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1092"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_lasergun",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "btimer is reset to 55 rather than 0, so guns come every 50 frames and only the first is alive at frame 40",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1093"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_leg",
+    "byFrame": 12,
+    "why": "the init seeds ctimer to 89, so ctimer++ reaches 94 on frame 5 and a leg drops almost at once",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1105"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_leg",
+    "atFrame": 12,
+    "min": 1,
+    "max": 1,
+    "why": "the leg block is `repeat (1)` — one leg per 94-frame cycle",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:1102"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_exclamation_mark_appear",
+    "atFrame": 12,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "during its 15-frame stompwait a downward leg flashes the warning mark at 1x on obj_growtangle.y = 170 (its x is one of three random lanes so it is omitted)",
+    "src": "gml_Object_obj_queen_leg_Draw_0.gml:12"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_lasergun_laser_telegraph",
+    "atFrame": 30,
+    "xscale": 999,
+    "yscale": 1,
+    "alpha": 0.3,
+    "why": "the frame-6 gun sits in con == 1 from about frame 20 to 34, painting its aim line stretched 999x at alpha 0.3",
+    "src": "gml_Object_obj_queen_lasergun_Draw_0.gml:4"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_queen_explodinghead",
+    "byFrame": 48,
+    "why": "type 116 never sets first on its intro, so length 70 shrinks 2 per step and it converts after 35 steps",
+    "src": "gml_Object_obj_queen_explodinghead_intro_Step_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_explodinghead",
+    "atFrame": 48,
+    "name": "type",
+    "eq": 0,
+    "why": "the controller's type is 116, not 6.1, so the head keeps type 0 and detonates into the 14-shot ring rather than the 9-shot one",
+    "src": "gml_Object_obj_queen_explodinghead_Create_0.gml:22"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 66,
+    "min": 14,
+    "max": 14,
+    "why": "type 0 fires `for (i = 0; i < 14; i++)` when the head's 24-frame timer expires around frame 60, and the bullets live 60 frames",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:74"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_queen_bufferbullet",
+    "atFrame": 66,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "why": "bufferbullet Create sets image_xscale 0.5 and the explosion overwrites it to 1.5",
+    "src": "gml_Object_obj_queen_explodinghead_Step_0.gml:90"
+   }
+  ]
+ },
+ {
+  "id": "queen_type110",
+  "name": "Plug",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "tol": 2,
+    "why": "rr case 9 ends in scr_turntimer(300)",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:963"
+   },
+   {
+    "kind": "box",
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "rr 9 creates the box with the default maxxscale/maxyscale 2 on the 75x75 sprite; only difficulty 1 rescales it, and type 110 IS the difficulty-0 variant",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:750"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_electric",
+    "byFrame": 3,
+    "why": "made starts at 0 so the electrified box is created on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:938"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "made = 1 latches the branch, so exactly one electric box exists for the turn",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:945"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 0,
+    "why": "type 110 leaves the electric box at type 0 â only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:942"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 5,
+    "name": "maxamplitude",
+    "eq": 60,
+    "why": "the box's horizontal sway tops out at 60px",
+    "src": "gml_Object_obj_growtangle_electric_Create_0.gml:23"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_electric_pushin",
+    "byFrame": 3,
+    "why": "the electric box's Create immediately spawns the pusher that shoves the soul back inside",
+    "src": "gml_Object_obj_growtangle_electric_Create_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 30,
+    "min": 0,
+    "max": 0,
+    "why": "con only flips to 1 after 25 frames and the first shot needs 8 more, so nothing fires before frame 32",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:49"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_spark",
+    "byFrame": 42,
+    "why": "shotthreshold is 8 at type 0, so the first spark leaves the box wall around frame 32",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 60,
+    "min": 3,
+    "max": 5,
+    "why": "a spark every 8 frames from frame 32 gives four by frame 60 â type 111's 15-frame threshold gives only two",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 60,
+    "name": "gravity",
+    "eq": 0.3,
+    "why": "every spark is launched with gravity 0.3 so it arcs rather than flying straight",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:114"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_growtangle_elecbullet",
+    "byFrame": 45,
+    "why": "the spark's sprite is reassigned to spr_growtangle_elecbullet as it is fired",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:126"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_growtangle_electric_plug",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "minCalls": 2,
+    "maxCalls": 2,
+    "why": "type != 1 draws BOTH plugs at 2x, one on each side of the box, at full plugalpha once timer passes 15; type 111 draws only one",
+    "src": "gml_Object_obj_growtangle_electric_Draw_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 60,
+    "name": "image_angle",
+    "eq": 0,
+    "tol": 3,
+    "why": "at type 0 nothing rotates obj_growtangle â the += 1.9565 sits inside the type == 1 guard â so the electric box copies back a settled image_angle of 0",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
+   }
+  ],
+  "note": "Box POSITION is not assertable on this attack. The controller branch creates obj_growtangle_electric on top of the box (obj_queen_bulletcontroller_Step_0.gml:934-947), and that object drives the box around BY DESIGN: obj_growtangle_electric_Step_0.gml:33-34 sets obj_growtangle.x = xstart + random_range((-35 + timer) / 2, (35 - timer) / 2) — a decaying RANDOM shake — and :140/:145 then slide it to xstart + moveamount. So x/y have no single right answer once the attack runs; 320,200 is true only at the instant of creation. The SIZE is fully determined and is kept."
+ },
+ {
+  "id": "queen_type111",
+  "name": "Plug (hard)",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "tol": 2,
+    "why": "rr case 9 ends in scr_turntimer(300) at either difficulty",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:963"
+   },
+   {
+    "kind": "box",
+    "w": 112,
+    "h": 150,
+    "tol": 3,
+    "why": "rr 9 at difficulty 1 rescales obj_growtangle to maxxscale 1.5 / maxyscale 2; the custom-box quantiser snaps 1.5 to 56/37.5, so the 75x75 sprite measures 112 wide by 150 tall",
+    "src": "gml_Object_obj_queen_enemy_Step_0.gml:754"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_electric",
+    "byFrame": 3,
+    "why": "made starts at 0 so the electrified box is created on the controller's first step",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:938"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 60,
+    "min": 1,
+    "max": 1,
+    "why": "made = 1 latches the branch, so exactly one electric box exists for the turn",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:945"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 5,
+    "name": "type",
+    "eq": 1,
+    "why": "type 111 is the only branch that sets the electric box to type 1 â the flag that spins the box and slows the spark rate",
+    "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:943"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 5,
+    "name": "maxamplitude",
+    "eq": 60,
+    "why": "the box's horizontal sway tops out at 60px",
+    "src": "gml_Object_obj_growtangle_electric_Create_0.gml:23"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_electric_pushin",
+    "byFrame": 3,
+    "why": "the electric box's Create immediately spawns the pusher that shoves the soul back inside",
+    "src": "gml_Object_obj_growtangle_electric_Create_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 35,
+    "min": 0,
+    "max": 0,
+    "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 â type 110 already has one at 32",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_growtangle_spark",
+    "byFrame": 50,
+    "why": "con flips to 1 at 25 frames and the 15-frame shot gate then fires around frame 39",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:76"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 60,
+    "min": 1,
+    "max": 3,
+    "why": "a spark every 15 frames from frame 39 gives only two by frame 60, where type 110's 8-frame gate gives four",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_spark",
+    "atFrame": 60,
+    "name": "gravity",
+    "eq": 0.3,
+    "why": "every spark is launched with gravity 0.3 so it arcs rather than flying straight",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:114"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_growtangle_elecbullet",
+    "byFrame": 55,
+    "why": "the spark's sprite is reassigned to spr_growtangle_elecbullet as it is fired",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:126"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_growtangle_electric_plug",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "minCalls": 1,
+    "maxCalls": 1,
+    "why": "the `if (type != 1)` guard suppresses the left plug, so type 111 draws exactly ONE plug at 2x instead of type 110's two",
+    "src": "gml_Object_obj_growtangle_electric_Draw_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_growtangle_electric",
+    "atFrame": 60,
+    "name": "image_angle",
+    "min": 40,
+    "max": 100,
+    "why": "type 1 rotates obj_growtangle by 1.9565 degrees every con-1 frame from frame 25 on and the electric box copies that angle back, so ~36 frames of spin puts it near 70 degrees",
+    "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
+   }
+  ],
+  "note": "Same as queen_type110: obj_growtangle_electric shakes and then slides the box (Step_0:33-34, :140, :145), so only the SIZE is assertable. The width is the half that matters anyway — it is what proves the difficulty-1 branch ran."
+ },
+ {
+  "id": "tasque_manager_type20",
+  "name": "WhipAttack",
+  "note": "Controller branch is a pure spawner: one obj_tm_whip_attack, which makes obj_tm_whip_animation (the whole Tasque Manager body rig) which makes obj_tm_whip (the ball). Cadence lives in obj_tm_whip_attack_Step_0 at animSpeed 1: state 1 at attacktimer 20, state 2 (zap) at 35, state 3 at 55, loop at 65. difficulty comes from scr_monsterpop() == 1, which is 1 with a single live monster, so the zap volley is 8 bullets 45 degrees apart, three volleys (zaptimer 0/5/10). The zap bullets are created ON the soul's captured position and have destroyonhit = 1, so only their cumulative spawn count is assertable, never a live count.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_whip_attack",
+    "byFrame": 2,
+    "why": "the type-20 init block creates exactly one obj_tm_whip_attack on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:854"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_tm_whip_attack",
+    "atFrame": 40,
+    "min": 1,
+    "max": 1,
+    "why": "the branch is guarded by `if (init == 1) { ... init = 2 }`, and nothing destroys the object during the turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:852"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_whip_attack",
+    "atFrame": 10,
+    "name": "grazepoints",
+    "eq": 4,
+    "why": "the dispatcher pins d.grazepoints = 4 on the whip attack",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:861"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_whip_attack",
+    "atFrame": 10,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "d.difficulty = scr_monsterpop() == 1, and scr_monsterpop() returns global.monster[0]+[1]+[2] = 1 for a lone Tasque Manager, overriding Create's difficulty = 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:862"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_whip_attack",
+    "atFrame": 45,
+    "name": "attacktimer",
+    "eq": 44,
+    "tol": 2,
+    "why": "attacktimer += animSpeed with animSpeed = 1 every step since the object was created on frame 1, and the 65 reset is not reached yet",
+    "src": "gml_Object_obj_tm_whip_attack_Step_0.gml:13"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_whip_attack",
+    "atFrame": 45,
+    "name": "state",
+    "eq": 2,
+    "why": "state 2 (the zap) is entered at attacktimer >= 35 and left at attacktimer > 55, so frame 45 sits inside it",
+    "src": "gml_Object_obj_tm_whip_attack_Step_0.gml:28"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_whip_animation",
+    "byFrame": 2,
+    "why": "obj_tm_whip_attack's Create makes the animation rig that draws Tasque Manager's body during the attack",
+    "src": "gml_Object_obj_tm_whip_attack_Create_0.gml:12"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_whip",
+    "byFrame": 2,
+    "why": "the animation rig's Create makes the whip ball it drags to the soul",
+    "src": "gml_Object_obj_tm_whip_animation_Create_0.gml:27"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_body",
+    "atFrame": 15,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "draw_sprite_ext(sprite[1] = spr_tm_body, 0, ..., 2, 2, 0, c_white, 1) — the torso is drawn at 2x, unrotated, full alpha (x/y omitted: they follow the boss's own position)",
+    "src": "gml_Object_obj_tm_whip_animation_Draw_0.gml:80"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_whipwarn",
+    "atFrame": 15,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "the whip ball draws the crack telegraph at 1x, unrotated, alpha 1 while warning is nonzero (set to attacktimer - 4 for attacktimer 5..20); x/y omitted because origx/origy track the soul",
+    "src": "gml_Object_obj_tm_whip_Draw_0.gml:2"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_whitepixel",
+    "atFrame": 45,
+    "xscale": 12,
+    "yscale": 2,
+    "alpha": 1,
+    "minCalls": 5,
+    "why": "the whip cord is five 12x2 white-pixel segments (i = 1..5) once attacktimer is in 30..55",
+    "src": "gml_Object_obj_tm_whip_animation_Draw_0.gml:127"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 40,
+    "why": "the zap volley creates obj_regularbullet with spr_tm_zap_bullet the moment state becomes 2 (attacktimer 35)",
+    "src": "gml_Object_obj_tm_whip_animation_Step_0.gml:90"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 50,
+    "min": 24,
+    "max": 24,
+    "why": "difficulty 1 fires loop = 8 bullets and the volley repeats at zaptimer 0, 5 and 10 only (gate is zaptimer < 15), so three volleys = 24 bullets total by frame 50",
+    "src": "gml_Object_obj_tm_whip_animation_Step_0.gml:86"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is made at __view_get(XView)+320, +170 and grows to maxxscale/maxyscale 2 over spr_battlebg_0's 75x75",
+    "src": "gml_Object_obj_tasque_manager_enemy_Other_24.gml:94"
+   }
+  ]
+ },
+ {
+  "id": "tasque_manager_type2",
+  "name": "YarnBalls",
+  "note": "Two-hop chain. The controller emits an obj_yarnmaker every 10 frames (btimer starts at 99 so the first one lands on frame 1); the maker is a DRAW-driven grower with no Step at all, scaling 0 -> 1 by 0.1 per draw and then creating one obj_yarnbullet. The launch direction is randomised every third shot and the child speed is remapped from the enemy's y, so nothing here asserts a position, a direction or a speed; the inherited constants are the checkable part.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_yarnmaker",
+    "byFrame": 2,
+    "why": "Create leaves btimer = 99, so btimer + 1 = 100 already clears the 10 * ratio gate on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:70"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_yarnmaker",
+    "atFrame": 25,
+    "min": 1,
+    "max": 3,
+    "why": "one maker every 10 frames (ratio = 1 for a single monster) and each lives about 13 draws, so one or two overlap at any time",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:66"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnmaker",
+    "atFrame": 25,
+    "name": "grazepoints",
+    "eq": 7,
+    "why": "the branch sets bm.grazepoints = 7, overriding the maker's Create value of 5",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:84"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnmaker",
+    "atFrame": 25,
+    "name": "childgravity",
+    "eq": 0.6,
+    "why": "bm.childgravity = 0.6 overrides both Create's 0 and the local childgravity = 0.5 used for the aim solve",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:82"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnmaker",
+    "atFrame": 25,
+    "name": "element",
+    "eq": 6,
+    "why": "scr_bullet_inherit copies the controller's element, and the dispatcher sets dc.element = 6",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:71"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_yarnbullet",
+    "byFrame": 20,
+    "why": "the maker's Draw grows scale by 0.1 per draw and creates the yarn ball once scale reaches 1, about 12 draws after it appears",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnbullet",
+    "atFrame": 30,
+    "name": "grazepoints",
+    "eq": 7,
+    "why": "mybul.grazepoints = grazepoints hands the maker's 7 straight to the ball",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:22"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnbullet",
+    "atFrame": 30,
+    "name": "gravity",
+    "eq": 0.6,
+    "why": "mybul.gravity = childgravity, i.e. the 0.6 the controller pinned — the arc is the attack",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yarnbullet",
+    "atFrame": 30,
+    "name": "updateimageangle",
+    "eq": 1,
+    "why": "mybul.updateimageangle = 1 makes the yarn ball rotate to its travel direction each step",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:23"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_yarnbullet",
+    "byFrame": 30,
+    "why": "mybul.sprite_index = spr_yarnbullet on every ball the maker releases",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:17"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_yarnballspawner",
+    "byFrame": 10,
+    "why": "the maker draws its own sprite_index (spr_yarnballspawner) as the wind-up before the ball exists",
+    "src": "gml_Object_obj_yarnmaker_Draw_0.gml:5"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is made at __view_get(XView)+320, +170 and grows to maxxscale/maxyscale 2 over spr_battlebg_0's 75x75",
+    "src": "gml_Object_obj_tasque_enemy_Step_0.gml:47"
+   }
+  ]
+ },
+ {
+  "id": "tasque_manager_type3",
+  "name": "MeowWow",
+  "note": "difficulty is 0 here: obj_tasque_enemy picks rr = choose(0, 1), so the `if (rr == 2) dc.difficulty = 1` line is unreachable unless Tasque Manager overrides rr in a multi-monster fight at quizDifficulty > 1. So the child speed is 7 and the reload gate is 24 * ratio * (1 + 0) = 24 frames. The controller replaces the enemy sprite with obj_tasque_meowing and fires an obj_chainbullet, which is the real emitter: it drips 8 obj_tasque_soundwave (object index 456) two frames apart and then destroys itself.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_tasque_meowing",
+    "byFrame": 2,
+    "why": "the type-3 init block replaces the enemy with one obj_tasque_meowing and hides the monster instance",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:94"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tasque_meowing",
+    "atFrame": 30,
+    "name": "loop",
+    "eq": 0,
+    "why": "special.loop = 0 overrides the meowing object's Create value of 1, so the meow animation plays once and holds its last frame",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:95"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tasque_meowing",
+    "atFrame": 30,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "obj_tasque_meowing's Create pins image_xscale = 2 — the meowing head is drawn double size",
+    "src": "gml_Object_obj_tasque_meowing_Create_0.gml:3"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tasque_meow",
+    "atFrame": 30,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 1,
+    "why": "obj_tasque_meowing has no Draw event, so it self-draws spr_tasque_meow at the 2x scale its Create set (x/y omitted: it sits on the enemy)",
+    "src": "gml_Object_obj_tasque_meowing_Create_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chainbullet",
+    "byFrame": 2,
+    "why": "btimer starts at 99 so the first shot clears the 24 * ratio * (1 + difficulty) = 24 gate on the controller's first step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:108"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainbullet",
+    "atFrame": 5,
+    "name": "childSpeed",
+    "eq": 7,
+    "why": "d.childSpeed = (difficulty == 1) ? 4 : 7, and difficulty is 0 on this path (rr comes from choose(0, 1)), so the meows travel at 7",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:115"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainbullet",
+    "atFrame": 5,
+    "name": "firingSpeed",
+    "eq": 2,
+    "why": "d.firingSpeed = 2 overrides obj_chainbullet's Create value of 3, so a meow leaves every 2 frames",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:116"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainbullet",
+    "atFrame": 5,
+    "name": "grazepoints",
+    "eq": 1.4,
+    "why": "d.grazepoints = 1.4 on the chain, inherited by every soundwave through scr_childbullet",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:113"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chainbullet",
+    "atFrame": 5,
+    "name": "totalBullets",
+    "eq": 8,
+    "why": "obj_chainbullet's Create fixes the chain length at 8 and nothing in this branch changes it",
+    "src": "gml_Object_obj_chainbullet_Create_0.gml:11"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chainbullet",
+    "atFrame": 20,
+    "max": 0,
+    "why": "the chain destroys itself once bulletsSpawned >= totalBullets, i.e. ~16 frames in, and the controller's next shot is not due until btimer hits 24",
+    "src": "gml_Object_obj_chainbullet_Step_0.gml:25"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tasque_soundwave",
+    "byFrame": 10,
+    "why": "scr_childbullet(x, y, 456) — object index 456 is obj_tasque_soundwave, and the first one leaves 2 frames after the chain appears",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:109"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tasque_soundwave",
+    "byFrame": 20,
+    "min": 8,
+    "max": 8,
+    "why": "exactly totalBullets = 8 meows come out of the first chain, one every firingSpeed = 2 frames, and the second chain cannot start before frame 25",
+    "src": "gml_Object_obj_chainbullet_Step_0.gml:25"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tasque_soundwave",
+    "atFrame": 20,
+    "name": "speed",
+    "eq": 7,
+    "why": "d.speed = childSpeed = 7 and childgravity is 0, so a meow never changes speed",
+    "src": "gml_Object_obj_chainbullet_Step_0.gml:18"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_growtangle is made at __view_get(XView)+320, +170 and grows to maxxscale/maxyscale 2 over spr_battlebg_0's 75x75",
+    "src": "gml_Object_obj_tasque_enemy_Step_0.gml:47"
+   }
+  ]
+ },
+ {
+  "id": "tasque_manager_type32",
+  "name": "QuizAttack",
+  "note": "The dispatcher passes the boss's quizDifficulty, which its Create initialises to 0, so this is the difficulty-0 quiz. The init block is entirely box-anchored: a spr_tm_grid diamond at growtangle.x + 1 and four spr_tm_letters 50px out on each cardinal, then one obj_tm_quizzler. The quizzler shows the answer (2 obj_tm_quizletter, one being the outline copy) on its first Begin Step, then turnspeed + 10 = 40 frames later zaps the three WRONG letters (alive from ~frame 43 to ~frame 63 on a zaptime of 20). Which letter is right is irandom, so only the count of zaps (4 - 1 = 3) is asserted, never which.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_bulletparent",
+    "atFrame": 10,
+    "x": 321,
+    "y": 170,
+    "tol": 2,
+    "why": "the grid is the first obj_bulletparent made, at (obj_growtangle.x + 1, obj_growtangle.y) with the box at (320,170); obj_bulletparent has no events at all so nothing moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1249"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_grid",
+    "atFrame": 10,
+    "x": 321,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 45,
+    "alpha": 1,
+    "why": "d.image_angle = 45 turns the grid into the diamond the whole attack reads from; drawn unscaled at the box centre + 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1251"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_letters",
+    "atFrame": 10,
+    "x": 320,
+    "y": 120,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "i == 0 offsets yy by -50 from the box's (320,170), and the tile self-draws at 1x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1262"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_quizzler",
+    "byFrame": 2,
+    "why": "the init block creates one obj_tm_quizzler, which owns the whole question/answer cycle",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1277"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "difficulty",
+    "eq": 0,
+    "why": "d.difficulty = difficulty and the dispatcher forwards quizDifficulty, which obj_tasque_manager_enemy's Create sets to 0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1285"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "turns",
+    "eq": 1,
+    "why": "the init block only rewrites turns when difficulty >= 4, so difficulty 0 keeps Create's single-question turns = 1",
+    "src": "gml_Object_obj_tm_quizzler_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "turnspeed",
+    "eq": 30,
+    "why": "same guard — turnspeed is only recomputed at difficulty >= 4, so Create's 30 stands and paces the whole question",
+    "src": "gml_Object_obj_tm_quizzler_Create_0.gml:7"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_whip_animation",
+    "byFrame": 5,
+    "why": "the quizzler's Create makes its own obj_tm_whip_animation (invisible, state -1) because none exists during the quiz",
+    "src": "gml_Object_obj_tm_quizzler_Create_0.gml:29"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_tm_quizletter",
+    "atFrame": 10,
+    "min": 2,
+    "max": 2,
+    "why": "the `for (i = 0; i < 2; i++)` makes exactly two per question — the letter and its i == 1 outline copy — and their alarm[0] is 20",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:113"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizletter",
+    "atFrame": 5,
+    "name": "direction",
+    "eq": 180,
+    "why": "turns == 1 takes the else branch, targetDirection = 180 — the single bubble always flies straight left",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:105"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_tm_quizzap",
+    "atFrame": 52,
+    "min": 3,
+    "max": 3,
+    "why": "the zap loop runs i = 0..3 and `continue`s on the one correct letter, so exactly three of the four quadrants are electrified; at turnspeed 30 they exist from ~frame 43 until alarm[0] = zaptime = 20 expires at ~frame 63",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:155"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_tm_quizzap",
+    "atFrame": 52,
+    "x": 321,
+    "y": 170,
+    "tol": 2,
+    "why": "every zap is created at (obj_growtangle.x + 1, obj_growtangle.y) = (321,170) and has no speed — only image_angle differs per letter",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:146"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_zapbox",
+    "atFrame": 52,
+    "x": 321,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 1,
+    "minCalls": 3,
+    "why": "each zap draws spr_tm_zapbox unscaled on its own origin at image_angle + 45, one call per live zap, and all three share the same origin",
+    "src": "gml_Object_obj_tm_quizzap_Draw_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "tasque_manager_type32_quizattack_doj",
+  "name": "QuizAttack — dojo \"Tasque Manager Says\"",
+  "note": "Same type-32 branch entered from encounter 89, which pins dc.special = 1 AND dc.difficulty = 4 (not 1). special = 1 is what makes it the dojo minigame: it pins global.turntimer to 5400 (then the shared +120). difficulty 4 sends the quizzler down `if (difficulty >= 4)`, giving turnspeed = 40 - ((4 - 4) * 5) = 40 and turns = 4 - 3 = 1, so the zap fires at ~frame 53 and lives 20 frames. Round bookkeeping (made/strikes) is not assertable: encounter 89 flips special to -4 the moment global.inv > 0, i.e. it depends on whether the soul is hit.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "min": 5400,
+    "max": 5525,
+    "why": "`if (special == 1) global.turntimer = 5400` is a hard assignment, then the branch adds 120 — the dojo turn is minutes long, not the boss ladder's 140",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1245"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_bulletparent",
+    "atFrame": 10,
+    "x": 321,
+    "y": 170,
+    "tol": 2,
+    "why": "the grid is the first obj_bulletparent made, at (obj_growtangle.x + 1, obj_growtangle.y) with the box at (320,170)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1249"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_grid",
+    "atFrame": 10,
+    "x": 321,
+    "y": 170,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 45,
+    "alpha": 1,
+    "why": "d.image_angle = 45 turns the grid into the diamond the quiz reads from; drawn unscaled at the box centre + 1",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1251"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tm_letters",
+    "atFrame": 10,
+    "x": 320,
+    "y": 220,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "why": "i == 3 offsets yy by +50 from the box's (320,170), and the tile self-draws at 1x",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1262"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_quizzler",
+    "byFrame": 2,
+    "why": "the init block creates the first obj_tm_quizzler regardless of special",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:1277"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tm_whip_animation",
+    "byFrame": 5,
+    "why": "the quizzler's Create makes its own obj_tm_whip_animation (invisible, state -1) because none exists during the quiz",
+    "src": "gml_Object_obj_tm_quizzler_Create_0.gml:29"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "difficulty",
+    "eq": 4,
+    "why": "the encounter-89 branch pins dc.difficulty = 4 and the init block forwards it with d.difficulty = difficulty",
+    "src": "gml_Object_obj_tasque_manager_enemy_Step_0.gml:174"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "turns",
+    "eq": 1,
+    "why": "difficulty 4 takes `if (difficulty >= 4)`, so turns = difficulty - 3 = 1 — still one question per round",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tm_quizzler",
+    "atFrame": 10,
+    "name": "turnspeed",
+    "eq": 40,
+    "why": "difficulty 4 recomputes turnspeed = 40 - ((difficulty - 4) * 5) = 40, overriding Create's 30",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:19"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_tm_quizzap",
+    "atFrame": 62,
+    "min": 3,
+    "max": 3,
+    "why": "the zap loop runs i = 0..3 and `continue`s on the correct letter, so three quadrants are electrified; at turnspeed 40 the timer reaches 0 at ~frame 53 and alarm[0] = clamp(40 - 20, 10, 20) = 20 kills them at ~frame 73",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:155"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_tm_quizzap",
+    "atFrame": 62,
+    "x": 321,
+    "y": 170,
+    "tol": 2,
+    "why": "every zap is created at (obj_growtangle.x + 1, obj_growtangle.y) = (321,170) and has no speed",
+    "src": "gml_Object_obj_tm_quizzler_Step_1.gml:146"
+   }
+  ]
+ },
+ {
+  "id": "tenna_type125",
+  "name": "all star cast",
+  "note": "Thin spawner: the branch makes one obj_tenna_allstars_manager at (obj_growtangle.x, cameray()) and every constant lives in that manager's Create/Step. difficulty is 0 (obj_dbulletcontroller Create:21; the dispatcher pins no literal) so the 32-frame two-sided cadence is dead code and the 13-frame one-sided cadence runs.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "myattackchoice 0 takes the myattackchoice<3 path that creates obj_growtangle at camerax()+320, cameray()+170, and nothing in Tenna's Step writes maxxscale/maxyscale so they stay at Create's 2 over the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:558"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 200,
+    "why": "the myattackchoice == 0 branch calls scr_turntimer(200) — the shortest of Tenna's three bullet turns",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:582"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_allstars_manager",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 125 branch is guarded by if (!made), so exactly one manager is ever created",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2530"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_tenna_allstars_manager",
+    "atFrame": 3,
+    "x": 320,
+    "y": 0,
+    "tol": 2,
+    "why": "instance_create(obj_growtangle.x, cameray()) = (320, 0); the manager's Step writes no x/y and its speed stays 0, so both axes are pinned — this off-screen-top hub is what the bullets orbit",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2530"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_allstars_manager",
+    "atFrame": 3,
+    "name": "difficulty",
+    "eq": 0,
+    "why": "_tenna_allstars.difficulty = difficulty and the controller's Create leaves difficulty at 0; this is what selects the 13-frame single-side spawn cadence over the 32-frame two-side one",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2532"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_allstars_manager",
+    "atFrame": 3,
+    "name": "damage",
+    "eq": 65,
+    "why": "Create sets damage = 5, then scr_bullet_inherit copies the controller's dc.damage = 65 over it — the overwrite proves the inherit call actually ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2531"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_allstars_manager",
+    "atFrame": 12,
+    "name": "num",
+    "eq": 3,
+    "why": "Create sets num = 2 and spawn_new flips 2 -> 3 before spawning, so after the first volley (timer counts -7 -> 0 in seven steps) num reads 3",
+    "src": "gml_Object_obj_tenna_allstars_manager_Create_0.gml:26"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_allstars_manager",
+    "atFrame": 26,
+    "name": "num",
+    "eq": 2,
+    "why": "the second volley flips num back to 2 — the 3/2/3/2 alternation is the shape of the whole attack",
+    "src": "gml_Object_obj_tenna_allstars_manager_Create_0.gml:28"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_allstars_bullet",
+    "byFrame": 12,
+    "min": 3,
+    "max": 3,
+    "why": "timer starts at -7, is incremented before the test, and spawn_new fires when (timer % 13) == 0, so the first volley lands on manager-step 7 with num flipped to 3; the second is not due until step 20",
+    "src": "gml_Object_obj_tenna_allstars_manager_Step_0.gml:41"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_allstars_bullet",
+    "byFrame": 26,
+    "min": 5,
+    "max": 5,
+    "why": "the second volley at manager-step 20 spawns num = 2, so cumulative is 3 + 2 = 5; the third is not due until step 33",
+    "src": "gml_Object_obj_tenna_allstars_manager_Step_0.gml:41"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_allstars_bullet",
+    "byFrame": 40,
+    "min": 8,
+    "max": 8,
+    "why": "the third volley at manager-step 33 spawns 3 again for 3 + 2 + 3 = 8, and the fourth is not due until step 46 — this pins both the 13-frame period and the 3/2 alternation",
+    "src": "gml_Object_obj_tenna_allstars_manager_Step_0.gml:41"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_allstars_bullet",
+    "atFrame": 12,
+    "name": "damage",
+    "eq": 65,
+    "why": "spawn_new sets damage = other.damage on every bullet, and the manager's damage is the inherited 65",
+    "src": "gml_Object_obj_tenna_allstars_manager_Create_0.gml:39"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tenna_allstars_star",
+    "atFrame": 40,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "tol": 0.02,
+    "why": "big alternates -1/1 starting at -1 (falsy in GML), so alternating bullets take size = 0.5; image_xscale approaches size at 0.05/step and is capped there long before frame 40",
+    "src": "gml_Object_obj_tenna_allstars_bullet_Step_0.gml:13"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tenna_allstars_laugh",
+    "atFrame": 40,
+    "xscale": 1,
+    "yscale": 1,
+    "angle": 0,
+    "alpha": 1,
+    "tol": 0.02,
+    "why": "the laughing-face overlay is drawn on top of every bullet at that bullet's own image_xscale/yscale with a literal angle of 0; the big bullets (size = 1) reach scale 1 and alpha 1 after 20 steps",
+    "src": "gml_Object_obj_tenna_allstars_bullet_Draw_0.gml:2"
+   }
+  ]
+ },
+ {
+  "id": "tenna_type126",
+  "name": "smashcut",
+  "note": "Two-hop chain: the branch makes obj_tenna_smashcut_attack at the box centre, whose Create makes obj_tenna_smashcutter (the leaping Tenna) because obj_tenna_enemy exists, and the smashcutter's End Step makes obj_tenna_smashcut_manager (the screen-tear shader) on its own timer 27. smashcutwithouttakingdamage is 0 at turn start (obj_tenna_enemy_Create_0.gml:117; it is only raised at end of turn), so the attack takes type 1, not the harder type 3.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "myattackchoice 1 takes the myattackchoice<3 path that creates obj_growtangle at camerax()+320, cameray()+170 with maxxscale/maxyscale left at Create's 2 over the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:558"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "the myattackchoice == 1 branch calls scr_turntimer(260)",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:590"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_smashcut_attack",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "the type == 126 branch is guarded by if (!made) and creates exactly one attack object",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2556"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_tenna_smashcut_attack",
+    "atFrame": 3,
+    "x": 320,
+    "y": 170,
+    "tol": 2,
+    "why": "instance_create(obj_growtangle.x, obj_growtangle.y) = (320, 170); its Step never writes x or y and its speed stays 0, so both axes are pinned",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2556"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_smashcut_attack",
+    "atFrame": 3,
+    "name": "type",
+    "eq": 1,
+    "why": "Create sets type = 1 and only raises it to 3 when obj_tenna_enemy.smashcutwithouttakingdamage == 1, which is 0 at turn start — type 1 is the 5-bullet-per-volley path, type 3 would be 3",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Create_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_smashcut_attack",
+    "atFrame": 3,
+    "name": "damage",
+    "eq": 65,
+    "why": "Create sets damage = 4, then scr_bullet_inherit copies the controller's dc.damage = 65 over it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2557"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_smashcut_attack",
+    "atFrame": 40,
+    "name": "side",
+    "eq": -1,
+    "why": "Create sets side = -1; the only writers are the type == 3 branch and the type == 0 make_random_lightning block, neither of which runs, so it is still -1 after two volleys — this is what fixes every bullet's direction at 180 - (90 * -1) = 270",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Create_0.gml:2"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_smashcutter",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "obj_tenna_enemy exists, so Create takes the smashcutter branch (the leaping Tenna) instead of the else branch that would shake the screen and make the manager immediately",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Create_0.gml:15"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_tenna_smashcutter",
+    "atFrame": 5,
+    "x": 525,
+    "tol": 3,
+    "why": "created at the box centre then immediately moved to camerax() + 525 (+ shakex/hurtspriteoffx, both 0) inside its Create's with(obj_tenna_enemy); nothing ever writes x again. y is omitted because Create sets vspeed = -16 with gravity = 1",
+    "src": "gml_Object_obj_tenna_smashcutter_Create_0.gml:8"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_smashcut_manager",
+    "byFrame": 32,
+    "min": 1,
+    "max": 1,
+    "why": "the smashcutter's End Step creates the screen-tear manager once, at its own timer == 27",
+    "src": "gml_Object_obj_tenna_smashcutter_Step_2.gml:23"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 20,
+    "min": 5,
+    "max": 5,
+    "why": "the first volley fires at attack-timer 10 and amount is 5 for type 1; timer is then reset to -16 so the next volley is 26 steps away",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Step_0.gml:55"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 45,
+    "min": 10,
+    "max": 10,
+    "why": "timer = -16 then counts to 10, a 26-frame period, so the second volley of 5 lands on attack-step 36 and the third not until step 62",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Step_0.gml:37"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 70,
+    "min": 15,
+    "max": 15,
+    "why": "third volley of 5 at attack-step 62; the fourth is not due until step 88, so this pins the 26-frame period across three volleys",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Step_0.gml:15"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tenna_smash_lightning",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 5,
+    "maxCalls": 5,
+    "tol": 0.02,
+    "why": "every volley bullet is given the lightning sprite at image_xscale = image_yscale = 2, and exactly one volley of 5 is alive at frame 20 (they are doomed at 70 frames and are still far from any edge; the attack's Draw_0 only redraws INVISIBLE lightning, of which there is none on type 1)",
+    "src": "gml_Object_obj_tenna_smashcut_attack_Step_0.gml:88"
+   }
+  ]
+ },
+ {
+  "id": "tenna_type128",
+  "name": "rimshot lensflare",
+  "note": "btimer starts at 99 in obj_dbulletcontroller's Create and increments unconditionally once per controller Step, so btimer == 103 is frame 4 and btimer == 117 is frame 18 — the two stars. The rimshot pulse is (btimer % 78) == 50, whose first reachable hit is btimer 128 = frame 29. Star positions are omitted from every assertion: side1 = irandom(3) * 90 puts them on a random one of four 150px spokes.",
+  "assertions": [
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "myattackchoice 2 takes the myattackchoice<3 path that creates obj_growtangle at camerax()+320, cameray()+170 with maxxscale/maxyscale left at Create's 2 over the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:558"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 260,
+    "why": "the myattackchoice == 2 branch calls scr_turntimer(260)",
+    "src": "gml_Object_obj_tenna_enemy_Step_0.gml:598"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_rimshot_star",
+    "byFrame": 6,
+    "min": 1,
+    "max": 1,
+    "why": "the first star is fired at btimer == 103, and btimer = 99 in Create plus one increment per Step makes that frame 4; the second is not due until btimer 117",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2573"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_tenna_rimshot_star",
+    "byFrame": 20,
+    "min": 2,
+    "max": 2,
+    "why": "type 128 (unlike 129) also fires at btimer == 117 = frame 18, and there is no third spawn site — exactly two stars for the whole turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2573"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_tenna_rimshot_star",
+    "atFrame": 60,
+    "min": 2,
+    "max": 2,
+    "why": "the star sets destroyonhit = false and nothing in its Create/Step/Draw ever destroys it, so both stars are still alive well after the first rimshot",
+    "src": "gml_Object_obj_tenna_rimshot_star_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_rimshot_star",
+    "atFrame": 10,
+    "name": "damage",
+    "eq": 65,
+    "why": "the with() block on the scr_fire_bullet result sets damage = other.damage, which is the controller's dc.damage = 65",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2590"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_rimshot_star",
+    "atFrame": 45,
+    "name": "speed",
+    "eq": 3.75,
+    "tol": 0.05,
+    "why": "fired at speed 6 then scr_lerpvar('speed', speed, 3.75, 30) settles it at 3.75 by frame 34; the box bounces only flip hspeed/vspeed signs so the magnitude is unchanged",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2592"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_rimshot_star",
+    "atFrame": 25,
+    "name": "rimshot_timer",
+    "eq": -1,
+    "why": "Create sets rimshot_timer = -1 and the only writer is the (btimer % 78) == 50 pulse, whose first reachable hit is btimer 128 = frame 29 — nothing should fire before then",
+    "src": "gml_Object_obj_tenna_rimshot_star_Create_0.gml:49"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_tenna_rimshot_star",
+    "atFrame": 40,
+    "name": "active",
+    "eq": 0,
+    "why": "the pulse sets rimshot_timer = 74 at frame 29 and it decrements once per Step, so active is cleared at rimshot_timer 67 (~frame 36) and only restored at 56 (~frame 46) — frame 40 sits inside the freeze",
+    "src": "gml_Object_obj_tenna_rimshot_star_Step_0.gml:59"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 6,
+    "min": 2,
+    "max": 2,
+    "why": "each star's Create makes exactly two trailing balls, bullet1 and bullet2, at its own position; only one star exists by frame 6",
+    "src": "gml_Object_obj_tenna_rimshot_star_Create_0.gml:19"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 25,
+    "min": 4,
+    "max": 4,
+    "why": "the second star (frame 18) brings its own pair to 4; the star-burst is not due until the rimshot pulse around frame 37",
+    "src": "gml_Object_obj_tenna_rimshot_star_Create_0.gml:31"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_regularbullet",
+    "byFrame": 50,
+    "min": 14,
+    "max": 14,
+    "why": "at rimshot_timer == 65 each star fires the loop dir = 90; dir < 450; dir += 72 — five triangles each, so 4 trail balls + 10 = 14; the next pulse is btimer 206 = frame 107",
+    "src": "gml_Object_obj_tenna_rimshot_star_Step_0.gml:74"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_triangle",
+    "byFrame": 50,
+    "why": "the rimshot burst bullets are fired with spr_triangle as the explicit sprite argument to scr_fire_bullet",
+    "src": "gml_Object_obj_tenna_rimshot_star_Step_0.gml:76"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_tenna_allstars_laugh",
+    "atFrame": 25,
+    "xscale": 0.3333,
+    "yscale": 0.3333,
+    "angle": 0,
+    "tol": 0.02,
+    "why": "the star draws the laugh overlay on each trailing ball at bullet.image_xscale / 3, and those balls sit at their default scale of 1 until the rimshot lerps start at frame ~30",
+    "src": "gml_Object_obj_tenna_rimshot_star_Draw_0.gml:5"
+   }
+  ]
+ },
+ {
+  "id": "tenna_rhythmgame",
+  "name": "PHYSICAL CHALLENGE — music / PERFORM!",
+  "note": "obj_rhythmgame is a full karaoke minigame, not a bullet attack: there are no bullets and nothing spawns from a dispatcher branch. Everything checkable is the stage the Create event builds (3 performers, 3 solo spotlights, 2 charts) plus the tenna_boss init block in Step, which overwrites Create's bpm/song_id/difficulty and event_user(0)'s y. Note timing (chart_start/chart_end) is derived from trackstart = random(82.5) and is deliberately not asserted. Everything here requires obj_tenna_enemy to exist (Create:3 tenna_boss gate).",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_rhythmgame_chart",
+    "byFrame": 1,
+    "min": 2,
+    "max": 2,
+    "why": "Create makes exactly two charts, drums then vocals",
+    "src": "gml_Object_obj_rhythmgame_Create_0.gml:87"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_rhythmgame_performer",
+    "atFrame": 1,
+    "min": 3,
+    "max": 3,
+    "why": "scr_rhythmgame_init runs once per instrument (0,1,2) and each branch creates one performer",
+    "src": "gml_GlobalScript_scr_rhythmgame_init.gml:15"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_rhythmgame_spotlight_solo",
+    "atFrame": 1,
+    "min": 3,
+    "max": 3,
+    "why": "obj_rhythmgame_effects Create loops i<3 creating one spotlight each",
+    "src": "gml_Object_obj_rhythmgame_effects_Create_0.gml:8"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_rhythmgame_spotlight_solo",
+    "atFrame": 2,
+    "y": 120,
+    "tol": 1,
+    "why": "all three solo spotlights are created at y = 120 and their Step only touches direction/image_angle",
+    "src": "gml_Object_obj_rhythmgame_effects_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "y",
+    "eq": 0,
+    "tol": 0.5,
+    "why": "Create parks the stage at y = 960; event_user(0) fired by the tenna_boss init block resets it to 0",
+    "src": "gml_Object_obj_rhythmgame_Other_10.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "intro_con",
+    "eq": 2,
+    "why": "Create sets intro_con = -1; event_user(0) sets it to 2 so the Step stops early-exiting",
+    "src": "gml_Object_obj_rhythmgame_Other_10.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "bpm",
+    "eq": 148,
+    "why": "Create sets bpm = 230; the tenna_boss init block overwrites it with 148",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:176"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "Create sets difficulty = 5; the tenna_boss init block overwrites it with 1 and freeplay is false so event_user(0) does not put it back to 5",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "song_id",
+    "eq": 2,
+    "why": "the tenna boss always plays song 2 (the ch3 karaoke battle chart)",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:181"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "fame",
+    "eq": 6000,
+    "why": "event_user(0) resets fame to 6000, half of Create's max_fame 12000",
+    "src": "gml_Object_obj_rhythmgame_Other_10.gml:46"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_rhythmgame",
+    "atFrame": 2,
+    "name": "leniency",
+    "eq": 1.6,
+    "tol": 0.001,
+    "why": "hardmode is off so event_user(0) takes the else branch: leniency 1.6, bonus 0",
+    "src": "gml_Object_obj_rhythmgame_Other_10.gml:42"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susie_drum_ready",
+    "atFrame": 2,
+    "x": 56,
+    "y": 281,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "the drums chart's performer is created at (56,281) at 2x and the tenna_boss init block puts it in the _ready pose",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:198"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ralsei_sing_polite_closed",
+    "atFrame": 2,
+    "x": 486,
+    "y": 304,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "the vocals chart's performer is created at (486,304) at 2x and the tenna_boss init block puts it in the closed-mouth pose",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:203"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_kris_guitar_ready",
+    "atFrame": 2,
+    "x": 280,
+    "y": 316,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "obj_rhythmgame's own performer (instrument 0) is created at (280,316) at 2x and the tenna_boss init block swaps it to the guitar-ready pose",
+    "src": "gml_Object_obj_rhythmgame_Step_0.gml:184"
+   }
+  ]
+ },
+ {
+  "id": "tenna_chefs_init",
+  "name": "PHYSICAL CHALLENGE — cooking / DODGE FIRE!",
+  "note": "obj_chefs_init is a pure scene builder: its whole Create event is seven instance_create calls, so the stage layout IS the attack. Food/fire trajectories are RNG (food re-enters at x = 320 + irandom(112)*choose(-1,1), spawner alarms are 30 + irandom(30)) and are asserted only as counts and arrival bands.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_chefs_game",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "obj_chefs_init Create makes exactly one game/score controller",
+    "src": "gml_Object_obj_chefs_init_Create_0.gml:2"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chefs_kris",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "one player chef is created by the init object",
+    "src": "gml_Object_obj_chefs_init_Create_0.gml:3"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_chefs_kris",
+    "atFrame": 1,
+    "x": 320,
+    "y": 280,
+    "tol": 2,
+    "why": "Kris's Create overrides the (0,0) spawn with xstart = 320, ystart = 280 and he only moves on input",
+    "src": "gml_Object_obj_chefs_kris_Create_0.gml:10"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_kris_chef",
+    "atFrame": 2,
+    "x": 320,
+    "y": 280,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "idle Kris draw_self()s at 2x; round(hspeed)==0 pins sprite_index to spr_kris_chef",
+    "src": "gml_Object_obj_chefs_kris_Step_0.gml:73"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_chefs_susie",
+    "atFrame": 2,
+    "x": 140,
+    "y": 200,
+    "tol": 1,
+    "why": "Susie is placed at (140,200) and has no Step event, so she never moves",
+    "src": "gml_Object_obj_chefs_init_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_chefs_ralsei",
+    "atFrame": 2,
+    "x": 540,
+    "y": 200,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 1,
+    "why": "Ralsei is placed at (540,200), his Create sets image_xscale/yscale = 2 and he has no Step or Draw event",
+    "src": "gml_Object_obj_chefs_ralsei_Create_0.gml:1"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chefs_spawner",
+    "atFrame": 1,
+    "min": 2,
+    "max": 2,
+    "why": "two spawners: the mode-0 food launcher at (574,210) and the mode-1 fire launcher at (75,190)",
+    "src": "gml_Object_obj_chefs_init_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chefs_game",
+    "atFrame": 2,
+    "name": "timer_max",
+    "eq": 100,
+    "why": "timer = 100 then timer_max = timer; the round is 100 ticks, one tick per 30-frame alarm",
+    "src": "gml_Object_obj_chefs_game_Create_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_chefs_game",
+    "atFrame": 2,
+    "name": "scorepoints_goal",
+    "eq": 400,
+    "why": "the score target is a literal 400",
+    "src": "gml_Object_obj_chefs_game_Create_0.gml:18"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_chefs_food",
+    "atFrame": 25,
+    "max": 0,
+    "why": "the food spawner's first alarm is 30 + irandom(30), so nothing can be launched before frame 30",
+    "src": "gml_Object_obj_chefs_spawner_Create_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chefs_food",
+    "byFrame": 62,
+    "min": 1,
+    "why": "30 + irandom(30) caps the first food launch at frame 60",
+    "src": "gml_Object_obj_chefs_spawner_Alarm_0.gml:30"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chefs_foodnotice",
+    "byFrame": 85,
+    "min": 1,
+    "why": "food launches upward at vspeed -12 from y = 210 and, 19 frames later when y < -16, re-enters from the top and drops a warning marker",
+    "src": "gml_Object_obj_chefs_food_Step_1.gml:45"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_chefs_customer",
+    "byFrame": 62,
+    "min": 1,
+    "why": "obj_chefs_customer_spawner's Create arms alarm[0] = 60 for the first diner",
+    "src": "gml_Object_obj_chefs_customer_spawner_Create_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "tenna_shootout_controller",
+  "name": "PHYSICAL CHALLENGE — cowboy / SHOOT!",
+  "note": "shootout_type 2. obj_ch3_GSD03 does not exist outside the overworld cutscene, so Create takes the branch that skips the intro: state = \"main\", train_x_target = -1050, kris_actionable = true from frame 0. Which window opens is irandom over the plus-shaped 5, so only the train/rider geometry and the cadence constants are asserted. The enemy shot (obj_shootout_vfx_mockup_shot) is deliberately NOT asserted: obj_shootout_window Other_12:60 aborts the shot into \"preoutro\" whenever obj_tenna_zoom exists with con != 1, and the frame it would land on is not pinned. The reticle IS asserted, but only at frame 40 — obj_tenna_zoom sets con = 1 at its own timer 40 while the controller is created at its timer 2, so by controller frame 40 the draw is enabled whether or not obj_tenna_zoom exists.",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_shootout_carriage",
+    "atFrame": 1,
+    "min": 9,
+    "max": 9,
+    "why": "Create loops _i < 9 building the train, one carriage per 600px",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:16"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shootout_window",
+    "atFrame": 1,
+    "min": 9,
+    "max": 9,
+    "why": "window_columns 3 x window_rows 3 gives a 3x3 grid of shooting windows",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:59"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "state",
+    "eq": "main",
+    "why": "without obj_ch3_GSD03 the Create block skips the intro and starts in \"main\"",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:115"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "train_x_target",
+    "eq": -1050,
+    "why": "Create overrides train_x 9000 with -1050 so carriage x_offset 1200 lands the first train car at x = 150",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:116"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_shootout_window",
+    "atFrame": 2,
+    "x": 310,
+    "tol": 4,
+    "why": "the first window (column 0, row 0) latches to the on-screen carriage at x = 150 plus its x_offset (80 + 0*50)*2 = 160",
+    "src": "gml_Object_obj_shootout_window_Draw_0.gml:22"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "kris_hp",
+    "eq": 5,
+    "why": "the rider starts with 5 HP",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:73"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "kris_y_ground",
+    "eq": 380,
+    "why": "the ground line the horse rides on is a literal 380",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:82"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "windowdelay",
+    "eq": 28,
+    "why": "windows open every 28 pattern frames until the first spawn starts decrementing it",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:102"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ralsei_horse_shadow",
+    "atFrame": 20,
+    "y": 382,
+    "xscale": 2,
+    "yscale": 3,
+    "tol": 2,
+    "why": "grounded (kris_y == kris_y_ground) the shadow is drawn at kris_y_ground + 2 with xscale 2 and a stretched yscale of 3",
+    "src": "gml_Object_obj_shootout_controller_Draw_0.gml:2"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ralsei_horse_run",
+    "atFrame": 20,
+    "y": 380,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "on the ground the horse uses the run sprite at 2x with y = kris_y = 380 (x carries a sin(current_time) wobble so it is omitted)",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:590"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susie_ride",
+    "atFrame": 20,
+    "y": 308,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 3,
+    "why": "Susie sits at horse.y - 72 = 308 (plus a +/-2 gallop bob) at 2x",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:636"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shootout_reticle1",
+    "atFrame": 40,
+    "y": 166,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "shootout_type != 3 draws the crosshair at 2x; with no input aim_y converges on windows[1][1].y = carriage y 30 + y_offset 136",
+    "src": "gml_Object_obj_shootout_controller_Draw_0.gml:11"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_shootout_dust",
+    "byFrame": 2,
+    "min": 3,
+    "why": "on the first main frame dust_timer is 0 so all three modulo gates (12, 8, 6) fire at once",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:594"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_shootout_cactus",
+    "byFrame": 200,
+    "why": "hazard_warning is only ever assigned -1, so the hazard_warning == 0 spawn is unreachable",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:89"
+   }
+  ]
+ },
+ {
+  "id": "tenna_shootout_controller_physical_chall",
+  "name": "PHYSICAL CHALLENGE — cowboy / DODGE!",
+  "note": "shootout_type 3 is the same controller with almost every rider system switched off: the horse, Kris, Susie and the shadow are not drawn, the jump/shoot inputs are gated out, and obj_shootout_window Draw force-sets type = 4 every frame so all nine windows run the Susie/Ralsei popout routine instead of the Tenna shooter. Most of the spec is therefore what must NOT be drawn or spawned, which is exactly the difference from the SHOOT variant.",
+  "assertions": [
+   {
+    "kind": "count",
+    "obj": "obj_shootout_carriage",
+    "atFrame": 1,
+    "min": 9,
+    "max": 9,
+    "why": "Create loops _i < 9 building the train regardless of shootout_type",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:16"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shootout_window",
+    "atFrame": 1,
+    "min": 9,
+    "max": 9,
+    "why": "window_columns 3 x window_rows 3 grid",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:59"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_shootout_window",
+    "atFrame": 2,
+    "x": 310,
+    "tol": 4,
+    "why": "window (0,0) latches to the on-screen carriage at x = 150 plus x_offset 160",
+    "src": "gml_Object_obj_shootout_window_Draw_0.gml:22"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_window",
+    "atFrame": 20,
+    "name": "type",
+    "eq": 4,
+    "why": "the window Draw force-sets type = 4 every frame when shootout_type == 3, overriding the type = 2 that event_user(12) assigns on open",
+    "src": "gml_Object_obj_shootout_window_Draw_0.gml:4"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_window",
+    "atFrame": 20,
+    "name": "state",
+    "eq": "open",
+    "why": "the main state calls event_user(12) on EVERY window every frame when shootout_type == 3, so all nine are open, not one at a time",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:200"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shootout_reticle3",
+    "atFrame": 40,
+    "y": 166,
+    "xscale": 2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "the type-3 reticle lerps at 0.33/frame onto the popped-out window, i.e. windows[1][1].y = 30 + 136",
+    "src": "gml_Object_obj_shootout_controller_Draw_0.gml:39"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shootout_reticle1",
+    "atFrame": 40,
+    "maxCalls": 0,
+    "why": "the crosshair branch is guarded by shootout_type != 3, so reticle1 must never be drawn here",
+    "src": "gml_Object_obj_shootout_controller_Draw_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ralsei_horse_shadow",
+    "atFrame": 40,
+    "maxCalls": 0,
+    "why": "the shadow draw is guarded by shootout_type != 3",
+    "src": "gml_Object_obj_shootout_controller_Draw_0.gml:1"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shootout_susie_popout",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "type-4 windows draw the Susie popout at a hardcoded 2x",
+    "src": "gml_Object_obj_shootout_window_Other_14.gml:113"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shootout_ralsei_popout",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "type-4 windows draw the Ralsei popout at a hardcoded 2x on top of Susie's",
+    "src": "gml_Object_obj_shootout_window_Other_14.gml:114"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_shootout_dust",
+    "byFrame": 200,
+    "why": "the hoof-dust block is inside `kris_y == kris_y_ground && shootout_type != 3`, and nothing else in the corpus creates obj_shootout_dust",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:588"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_shootout_vfx_mockup_shot",
+    "byFrame": 200,
+    "why": "type-4 windows never run the type-1/type-2 shot routines and the player's shot is gated by shootout_type != 3, so no bullet vfx can exist",
+    "src": "gml_Object_obj_shootout_controller_Step_0.gml:497"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_shootout_cactus",
+    "byFrame": 200,
+    "why": "hazard_warning is only ever assigned -1, so the hazard spawn is unreachable",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:89"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shootout_controller",
+    "atFrame": 2,
+    "name": "train_x_target",
+    "eq": -1050,
+    "why": "Create overrides train_x 9000 with -1050 so the first train car lands at x = 150",
+    "src": "gml_Object_obj_shootout_controller_Create_0.gml:116"
+   }
+  ]
+ },
+ {
+  "id": "tenna_type150_physical_chall",
+  "name": "PHYSICAL CHALLENGE — battle d1 / SHOOT THE TARGETS! (sharpshoot test)",
+  "note": "The type == 150 branch is two lines: it creates obj_lightemup_controller and nothing else, passing neither difficulty nor damage. Which of the two type-150 rows you get is decided inside obj_lightemup_controller Create by `obj_tenna_enemy.myattackchoice == 21` and `obj_tenna_zoom.minigamedifficulty == 1`, NOT by obj_dbulletcontroller.difficulty — so the roster's difficulty 1 vs 3 is not something the GML pins, and the target's type (4 = boss-driven LIGHT 'EM UP bullets from obj_actor_tenna Draw, 5 = self-firing obj_tenna_lightemup_bullet) is deliberately NOT asserted, nor is any bullet count that follows from it. What IS pinned unconditionally is the crosshair: its start position, its 12-frame sweep to x = 480, and the three-layer draw. Fewer assertions on purpose.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_lightemup_controller",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "the whole type == 150 branch is one instance_create guarded by !made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2904"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "the controller's Create makes exactly one target at (x + 120, y + 150)",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_lightemup_bg",
+    "byFrame": 1,
+    "min": 1,
+    "max": 1,
+    "why": "one channel-backdrop object is created alongside the target",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 1,
+    "name": "cursor_xstart",
+    "eq": 200,
+    "why": "cursor_x starts at camerax() + 200 and cursor_xstart is copied from it",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:33"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 30,
+    "name": "cursor_x",
+    "eq": 480,
+    "tol": 1,
+    "why": "the intro sweep lerps cursor_x to cursor_xstart + a(280) + xx(0) = 480 by cursor_timer 12",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:155"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 30,
+    "name": "cursor_y",
+    "eq": 157,
+    "tol": 1,
+    "why": "Create sets cursor_y = cameray() + 157 and the Step only moves it on up/down input (clamped 42..300)",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 20,
+    "name": "cursor_con",
+    "eq": 1,
+    "why": "cursor_timer reaching timermax 12 ends the sweep and hands over to the shooting state",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:161"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 30,
+    "name": "cursor_xscale",
+    "eq": 1,
+    "tol": 0.05,
+    "why": "Create sets cursor_xscale = 3 and the sweep lerps it down to 1",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:151"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 30,
+    "name": "cursor_alpha",
+    "eq": 1,
+    "tol": 0.02,
+    "why": "cursor_alpha = lerp(0, 1, cursor_timer / timermax) reaches 1 at the end of the sweep and is not touched afterwards",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:150"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 2,
+    "name": "strength",
+    "eq": 200,
+    "why": "the channel-change shake strength starts at a literal 200",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:96"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 2,
+    "name": "channelnumber",
+    "eq": 1,
+    "why": "channelnumber starts at 1, which is the blank channel in obj_lightemup_bg's Draw",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:84"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shadowman_sharpshoot_cursor",
+    "atFrame": 30,
+    "x": 480,
+    "y": 157,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 0.3333,
+    "tol": 2,
+    "why": "the middle crosshair layer draws at cursor_xscale exactly with alpha cursor_alpha / 3",
+    "src": "gml_Object_obj_lightemup_controller_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shadowman_sharpshoot_cursor",
+    "atFrame": 30,
+    "x": 480,
+    "y": 157,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "alpha": 0.6667,
+    "tol": 2,
+    "why": "the innermost crosshair layer is half a unit smaller and the brightest, alpha cursor_alpha / 1.5",
+    "src": "gml_Object_obj_lightemup_controller_Draw_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "atFrame": 2,
+    "name": "tennahp",
+    "eq": 120,
+    "why": "the target's HP pool is a literal 120",
+    "src": "gml_Object_obj_shadowman_sharpshoot_target_Create_0.gml:18"
+   }
+  ]
+ },
+ {
+  "id": "tenna_elnina_umbrella",
+  "name": "PHYSICAL CHALLENGE — battle d2 / BOUNCE THE BALL!",
+  "note": "Deliberately short. The roster launches obj_elnina_umbrella as the 'controller', but obj_elnina_umbrella is not a spawner at all — its Create/Step/Draw create nothing. It is only the shield that lerps onto the soul. The rest of BOUNCE THE BALL (obj_growtangle, obj_moveheart, the obj_umbrella_tv panels, the obj_elnina_bouncingbullet balls) is built by obj_tenna_zoom's event_user(1) minigamedifficulty==2 block, which this roster row does not run. Position is unassertable: x/y are lerp(...,0.6) toward obj_heart.x+10 / obj_heart.y+4. Every assertion below presumes the soul exists — the whole Step body is gated on i_ex(obj_heart) || i_ex(obj_moveheart) (Step:1), and with no soul image_alpha is forced to -0.4 (Step:59).",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 1,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "Create pins the umbrella at double width",
+    "src": "gml_Object_obj_elnina_umbrella_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 1,
+    "name": "image_yscale",
+    "eq": 2,
+    "why": "Create pins the umbrella at double height",
+    "src": "gml_Object_obj_elnina_umbrella_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 1,
+    "name": "image_speed",
+    "eq": 0,
+    "why": "the umbrella never animates its frames",
+    "src": "gml_Object_obj_elnina_umbrella_Create_0.gml:9"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 4,
+    "name": "image_alpha",
+    "min": 0.25,
+    "max": 0.6,
+    "why": "alpha starts at 0 and fades in +0.1 per step, so it is mid-ramp here rather than instantly solid",
+    "src": "gml_Object_obj_elnina_umbrella_Step_0.gml:38"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 30,
+    "name": "image_alpha",
+    "eq": 0.7,
+    "tol": 0.02,
+    "why": "the fade-in stops at 0.7 because the guard is image_alpha < 0.7",
+    "src": "gml_Object_obj_elnina_umbrella_Step_0.gml:38"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 30,
+    "name": "image_angle",
+    "eq": 0,
+    "tol": 1,
+    "why": "with no left/right held idealangle is 0 and image_angle lerps onto it",
+    "src": "gml_Object_obj_elnina_umbrella_Step_0.gml:19"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_elnina_umbrella",
+    "atFrame": 1,
+    "name": "mercy",
+    "eq": 0,
+    "why": "mercy starts at 0 and only a ball collision raises it",
+    "src": "gml_Object_obj_elnina_umbrella_Create_0.gml:6"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_ch3_elnina_umbrella",
+    "atFrame": 30,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "alpha": 0.7,
+    "tol": 0.02,
+    "why": "draw_self() renders the umbrella sprite at 2x, unrotated, at alpha 0.7",
+    "src": "gml_Object_obj_elnina_umbrella_Draw_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "tenna_type150_light_em_up_th",
+  "name": "LIGHT 'EM UP (the ultimate / final attack)",
+  "note": "The dbulletcontroller type==150 branch is a one-line spawner for obj_lightemup_controller, so everything assertable lives in that controller's Create + Step + Draw. The obj_tenna_lightemup_bullet volleys are NOT emitted from this chain — they come out of obj_actor_tenna's Draw, driven by the actor's own lightemuptimer/bulletnum, and every one of those spawns is randomised and positioned off the live actor, so no bullet count, position or cadence is honestly assertable from this launch. Difficulty 1 (sharpshoot test) and difficulty 3 (LIGHT 'EM UP) reach the SAME type-150 branch; what separates them is obj_tenna_zoom.minigamedifficulty read inside obj_lightemup_controller's Create (line 7), not the controller's difficulty field, so the two rows are behaviourally identical when launched in isolation.",
+  "assertions": [
+   {
+    "kind": "spawns",
+    "obj": "obj_lightemup_controller",
+    "byFrame": 3,
+    "min": 1,
+    "max": 1,
+    "why": "type 150 creates exactly one lightemup controller behind a !made guard",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:2904"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_lightemup_bg",
+    "byFrame": 3,
+    "why": "the controller's Create also builds the LIGHT 'EM UP backdrop",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:21"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "atFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "Create makes exactly one target — the thing you shoot",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "atFrame": 5,
+    "name": "parentid",
+    "eq": 136,
+    "why": "the target's own Create sets parentid = -4 and the lightemup controller overwrites it with 136, proving init ran",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:10"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "atFrame": 5,
+    "name": "tennahp",
+    "eq": 120,
+    "why": "the target carries 120 HP",
+    "src": "gml_Object_obj_shadowman_sharpshoot_target_Create_0.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_shadowman_sharpshoot_target",
+    "atFrame": 5,
+    "name": "image_xscale",
+    "eq": 2,
+    "why": "the target is drawn at double scale",
+    "src": "gml_Object_obj_shadowman_sharpshoot_target_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 5,
+    "name": "strength",
+    "eq": 200,
+    "why": "channel-change strength starts at 200 and only drops 10 per channel flip",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:96"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 5,
+    "name": "channelnumber",
+    "eq": 1,
+    "why": "the minigame opens on channel 1",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:84"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 40,
+    "name": "cursor_x",
+    "eq": 480,
+    "tol": 1,
+    "why": "cursor_xstart = camerax()+200 = 200 and the 12-frame intro lerp lands it at 200 + a(280) + xx(0) = 480",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:155"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 40,
+    "name": "cursor_y",
+    "eq": 157,
+    "tol": 1,
+    "why": "cursor_y = cameray()+157 and the intro only animates x",
+    "src": "gml_Object_obj_lightemup_controller_Create_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 40,
+    "name": "cursor_xscale",
+    "eq": 1,
+    "tol": 0.05,
+    "why": "the crosshair starts at 3x and lerps down to 1 across the 12-frame intro",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:151"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_lightemup_controller",
+    "atFrame": 40,
+    "name": "cursor_angle",
+    "eq": 360,
+    "why": "the intro spins the crosshair then snaps the angle to exactly 360 when cursor_timer reaches timermax",
+    "src": "gml_Object_obj_lightemup_controller_Step_0.gml:159"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shadowman_sharpshoot_cursor",
+    "atFrame": 40,
+    "x": 480,
+    "y": 157,
+    "xscale": 1,
+    "yscale": 1,
+    "alpha": 0.3333,
+    "tol": 0.02,
+    "why": "the middle crosshair layer draws unjittered at cursor_x/cursor_y with alpha cursor_alpha/3",
+    "src": "gml_Object_obj_lightemup_controller_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_shadowman_sharpshoot_cursor",
+    "atFrame": 40,
+    "x": 480,
+    "y": 157,
+    "xscale": 0.5,
+    "yscale": 0.5,
+    "alpha": 0.6667,
+    "tol": 0.02,
+    "why": "the innermost crosshair layer is half a unit smaller and brightest, cursor_alpha/1.5",
+    "src": "gml_Object_obj_lightemup_controller_Draw_0.gml:10"
+   }
+  ]
+ },
+ {
+  "id": "tenna_susiezilla_gamecontroller",
+  "name": "PHYSICAL CHALLENGE — susiezilla d2 / PROTECT RALSEI!",
+  "note": "The roster's difficulty 2 means obj_tenna_zoom calls setup(2) on the game controller, and the controller is created at (camerax(), cameray()) = (0,0), so xorig = 0 and width = 640 throughout. Every assertion below is really 'setup(2) ran'. Assertions gated on i_ex(obj_tenna_enemy) are deliberately omitted (controller depth 1000, the short-curtain sprites, the tvland lights) because whether the harness instantiates a real obj_tenna_enemy is not something the GML pins. The enemy waves are randomised in position — spawn((180+irandom(60))*choose(-1,1), irandom_range(-60,60), ...) — so only their type and count are asserted, never where they land.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "mode",
+    "eq": 2,
+    "why": "minigamedifficulty 2 calls setup(2), and mode is the whole minigame's switch",
+    "src": "gml_Object_obj_tenna_zoom_Other_11.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "width",
+    "eq": 640,
+    "why": "Create defaults width to 1280 and setup overwrites it with 640 for any mode > 0, proving setup ran",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "bgxoffset",
+    "eq": 320,
+    "why": "mode >= 1 shifts the backdrop 320px",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:192"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "time_timer",
+    "eq": 16,
+    "why": "Create sets 99, setup overwrites it to 16 for mode 1 or 2 — the round is 16 seconds, and the countdown does not start until time_counter reaches 30",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:201"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "ral_difficulty",
+    "eq": 1,
+    "why": "with the no-damage flags clear ral_difficulty stays 1, which fixes the wave cadence at modtimer 24 / cap 3",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:80"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_susiezilla_player",
+    "atFrame": 5,
+    "x": 280,
+    "y": 230,
+    "tol": 2,
+    "why": "Susie spawns at (xorig + width*0.5) - 40 = 280, y 180, then mode < 3 adds 50; she only moves on input",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:186"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_susiezilla_statue",
+    "atFrame": 20,
+    "x": 320,
+    "y": 270,
+    "tol": 2,
+    "why": "the Ralsei tower is planted at xorig + width*0.5 = 320, y 270 and never moves",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:249"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_statue",
+    "atFrame": 5,
+    "name": "maxhp",
+    "eq": 40,
+    "why": "the statue's own Create sets maxhp = 200 and setup(2) overwrites it with 40, proving init ran",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:250"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_statue",
+    "atFrame": 5,
+    "name": "hp",
+    "eq": 40,
+    "why": "hp is re-derived from the overwritten maxhp",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:251"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susiezilla_ralsei_tower",
+    "atFrame": 20,
+    "x": 320,
+    "y": 270,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "tol": 2,
+    "why": "setup(2) swaps the statue sprite from spr_tenna_point_up to the Ralsei tower, drawn at scr_darksize's 2x with shake settled to 0",
+    "src": "gml_Object_obj_susiezilla_statue_Draw_0.gml:9"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susiezilla_censor_bar",
+    "atFrame": 20,
+    "x": 352,
+    "y": 202,
+    "xscale": -2,
+    "yscale": 2,
+    "tol": 2,
+    "why": "the ralsei_tower branch draws the censor bar 32px right and 68px up at MIRRORED xscale (-image_xscale)",
+    "src": "gml_Object_obj_susiezilla_statue_Draw_0.gml:33"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susiezilla_background",
+    "atFrame": 20,
+    "x": -320,
+    "y": 0,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "the backdrop draws at xorig - bgxoffset = -320, y 0, at 2x",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Draw_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_susiezilla_singlescreen_shadowguy",
+    "byFrame": 120,
+    "min": 3,
+    "max": 3,
+    "why": "mode 2 spawns ralsei_attacker (melee = object 185 = the plain shadowguy) every 24 frames from timer 20 with a 16-frame delay, capped at enemy_count < 3",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Step_0.gml:425"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "byFrame": 120,
+    "why": "the kickboxin Tenna is only built by setup for mode 3 or 4, never mode 2",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262"
+   }
+  ]
+ },
+ {
+  "id": "tenna_susiezilla_gamecontroller_physical_chall",
+  "name": "PHYSICAL CHALLENGE — susiezilla d3 / FIGHT...?",
+  "note": "difficulty 3 means setup(3). Unlike mode 2 this mode has no statue and no scripted enemy waves at all — the mode-4 wave block is the only other spawner in the Step and it is gated on ral_difficulty >= 2, which is 1 by default — so the boss fight IS the kickboxin Tenna. His state machine is fully randomised past the breakout (dest_x = anchor_x + irandom_range(-12,12), zip_dir = choose(-1,1)), so positions are only asserted during the stationary breakout window (state_timer runs -30 upward and nothing moves him until state_timer 25, about frame 55). i_ex(obj_tenna_enemy)-gated details are omitted for the same reason as the d2 row.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "mode",
+    "eq": 3,
+    "why": "minigamedifficulty 3 calls setup(3)",
+    "src": "gml_Object_obj_tenna_zoom_Other_11.gml:21"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "width",
+    "eq": 640,
+    "why": "Create defaults width to 1280 and setup overwrites it with 640 for any mode > 0",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "bgxoffset",
+    "eq": 320,
+    "why": "mode >= 1 shifts the backdrop 320px",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:192"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "time_timer",
+    "eq": 18,
+    "why": "Create sets 99, setup overwrites it to 18 for mode >= 3 — an 18-second round, longer than mode 2's 16",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:204"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_susiezilla_player",
+    "atFrame": 5,
+    "x": 120,
+    "y": 180,
+    "tol": 2,
+    "why": "Susie spawns at 280 then mode 3 subtracts 160; the mode < 3 y+50 does NOT apply here",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:195"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "setup(3) installs exactly one kickboxin Tenna as the statue",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:264"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 20,
+    "x": 320,
+    "y": 270,
+    "tol": 2,
+    "why": "created at xorig + width*0.5 = 320, y 270, and the breakout state only builds xoff (a draw offset) until state_timer hits 25",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:264"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "maxhp",
+    "eq": 3,
+    "why": "the kickboxin Tenna's own Create sets maxhp = 2 and setup overwrites it with 3, proving init ran",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:265"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "hp",
+    "eq": 3,
+    "why": "hp is re-derived from the overwritten maxhp — three hits to win",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:266"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "state",
+    "eq": -1,
+    "why": "he opens in states.breakout (-1); the giant-Tenna Create branch would instead have put him in states.idle (0)",
+    "src": "gml_Object_obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "anchor_x",
+    "eq": 500,
+    "why": "anchor_x = mid + 180 where mid = xorig + width*0.5 = 320, so he circles around x 500",
+    "src": "gml_Object_obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:62"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_susiezilla_statue",
+    "byFrame": 120,
+    "why": "setup only builds obj_susiezilla_statue for modes 0 and 2 — mode 3's statue slot is the kickboxin Tenna",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:238"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susiezilla_background",
+    "atFrame": 20,
+    "x": -320,
+    "y": 0,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "the backdrop draws at xorig - bgxoffset = -320, y 0, at 2x",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Draw_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "tenna_susiezilla_gamecontroller_physical_chall2",
+  "name": "PHYSICAL CHALLENGE — susiezilla d4 / FIGHT...? (giant Tenna variant)",
+  "note": "Fewer assertions on purpose. difficulty 4 means setup(4), and setup treats mode 3 and mode 4 identically (same Susie offset, same time_timer, same kickboxin Tenna at 320/270 with maxhp 3) — the only mode-4-specific code is the Step block at gml_Object_obj_susiezilla_gamecontroller_Step_0.gml:431-453, which is gated on ral_difficulty >= 2 and therefore spawns NOTHING at the default ral_difficulty 1. The 'giant Tenna' behaviour the row is named for lives in the kickboxin Create's obj_tenna_enemy.alreadydidgianttenna branch (Create:91-104: sprite spr_tenna_kick, x += 100, state = idle), which only fires because an EARLIER kickboxin round set that flag; a cold launch of this row cannot reach it, so I assert nothing about it and deliberately omit the frame-20 position and the state ivar that the d3 row asserts, since both differ under that branch. anchor_x survives because both Create branches compute mid + 180.",
+  "assertions": [
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "mode",
+    "eq": 4,
+    "why": "minigamedifficulty 4 calls setup(4)",
+    "src": "gml_Object_obj_tenna_zoom_Other_11.gml:24"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "width",
+    "eq": 640,
+    "why": "Create defaults width to 1280 and setup overwrites it with 640 for any mode > 0",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:183"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "bgxoffset",
+    "eq": 320,
+    "why": "mode >= 1 shifts the backdrop 320px",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:192"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "time_timer",
+    "eq": 18,
+    "why": "Create sets 99, setup overwrites it to 18 for mode >= 3",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:204"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_gamecontroller",
+    "atFrame": 5,
+    "name": "ral_difficulty",
+    "eq": 1,
+    "why": "with the no-damage flags clear ral_difficulty stays 1, which is exactly why mode 4's Step wave block stays inert",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:80"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_susiezilla_player",
+    "atFrame": 5,
+    "x": 120,
+    "y": 180,
+    "tol": 2,
+    "why": "Susie spawns at 280 then mode 4 subtracts 160; the mode < 3 y+50 does not apply",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:195"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "min": 1,
+    "max": 1,
+    "why": "setup(4) installs exactly one kickboxin Tenna as the statue",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:264"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "maxhp",
+    "eq": 3,
+    "why": "the kickboxin Tenna's own Create sets maxhp = 2 and setup overwrites it with 3, proving init ran",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:265"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "hp",
+    "eq": 3,
+    "why": "hp is re-derived from the overwritten maxhp — three hits to win",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:266"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_susiezilla_singlescreen_kickboxin_tenna",
+    "atFrame": 10,
+    "name": "anchor_x",
+    "eq": 500,
+    "why": "anchor_x = mid + 180 where mid = xorig + width*0.5 = 320, and both Create branches use the same value",
+    "src": "gml_Object_obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:62"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_susiezilla_statue",
+    "byFrame": 120,
+    "why": "setup only builds obj_susiezilla_statue for modes 0 and 2 — mode 4's statue slot is the kickboxin Tenna",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:238"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_susiezilla_background",
+    "atFrame": 20,
+    "x": -320,
+    "y": 0,
+    "xscale": 2,
+    "yscale": 2,
+    "angle": 0,
+    "why": "the backdrop draws at xorig - bgxoffset = -320, y 0, at 2x",
+    "src": "gml_Object_obj_susiezilla_gamecontroller_Draw_0.gml:1"
+   }
+  ]
+ },
+ {
+  "id": "titan_type451",
+  "name": "darkshapescentipedeharder",
+  "note": "myattackchoice 1, so obj_growtangle is the default (320,170) box; the manager's timer starts at 17 in Create and increments at the top of its Step, so timer 20 lands ~frame 3 and timer 62 ~frame 45.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "the type-451 branch raises the 360 the boss set to 420",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3551"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one manager and latches made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3548"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and no manager event writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3548"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_light_aura",
+    "byFrame": 5,
+    "min": 1,
+    "why": "the manager's Create makes the light aura first thing",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 2,
+    "why": "pattern_centipede overwrites the Create default of 1 with 2",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:212"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 100,
+    "min": 2,
+    "max": 2,
+    "why": "heads spawn only at timer == 20 and timer == 62",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:214"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 60,
+    "name": "segment_max",
+    "eq": 5,
+    "why": "pattern_centipede raises the head's Create default of 3 to 5",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:221"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 60,
+    "name": "segment_length",
+    "eq": 80,
+    "why": "pattern_centipede sets segment_length = 80 (Create default is 40)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:222"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_segment",
+    "byFrame": 100,
+    "min": 10,
+    "max": 10,
+    "why": "event_user(0) makes segment_max segments per head, 5 x 2 heads",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 4,
+    "max": 6,
+    "why": "one darkshape every 20 frames of manager timer (timer 20,40,60,80,100)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:230"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_small_animated",
+    "byFrame": 60,
+    "why": "pattern_centipede reskins every spawned darkshape to the small directed sprite",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:238"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_tail_animated",
+    "byFrame": 60,
+    "why": "the last segment of each centipede is given the tail sprite",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:15"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 200,
+    "why": "pattern_centipede never creates a redshape (only the default/speedup patterns do)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:210"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 200,
+    "why": "the type-451 branch creates no blast tester and the pattern fires no bigblast",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3544"
+   }
+  ]
+ },
+ {
+  "id": "titan_type453",
+  "name": "darkshapesbigshotdesperation",
+  "note": "myattackchoice 3, so obj_growtangle sits at (250,200) and the blast tester at x+260 = 510. pattern_desperation_shots spawns NO darkshapes at all - its (timer % 10) block only computes two unused locals, and the first bigblast block (line 711) is dead because of its `timer > 2400` guard. The live volley block is `timer >= 96 && (timer % 10) == 0 && timer < 220`, so the attack is blast-tester charge-up, bigblasts and the closing laser.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 430,
+    "why": "the boss raises the turn to 430 right after spawning the type-453 controller",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:207"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one manager and latches made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3590"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_blast_tester",
+    "atFrame": 60,
+    "x": 510,
+    "y": 200,
+    "tol": 2,
+    "why": "obj_growtangle.x + 260 = 510, obj_growtangle.y + 0 = 200 for attack choice 3, and it has no Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3603"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape",
+    "byFrame": 240,
+    "why": "pattern_desperation_shots creates no bullet in its (timer % 10) block",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:603"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 240,
+    "why": "the desperation pattern never spawns a centipede",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:601"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_ring_particle1",
+    "byFrame": 70,
+    "why": "the timer == 48 detonation fires 24 ring particles",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:633"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_finisher_explosion",
+    "byFrame": 70,
+    "why": "two finisher_explosion puffs are created at the blast tester on timer == 48",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:650"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chargeup_particle",
+    "byFrame": 80,
+    "why": "the 48 < timer < 80 window streams chargeup particles into the blast tester",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:688"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_big_ray",
+    "byFrame": 70,
+    "min": 1,
+    "why": "rays start at timer 50, every other frame while timer < 80",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:705"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_titan_big_ray",
+    "atFrame": 50,
+    "x": 516,
+    "y": 200,
+    "tol": 2,
+    "why": "created at blast tester x + 6 = 516, y = 200, and it has no Step",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:705"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 120,
+    "min": 5,
+    "max": 13,
+    "why": "volleys every 10 frames of manager timer from timer 100 to 210, alternating 3 shots then 2",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:768"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_biglaser",
+    "byFrame": 245,
+    "min": 1,
+    "max": 1,
+    "why": "timer == 220 fires exactly one obj_titan_biglaser",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:860"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_titan_biglaser",
+    "atFrame": 240,
+    "x": 526,
+    "y": 200,
+    "tol": 2,
+    "why": "obj_growtangle.x + 276 = 526, blast tester y = 200, and it is fired at speed 0 with no x/y write in its Step",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:860"
+   }
+  ]
+ },
+ {
+  "id": "titan_type454",
+  "name": "darkshapesbigshotaimed",
+  "note": "myattackchoice 4, so obj_growtangle sits at (250,200) and the blast tester at x+260 = 510. phaser stays 0 because obj_titan_enemy.phase is 1 out of Create and the dispatcher never raises it to 4, so only the timer == 96 and timer == 126 shots fire before timer wraps at 127.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "the boss sets 360 and neither the type-454 branch nor the pattern raises it",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one manager and latches made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3611"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_blast_tester",
+    "atFrame": 60,
+    "x": 510,
+    "y": 200,
+    "tol": 2,
+    "why": "obj_growtangle.x + 260 = 510, obj_growtangle.y + 0 = 200 for attack choice 4, and it has no Step",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3624"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 9,
+    "max": 12,
+    "why": "pattern_bigshots_aimed spawns one darkshape every 10 frames of manager timer",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:398"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "scalefactor",
+    "eq": 0.85,
+    "why": "every darkshape from this pattern is shrunk to scalefactor 0.85 (Create default is 1)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:406"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "image_xscale",
+    "eq": 0.85,
+    "why": "image_xscale is set to 0.85 at spawn and the darkshape Step only writes xscale/yscale, never image_xscale",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:404"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_chargeup_particle",
+    "byFrame": 80,
+    "why": "the 48 < timer < 80 window streams chargeup particles into the blast tester",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:437"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 130,
+    "min": 2,
+    "max": 2,
+    "why": "with phaser 0 only timer == 96 and timer == 126 fire, and timer wraps at 127",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:472"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_bigblast",
+    "byFrame": 130,
+    "why": "the aimed shot is an obj_darkshape_bigblast, whose object sprite is spr_darkshape_bigblast",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:472"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 200,
+    "why": "pattern_bigshots_aimed never spawns a centipede",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:385"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 200,
+    "why": "pattern_bigshots_aimed only ever creates obj_darkshape and obj_darkshape_bigblast",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:402"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and no manager event writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3611"
+   }
+  ]
+ },
+ {
+  "id": "titan_type470",
+  "name": "darkshapescentipedehardest",
+  "note": "pattern_centipede_hard is DEFINED TWICE in obj_darkshape_manager's Create (line 281 and line 994); the second assignment wins, so this attack is the 3-heads-at-once version with segment_max 2, not the 2-heads version at line 281.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "the type-470 branch raises the 360 the boss set to 420",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3930"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 3,
+    "why": "the surviving pattern_centipede_hard sets phase_difficulty = 3 (Create default is 1)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:996"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 60,
+    "min": 3,
+    "max": 3,
+    "why": "the timer == 20 block loops a < 3, spawning three heads 120 degrees apart",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1002"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 40,
+    "name": "segment_max",
+    "eq": 2,
+    "why": "segment_max is cut to 2 (the head's Create default is 3)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1009"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 40,
+    "name": "segment_length",
+    "eq": 30,
+    "why": "segment_length is cut to 30 (the head's Create default is 40)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1010"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_segment",
+    "byFrame": 60,
+    "min": 6,
+    "max": 6,
+    "why": "event_user(0) makes segment_max segments per head, 2 x 3 heads",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 7,
+    "max": 10,
+    "why": "one darkshape every 12 frames of manager timer",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1019"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_small_animated",
+    "byFrame": 60,
+    "why": "every darkshape from this pattern is reskinned to the small directed sprite",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1027"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_tail_animated",
+    "byFrame": 60,
+    "why": "the last segment of each centipede is given the tail sprite",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:15"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 200,
+    "why": "pattern_centipede_hard never creates a redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:994"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 200,
+    "why": "no blast tester is created on the centipede branch, so no bigblast can exist",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3915"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and no manager event writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3919"
+   }
+  ]
+ },
+ {
+  "id": "titan_type456",
+  "name": "darkshapesintro",
+  "note": "pattern_default_intro is the thinnest pattern in the file: a single 0.85-scaled darkshape every 24 frames and nothing else, so most of the value here is in what must NOT appear.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "the boss sets 360 and neither the type-456 branch nor the pattern raises it",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one manager and latches made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3653"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and no manager event writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3653"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_light_aura",
+    "byFrame": 5,
+    "min": 1,
+    "why": "the manager's Create makes the light aura first thing",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:1"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 3,
+    "max": 5,
+    "why": "one darkshape every 24 frames of manager timer - the slowest cadence of any titan pattern",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:572"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "scalefactor",
+    "eq": 0.85,
+    "why": "the intro shapes are shrunk to scalefactor 0.85 (Create default is 1)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:580"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "image_xscale",
+    "eq": 0.85,
+    "why": "image_xscale is set to 0.85 at spawn and the darkshape Step only writes xscale/yscale, never image_xscale",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:578"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "speed_max",
+    "eq": 2.25,
+    "why": "the intro pattern leaves speed_max at the Create default, unlike the centipede patterns which multiply it by 1.25",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 1,
+    "why": "pattern_default_intro never raises phase_difficulty off its Create value of 1",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:29"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 200,
+    "why": "the intro pattern spawns no centipedes",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:564"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 200,
+    "why": "the intro pattern only ever creates obj_darkshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:576"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 200,
+    "why": "the type-456 branch creates no blast tester, so no bigblast can exist",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3649"
+   }
+  ]
+ },
+ {
+  "id": "titan_type459",
+  "name": "thehands",
+  "note": "The two hands are obj_regularbullet instances reskinned to spr_titan_battle_hand and drawn by the manager onto a 640x480 surface, so their draw x already equals their world x (camerax() is 0). Hand 1 is the mirrored one (image_yscale -2) and sits at scr_get_box(4) + hand_distance = obj_growtangle.x + 280 = 600. Its image_angle is 180 + hand_direction where hand_direction = cos(irandom(999))*4, so the angle is NOT assertable.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "the boss sets 360 and the type-459 branch never raises it",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(camerax(), cameray(), ...) with the view at the origin, and it never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3714"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 20,
+    "min": 8,
+    "max": 8,
+    "why": "each hand's Create block fires four fingers, two hands = eight",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:46"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "name": "difficulty",
+    "eq": 0,
+    "why": "the type-459 branch leaves difficulty at the Create default of 0, unlike types 462 and 463",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:1"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 20,
+    "name": "wibbly_cooldown",
+    "eq": 10,
+    "why": "the type-459 branch does not overwrite the finger's Create default of 10",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:3"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "name": "hand_distance",
+    "eq": 280,
+    "why": "hand_distance is 280 until alarm[1] starts the lerp to 400 around frame 40",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:18"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 20,
+    "x": 599.7,
+    "xscale": 2,
+    "yscale": -2,
+    "alpha": 1,
+    "tol": 2,
+    "why": "hand 1 sits at scr_get_box(4) + hand_distance = obj_growtangle.x + 280 = 600, drawn at 2x and vertically FLIPPED",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Draw_0.gml:107"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "why": "hand 2 is the unmirrored twin at image_yscale +2",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:157"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_finger",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize sizes every finger to 2x, and hand 1's four keep the positive yscale",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:2"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_finger",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": -2,
+    "why": "hand 2's four fingers have image_yscale multiplied by -1, so they are mirrored",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:189"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_titan_battle_finger_dark",
+    "byFrame": 40,
+    "why": "darkdraw() overlays the dark finger sprite for every finger every frame",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:77"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_wibblywobbly_dark_bullet",
+    "byFrame": 130,
+    "why": "the alarm chain 30 -> 10 -> 25 -> 40 reaches Alarm_3 at frame ~105, which sets every finger's alarm[0] to 1",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Alarm_3.gml:4"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 200,
+    "why": "the hands branch creates a hands manager only - no darkshape manager exists this turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3714"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape",
+    "byFrame": 200,
+    "why": "nothing in the hands attack spawns a darkshape",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3710"
+   }
+  ]
+ },
+ {
+  "id": "titan_type463",
+  "name": "thehandsfastest",
+  "note": "Same hands manager as type 459; the only things the branch changes are difficulty = 2 (which shortens every alarm in the swing chain) and the fingers' wibbly_cooldown = 12. Those two overwrites are the whole attack.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "the boss sets 360 and the type-463 branch never raises it",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "name": "difficulty",
+    "eq": 2,
+    "why": "the branch overwrites the manager's Create default of 0 with 2",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3781"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 20,
+    "name": "wibbly_cooldown",
+    "eq": 12,
+    "why": "the branch overwrites every finger's Create default of 10 with 12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3784"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(camerax(), cameray(), ...) with the view at the origin, and it never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3778"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 20,
+    "min": 8,
+    "max": 8,
+    "why": "each hand's Create block fires four fingers, two hands = eight",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:165"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 20,
+    "name": "hand_distance",
+    "eq": 280,
+    "why": "alarm[0] is 30 in Create so the hand_distance lerp cannot start before frame 35 even at difficulty 2",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:18"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 20,
+    "x": 599.7,
+    "xscale": 2,
+    "yscale": -2,
+    "alpha": 1,
+    "tol": 2,
+    "why": "hand 1 sits at scr_get_box(4) + hand_distance = obj_growtangle.x + 280 = 600, drawn at 2x and vertically FLIPPED",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Draw_0.gml:107"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": 2,
+    "alpha": 1,
+    "why": "hand 2 is the unmirrored twin at image_yscale +2",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:157"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_finger",
+    "atFrame": 20,
+    "xscale": 2,
+    "yscale": -2,
+    "why": "hand 2's four fingers have image_yscale multiplied by -1, so they are mirrored",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:189"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_titan_battle_finger_dark",
+    "byFrame": 40,
+    "why": "darkdraw() overlays the dark finger sprite for every finger every frame",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:77"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_wibblywobbly_dark_bullet",
+    "byFrame": 95,
+    "why": "at difficulty 2 the alarm chain is 30 -> 5 -> 20 -> 20, so Alarm_3 arms the fingers around frame 75 instead of 105",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Alarm_2.gml:16"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 200,
+    "why": "the hands branch creates a hands manager only - no darkshape manager exists this turn",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3778"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape",
+    "byFrame": 200,
+    "why": "nothing in the hands attack spawns a darkshape",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3774"
+   }
+  ]
+ },
+ {
+  "id": "titan_type464",
+  "name": "darkshapescentipedenoshapes",
+  "note": "The \"noshapes\" name is relative: it still spawns small directed darkshapes, just at a 28-frame cadence instead of 20 (pattern_centipede) or 12 (pattern_centipede_hard), and it leaves segment_max and phase_difficulty at their defaults.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "the type-464 branch raises the 360 the boss set to 420",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3803"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_manager",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "the branch creates exactly one manager and latches made",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3792"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 20,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and no manager event writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3792"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 1,
+    "why": "pattern_centipede_noshapes never raises phase_difficulty, unlike pattern_centipede (2) and pattern_centipede_hard (3)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:29"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 100,
+    "min": 2,
+    "max": 2,
+    "why": "heads spawn only at timer == 20 and timer == 62",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:249"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 60,
+    "name": "segment_length",
+    "eq": 50,
+    "why": "this pattern sets segment_length = 50 (the head's Create default is 40)",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:256"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_centipede_head",
+    "atFrame": 60,
+    "name": "segment_max",
+    "eq": 3,
+    "why": "this pattern does NOT touch segment_max, so it stays at the head's Create default of 3",
+    "src": "gml_Object_obj_darkshape_centipede_head_Create_0.gml:22"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape_centipede_segment",
+    "byFrame": 100,
+    "min": 6,
+    "max": 6,
+    "why": "event_user(0) makes segment_max segments per head, 3 x 2 heads",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 3,
+    "max": 5,
+    "why": "one darkshape every 28 frames of manager timer",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:264"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_small_animated",
+    "byFrame": 70,
+    "why": "every darkshape from this pattern is reskinned to the small directed sprite",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:272"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_directed_tail_animated",
+    "byFrame": 60,
+    "why": "the last segment of each centipede is given the tail sprite",
+    "src": "gml_Object_obj_darkshape_centipede_head_Other_10.gml:15"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 200,
+    "why": "pattern_centipede_noshapes never creates a redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:247"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_bigblast",
+    "byFrame": 200,
+    "why": "no blast tester is created on the centipede branch, so no bigblast can exist",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3788"
+   }
+  ]
+ },
+ {
+  "id": "titan_type468",
+  "name": "darkshapeharder",
+  "note": "Controller branch is a thin spawner: obj_darkshape_manager with pattern_to_use = pattern_default_speedup_red2. Real behaviour is that closure in the manager's Create. This is the only Titan darkshape branch that also enlarges the box (maxxscale/maxyscale 2.125 on obj_growtangle) and the only one that overwrites pushback_radius to 54 and phase_difficulty to 2. The growtangle is still mid-grow when the controller fires (rtimer 12 < maxtimer 15), so the new maxxscale is reached; its init block already ran at maxxscale 2, so no custom-box rounding applies and the sprite stays the 75x75 spr_battlebg_0.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and nothing ever moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3873"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 159.4,
+    "h": 159.4,
+    "tol": 4,
+    "why": "growtangle sits at camerax()+320, cameray()+170 and this branch sets maxxscale/maxyscale = 2.125 on a 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3869"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 30,
+    "min": 1,
+    "why": "pattern fires on (timer % 12) == 2 and the manager's timer starts at 17, so the first bullet lands on manager step 9",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:97"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_redshape",
+    "byFrame": 45,
+    "min": 1,
+    "why": "spawn_counter 2 takes the else branch ((spawn_counter % 3) != 2 fails), i.e. the SECOND bullet of this pattern is red",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:104"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_redshape",
+    "byFrame": 140,
+    "min": 3,
+    "max": 4,
+    "why": "one red every third spawn on a 12-frame cadence gives reds at manager steps 21, 57, 93, 129",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:118"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "pushback_radius",
+    "eq": 54,
+    "why": "the pattern overwrites the Create default of 48 on every bullet it makes",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:123"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 2,
+    "why": "Create sets phase_difficulty = 1, the red2 pattern's first statement resets it to 2 — proves the pattern ran",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:89"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_redshape",
+    "atFrame": 60,
+    "name": "speed_max",
+    "eq": 5.625,
+    "why": "obj_darkshape Create sets speed_max = 2.25, obj_redshape Create multiplies it by 2.5",
+    "src": "gml_Object_obj_redshape_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_redshape",
+    "atFrame": 60,
+    "name": "radius",
+    "eq": 22,
+    "why": "obj_redshape Create pins radius = 22 (the darkshape default is 20) and its do_shrivel is empty",
+    "src": "gml_Object_obj_redshape_Create_0.gml:2"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_eye",
+    "byFrame": 60,
+    "why": "every red shape draws an eye layer over its body",
+    "src": "gml_Object_obj_redshape_Draw_0.gml:8"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_iris",
+    "byFrame": 60,
+    "why": "the iris layer is drawn offset 2px toward the soul on every red shape",
+    "src": "gml_Object_obj_redshape_Draw_0.gml:9"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 180,
+    "why": "pattern_default_speedup_red2 only ever creates obj_darkshape and obj_redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:104"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_light_aura",
+    "atFrame": 60,
+    "name": "radius",
+    "min": 40,
+    "max": 48,
+    "why": "the aura the manager creates approaches radius_goal = 48 (obj_titan_enemy light_radius) at 10% per frame",
+    "src": "gml_Object_obj_darkshape_light_aura_Create_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "myattackchoice 14 calls scr_turntimer(420) after the 360 default",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:286"
+   }
+  ]
+ },
+ {
+  "id": "titan_type469",
+  "name": "darkshapehardest",
+  "note": "pattern_default_speedup_red3 is the hardest darkshape pattern: 8-frame cadence instead of 12, a hard cap of 20 live shapes, phase_difficulty 3, pushback_radius 58, the biggest box (2.25), and — unlike every other 'withred' variant — it creates NO obj_redshape at all. Which of the two alternate sprites an odd-numbered spawn gets is irandom(1), so only their eventual appearance is asserted, not per-bullet.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and nothing ever moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3899"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 168.8,
+    "h": 168.8,
+    "tol": 4,
+    "why": "this branch sets maxxscale/maxyscale = 2.25 on the growtangle at camerax()+320, cameray()+170 (75x75 sprite)",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3895"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_redshape",
+    "byFrame": 240,
+    "why": "both arms of pattern_default_speedup_red3 create obj_darkshape — the red shape never appears in this attack",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:146"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 15,
+    "min": 1,
+    "why": "(timer % 8) == 2 with timer starting at 17 means timer is 18 on the manager's very first step, so a bullet spawns immediately",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:137"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 10,
+    "max": 14,
+    "why": "8-frame cadence from manager step 1 gives 13 spawns in the first 100 frames, well under the 20-instance cap",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:137"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_darkshape",
+    "atFrame": 160,
+    "max": 20,
+    "why": "the spawn gate requires instance_number(obj_darkshape) < 20, so live shapes can never exceed 20",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:137"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "pushback_radius",
+    "eq": 58,
+    "why": "every bullet this pattern makes has its Create default of 48 overwritten to 58",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:169"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 3,
+    "why": "Create sets phase_difficulty = 1; the red3 pattern's first statement resets it to 3",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:129"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_evolving_animated",
+    "byFrame": 200,
+    "why": "odd spawn_counter bullets take one of two re-skins; over ~10 odd spawns this one is certain to appear",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:154"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_desperate_animated",
+    "byFrame": 200,
+    "why": "the other half of the irandom(1) re-skin on odd spawn_counter bullets",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:161"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 180,
+    "why": "no centipede head is created anywhere in pattern_default_speedup_red3",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:127"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_light_aura",
+    "atFrame": 60,
+    "name": "radius",
+    "min": 40,
+    "max": 48,
+    "why": "the manager's aura approaches radius_goal = 48 at 10% per frame",
+    "src": "gml_Object_obj_darkshape_light_aura_Create_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "myattackchoice 15 calls scr_turntimer(420)",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:294"
+   }
+  ]
+ },
+ {
+  "id": "titan_type461",
+  "name": "darkshapeswithred",
+  "note": "pattern_default_speedup_red — the baseline 'with red' pattern. 12-frame cadence offset by 2, one red shape every 8th spawn, and none of the pushback/phase_difficulty overrides that the harder red2/red3 variants apply. The box stays the default 2x growtangle.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and nothing ever moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3744"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 30,
+    "min": 1,
+    "why": "(timer % 12) == 2 with timer starting at 17 puts the first bullet on manager step 9",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:68"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_redshape",
+    "byFrame": 75,
+    "min": 1,
+    "max": 1,
+    "why": "(spawn_counter % 8) != 4 fails only on spawn 4, i.e. manager step 45; the next red is spawn 12 at step 141",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:74"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "speed_max",
+    "eq": 2.25,
+    "why": "obj_darkshape Create pins speed_max = 2.25 and this pattern never scales it",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "pushback_radius",
+    "eq": 48,
+    "why": "unlike red2/red3 this pattern leaves the Create default of 48 alone",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "light_rate",
+    "eq": 0.05,
+    "why": "obj_darkshape Create pins the shrivel rate at 0.05 and this pattern never scales it",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:32"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_redshape",
+    "atFrame": 65,
+    "name": "speed_max",
+    "eq": 5.625,
+    "why": "the red shape inherits speed_max 2.25 then multiplies by 2.5",
+    "src": "gml_Object_obj_redshape_Create_0.gml:7"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_redshape",
+    "atFrame": 65,
+    "name": "radius",
+    "eq": 22,
+    "why": "obj_redshape Create pins radius = 22",
+    "src": "gml_Object_obj_redshape_Create_0.gml:2"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_eye",
+    "byFrame": 75,
+    "why": "the red shape draws an eye layer on top of its body every frame",
+    "src": "gml_Object_obj_redshape_Draw_0.gml:8"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_iris",
+    "byFrame": 75,
+    "why": "the iris is drawn 2px toward the soul on the red shape",
+    "src": "gml_Object_obj_redshape_Draw_0.gml:9"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 180,
+    "why": "pattern_default_speedup_red creates only obj_darkshape and obj_redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:60"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "growtangle is created at camerax()+320, cameray()+170 and keeps its default maxxscale/maxyscale of 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:158"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_light_aura",
+    "atFrame": 60,
+    "name": "radius",
+    "min": 40,
+    "max": 48,
+    "why": "the manager's aura approaches radius_goal = 48 at 10% per frame",
+    "src": "gml_Object_obj_darkshape_light_aura_Create_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 420,
+    "why": "myattackchoice 0 calls scr_turntimer(420) after the 360 default",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:185"
+   }
+  ]
+ },
+ {
+  "id": "titan_type450",
+  "name": "darkshapeswithred (spawn — pattern_default)",
+  "note": "type 450 sets no pattern_to_use, so the manager keeps pattern_default (the last line of its Create). That pattern fires on (timer % 12) == 0 — two frames earlier in the cycle than the speedup_red variant — and the red shape is every 5th spawn rather than every 8th. This branch is dispatched by obj_titan_spawn_enemy (myattackchoice 0, Step line 54), so its box and turn length come from that object's Step, not obj_titan_enemy's: growtangle at view+320, view+170 (line 34) and an unconditional scr_turntimer(360) after the dispatch table (line 127).",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and nothing ever moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3529"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 25,
+    "min": 1,
+    "why": "(timer % 12) == 0 with timer starting at 17 puts the first bullet on manager step 7",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:40"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_redshape",
+    "atFrame": 45,
+    "max": 0,
+    "why": "the test is (spawn_counter % 5) == 4 with spawn_counter starting at 0, so the first red is the 5th bullet at manager step 55",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:45"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_redshape",
+    "byFrame": 85,
+    "min": 1,
+    "max": 1,
+    "why": "one red at spawn 5 (manager step 55); the next is spawn 10 at step 115",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:47"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 100,
+    "min": 5,
+    "why": "12-frame cadence from manager step 7 gives 8 spawns inside 100 frames, only one of them red",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:53"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "speed_max",
+    "eq": 2.25,
+    "why": "pattern_default never rescales the Create default",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "accel",
+    "eq": 0.15,
+    "why": "obj_darkshape Create pins accel = 0.15",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "pushback_radius",
+    "eq": 48,
+    "why": "pattern_default leaves the Create default of 48 alone",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:23"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "timer",
+    "min": 70,
+    "max": 80,
+    "why": "the manager's timer starts at 17 (not 0) and increments once per step — 17 + ~60 steps",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "phase_difficulty",
+    "eq": 1,
+    "why": "pattern_default never touches phase_difficulty, so it keeps the Create value of 1",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:29"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 180,
+    "why": "pattern_default creates only obj_darkshape and obj_redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:32"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_titan_spawn_enemy creates the growtangle at view+320, view+170 with the default maxxscale/maxyscale of 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_titan_spawn_enemy_Step_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_light_aura",
+    "atFrame": 60,
+    "name": "radius",
+    "min": 40,
+    "max": 48,
+    "why": "the manager's aura approaches radius_goal = 48 (obj_titan_spawn_enemy light_radius) at 10% per frame",
+    "src": "gml_Object_obj_darkshape_light_aura_Create_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "obj_titan_spawn_enemy runs scr_turntimer(360) unconditionally at the end of its rtimer == 12 dispatch block, and nothing in the 450 path overrides it",
+    "src": "gml_Object_obj_titan_spawn_enemy_Step_0.gml:127"
+   }
+  ]
+ },
+ {
+  "id": "titan_type460",
+  "name": "darkshapesspeedup",
+  "note": "pattern_default_speedup is the sparsest darkshape pattern — a 16-frame cadence instead of 12 — but the spawn ANGLE is swept (random_offset + radtodeg(tan(speedup_timer * 0.0375))) and the spacing variable timer_alt_goal walks 36 -> 20 in steps of 4, four spawns in. The swept angle and the 120+irandom(50) radius are RNG-seeded so only the counts, cadence and the timer_alt_goal convergence are asserted. Dispatched by obj_titan_spawn_enemy myattackchoice 10 (Step line 124), so its box and turn length come from that object's Step.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(0, 0, obj_darkshape_manager) and nothing ever moves it",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3724"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 30,
+    "min": 1,
+    "why": "(timer % 16) == 0 with timer starting at 17 puts the first bullet on manager step 15",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:184"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_darkshape",
+    "byFrame": 120,
+    "min": 4,
+    "max": 8,
+    "why": "a 16-frame cadence from step 15 yields 7 spawns in 120 frames — visibly sparser than the 12-frame patterns",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:184"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_redshape",
+    "byFrame": 110,
+    "min": 1,
+    "max": 1,
+    "why": "(spawn_counter % 5) == 4 makes the 5th bullet red, at manager step 79; the next red is spawn 10 at step 159",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:195"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 150,
+    "name": "timer_alt_goal",
+    "eq": 20,
+    "why": "Create sets timer_alt_goal = 36 and each spawn runs scr_approach(timer_alt_goal, 20, 4), so it lands on 20 after four spawns",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:187"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_manager",
+    "atFrame": 60,
+    "name": "spawn_counter",
+    "min": 2,
+    "max": 4,
+    "why": "spawns land at manager steps 15, 31 and 47 inside the first 60 frames",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:206"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "speed_max",
+    "eq": 2.25,
+    "why": "pattern_default_speedup never rescales the Create default",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:14"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape",
+    "atFrame": 60,
+    "name": "pushback_radius",
+    "eq": 48,
+    "why": "this pattern leaves the Create default of 48 alone",
+    "src": "gml_Object_obj_darkshape_Create_0.gml:23"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape_centipede_head",
+    "byFrame": 180,
+    "why": "pattern_default_speedup creates only obj_darkshape and obj_redshape",
+    "src": "gml_Object_obj_darkshape_manager_Create_0.gml:173"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_darkshape_eye",
+    "byFrame": 120,
+    "why": "the 5th bullet is a red shape, which draws an eye layer over its body",
+    "src": "gml_Object_obj_redshape_Draw_0.gml:8"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "obj_titan_spawn_enemy creates the growtangle at view+320, view+170 with the default maxxscale/maxyscale of 2 over a 75x75 sprite",
+    "src": "gml_Object_obj_titan_spawn_enemy_Step_0.gml:34"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_darkshape_light_aura",
+    "atFrame": 80,
+    "name": "radius",
+    "min": 40,
+    "max": 48,
+    "why": "the manager's aura approaches radius_goal = 48 at 10% per frame",
+    "src": "gml_Object_obj_darkshape_light_aura_Create_0.gml:2"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "obj_titan_spawn_enemy runs scr_turntimer(360) unconditionally at the end of its rtimer == 12 dispatch block, and the 460 branch adds no override",
+    "src": "gml_Object_obj_titan_spawn_enemy_Step_0.gml:127"
+   }
+  ]
+ },
+ {
+  "id": "titan_type462",
+  "name": "thehandsfast",
+  "note": "No darkshapes at all: this branch makes one obj_titan_battle_hands_manager whose Create builds two mirrored hands of four fingers each. The two lines the 462 branch adds AFTER the manager exists — difficulty = 1 and wibbly_cooldown = 11 on every already-created finger — are the only things separating it from type 459 (difficulty 0, cooldown 10) and 463 (difficulty 2, cooldown 12). Hand and finger POSITIONS are re-derived every End Step from a random-seeded counter, so only the pinned draw scales are asserted.",
+  "assertions": [
+   {
+    "kind": "pos",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 5,
+    "x": 0,
+    "y": 0,
+    "tol": 1,
+    "why": "instance_create(camerax(), cameray(), obj_titan_battle_hands_manager) and the manager itself never moves",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3764"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 5,
+    "name": "difficulty",
+    "eq": 1,
+    "why": "the manager's Create sets difficulty = 0 and the 462 branch overwrites it to 1 immediately after",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3767"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 5,
+    "min": 8,
+    "max": 8,
+    "why": "each hand's with-block fires four obj_titan_battle_finger, two hands = 8",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:46"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 5,
+    "name": "wibbly_cooldown",
+    "eq": 11,
+    "why": "the finger's Create sets wibbly_cooldown = 10; the 462 branch's with(obj_titan_battle_finger) resets all eight to 11",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3770"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_hands_manager",
+    "atFrame": 10,
+    "name": "hand_distance",
+    "eq": 280,
+    "why": "hand_distance starts at 280 and is only lerped to 400 once alarm[1] fires (30+10 frames in at difficulty 1)",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:18"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_battle_finger",
+    "atFrame": 20,
+    "name": "weak_bonus",
+    "eq": 52,
+    "why": "the weak-spot offset constant every finger is created with",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:37"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": -2,
+    "why": "hand_1 is drawn at 2x with image_yscale = -2 — a vertical FLIP relative to hand_2",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:38"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_hand",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "hand_2 is drawn at 2x unflipped",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:157"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_finger",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize() gives every finger image_xscale/yscale 2, and hand_1's four keep it positive",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:2"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_titan_battle_finger",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": -2,
+    "why": "hand_2's four fingers have image_yscale multiplied by -1 — mirrored fingers",
+    "src": "gml_Object_obj_titan_battle_hands_manager_Create_0.gml:189"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_titan_battle_finger_dark",
+    "byFrame": 45,
+    "why": "darkdraw() overlays the dark finger sprite for every finger every frame",
+    "src": "gml_Object_obj_titan_battle_finger_Create_0.gml:77"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape",
+    "byFrame": 180,
+    "why": "the 462 branch creates only the hands manager — no obj_darkshape_manager, so no shapes",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3760"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 4,
+    "why": "myattackchoice 10 is not 2/3/4, so growtangle spawns at camerax()+320, cameray()+170 at the default 2x scale",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:158"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "myattackchoice 10 takes the scr_turntimer(360) default with no later override",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   }
+  ]
+ },
+ {
+  "id": "titan_titan_heal",
+  "name": "the Titan regenerates (turn replacement — no bullets)",
+  "note": "FEW ASSERTIONS BY DESIGN. myattackchoice 20 is a turn replacement: the enemy Step's mnfight-1.5 block takes the empty if-branch, so no obj_growtangle and no scr_moveheart, and the bullets block creates obj_titan_heal instead of a bullet controller. There is nothing to dodge, so the checkable content is the absence of the box/bullets, the heal object's fixed position, and the orb rain it drives. phase == 8 would set strongerheal (a 130-frame, double-orb, 50%-HP version); the roster entry pins no phase, so the default 85-frame / 15%-HP branch is asserted.",
+  "assertions": [
+   {
+    "kind": "absent",
+    "obj": "obj_growtangle",
+    "byFrame": 150,
+    "why": "the myattackchoice == 20 arm of the mnfight 1.5 block is empty — the growtangle box is never created for this turn",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:148"
+   },
+   {
+    "kind": "absent",
+    "obj": "obj_darkshape",
+    "byFrame": 150,
+    "why": "choice 20 creates obj_titan_heal instead of calling scr_bulletspawner, so no bullet controller and no shapes exist",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:307"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_heal",
+    "byFrame": 5,
+    "min": 1,
+    "max": 1,
+    "why": "heal = instance_create(x, y, obj_titan_heal) — exactly one",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:307"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_titan_heal",
+    "atFrame": 20,
+    "x": 500,
+    "y": 210,
+    "tol": 2,
+    "why": "on its first step it teleports to camerax()+500, cameray()+210 and never moves again",
+    "src": "gml_Object_obj_titan_heal_Step_0.gml:42"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_wing_marker",
+    "byFrame": 5,
+    "min": 3,
+    "max": 3,
+    "why": "the Create loop runs i = 5,6,7 creating one obj_titan_wing_marker per layer",
+    "src": "gml_Object_obj_titan_heal_Create_0.gml:9"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_heal_orb",
+    "byFrame": 45,
+    "min": 25,
+    "max": 50,
+    "why": "one orb is created on every step while timer is in 1..59",
+    "src": "gml_Object_obj_titan_heal_Step_0.gml:59"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_titan_heal_orb",
+    "byFrame": 110,
+    "min": 45,
+    "max": 62,
+    "why": "the rain stops at timer 60, capping the run at 59 orbs total",
+    "src": "gml_Object_obj_titan_heal_Step_0.gml:54"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_heal_orb",
+    "atFrame": 30,
+    "name": "targetx",
+    "eq": 500,
+    "why": "every orb homes on camerax()+500",
+    "src": "gml_Object_obj_titan_heal_orb_Create_0.gml:11"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_heal_orb",
+    "atFrame": 30,
+    "name": "targety",
+    "eq": 210,
+    "why": "every orb homes on cameray()+210",
+    "src": "gml_Object_obj_titan_heal_orb_Create_0.gml:12"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_titan_heal",
+    "atFrame": 60,
+    "name": "con",
+    "eq": 0,
+    "why": "con only advances to 1 when timer hits 85, so the absorb stage is still running at frame 60",
+    "src": "gml_Object_obj_titan_heal_Step_0.gml:62"
+   },
+   {
+    "kind": "turntimer",
+    "eq": 360,
+    "why": "choice 20 skips every scr_turntimer override, leaving the 360 set at the top of the rtimer == 12 block",
+    "src": "gml_Object_obj_titan_enemy_Step_0.gml:175"
+   }
+  ]
+ },
+ {
+  "id": "yellow_blue_type301",
+  "name": "GuidedBullet",
+  "note": "Thin spawner: the type 301 branch only creates obj_blue_guidelines at (434,181). That object is the whole attack — it lays a chain of obj_blue_guideline segments that curve toward the soul, then at its timer 32 fires one obj_yellow_guided_bullet down the chain. obj_blue_guidelines itself never moves (the `other.speed = 4.5` inside `with (obj_blue_guidelines)` targets the BULLET, not the chain controller). Its Create writes obj_growtangle.image_xscale = 2.5, but the growtangle is still inside its 15-frame grow machine at that point and overwrites it the next step, so the steady-state box is the plain 2x one.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "the myattackchoice 0 arm calls scr_turntimer(300)",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:165"
+   },
+   {
+    "kind": "box",
+    "x": 270,
+    "y": 170,
+    "w": 150,
+    "h": 150,
+    "tol": 3,
+    "why": "growtangle is made at view+320,+170 then myattackchoice 0 does x -= 50; maxxscale/maxyscale stay at Create's 2 over the 75x75 spr_battlebg_0",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:115"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_blue_guidelines",
+    "atFrame": 20,
+    "x": 434,
+    "y": 181,
+    "tol": 2,
+    "why": "instance_create(camerax() + 434, cameray() + 181, obj_blue_guidelines) and the chain controller never writes x or y",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3381"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_guidelines",
+    "atFrame": 20,
+    "name": "grazepoints",
+    "eq": 12,
+    "why": "the branch pins d.grazepoints = 12 on top of Create's 12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3383"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_guidelines",
+    "atFrame": 20,
+    "name": "difficulty",
+    "eq": 0,
+    "why": "Create pins difficulty = 0 and nothing in this branch raises it, so the reticle cadence divisor stays 12",
+    "src": "gml_Object_obj_blue_guidelines_Create_0.gml:13"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_blue_guideline",
+    "atFrame": 20,
+    "x": 434,
+    "y": 181,
+    "tol": 2,
+    "why": "the head segment is created in obj_blue_guidelines' Create at its own x,y by plain instance_create, so speed stays 0 and Step never writes x or y",
+    "src": "gml_Object_obj_blue_guidelines_Create_0.gml:15"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_blue_guideline",
+    "atFrame": 8,
+    "min": 4,
+    "max": 6,
+    "why": "the gate `(timer % 3) == 0 || instance_number(obj_blue_guideline) < 4` forces a segment every frame until there are 4, then one every 3rd frame",
+    "src": "gml_Object_obj_blue_guidelines_Step_0.gml:3"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_blue_guideline",
+    "atFrame": 30,
+    "min": 11,
+    "max": 14,
+    "why": "after the first four the chain grows one segment per 3 frames and nothing destroys segments before the yellow bullet exists at timer 32",
+    "src": "gml_Object_obj_blue_guidelines_Step_0.gml:3"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_yellow_guided_bullet",
+    "byFrame": 36,
+    "max": 1,
+    "why": "exactly one guided bullet is fired at timer == 32 from camerax()+438, cameray()+181",
+    "src": "gml_Object_obj_blue_guidelines_Step_0.gml:36"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bullet_guideline",
+    "atFrame": 30,
+    "xscale": 2.5,
+    "yscale": 2.5,
+    "why": "each segment is born at image_xscale/yscale 4 and scr_approach-es its xscale_goal/yscale_goal of 2.5 at 0.1 per frame, so the older segments have settled at 2.5",
+    "src": "gml_Object_obj_blue_guideline_Create_0.gml:3"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_bullet_yellow_1",
+    "atFrame": 45,
+    "xscale": 3,
+    "yscale": 3,
+    "why": "obj_yellow_guided_bullet's Create pins image_xscale = image_yscale = 3 and nothing rescales it",
+    "src": "gml_Object_obj_yellow_guided_bullet_Create_0.gml:5"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_yellow_guided_bullet",
+    "atFrame": 60,
+    "name": "speed",
+    "min": 4.5,
+    "max": 5.65,
+    "why": "the bullet is launched at speed 4.5 and its Step scr_approach-es 5.65 at 0.03 per frame, so it can never leave that band",
+    "src": "gml_Object_obj_yellow_guided_bullet_Step_0.gml:57"
+   },
+   {
+    "kind": "sprite",
+    "name": "spr_enemy_blue_flower_reticle",
+    "byFrame": 45,
+    "why": "every (counter % 12) == 0 segment swaps its sprite to spr_enemy_blue_flower_reticle; difficulty is 0 so the divisor is the full 12",
+    "src": "gml_Object_obj_blue_guidelines_Step_0.gml:24"
+   }
+  ]
+ },
+ {
+  "id": "yellow_blue_type302",
+  "name": "Dancers",
+  "note": "Thin spawner: the branch creates obj_enemy_blue_boxspin with mode = 1. mode 1 is the DANCER arm, not the box-spin arm — alarm[0] (and with it the whole obj_growtangle x/y/scale spin in the alarm[1] block) is only armed under mode == 0, so the box never rotates or slides here; it only gets the one delayed scale lerp to 3.6 x 1.85. The 16 opening dancer bullets have destroyonhit = false and their own off-screen test compares speed against 3 while they actually travel at 1.875, so nothing removes them — counts are exact.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 270,
+    "why": "the myattackchoice 1 arm calls scr_turntimer(270)",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:173"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 218,
+    "w": 270,
+    "h": 139,
+    "tol": 4,
+    "why": "growtangle at view+320,+170 with myattackchoice 1's y += 48, then boxspin's timer-1 delayed lerps take image_xscale 3.5 -> 3.6 and image_yscale 2 -> 1.85 over the 75x75 sprite (270 x 138.75)",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Step_0.gml:20"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_enemy_blue_boxspin",
+    "atFrame": 20,
+    "name": "grazepoints",
+    "eq": 8,
+    "why": "the branch overwrites Create's grazepoints = 12 with 8, so this proves the branch init ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3394"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_enemy_blue_boxspin",
+    "atFrame": 20,
+    "name": "mode",
+    "eq": 1,
+    "why": "d.mode = 1 selects the dancer arm rather than the box-spin arm",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3392"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_enemy_blue_boxspin",
+    "atFrame": 42,
+    "x": 270,
+    "tol": 3,
+    "why": "timer == 1 lerps x to obj_growtangle.x - 50 = 270 over 25 frames and x is not touched again until timer 48; y is omitted because it is lerped from the box top every phase",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Step_0.gml:6"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_enemy_blue_boxspin",
+    "atFrame": 42,
+    "name": "image_speed",
+    "eq": 0.25,
+    "why": "Create pins image_speed = 0 and timer == 24 overwrites it with 0.25, so this proves the dancer animation started",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Step_0.gml:30"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_blue_dancer_bullet",
+    "atFrame": 20,
+    "min": 16,
+    "max": 16,
+    "why": "two 8-iteration loops at timer == 1 lay exactly 16 dancers along the box floor, 75px apart and offset 37.5",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Step_0.gml:43"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_blue_dancer_bullet",
+    "atFrame": 60,
+    "min": 17,
+    "max": 19,
+    "why": "alarm[3] = 40 is armed at timer 1 and each firing adds 2 more dancers and re-arms itself, so one refill has landed by frame 60",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Alarm_3.gml:15"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_attack_blue_dancer_bullet",
+    "atFrame": 100,
+    "min": 19,
+    "max": 21,
+    "why": "two alarm[3] refills of 2 have landed by frame 100 and nothing destroys dancers (destroyonhit is false and the off-screen test wants speed == 3)",
+    "src": "gml_Object_obj_attack_blue_dancer_bullet_Create_0.gml:4"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_bullet_dancer",
+    "atFrame": 60,
+    "xscale": 2,
+    "yscale": 2,
+    "minCalls": 16,
+    "why": "every dancer is spawned with image_xscale = image_yscale = 2 and at least the opening 16 are alive (the timer-72 yscale squash has not started)",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Step_0.gml:47"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_ballet",
+    "atFrame": 42,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize() pins the dancing Blue at image_xscale = image_yscale = 2 and its Draw event is a plain draw_self",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Create_0.gml:8"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_enemy_blue_boxspin",
+    "atFrame": 20,
+    "name": "wobble_speed",
+    "eq": 24,
+    "why": "Create pins wobble_speed = 24 and only the timer == 72 beat drops it to 12",
+    "src": "gml_Object_obj_enemy_blue_boxspin_Create_0.gml:29"
+   }
+  ]
+ },
+ {
+  "id": "yellow_blue_type303",
+  "name": "ShootingGallery",
+  "note": "Thin spawner: the branch creates obj_enemy_blue_flower_aim, whose Create pins spread_type = 3 — the three-round arm (3 reticles per round at timer 27/31/35, 77/81/85, 127/131/135, each round detonated by event_user(0) at 48/98/148 into a beam plus 8 petals). No y assertion on the flower: its only y write is a Create-time lerp to scr_get_box(3) - 120, evaluated while obj_growtangle is still inside its 15-frame grow machine, so the target is not the grown box's floor. Both x anchors ARE safe because they are lerped at timer 72 and 122, long after the box has finished growing.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 225,
+    "why": "the myattackchoice 2 arm calls scr_turntimer(225)",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:181"
+   },
+   {
+    "kind": "box",
+    "x": 270,
+    "y": 170,
+    "w": 225,
+    "h": 150,
+    "tol": 3,
+    "why": "growtangle at view+320,+170, then myattackchoice 2 does x -= 50 and maxxscale = 3 while maxyscale stays 2, over the 75x75 battlebg sprite",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:135"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_enemy_blue_flower_aim",
+    "atFrame": 20,
+    "name": "spread_type",
+    "eq": 3,
+    "why": "Create pins spread_type = 3, which selects the three-shots-per-round arm",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Create_0.gml:14"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_blue_flower_reticle",
+    "atFrame": 40,
+    "min": 3,
+    "max": 3,
+    "why": "spread_type 3's first round plants exactly three reticles, at timer 27, 31 and 35, and the first detonation is not until timer 50",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:352"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_flower_reticle",
+    "atFrame": 40,
+    "name": "image_xscale",
+    "eq": 1.5,
+    "why": "the spawner overwrites the reticle's Create value of 2 with 1.5, so this proves the spawn block ran",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:356"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_flower_reticle",
+    "atFrame": 40,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "minCalls": 3,
+    "why": "all three planted reticles draw at 1.5x",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:356"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_blue_flower_reticle",
+    "atFrame": 70,
+    "min": 0,
+    "max": 0,
+    "why": "the round is consumed one reticle at a time by the alarm[0]=2 / alarm[1]=5 chain from timer 48, so all three are gone by timer 64 and the next round does not start until 77",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Alarm_0.gml:39"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_blue_flower_reticle",
+    "atFrame": 90,
+    "min": 3,
+    "max": 3,
+    "why": "the second round plants three more at timer 77, 81 and 85 and does not detonate until timer 98",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:375"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_yellow_beam",
+    "byFrame": 60,
+    "why": "each detonation creates one obj_yellow_beam from the last beam endpoint to the reticle",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Alarm_0.gml:4"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 70,
+    "min": 12,
+    "max": 24,
+    "why": "each of the three detonations fans exactly 8 petals (a 0..7 loop at 45-degree steps), so 24 is the hard ceiling before the second round",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Alarm_0.gml:25"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_bullet_petal",
+    "atFrame": 70,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "petals are born at image_xscale 1 / image_yscale 4 and lerp both to 2 over 8 frames",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Alarm_0.gml:34"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_enemy_blue_flower_aim",
+    "atFrame": 100,
+    "x": 398,
+    "tol": 4,
+    "why": "timer 72 lerps x to scr_get_box(0) + 16 over 16 frames = (270 + 75*3/2) + 16, and x is not written again until timer 122",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:369"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_enemy_blue_flower_aim",
+    "atFrame": 145,
+    "x": 42,
+    "tol": 4,
+    "why": "timer 122 lerps x to scr_get_box(2) - 16 - 100 over 16 frames = (270 - 75*3/2) - 116",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Step_0.gml:392"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_ballet",
+    "atFrame": 100,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "scr_darksize() pins the aiming Blue at image_xscale = image_yscale = 2 and its Draw event's in-box draw_self is unconditional",
+    "src": "gml_Object_obj_enemy_blue_flower_aim_Create_0.gml:17"
+   }
+  ]
+ },
+ {
+  "id": "yellow_blue_type304",
+  "name": "BlueSinging",
+  "note": "Thin spawner: the branch creates obj_blue_singing2 and lerps it to camerax()+436 / yanchor cameray()+90 over 30 frames — both are literal camera offsets, so the position is assertable even though the box is still growing. mode = 2 makes the note cadence 20 + offset(8) = every 28 frames from timer 40, i.e. volleys of 3 at timer 56, 84, 112... Only x is asserted: y is yanchor + sin(timer/19)*12, a live bob. Nothing here rewrites obj_growtangle, so the box is exactly what the boss's myattackchoice 3 arm built. obj_blue_singing2's own Draw event draws only the stave, so the Blue sprite on screen is the obj_marker duplicate its Create makes.",
+  "assertions": [
+   {
+    "kind": "turntimer",
+    "eq": 300,
+    "why": "the myattackchoice 3 arm calls scr_turntimer(300)",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:189"
+   },
+   {
+    "kind": "box",
+    "x": 320,
+    "y": 170,
+    "w": 225,
+    "h": 150,
+    "tol": 3,
+    "why": "growtangle at view+320,+170 with myattackchoice 3 setting maxxscale = 3 and maxyscale left at Create's 2, over the 75x75 battlebg sprite",
+    "src": "gml_Object_obj_blue_enemy_Step_0.gml:143"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_singing2",
+    "atFrame": 40,
+    "name": "grazepoints",
+    "eq": 6,
+    "why": "the branch overwrites Create's grazepoints = 5 with 6, so this proves the branch init ran",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3423"
+   },
+   {
+    "kind": "pos",
+    "obj": "obj_blue_singing2",
+    "atFrame": 40,
+    "x": 436,
+    "tol": 2,
+    "why": "the branch lerps x to camerax() + 436 over 30 frames; y is omitted because Step overwrites it every frame with yanchor + sin(timer/19)*12",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3418"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_singing2",
+    "atFrame": 40,
+    "name": "yanchor",
+    "eq": 90,
+    "tol": 1,
+    "why": "the branch lerps yanchor to cameray() + 90 over 30 frames and only the end-of-turn block moves it again",
+    "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3419"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_singing2",
+    "atFrame": 60,
+    "name": "amp",
+    "eq": 1,
+    "tol": 0.02,
+    "why": "from timer 28 amp scr_approach-es 1 at 0.05 per frame, so the stave waveform is at full amplitude by timer 48",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:13"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 40,
+    "min": 0,
+    "max": 0,
+    "why": "the note volley gate is `(timer % 28) == 0 && timer >= 40`, so the first volley cannot fire before timer 56",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:81"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 70,
+    "min": 2,
+    "max": 3,
+    "why": "one volley of exactly three notes (top, mid, bot lists) has fired at timer 56 and none are removed until their delayed instance_destroy 80 frames later",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:95"
+   },
+   {
+    "kind": "count",
+    "obj": "obj_regularbullet",
+    "atFrame": 100,
+    "min": 4,
+    "max": 6,
+    "why": "the 28-frame cadence puts volleys at timer 56 and 84 only, so six notes is the ceiling at frame 100 — a 20-frame cadence would already have twelve",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:81"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_blue_singing2",
+    "atFrame": 100,
+    "name": "counter",
+    "eq": 2,
+    "why": "counter is incremented once per volley and the volleys land at timer 56 and 84, the next not until 112",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:85"
+   },
+   {
+    "kind": "ivar",
+    "obj": "obj_regularbullet",
+    "atFrame": 70,
+    "name": "speed",
+    "eq": 3.4,
+    "tol": 0.15,
+    "why": "notes are fired at ((scr_get_box(0) + 24) - (scr_get_box(2) - 24)) / 80 = (225 + 48) / 80 and nothing applies friction",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:95"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_blue_note",
+    "atFrame": 70,
+    "xscale": 1.5,
+    "yscale": 1.5,
+    "why": "every note is spawned with image_xscale = image_yscale = 1.5",
+    "src": "gml_Object_obj_blue_singing2_Step_0.gml:99"
+   },
+   {
+    "kind": "draw",
+    "name": "spr_enemy_blue_spintopose",
+    "atFrame": 40,
+    "xscale": 2,
+    "yscale": 2,
+    "why": "Create clones the singing Blue into an obj_marker carrying its sprite_index and calls scr_darksize() on it, and that marker is what actually draws the sprite (obj_blue_singing2's own Draw event only draws the stave)",
+    "src": "gml_Object_obj_blue_singing2_Create_0.gml:17"
+   },
+   {
+    "kind": "spawns",
+    "obj": "obj_yellow_reticle_drawer",
+    "byFrame": 12,
+    "max": 1,
+    "why": "Create makes exactly one obj_yellow_reticle_drawer at obj_growtangle.depth - 3",
+    "src": "gml_Object_obj_blue_singing2_Create_0.gml:33"
    }
   ]
  }
