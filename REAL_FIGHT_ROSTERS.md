@@ -8,7 +8,47 @@ the code that assigns the selector variable, with file:line evidence for every
 claim. Landon called this: he recognised the roster as full of unused attacks
 and put Gerson at ~21 real entries. Measured: exactly 21.
 
-**Summary: 63 of the 142 roster entries appear in real fights. 79 are cut.**
+**Summary (current): 193 of the 294 roster entries appear in real fights. 101 are cut.**
+
+> The 63-of-142 figure this document was written around was correct for the FIVE
+> fights that existed then. The roster is now 20 fights. The per-fight
+> derivations below are still the authority for *which* types are real — they are
+> literally the source of `REAL` in `scripts/gen_attacks.js` — but the headline
+> totals were stale. Tenna's count has since been corrected from 14 to 13: three
+> dispatches produce `obj_dbulletcontroller.type = 150`, and the generic
+> type-keyed rule stamped the CUT choice-20 branch real as well.
+>
+> Regenerate with `node scripts/gen_attacks.js`.
+
+| fight | real | cut |
+|---|---:|---:|
+| Aqua & Seth | 9 | 0 |
+| Berdly | 10 | 0 |
+| Flowery | 14 | 9 |
+| Gerson / Hammer of Justice | 21 | 68 |
+| Jackenstein | 11 | 0 |
+| Jevil | 16 | 2 |
+| K. Round | 4 | 0 |
+| Lancer | 7 | 0 |
+| Lanino & Elnina | 5 | 0 |
+| Orange & Green | 5 | 0 |
+| Pink | 11 | 3 |
+| Queen | 16 | 2 |
+| Spamton NEO | 8 | 3 |
+| Tasque Manager | 5 | 0 |
+| Tenna (final fight) | 13 | 1 |
+| The Chaos King | 11 | 0 |
+| The Roaring Knight | 7 | 8 |
+| The Titan | 15 | 5 |
+| Watercooler | 1 | 0 |
+| Yellow & Blue | 4 | 0 |
+| **TOTAL** | **193** | **101** |
+
+C. Round contributes 0 attacks, and that is correct — its enemy turn was
+deliberately gutted (the bullet guard is `if (rr == 999)` while
+`rr = scr_monsterpop()` can only return 0–3, so the branch is unreachable, and
+the turn length is a literal `global.turntimer = 1`). Evidence in
+`scripts/rosters/cround.md`.
 
 ---
 

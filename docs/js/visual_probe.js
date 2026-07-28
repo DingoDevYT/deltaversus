@@ -200,6 +200,27 @@
     return res;
   }
 
+  /**
+   * Attacks that correctly have NO battle box, so NO_BOX is not a defect.
+   *
+   * A DATE replaces the turn and draws on its own surfaces. So does Pink's
+   * type-210 finale — it is dispatched from INSIDE obj_date_controller
+   * (Step_0:687-694, which swaps obj_heart to spr_purpleheart and sets
+   * canmove = 0), and that object never creates an obj_growtangle. The old test
+   * was an `_date\d` id match, which the finale does not match, so a correct
+   * engine was reported as broken.
+   *
+   * Keyed on the roster's own `source` rather than another id pattern: the
+   * generator already records which file announced the attack, so any future
+   * date-context attack is covered without touching this list.
+   */
+  function boxless(id) {
+    if (/_date\d/.test(id)) return true;
+    const a = (global.GML_ATTACKS || []).find(x => x.id === id);
+    if (!a) return false;
+    return a.launch === 'pink-date' || /obj_date_controller/.test(String(a.source || ''));
+  }
+
   /** Turn the numbers into named failure shapes. */
   function verdict(res) {
     const flags = [];
@@ -224,7 +245,7 @@
     // Only a problem if a box NEVER appeared; losing it at the end is the
     // teardown doing its job. A DATE legitimately has no battle box at all —
     // it replaces the turn and draws on its own surfaces.
-    if (!res.boxEverExisted && !/_date\d/.test(res.id)) flags.push('NO_BOX');
+    if (!res.boxEverExisted && !boxless(res.id)) flags.push('NO_BOX');
     if (!res.finished && !(res.turntimer > 0)) flags.push('NO_CLOCK');
     return flags;
   }
