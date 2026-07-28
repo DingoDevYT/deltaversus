@@ -279,6 +279,25 @@
     return Object.keys(slim).length + ' attacks baselined';
   }
   /**
+   * Same snapshot, but written to docs/js/visual_baseline.json on disk so it can
+   * be committed and diffed. localStorage alone meant the committed copy could
+   * only be refreshed by pasting console output over the file, so it drifted —
+   * and a stale baseline reports real regressions as pre-existing and real fixes
+   * as regressions. Needs scripts/serve.js (the POST /baseline endpoint).
+   *
+   *   r = await VISUAL_PROBE.runAll(); await VISUAL_PROBE.saveBaselineToDisk(r.results)
+   */
+  async function saveBaselineToDisk(results) {
+    const slim = {};
+    for (const r of results) {
+      if (!r || !r.captures) continue;
+      slim[r.id] = r.captures.map(c => [c.inkPct, c.colours, c.motionPct, c.dominantPct]);
+    }
+    localStorage.setItem(BASELINE_KEY, JSON.stringify(slim));
+    const resp = await fetch('/baseline', { method: 'POST', body: JSON.stringify(slim) });
+    return (await resp.text()) + ' (and localStorage)';
+  }
+  /**
    * What CHANGED since the baseline. This is the regression check: it needs no
    * idea of what correct looks like, only that today differs from a day the
    * output was eyeballed and accepted.
@@ -302,5 +321,5 @@
     return drifted;
   }
 
-  global.VISUAL_PROBE = { run, runAll, saveBaseline, diffBaseline, measure, stepTo, FRAMES };
+  global.VISUAL_PROBE = { run, runAll, saveBaseline, saveBaselineToDisk, diffBaseline, measure, stepTo, FRAMES };
 })(window);

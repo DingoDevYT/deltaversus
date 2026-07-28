@@ -15,7 +15,35 @@ const mimeTypes = {
 
 const SHOT_DIR = path.join(__dirname, '..', 'shots');
 
+const JS_DIR = path.join(DOCS_DIR, 'js');
+
 const server = http.createServer((req, res) => {
+  // POST /baseline writes docs/js/visual_baseline.json.
+  //
+  // VISUAL_PROBE.saveBaseline only ever wrote localStorage, so the committed
+  // baseline could only be refreshed by pasting console output over the file by
+  // hand — which meant it drifted: the copy in the tree measured a state two
+  // engine fixes old, and a stale baseline reports real regressions as
+  // pre-existing and real fixes as regressions.
+  if (req.method === 'POST' && req.url === '/baseline') {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', c => { body += c; });
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body);           // reject garbage before writing
+        const n = Object.keys(parsed).length;
+        fs.writeFileSync(path.join(JS_DIR, 'visual_baseline.json'),
+          JSON.stringify(parsed, null, 1) + '\n');
+        res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('wrote visual_baseline.json (' + n + ' attacks)');
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('err ' + e.message);
+      }
+    });
+    return;
+  }
   // POST /snap/<name>.png with a base64 dataURL body writes the canvas to
   // docs/../shots/<name>.png at FULL resolution.
   //
