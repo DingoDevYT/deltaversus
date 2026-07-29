@@ -130,7 +130,19 @@
       "controller": "obj_susiezilla_gamecontroller setup(2) — spr_susiezilla_ralsei_tower statue, maxhp 40",
       "conditional": "global.flag[1197] > 0",
       "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:117-123 (tempflag 7, the flag[1197] > 0 arm) and randomchosen == 6 at :253-257, which only exists in the flag[1197] > 0 pool `choose(0, 0, 0, 1, 3, 4, 5, 6, 7)` at :195 — with flag[1197] == 0 the pool tops out at 5 and the wrap at :202-203 keeps it there. flag[1197] is the banked PHYSICAL CHALLENGE score, written at gml_Object_obj_round_evaluation_Draw_0.gml:402-404. Built at gml_Object_obj_tenna_zoom_Other_11.gml:17-18; mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:247-260. Caption at Other_13:20-21.",
-      "turn": 999
+      "turn": 999,
+      "call": {
+        "fn": "setup",
+        "args": [
+          2
+        ]
+      },
+      "_callWhy": "obj_susiezilla_gamecontroller is configured by a METHOD: setup(mode) sets width 640 / bgxoffset 320, spawns obj_susiezilla_player and positions it per mode (Create_0:177-200). obj_tenna_zoom_Other_11:12-24 is the only caller and picks the argument from minigamedifficulty. Spawned raw it stays at mode 0 / width 1280 / bgxoffset 0 — the WRONG minigame, silently.",
+      "at": [
+        0,
+        0
+      ],
+      "_atWhy": "obj_tenna_zoom_Other_11.gml:12 creates it at (camerax(), cameray()) = (0,0). setup() derives xorig from that x, so spawning it anywhere else shifts the player, the statue and every background draw by the difference."
     },
     {
       "choice": 3,
@@ -140,7 +152,19 @@
       "controller": "obj_susiezilla_gamecontroller setup(3) — obj_susiezilla_singlescreen_kickboxin_tenna, hp 3",
       "conditional": "global.flag[1197] > 0",
       "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:170-176 (tempflag 15, the flag[1197] > 0 arm). Built at gml_Object_obj_tenna_zoom_Other_11.gml:20-21; mode body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267. Caption at Other_13:23-27.",
-      "turn": 999
+      "turn": 999,
+      "call": {
+        "fn": "setup",
+        "args": [
+          3
+        ]
+      },
+      "_callWhy": "obj_susiezilla_gamecontroller is configured by a METHOD: setup(mode) sets width 640 / bgxoffset 320, spawns obj_susiezilla_player and positions it per mode (Create_0:177-200). obj_tenna_zoom_Other_11:12-24 is the only caller and picks the argument from minigamedifficulty. Spawned raw it stays at mode 0 / width 1280 / bgxoffset 0 — the WRONG minigame, silently.",
+      "at": [
+        0,
+        0
+      ],
+      "_atWhy": "obj_tenna_zoom_Other_11.gml:12 creates it at (camerax(), cameray()) = (0,0). setup() derives xorig from that x, so spawning it anywhere else shifts the player, the statue and every background draw by the difference."
     },
     {
       "choice": 3,
@@ -150,7 +174,19 @@
       "controller": "obj_susiezilla_gamecontroller setup(4) — same kickboxing Tenna, second variant",
       "conditional": "global.flag[1197] > 0",
       "evidence": "gml_Object_obj_tenna_enemy_Other_10.gml:259-263 — randomchosen == 7, which exists only in the flag[1197] > 0 pool at :195. Shares the mode 3/4 body at gml_Object_obj_susiezilla_gamecontroller_Create_0.gml:262-267; the difference is downstream at gml_Object_obj_susiezilla_singlescreen_kickboxin_tenna_Create_0.gml:91-107, which gates the giant-Tenna variant on obj_tenna_zoom.minigameinsanity or obj_tenna_enemy.alreadydidgianttenna. Caption at Other_13:29-33.",
-      "turn": 999
+      "turn": 999,
+      "call": {
+        "fn": "setup",
+        "args": [
+          4
+        ]
+      },
+      "_callWhy": "obj_susiezilla_gamecontroller is configured by a METHOD: setup(mode) sets width 640 / bgxoffset 320, spawns obj_susiezilla_player and positions it per mode (Create_0:177-200). obj_tenna_zoom_Other_11:12-24 is the only caller and picks the argument from minigamedifficulty. Spawned raw it stays at mode 0 / width 1280 / bgxoffset 0 — the WRONG minigame, silently.",
+      "at": [
+        0,
+        0
+      ],
+      "_atWhy": "obj_tenna_zoom_Other_11.gml:12 creates it at (camerax(), cameray()) = (0,0). setup() derives xorig from that x, so spawning it anywhere else shifts the player, the statue and every background draw by the difference."
     }
   ],
   "cut": [

@@ -3119,6 +3119,7 @@ window.GML_ATTACKS = [
   "difficultyLiteral": 0,
   "extraFields": [],
   "setup": null,
+  "setupSelf": null,
   "source": "gml_Object_obj_date_controller_Step_0.gml",
   "alsoChoices": [],
   "hasSpecial": false,
@@ -5701,7 +5702,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": null,
+  "setup": "global.monsterattackname[myself] = \"SupportFire\";\n                    dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                    dc.type = 313;",
   "source": "gml_Object_obj_aqua_enemy_Step_0.gml",
   "variantOf": "KnifeChain",
   "alsoChoices": [
@@ -5712,6 +5713,7 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "aqua_seth_type313",
+  "setupSelf": "obj_purple_enemy",
   "inFight": true,
   "monsterType": 112,
   "extraEnemies": [
@@ -7025,12 +7027,22 @@ window.GML_ATTACKS = [
   "extraFields": [],
   "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
+  "controllerAt": [
+   0,
+   0
+  ],
   "turnTimer": 999,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "tenna_susiezilla_gamecontroller",
   "controllerSet": {
    "difficulty": 2
+  },
+  "controllerCall": {
+   "fn": "setup",
+   "args": [
+    2
+   ]
   },
   "inFight": true,
   "monsterType": 103
@@ -7050,12 +7062,22 @@ window.GML_ATTACKS = [
   "extraFields": [],
   "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
+  "controllerAt": [
+   0,
+   0
+  ],
   "turnTimer": 999,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "tenna_susiezilla_gamecontroller_physical_chall",
   "controllerSet": {
    "difficulty": 3
+  },
+  "controllerCall": {
+   "fn": "setup",
+   "args": [
+    3
+   ]
   },
   "inFight": true,
   "monsterType": 103
@@ -7075,12 +7097,22 @@ window.GML_ATTACKS = [
   "extraFields": [],
   "setup": null,
   "source": "rosters/tenna.json (row not reached by scan)",
+  "controllerAt": [
+   0,
+   0
+  ],
   "turnTimer": 999,
   "alsoChoices": [],
   "hasSpecial": false,
   "id": "tenna_susiezilla_gamecontroller_physical_chall2",
   "controllerSet": {
    "difficulty": 4
+  },
+  "controllerCall": {
+   "fn": "setup",
+   "args": [
+    4
+   ]
   },
   "inFight": true,
   "monsterType": 103
@@ -7130,7 +7162,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": null,
+  "setup": "global.monsterattackname[myself] = \"darkshapeswithred\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 450;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "darkshapeswithred",
   "alsoChoices": [
@@ -7143,6 +7175,7 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "titan_type450",
+  "setupSelf": "obj_titan_spawn_enemy",
   "inFight": true,
   "monsterType": 108,
   "extraEnemies": [
@@ -7190,7 +7223,7 @@ window.GML_ATTACKS = [
   "usesDifficulty": false,
   "difficultyLiteral": null,
   "extraFields": [],
-  "setup": null,
+  "setup": "global.monsterattackname[myself] = \"darkshapesspeedup\";\n                dc = scr_bulletspawner(x, y, obj_dbulletcontroller);\n                dc.type = 460;",
   "source": "gml_Object_obj_titan_enemy_Step_0.gml",
   "variantOf": "thehandsfast",
   "alsoChoices": [
@@ -7199,6 +7232,7 @@ window.GML_ATTACKS = [
   ],
   "hasSpecial": false,
   "id": "titan_type460",
+  "setupSelf": "obj_titan_spawn_enemy",
   "inFight": true,
   "monsterType": 108,
   "extraEnemies": [
@@ -7273,4 +7307,15 @@ window.GML_ATTACKS_TURNSETUP = {
  "titan": "scr_turntimer(360);\n            \n            if (myattackchoice == 2)\n                scr_turntimer(270);",
  "watercooler": "scr_turntimer(200);",
  "yellow_blue": "scr_turntimer(90);"
+};
+
+/**
+ * Boss instance state the ENCOUNTER establishes before any attack runs, applied
+ * at spawn. For a boss object that serves more than one encounter, its Create
+ * defaults to the other one and the attack code branches on the live value.
+ */
+window.GML_ATTACKS_ENEMYSET = {
+ "aqua_seth": {
+  "fight_type": "seth"
+ }
 };

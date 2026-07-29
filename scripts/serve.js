@@ -44,6 +44,32 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+  // POST /specrun writes the running spec-suite results to spec_run.json at the
+  // repo root.
+  //
+  // A full SPEC_CHECK sweep is minutes of work per boss and lives only in page
+  // memory until it returns, which is exactly what the crash that started this
+  // work destroyed. Posting after each boss makes progress readable from disk
+  // without polling the page, and makes an interrupted sweep resumable instead
+  // of worthless. The file is a run artifact, not source — it is gitignored.
+  if (req.method === 'POST' && req.url === '/specrun') {
+    let body = '';
+    req.setEncoding('utf8');
+    req.on('data', c => { body += c; });
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body);
+        fs.writeFileSync(path.join(__dirname, '..', 'spec_run.json'),
+          JSON.stringify(parsed, null, 1) + '\n');
+        res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('wrote spec_run.json');
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        res.end('err ' + e.message);
+      }
+    });
+    return;
+  }
   // POST /snap/<name>.png with a base64 dataURL body writes the canvas to
   // docs/../shots/<name>.png at FULL resolution.
   //

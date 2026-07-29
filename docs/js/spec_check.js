@@ -419,7 +419,18 @@
           if (!rec) { ok = false; got = 'no instance'; break; }
           const v = rec.vars[a.name];
           got = String(v);
-          if (a.eq != null) ok = near(v, a.eq, a.tol == null ? 0.001 : a.tol);
+          // A GML instance variable is often a STRING — obj_purple_aim_attack's
+          // `state` is "idle"/"attack", obj_shootout_controller's is "main"/
+          // "open". near() coerces both sides with Number(), so NaN <= tol was
+          // false and a string assertion could never pass no matter how right it
+          // was: three fights had assertions failing while `got` printed exactly
+          // the expected word. Compare as strings when either side is one.
+          if (a.eq != null) {
+            const strCmp = (typeof a.eq === 'string' && isNaN(Number(a.eq)))
+              || (typeof v === 'string' && isNaN(Number(v)));
+            ok = strCmp ? String(v) === String(a.eq)
+                        : near(v, a.eq, a.tol == null ? 0.001 : a.tol);
+          }
           if (a.min != null) ok = ok && Number(v) >= a.min;
           if (a.max != null) ok = ok && Number(v) <= a.max;
           break;

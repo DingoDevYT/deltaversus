@@ -190,6 +190,7 @@ for (const j of rosterConfigs) {
     selectorScan: j.selectorScan || null,
     extraAttackFiles: j.extraAttackFiles || [],
     controllerSet: j.controllerSet || null,
+    enemySet: j.enemySet || null,
     monsterType: j.monsterType === undefined ? null : j.monsterType,
     // Per-file announcement scan window, for a Step that holds more than one
     // encounter of the same fight. See scanWindow().
@@ -516,12 +517,28 @@ const roster = [];
 const notes = [];
 const boxSetups = {};
 const turnSetups = {};
+// Per-boss instance state the ENCOUNTER would have set before any attack runs.
+//
+// obj_aqua_enemy holds two encounters and its Create defaults to the solo one
+// (`fight_type = "solo"`, Create_0:14); only a user event flips it to "seth".
+// The attack code then branches on the boss's live value —
+// `if (obj_aqua_enemy.fight_type == "seth" && turns != 5)
+//    knife_setup(..., 60, 6, 0.35) else knife_setup(..., 50, 8, 0.35)`
+// (obj_dbulletcontroller_Step_0.gml:3473-3477) — so a studio that spawns the
+// boss and dispatches gets the SOLO fight's bullets under the paired fight's
+// name. `scanIn` already restricts EXTRACTION to the right arm; this is the
+// runtime half of the same fact.
+const enemySets = {};
 // Per-boss "emit the roster JSON's own list" closures, run only for fights that
 // none of the scanning paths could see (see the DECLARED ATTACKS note below).
 const DECLARED_FALLBACK = {};
 
 for (const boss of BOSSES) {
   const dir = chapterDir(boss.chNum);
+  if (boss.enemySet) {
+    enemySets[boss.id] = boss.enemySet;
+    notes.push(`${boss.id}: enemy state ${JSON.stringify(boss.enemySet)}`);
+  }
   const bb = extractBoxBlock(dir, boss.boxBlock);
   if (bb) { boxSetups[boss.id] = bb; notes.push(`${boss.id}: box block ${bb.length} chars`); }
   else if (boss.boxBlock) notes.push(`${boss.id}: BOX BLOCK NOT FOUND — check anchor`);
@@ -628,11 +645,24 @@ for (const boss of BOSSES) {
   // Attacks announced by a HELPER object rather than the boss (Pink's date
   // controller spawns the type-210 finale itself). No selector is recorded:
   // the nearest `x == N` in a helper's event is unrelated bookkeeping, and
-  // writing it onto the boss would poison unrelated state. Setup replay is off
-  // for the same reason — the branch reads the helper's own locals.
+  // writing it onto the boss would poison unrelated state.
+  //
+  // Setup replay is off for a HELPER, whose branch reads its own locals — but
+  // NOT for a CO-BOSS. A paired fight puts one monster's attacks in the other's
+  // Step, and those branches are ordinary dispatchers: Seth's OmegaBookEx is
+  // `dc = scr_bulletspawner(x, y, obj_dbulletcontroller); dc.type = 306;
+  // dc.omega_ex_mode = true; scr_turntimer(480);` (obj_purple_enemy_Step_0.gml:
+  // 1241-1246). Discarding it cost all three of Seth's attacks their setup, so
+  // the EX book ran WITHOUT its ex flag (type 306's branch is gated on
+  // `variable_instance_exists(id, "omega_ex_mode")`) and on the fallback turn
+  // length instead of 480. A co-boss is one this roster already spawns, so the
+  // replay has a real instance to run as `self`.
+  const coBosses = new Set(boss.extraEnemies || []);
   for (const xf of boss.extraAttackFiles || []) {
     const src = readIfExists(path.join(dir, xf));
     if (!src) { notes.push(`${boss.id}: extra file MISSING ${xf}`); continue; }
+    const owner = /^gml_Object_(.+?)_[A-Za-z]+_\d+\.gml$/.exec(xf);
+    const coBoss = owner && coBosses.has(owner[1]) ? owner[1] : null;
     let n = 0;
     for (const a of attackAnnouncements(src)) {
       if (!a.controller || !a.name) continue;
@@ -641,11 +671,14 @@ for (const boss of BOSSES) {
         enemy: boss.enemy, selector: null, choice: null,
         name: a.name, controller: a.controller, type: a.type,
         usesDifficulty: a.usesDifficulty, difficultyLiteral: a.difficultyLiteral, extraFields: a.extraFields,
-        setup: null, source: xf,
+        setup: coBoss ? (a.setup || null) : null,
+        // Whose `self` the branch belongs to — it reads that monster's x/y.
+        setupSelf: coBoss || null,
+        source: xf,
       });
       n++;
     }
-    notes.push(`${boss.id}: ${n} attacks announced in ${xf}`);
+    notes.push(`${boss.id}: ${n} attacks announced in ${xf}` + (coBoss ? ` (co-boss ${coBoss}, setup captured)` : ''));
   }
 
   // The dating minigame: declared, because `datecount++` + create-controller
@@ -851,6 +884,13 @@ function applyRosterRow(a, r, selectorVar) {
     set.difficulty = r.difficulty;
   }
   if (typeof r.special === 'number') set.special = r.special;
+  // A row's `call` is an INVOCATION, not a field, so it bypasses `set` entirely
+  // (numericOnly would drop it, and assigning a method name means nothing).
+  if (r.call && r.call.fn) a.call = r.call;
+  // Where the real caller CREATES the controller. Only matters when the object
+  // uses its own position as an origin (minigame playfields do; bullet
+  // controllers do not), so it is opt-in per row.
+  if (Array.isArray(r.at) && r.at.length === 2) a.controllerAt = r.at.map(Number);
   if (typeof r.turnOverride === 'number') a.turnTimer = r.turnOverride;
   else if (typeof r.turn === 'number') a.turnTimer = r.turn;
   if (Object.keys(set).length) a.set = set;
@@ -996,7 +1036,33 @@ for (const a of roster) {
   // obj_chainking with type 1, and without the name they merged into one entry
   // and two of his attacks disappeared from the roster.
   const key = `${a.boss}|${a.controller}|${a.type}|${a.pattern}|${a.datecount}|${a.name}`;
-  if (seen.has(key)) { seen.get(key).alsoChoices.push(a.choice); continue; }
+  if (seen.has(key)) {
+    const kept = seen.get(key);
+    kept.alsoChoices.push(a.choice);
+    // A duplicate that carries the dispatcher branch FILLS A GAP in one that
+    // does not. In a paired fight the boss scan sees the co-boss's
+    // announcements in the boss's own Step with no branch to slice, and the
+    // co-boss file holds the real one — so Seth's three attacks were kept from
+    // the Aqua scan with setup null, and the OmegaBookEx branch's
+    // `dc.omega_ex_mode = true` and `scr_turntimer(480)` were thrown away.
+    // ONLY from a co-boss file (`a.setupSelf` is set). Filling from any
+    // same-file duplicate is a different claim with no evidence behind it, and
+    // measurably wrong: doing so handed queen_type3 and queen_type113 branches
+    // that had been left out deliberately and cost 10 assertions, while also
+    // rewriting titan_type450/460 and two Tasque Manager rows. A duplicate in
+    // the SAME file lost its setup for a reason the scan already decided;
+    // a co-boss row is a different file the boss scan could not see.
+    // Strictly additive: an existing value is never overwritten.
+    if (!kept.setup && a.setup && a.setupSelf) {
+      kept.setup = a.setup;
+      kept.setupSelf = a.setupSelf;
+      if (!(kept.extraFields || []).length) kept.extraFields = a.extraFields || [];
+      if (kept.difficultyLiteral == null && a.difficultyLiteral != null) {
+        kept.difficultyLiteral = a.difficultyLiteral;
+      }
+    }
+    continue;
+  }
   a.alsoChoices = [];
   a.hasSpecial = (a.extraFields || []).includes('special');
   a.id = a.launch === 'gerson-green'
@@ -1026,6 +1092,15 @@ for (const a of roster) {
     a.controllerSet = Object.assign({}, a.controllerSet || {}, a.set);
     delete a.set;
   }
+  // Some controllers are configured by a METHOD, not by fields, and the method
+  // derives state that assignment cannot reach. obj_susiezilla_gamecontroller's
+  // `setup(mode)` sets width to 640, bgxoffset to 320, spawns the player and
+  // moves it per mode (Create_0:177-200); obj_tenna_zoom_Other_11:12-24 is the
+  // only caller and picks the argument from minigamedifficulty. Spawning the
+  // controller raw leaves mode 0 / width 1280 / bgxoffset 0 — which is a
+  // DIFFERENT minigame, not a broken one. `call` carries that invocation.
+  if (a.call && a.call.fn) a.controllerCall = a.call;
+  delete a.call;
   final.push(a);
 }
 
@@ -1149,6 +1224,13 @@ window.GML_ATTACKS = ${JSON.stringify(final, null, 1)};
 window.GML_ATTACKS_BOXSETUP = ${JSON.stringify(boxSetups, null, 1)};
 
 window.GML_ATTACKS_TURNSETUP = ${JSON.stringify(turnSetups, null, 1)};
+
+/**
+ * Boss instance state the ENCOUNTER establishes before any attack runs, applied
+ * at spawn. For a boss object that serves more than one encounter, its Create
+ * defaults to the other one and the attack code branches on the live value.
+ */
+window.GML_ATTACKS_ENEMYSET = ${JSON.stringify(enemySets, null, 1)};
 `;
 fs.writeFileSync(OUT, src, 'utf8');
 console.log(`\nwrote ${OUT} (${(src.length / 1024).toFixed(1)} KB)`);

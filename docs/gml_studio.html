@@ -1658,6 +1658,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         // attacks read these for positioning and scaling.
         boss.myself = 0;
         boss.difficulty = 1;
+        // State the ENCOUNTER would have established before any attack runs.
+        // A boss object that serves two encounters defaults its Create to the
+        // other one — obj_aqua_enemy is `fight_type = "solo"` until a user event
+        // flips it — and the attack code branches on the live value, so without
+        // this the paired fight dispatches the SOLO fight's bullets under the
+        // paired fight's name. Applied before the box block and the dispatcher
+        // replay, both of which can read it.
+        const encState = (window.GML_ATTACKS_ENEMYSET || {})[pendingAttack && pendingAttack.boss];
+        if (encState) Object.assign(boss, encState);
         // Only the object under test should drive its own Step.
         if (objName !== b.name) boss.step = null;
         for (const extra of b.also || []) {
@@ -1809,6 +1818,15 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
       // is the answer — including "no box at all" — and the fallback below must
       // not overrule it. See the fallback for what that cost.
       let boxBlockRan = false;
+      // Some fights build the box inside the ATTACK's dispatcher branch rather
+      // than in a boss-level block: the Chaos King makes his own per attack
+      // (`box = instance_create(xx + 310, yy + 165, obj_growtangle)`), and every
+      // one of his is a different size and place. Pre-empting that with the
+      // default box put his 118x118 box at the fallback's 320,170 150x150.
+      // Matches a CREATION only — a setup that merely reads obj_growtangle.x
+      // still needs the fallback to exist before it runs.
+      const setupMakesBox = !!(pendingAttack && pendingAttack.setup
+        && /instance_create[^;]*\bobj_(?:nonsolid_)?growtangle\b/.test(pendingAttack.setup));
       if (pendingAttack && bossInst && !isDate && bossDispatched) {
         // A per-attack box block wins over the per-boss one. A roster covering
         // more than one encounter of the same boss (berdly: the coaster fight and
@@ -1930,7 +1948,7 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
         // handed it a box anyway, so a turn the game plays boxless was drawn with
         // one. Only fabricate a box when no block ran at all, or when the block
         // failed to replay.
-        if (!boxBlockRan
+        if (!boxBlockRan && !setupMakesBox
             && !runtime.instances.some(i => !i.destroyed && i.object_name === 'obj_growtangle')) {
           try {
             H2.ensureClass('obj_growtangle');
@@ -1942,8 +1960,19 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           // The branch does everything the real turn does — box tweaks,
           // obj_purplecontrols with its `.mode`, heart markers, then
           // scr_bulletspawner with type/difficulty — so nothing is guessed.
-          if (pendingAttack.setup && bossInst
-              && runSnippet(pendingAttack.setup, bossInst, 'dispatcher')) {
+          // In a PAIRED fight the branch can belong to the co-boss and reads
+          // that monster's own x/y — Seth's attacks live in
+          // obj_purple_enemy_Step_0 and spawn from Seth, not from Aqua. The
+          // roster records whose `self` it is; fall back to the boss when that
+          // object is not in the room.
+          let setupSelf = bossInst;
+          if (pendingAttack.setupSelf) {
+            const co = runtime.instances.find(i => !i.destroyed
+              && i.object_name === pendingAttack.setupSelf);
+            if (co) setupSelf = co;
+          }
+          if (pendingAttack.setup && setupSelf
+              && runSnippet(pendingAttack.setup, setupSelf, 'dispatcher')) {
             for (let i = runtime.instances.length - 1; i >= 0; i--) {
               const inst = runtime.instances[i];
               if (!inst.destroyed && inst.object_name === pendingAttack.controller) {
@@ -1957,8 +1986,16 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
           // creator/creatorid/target/damage — a direct createInstance left all
           // four unset, which subtly corrupted every attack that reads them.
           if (!mainInst) {
-            const bx = bossInst ? bossInst.x : 320;
-            const by = bossInst ? bossInst.y : 180;
+            // Most controllers do not care where they stand — bullets compute
+            // their own positions off the box. A MINIGAME controller does: its
+            // own x becomes the origin of the whole playfield. obj_tenna_zoom
+            // creates the susiezilla controller at `camerax(), cameray()` =
+            // (0,0) (Other_11.gml:12) and setup() then derives xorig from it, so
+            // spawning it at the boss's 520,180 shifted the player, the statue
+            // and every background draw by +520 with nothing erroring.
+            const at = pendingAttack && pendingAttack.controllerAt;
+            const bx = at ? Number(at[0]) : (bossInst ? bossInst.x : 320);
+            const by = at ? Number(at[1]) : (bossInst ? bossInst.y : 180);
             if (bossInst) {
               // scrCall JIT-compiles scr_bulletspawner on first use.
               mainInst = H2.scrCall('scr_bulletspawner', bossInst, [bx, by, objName]);
@@ -1986,6 +2023,21 @@ if (wallcount < wallsetupcount && timer >= wallcreatetimer[wallcount]) {
             // Boss-specific controller flags (e.g. ch1 sets `joker = 1` on the
             // controller after dispatch, and its whole Jevil section gates on it).
             if (pendingAttack.controllerSet) Object.assign(mainInst, pendingAttack.controllerSet);
+            // Some controllers are configured by a METHOD whose body derives
+            // state no assignment can reach: obj_susiezilla_gamecontroller's
+            // setup(mode) sets width 640 and bgxoffset 320, spawns the player
+            // and positions it per mode (Create_0:177-200). Spawned raw it sits
+            // at mode 0 / width 1280 — a different minigame, running happily.
+            const call = pendingAttack.controllerCall;
+            if (call && call.fn) {
+              const fn = mainInst[call.fn];
+              if (typeof fn === 'function') {
+                try { fn.apply(mainInst, call.args || []); }
+                catch (e) { console.error('[launch] ' + call.fn + '() threw:', e); }
+              } else {
+                console.error('[launch] ' + call.fn + ' is not a function on ' + pendingAttack.controller);
+              }
+            }
           }
         } else {
           mainInst = runtime.createInstance(objName, 320, 240);

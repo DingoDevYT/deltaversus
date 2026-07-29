@@ -1,6 +1,6 @@
 {
   "_what": "Hand-corrected specs, merged LAST by build_attack_specs.js so they win the by-id merge. attack_specs.js is generated and must never be hand-edited; a correction found by triaging a failure belongs here, held to the same evidence bar as an authored assertion — a file:line that states the fact.",
-  "_careful": "The merge replaces a spec WHOLESALE by id, so every entry here must carry the attack's COMPLETE assertion list, not just the corrected one. Regenerate with scripts/make_spec_overrides.js rather than editing by hand.",
+  "_careful": "The merge replaces a spec WHOLESALE by id, so every entry here carries the attack's COMPLETE assertion list, not just the corrected one. Regenerate with scripts/make_spec_overrides.js rather than editing by hand.",
   "_when": "ONLY when the assertion is wrong about the GAME. An assertion that fails because the ENGINE is wrong must stay, and the engine must be fixed instead.",
   "specs": [
     {
@@ -44,7 +44,7 @@
           "atFrame": 5,
           "name": "type",
           "eq": 0,
-          "why": "type 110 leaves the electric box at type 0 â only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
+          "why": "type 110 leaves the electric box at type 0 Ã¢ÂÂ only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
           "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:942"
         },
         {
@@ -85,7 +85,7 @@
           "atFrame": 60,
           "min": 3,
           "max": 5,
-          "why": "a spark every 8 frames from frame 32 gives four by frame 60 â type 111's 15-frame threshold gives only two",
+          "why": "a spark every 8 frames from frame 32 gives four by frame 60 Ã¢ÂÂ type 111's 15-frame threshold gives only two",
           "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
         },
         {
@@ -123,7 +123,7 @@
           "name": "image_angle",
           "eq": 0,
           "tol": 3,
-          "why": "at type 0 nothing rotates obj_growtangle â the += 1.9565 sits inside the type == 1 guard â so the electric box copies back a settled image_angle of 0",
+          "why": "at type 0 nothing rotates obj_growtangle Ã¢ÂÂ the += 1.9565 sits inside the type == 1 guard Ã¢ÂÂ so the electric box copies back a settled image_angle of 0",
           "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
         }
       ],
@@ -170,7 +170,7 @@
           "atFrame": 5,
           "name": "type",
           "eq": 1,
-          "why": "type 111 is the only branch that sets the electric box to type 1 â the flag that spins the box and slows the spark rate",
+          "why": "type 111 is the only branch that sets the electric box to type 1 Ã¢ÂÂ the flag that spins the box and slows the spark rate",
           "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:943"
         },
         {
@@ -195,7 +195,7 @@
           "atFrame": 35,
           "min": 0,
           "max": 0,
-          "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 â type 110 already has one at 32",
+          "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 Ã¢ÂÂ type 110 already has one at 32",
           "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
         },
         {
@@ -253,7 +253,1794 @@
           "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
         }
       ],
-      "note": "Same as queen_type110: obj_growtangle_electric shakes and then slides the box (Step_0:33-34, :140, :145), so only the SIZE is assertable. The width is the half that matters anyway — it is what proves the difficulty-1 branch ran."
+      "note": "Box POSITION is not assertable on this attack. The controller branch creates obj_growtangle_electric on top of the box (obj_queen_bulletcontroller_Step_0.gml:934-947), and that object drives the box around BY DESIGN: obj_growtangle_electric_Step_0.gml:33-34 sets obj_growtangle.x = xstart + random_range((-35 + timer) / 2, (35 - timer) / 2) — a decaying RANDOM shake — and :140/:145 then slide it to xstart + moveamount. So x/y have no single right answer once the attack runs; 320,200 is true only at the instant of creation. The SIZE is fully determined and is kept."
+    },
+    {
+      "id": "flowery_type620",
+      "name": "FloweryDeflect1",
+      "note": "Thin spawner: obj_orangeheart + obj_debug_orangeheartcontroller. Controller keeps its Create default attacktype = 5, whose Step spawns obj_orangeheart_floweryjarona on its first frame; the jarona's Create then relocates itself onto obj_flowery_enemy (520,180 in the studio) and sits there for waittime = 30 frames before charging. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75, and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3790"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_debug_orangeheartcontroller",
+          "byFrame": 3,
+          "why": "the branch creates the sidescroller controller at (0,0)",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3793"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 5,
+          "why": "type 620 never overrides attacktype, so the Create default 5 (the jarona duel) stands",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attack_speed",
+          "eq": 20,
+          "why": "the branch pins attack_speed = 20 on the controller",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3798"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 40,
+          "name": "scale_factor",
+          "eq": 1,
+          "why": "Create lerps scale_factor 0 -> 1.1 over 12 frames then the delayed lerp brings 1.1 -> 1 over 4, so it rests at 1",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:39"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 5,
+          "why": "attacktype 5 spawns the jarona on the controller's first step (timer == 1)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "x": 520,
+          "y": 180,
+          "tol": 2,
+          "why": "its Create overwrites the spawn position with obj_flowery_enemy.x/.y and it does not move until timer == waittime",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:41"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "attack_speed",
+          "eq": 20,
+          "why": "the controller copies its own attack_speed onto the jarona at timer == 1",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "do_bullets",
+          "eq": 0,
+          "why": "type 620 leaves the controller's do_bullets false, which is copied onto the jarona",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:968"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "image_xscale",
+          "eq": 2,
+          "why": "the jarona's Create calls scr_size(2, 2), so it is drawn at double size",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 40,
+          "xscale": 8,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orangeheart_outline",
+          "atFrame": 40,
+          "x": 240,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
+        },
+        {
+          "kind": "turntimer",
+          "min": 3000,
+          "max": 3300,
+          "why": "the dispatcher calls scr_turntimer(3200) for the deflect duel",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1223"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type634",
+      "name": "FloweryDeflect3",
+      "note": "Same spawner shape as type 620, but the branch overwrites three Create defaults on the controller (difficulty 0 -> 1, attack_speed 20 -> 26, do_bullets false -> true) and attacktype 5 copies all three onto the jarona on its first step. Those copies are the load-bearing assertions. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = 320 - 75, and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4233"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "difficulty",
+          "eq": 1,
+          "why": "the branch overwrites the Create default difficulty = 0 with 1",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4240"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "the branch overwrites the Create default attack_speed = 20 with 26",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4241"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "do_bullets",
+          "eq": 1,
+          "why": "the branch overwrites the Create default do_bullets = false with true",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4242"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 5,
+          "why": "type 634 never overrides attacktype, so the Create default 5 (the jarona duel) stands",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 5,
+          "why": "attacktype 5 spawns the jarona on the controller's first step (timer == 1)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "x": 520,
+          "y": 180,
+          "tol": 2,
+          "why": "its Create overwrites the spawn position with obj_flowery_enemy.x/.y and it holds there until timer == waittime",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:41"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "the controller copies attack_speed onto the jarona, replacing the jarona Create's own 20",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "difficulty",
+          "eq": 1,
+          "why": "the controller copies difficulty onto the jarona, replacing the jarona Create's own 0",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:966"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "do_bullets",
+          "eq": 1,
+          "why": "the controller copies do_bullets onto the jarona, replacing the jarona Create's own false",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:968"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 10,
+          "name": "waittime",
+          "eq": 30,
+          "why": "the jarona idles waittime = 30 frames before its first charge; nothing re-rolls it until then",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:10"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 40,
+          "xscale": 8,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orangeheart_outline",
+          "atFrame": 40,
+          "x": 240,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
+        },
+        {
+          "kind": "turntimer",
+          "min": 3000,
+          "max": 3300,
+          "why": "the dispatcher calls scr_turntimer(3200) for the deflect duel",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1239"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type623",
+      "name": "FloweryWallsTutorial",
+      "note": "attacktype 0 / difficulty 0 auto-scroller. The controller's timer starts at 20 and climbs by abs(fakecamxspeedbase/16) = 1 per frame, so the first bamboo wall appears once timer >= 40 (~frame 20). wall_tutorial_counter only advances when the player dashes through a wall, so with no input exactly one wall is alive at a time, always spawned at screenspace + 40 = 720. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3863"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "the branch sets attacktype = 0 on the freshly created controller, replacing the Create default 5",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3868"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "difficulty",
+          "eq": 0,
+          "why": "type 623 pins nothing, so the Create default difficulty = 0 selects the tutorial wall pattern",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:7"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 40,
+          "name": "wall_tutorial_counter",
+          "eq": 0,
+          "why": "it only advances inside obj_orangeheart_wall's do_hit_event, which needs a player dash",
+          "src": "gml_Object_obj_orangeheart_wall_Create_0.gml:170"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wall",
+          "byFrame": 30,
+          "why": "difficulty 0 calls wall_create(screenspace + 40, ...) once timer >= 40, about 20 frames in",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 40,
+          "min": 1,
+          "max": 1,
+          "why": "the spawn is gated on !i_ex(obj_orangeheart_wall), so the tutorial keeps exactly one wall alive",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:37"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 40,
+          "y": 50,
+          "tol": 3,
+          "why": "wall_create's arg5 == arg3 path places it at arg1 - arg3*0.5 = 170 - 120, and walls have vsp 0 so y never changes",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:104"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 40,
+          "name": "image_yscale",
+          "eq": 240,
+          "why": "scr_size(arg2, arg3) = scr_size(16, 240) makes a full-height 240px bamboo wall",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 40,
+          "name": "image_xscale",
+          "eq": 16,
+          "why": "wall_create's scr_size(16, 240) sets the wall 16px wide, overwriting the wall Create's own scr_size(16, 40)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:38"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_bamboo_wall",
+          "atFrame": 40,
+          "y": 50,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "bamboo walls draw via draw_sprite_part_ext(spr_bamboo_wall, 0, 0, bamboo_counter, 16, image_yscale, x, y, 1, 1, ...) at unit scale and no rotation",
+          "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 40,
+          "xscale": 8,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the controller's Draw runs a 5-iteration parallax loop drawing spr_pxwhite at xscale 8 with alpha = do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 60,
+          "why": "the branch destroys any jarona and attacktype 0 never creates one",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3872"
+        },
+        {
+          "kind": "turntimer",
+          "min": 250,
+          "max": 330,
+          "why": "the dispatcher calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1247"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type624",
+      "name": "FloweryChase",
+      "note": "attacktype 0 / difficulty 1. Two chains: obj_orangeheart_chaseattack (spawned by the controller because difficulty is truthy) and a stream of vase-topped bamboo walls whose height is 80 - open_chase_difficulty*15. obj_flowery_enemy.open_chase_counter is 0 in its Create, so open_chase_difficulty is 0 and every derived literal keeps its unreduced value. Wall x/y are time- and sine-driven, so only the pinned scales are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3888"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "the branch sets attacktype = 0, replacing the Create default 5",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3892"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "difficulty",
+          "eq": 1,
+          "why": "the branch pins difficulty = 1, which selects the open-chase wall case",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3893"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "open_chase_difficulty",
+          "eq": 0,
+          "why": "it is copied from obj_flowery_enemy.open_chase_counter, which that boss's Create sets to 0",
+          "src": "gml_Object_obj_flowery_enemy_Create_0.gml:161"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 5,
+          "why": "difficulty is truthy and not 7/8/9, so the controller creates the chase wall at camerax() - 40",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_chaseattack",
+          "atFrame": 30,
+          "min": 1,
+          "max": 1,
+          "why": "the spawn is gated on !i_ex(obj_orangeheart_chaseattack), so there is only ever one",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:21"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_chaseattack",
+          "atFrame": 30,
+          "name": "mymaxspeed",
+          "eq": 18,
+          "why": "Create sets 18 and difficulty 1 adds open_chase_difficulty * 0.35 = 0",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:8"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_chaseattack",
+          "atFrame": 30,
+          "name": "image_xscale",
+          "eq": -40,
+          "why": "its Create calls scr_size(-40, 480) â a negative x scale, i.e. a mirrored 40px-wide hitbox",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_chasewall",
+          "atFrame": 30,
+          "xscale": -2,
+          "yscale": -2,
+          "angle": 0,
+          "alpha": 1,
+          "minCalls": 2,
+          "why": "the chase wall draws spr_chasewall twice; the upper copy is flipped on BOTH axes at -2,-2",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wall",
+          "byFrame": 30,
+          "why": "difficulty 1 calls wall_create once timer >= 6, and timer starts at -12 climbing 1 per frame",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:106"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "name": "image_yscale",
+          "eq": 80,
+          "why": "the first five walls per cycle are wall_create(..., 16, 80 - open_chase_difficulty*15, ...) = 80 tall",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:106"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_flowery_vase",
+          "atFrame": 40,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "vase walls cap themselves with draw_sprite_ext(spr_flowery_vase, cactus, ..., 1, 1, 0, image_blend, image_alpha)",
+          "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:46"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 60,
+          "why": "the branch destroys any jarona and attacktype 0 never creates one",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3899"
+        },
+        {
+          "kind": "turntimer",
+          "min": 250,
+          "max": 330,
+          "why": "the dispatcher calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1255"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type630",
+      "name": "FloweryBoxesEasy",
+      "note": "attacktype 3 (the boxed dash section). The branch hand-places the whole opening set: a widened first box, a second box registered as new_box, one word manager and one helpful flower keyed off new_box.x = camerax() + 1200. Everything with orangeheartControlled slides left at fakecamxspeed, so x is asserted only where the source pins it before movement; the y-anchored splash draw is the stable visual. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "name": "brakespeed",
+          "eq": 1,
+          "why": "the branch overwrites obj_orangeheart's Create default brakespeed = 2 with 1",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4047"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4046"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 3,
+          "why": "the branch sets attacktype = 3, replacing the Create default 5",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4051"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "fakecamxspeedbase_original",
+          "eq": -8,
+          "why": "the branch halves the Create default -16 to -8, so this section scrolls at half speed",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4052"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "fakecamxspeedbase",
+          "eq": -8,
+          "why": "obj_orangeheart's Step copies fakecamxspeedbase_original onto fakecamxspeedbase every frame",
+          "src": "gml_Object_obj_orangeheart_Step_0.gml:55"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_square",
+          "atFrame": 10,
+          "min": 2,
+          "max": 2,
+          "why": "the branch creates exactly two boxes; the next is only queued once new_box.x < camerax() + 640",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4061"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_square",
+          "atFrame": 10,
+          "name": "box_width",
+          "eq": 175,
+          "why": "the first box multiplies its Create default box_width = 70 by 2.5",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4065"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_square",
+          "atFrame": 10,
+          "name": "stopper",
+          "eq": 0,
+          "why": "the first box overrides its Create default stopper = true with false",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4064"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_word_manager",
+          "atFrame": 5,
+          "min": 1,
+          "max": 1,
+          "why": "difficulty 0 opens with a single word manager at (new_box.x + 150) - 30",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4075"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_word_manager",
+          "atFrame": 5,
+          "name": "timer_goal",
+          "eq": 24,
+          "why": "the branch pins timer_goal = 24, the word-drop cadence",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4077"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_helpful_flower",
+          "byFrame": 5,
+          "why": "the branch places one helpful flower at new_box.x + 150 + 30",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4085"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_helpful_flower",
+          "atFrame": 5,
+          "name": "image_xscale",
+          "eq": 0.54,
+          "why": "its Create pins image_xscale = 0.54 (with image_angle 270)",
+          "src": "gml_Object_obj_orangeheart_helpful_flower_Create_0.gml:3"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_flowery_splash",
+          "atFrame": 20,
+          "y": 170,
+          "xscale": -1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "minCalls": 4,
+          "why": "each box draws its entry splash MIRRORED at xscale -1 on splash_y = scr_get_box(5) = 170; two boxes give four splash calls",
+          "src": "gml_Object_obj_orangeheart_square_Draw_0.gml:15"
+        },
+        {
+          "kind": "turntimer",
+          "min": 250,
+          "max": 330,
+          "why": "the dispatcher calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1303"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type631",
+      "name": "FloweryBoxesMedium",
+      "note": "The harder twin of type 630: same attacktype 3 scaffold, but difficulty 1, a narrower first box (box_width * 2 instead of * 2.5), new_box seeded 150px closer at camerax() + 1050, and TWO word managers at b_speed 7 / timer_goal 20 instead of one at 6 / 24. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "name": "brakespeed",
+          "eq": 1,
+          "why": "the branch overwrites obj_orangeheart's Create default brakespeed = 2 with 1",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4097"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 5,
+          "x": 240,
+          "tol": 2,
+          "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4096"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "attacktype",
+          "eq": 3,
+          "why": "the branch sets attacktype = 3, replacing the Create default 5",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4101"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "difficulty",
+          "eq": 1,
+          "why": "the branch pins difficulty = 1, which is what selects the two-word-manager case",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4104"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 5,
+          "name": "fakecamxspeedbase_original",
+          "eq": -8,
+          "why": "the branch halves the Create default -16 to -8",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4102"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "fakecamxspeedbase",
+          "eq": -8,
+          "why": "obj_orangeheart's Step copies fakecamxspeedbase_original onto fakecamxspeedbase every frame",
+          "src": "gml_Object_obj_orangeheart_Step_0.gml:55"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_square",
+          "atFrame": 10,
+          "min": 2,
+          "max": 2,
+          "why": "the branch creates exactly two boxes before the queue_box loop can add a third",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4112"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_square",
+          "atFrame": 10,
+          "name": "box_width",
+          "eq": 140,
+          "why": "the first box doubles its Create default box_width = 70 (not 2.5x as in type 630)",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4116"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_word_manager",
+          "atFrame": 5,
+          "min": 2,
+          "max": 2,
+          "why": "the branch creates two word managers, at new_box.x + 115 and new_box.x + 185",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4129"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_word_manager",
+          "atFrame": 5,
+          "name": "b_speed",
+          "eq": 7,
+          "why": "both managers overwrite the Create default b_speed = 6 with 7",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4131"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_word_manager",
+          "atFrame": 5,
+          "name": "timer_goal",
+          "eq": 20,
+          "why": "both branches of the dir comparison set timer_goal = 20, replacing the Create default 24",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4154"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_helpful_flower",
+          "byFrame": 5,
+          "why": "one helpful flower is placed at new_box.x + 150",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4149"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_flowery_splash",
+          "atFrame": 20,
+          "y": 170,
+          "xscale": -1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "minCalls": 4,
+          "why": "each box draws its entry splash MIRRORED at xscale -1 on splash_y = scr_get_box(5) = 170; two boxes give four splash calls",
+          "src": "gml_Object_obj_orangeheart_square_Draw_0.gml:15"
+        },
+        {
+          "kind": "turntimer",
+          "min": 250,
+          "max": 330,
+          "why": "the dispatcher calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1311"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type637",
+      "name": "FloweryDashTutorial",
+      "note": "FEWER assertions on purpose. This is a dialogue-driven tutorial, not a bullet pattern: attacktype 0 / difficulty 7 runs a case that is almost entirely msgset_add callbacks, and every wall it eventually creates is gated behind the player charging a dash (scrolling flips from false to true only inside obj_orangeheart's chargetype 1 branch). With no input the attack is a static tableau, so the assertions cover exactly what the branch pins: the soul reskin, the frozen scroll state, and the green backdrop marker. The obj_flowery_towery parallax tower is NOT asserted â it is boss scenery built by obj_flowery_enemy's own Create out of shaders and surfaces, identical across all Flowery attacks and not produced by this branch. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 20,
+          "x": 240,
+          "y": 170,
+          "tol": 2,
+          "why": "created at (scr_get_box(4) - 75, scr_get_box(5)) = (245, 170); canmovevertically is false and tutorial_clamp's range [60, 260] leaves 170 untouched [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4315"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 20,
+          "name": "image_angle",
+          "eq": -90,
+          "why": "the branch turns the soul on its side with image_angle = -90",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4328"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 20,
+          "name": "cancharge",
+          "eq": 0,
+          "why": "the branch overwrites obj_orangeheart's Create default cancharge = true with false",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4330"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 20,
+          "name": "canmovevertically",
+          "eq": 0,
+          "why": "the branch overwrites the Create default canmovevertically = true with false",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4331"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart",
+          "atFrame": 20,
+          "name": "drawafterimages",
+          "eq": 0,
+          "why": "the branch overwrites the Create default drawafterimages = true with false, killing the 10-frame trail",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4332"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "difficulty",
+          "eq": 7,
+          "why": "the branch pins difficulty = 7, the tutorial case of the attacktype 0 switch",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4320"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "scrolling",
+          "eq": 0,
+          "why": "the branch overwrites the Create default scrolling = true with false; only a player dash flips it back",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4323"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "do_lines",
+          "eq": 0,
+          "why": "the branch overwrites the Create default do_lines = 0.25 with false, so the parallax lines are fully transparent",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4322"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 20,
+          "name": "tutorial_clamp",
+          "eq": 1,
+          "why": "the difficulty 7 case sets tutorial_clamp = true on its first step, overwriting the Create default false",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:356"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_battlebg_tiny",
+          "atFrame": 20,
+          "x": 250,
+          "y": 180,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "the green backdrop marker is placed at (obj_orangeheart.x + 10, obj_orangeheart.y + 10) = (255, 180) and its angle/alpha lerps land on 0 and 1 after 5 frames [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4337"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orangeheart_centered",
+          "atFrame": 20,
+          "x": 250,
+          "y": 180,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "maxCalls": 1,
+          "why": "with scrolling false the soul draws once at (x + 10, y + 10 - height) and the local _angle is reset to 0; drawafterimages false means exactly one call, not eleven [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_orangeheart_Draw_0.gml:139"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orangeheart_outline",
+          "atFrame": 20,
+          "maxCalls": 0,
+          "why": "the outline pass is gated on sprite_index == spr_orangeheart_white, and this branch swapped it to spr_orangeheart_centered",
+          "src": "gml_Object_obj_orangeheart_Draw_0.gml:121"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 60,
+          "why": "the branch destroys any jarona and attacktype 0 never creates one",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4349"
+        },
+        {
+          "kind": "turntimer",
+          "min": 100000,
+          "why": "the dispatcher calls scr_turntimer(9999999) so the tutorial never times out",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:515"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type632",
+      "name": "FloweryChase2Random",
+      "note": "attacktype 0 / difficulty 4 = the bamboo-and-cactus runner lane plus the left-edge chase wall. Wall x, the bamboo y and the cactus/bamboo choice are all sin(global.time)/irandom driven, so only the pinned scr_size() dimensions and the draw parameters are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 320,
+          "why": "the dispatcher branch calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1319"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "Create sets attacktype = 5 and the type-632 init block overwrites it with 0",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4185"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "difficulty",
+          "eq": 4,
+          "why": "Create sets difficulty = 0, the branch pins 4 which selects the bamboo/cactus case",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4186"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75; chargetype 1 never moves x [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4181"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 6,
+          "why": "difficulty 4 is not 7/8/9 and do_chase is true, so the chase wall is created on the first step",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_chaseattack",
+          "atFrame": 40,
+          "name": "image_xscale",
+          "eq": -40,
+          "why": "scr_size(-40, 480) â the negative xscale is a deliberate horizontal flip of the 1px mask",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_chasewall",
+          "atFrame": 40,
+          "xscale": -2,
+          "yscale": -2,
+          "why": "the chase wall's first draw is mirrored on BOTH axes (-2, -2)",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_chasewall",
+          "atFrame": 40,
+          "xscale": 2,
+          "yscale": 2,
+          "why": "the second draw of the same sprite is unmirrored at 2x",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:8"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wall",
+          "byFrame": 20,
+          "why": "case 4 fires wall_create once timer >= 5, i.e. about 5 frames in",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:208"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "name": "image_xscale",
+          "eq": 16,
+          "why": "wall_create's arg2 = 16 reaches scr_size, overwriting Create's scr_size(16, 40)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:115"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "name": "image_yscale",
+          "eq": 60,
+          "why": "case 4 passes length 60 - open_chase_difficulty*10 = 60 with gap == length, the solid-bamboo path",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:208"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_bamboo_wall",
+          "atFrame": 30,
+          "xscale": 1,
+          "yscale": 1,
+          "alpha": 1,
+          "why": "bamboo walls draw the stalk part-sprite at 1:1, unscaled",
+          "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_flowery_vase",
+          "atFrame": 30,
+          "xscale": 1,
+          "yscale": 1,
+          "angle": 0,
+          "alpha": 1,
+          "why": "vase = true on every case-4 wall, drawn unrotated at 1:1",
+          "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:46"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type622",
+      "name": "FloweryDeflect2point5",
+      "note": "attacktype stays at Create's 5, so there is NO wall generator at all â the whole attack is the Jarona (Flowery-in-your-face) charging at attack_speed 36. The Jarona's Create overwrites its spawn x/y with obj_flowery_enemy.x/y, so its position is not assertable; its tuning constants are. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 3200,
+          "why": "the dispatcher branch calls scr_turntimer(3200)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1335"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 5,
+          "why": "the type-622 block never touches attacktype, so Create's 5 (the Jarona branch) stands",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "difficulty",
+          "eq": 2,
+          "why": "the branch pins difficulty = 2 over Create's 0",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3844"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attack_speed",
+          "eq": 36,
+          "why": "Create sets attack_speed = 20 and the branch overwrites it with 36",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3845"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "do_bullets",
+          "eq": 1,
+          "why": "Create sets do_bullets = false and the branch turns it on",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3846"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart",
+          "byFrame": 5,
+          "why": "the branch creates the orange soul at the box centre minus 75",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3837"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x is never moved on this attack [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3837"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 8,
+          "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "attack_speed",
+          "eq": 36,
+          "why": "the controller hands its attack_speed down; the Jarona's own Create default is 20",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "difficulty",
+          "eq": 2,
+          "why": "difficulty is copied from the controller; difficulty >= 2 shortens the recovery window to 4",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:966"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "image_xscale",
+          "eq": 2,
+          "why": "Jarona Create calls scr_size(2, 2) â it is drawn at double size",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "waittime",
+          "eq": 30,
+          "why": "Create's waittime = 30 is the wind-up before the first lunge, only re-rolled at con 0 -> 1",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:10"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 60,
+          "why": "the chase wall is only created inside the attacktype == 0 block, and this attack runs attacktype 5",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type635",
+      "name": "FloweryChaseBlueYellow",
+      "note": "difficulty 6 with wall_counter primed to -3 and timer to -12. That priming is what makes the cadence assertable: walls land at timer >= 5 (first at ~frame 17), timer resets to -1 except every 4th which resets to -20, and the blue bomb flower fires on the spawn where wall_counter reaches 0 â the 4th wall. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 320,
+          "why": "the dispatcher branch calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1343"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "Create sets attacktype = 5; the type-635 init block overwrites it with 0",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4263"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "difficulty",
+          "eq": 6,
+          "why": "difficulty 6 selects the vase-wall + blue bomb-flower case",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4264"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4259"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 6,
+          "why": "do_chase is true and difficulty 6 is not 7/8/9, so the chase wall is created on the first step",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:23"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_chaseattack",
+          "atFrame": 40,
+          "name": "mymaxspeed",
+          "eq": 18,
+          "why": "difficulty >= 5 pins mymaxspeed to 18",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:26"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_chasewall",
+          "atFrame": 40,
+          "xscale": -2,
+          "yscale": -2,
+          "why": "the chase wall's leading draw is mirrored on both axes (-2, -2)",
+          "src": "gml_Object_obj_orangeheart_chaseattack_Draw_0.gml:7"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wall",
+          "byFrame": 30,
+          "why": "timer starts at -12 and rises 1/frame, so the first wall_create lands around frame 17",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:337"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 45,
+          "min": 2,
+          "max": 4,
+          "why": "walls at ~17, ~23, ~29 then a 25-frame gap (wall_counter hits 0 so timer = -20); none reach x < -40 yet",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:345"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 45,
+          "name": "image_yscale",
+          "eq": 100,
+          "why": "wall_create length = 100 - open_chase_difficulty*10 = 100, and gap == length takes the solid path",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:337"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 45,
+          "name": "tensionvalue",
+          "eq": 1,
+          "why": "obj_orangeheart_wall Create sets tensionvalue = 4; the case-6 with-block overwrites it with 1",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:339"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wallflower",
+          "byFrame": 80,
+          "why": "wall_counter runs -3,-2,-1,0 and the flower fires on the spawn where (wall_counter % 5) == 0",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:248"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wallflower",
+          "atFrame": 80,
+          "name": "direction",
+          "eq": 180,
+          "why": "the bomb flower is launched straight left (direction = 180)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:253"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type636",
+      "name": "FloweryDeflectOrange",
+      "note": "attacktype stays at Create's 5, so no wall generator runs; the attack is the Jarona at attack_speed 26 with orange_dopple on, which spawns the tag-in double (obj_marker_fancy, spr_orange_animepunch_finished_cent). The double's position is derived from obj_flowery_enemy.x/y, so only its scale is asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 3200,
+          "why": "the dispatcher branch calls scr_turntimer(3200)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1351"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 5,
+          "why": "the type-636 block never sets attacktype, so Create's 5 (the Jarona branch) stands",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "Create sets attack_speed = 20; the branch overwrites it with 26",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4295"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "orange_dopple",
+          "eq": 1,
+          "why": "Create sets orange_dopple = false; the branch turns it on, which is what creates the double",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4296"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart",
+          "byFrame": 5,
+          "why": "the branch creates the orange soul at the box centre minus 75",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4286"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4286"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 8,
+          "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "the controller hands 26 down over the Jarona's own Create default of 20",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "image_xscale",
+          "eq": 2,
+          "why": "Jarona Create calls scr_size(2, 2)",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_marker_fancy",
+          "byFrame": 8,
+          "why": "orange_dopple true makes the Jarona create its double as an obj_marker_fancy",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:972"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orange_animepunch_finished_cent",
+          "atFrame": 30,
+          "xscale": 2,
+          "yscale": 2,
+          "angle": 0,
+          "alpha": 1,
+          "why": "the double is scr_darksize()'d to 2x and drawn unrotated by obj_marker_fancy's draw_self",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:979"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 60,
+          "why": "the chase wall only exists inside the attacktype == 0 block, and this attack runs attacktype 5",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type638",
+      "name": "JustKidding",
+      "note": "FEWER ASSERTIONS ON PURPOSE. The controller branch for 638 is byte-identical to 636 (attack_speed 26 + orange_dopple); the thing that makes it JustKidding is `_jarona.can_kidding = true`, which is set in the boss's turn-setup block (gml_Object_obj_flowery_enemy_Step_0.gml:1129-1130) â a different part of the Step from the dispatcher branch the studio replays. So the fake-out lunge (attack_speed_jk = attack_speed + 8, x *= 0.725 decay, the spr_green_shrug decoy) is not reachable from this dispatcher alone and nothing about it is asserted here. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 3800,
+          "why": "the dispatcher branch calls scr_turntimer(3800) â the longest of the Jarona turns",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1367"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 5,
+          "why": "the type-638 block never sets attacktype, so Create's 5 (the Jarona branch) stands",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:56"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "Create sets attack_speed = 20; the branch overwrites it with 26",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4369"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "orange_dopple",
+          "eq": 1,
+          "why": "Create sets orange_dopple = false; the branch turns it on, which creates the tag-in double",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4370"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart",
+          "byFrame": 5,
+          "why": "the branch creates the orange soul at the box centre minus 75",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4360"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4360"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_floweryjarona",
+          "byFrame": 8,
+          "why": "the attacktype == 5 block creates the Jarona on the controller's first step (timer == 1)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:964"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "attack_speed",
+          "eq": 26,
+          "why": "the controller hands 26 down over the Jarona's own Create default of 20",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:967"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_floweryjarona",
+          "atFrame": 12,
+          "name": "attack_speed_limit",
+          "eq": 36,
+          "why": "Create's ceiling the lunge speed ramps toward on each deflect; 638 does not raise it",
+          "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:31"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_marker_fancy",
+          "byFrame": 8,
+          "why": "orange_dopple true makes the Jarona create its double as an obj_marker_fancy",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:972"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orange_animepunch_finished_cent",
+          "atFrame": 30,
+          "xscale": 2,
+          "yscale": 2,
+          "angle": 0,
+          "alpha": 1,
+          "why": "the double is scr_darksize()'d to 2x and drawn unrotated by obj_marker_fancy's draw_self",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:979"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 60,
+          "why": "the chase wall only exists inside the attacktype == 0 block, and this attack runs attacktype 5",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:14"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type639",
+      "name": "SuperJarona",
+      "note": "difficulty 8 = case 8, a ONE-SHOT corridor: at timer >= 12 a single for-loop fires 9 wall_create calls at x = 660 + running _counter with _add closing 640 -> 290 (step 140) and the gate closing 140 -> 36 (step 30). Each call splits into 3 walls (top / breakable gate / bottom), so the whole lane exists by ~frame 15. The second half of case 8 (timer >= 196, flip to the Jarona) is not covered: that Jarona is created by the boss's turn-setup block, not by this dispatcher branch, so it does not exist here. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 9999,
+          "why": "the dispatcher branch calls scr_turntimer(9999) â the corridor ends on its own, not on the clock",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1375"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "Create sets attacktype = 5; the type-639 block overwrites it with 0",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4394"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 30,
+          "name": "difficulty",
+          "eq": 8,
+          "why": "difficulty 8 selects the one-shot 9-gate corridor",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4395"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 60,
+          "why": "the chase-wall guard explicitly excludes difficulty 7, 8 and 9",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:21"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart",
+          "byFrame": 5,
+          "why": "the branch creates the orange soul at the box centre minus 75",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4385"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 30,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4385"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_wall",
+          "byFrame": 25,
+          "why": "the whole corridor is built in one for-loop the first frame timer reaches 12",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:601"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "min": 25,
+          "max": 27,
+          "why": "9 wall_create calls x 3 segments; only the a=1 gate can clamp its top segment to zero length and be skipped, and nothing has reached x < -40 yet",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:603"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "y": 50,
+          "tol": 2,
+          "why": "the first wall is created at arg1 - arg3*0.5 = scr_get_box(5) - 120 = 170 - 120; walls never move in y",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:148"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "name": "image_xscale",
+          "eq": 16,
+          "why": "wall_create arg2 = 16 overwrites obj_orangeheart_wall Create's scr_size(16, 40)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Create_0.gml:152"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_orangeheart_wall",
+          "atFrame": 30,
+          "name": "image_yscale",
+          "min": 95,
+          "max": 100,
+          "why": "first segment length = clamp(180 + sin*15, 70, 170) - 70, and the sin term cannot take it outside 95..100",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:603"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_bamboo_wall",
+          "atFrame": 30,
+          "xscale": 1,
+          "yscale": 1,
+          "alpha": 1,
+          "why": "every corridor segment is bamboo = true and draws the stalk part-sprite at 1:1",
+          "src": "gml_Object_obj_orangeheart_wall_Draw_0.gml:38"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 60,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
+    },
+    {
+      "id": "flowery_type641",
+      "name": "AquaKnives",
+      "note": "difficulty 10 = case 10, lilypads on a 28-frame beat with knife curtains from the second pad on. timer is primed to 5 and timer_goal cut from Create's 30 to 28, so pad #1 lands around frame 25 and pad #2 plus the ten knives around frame 53. Knife x and y both move (orangeheartControlled drift plus vspeed -5 with a 375px wrap), so only counts, scales and the angle are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
+      "assertions": [
+        {
+          "kind": "turntimer",
+          "eq": 320,
+          "why": "the dispatcher branch calls scr_turntimer(320)",
+          "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1391"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 32,
+          "name": "attacktype",
+          "eq": 0,
+          "why": "Create sets attacktype = 5; the type-641 block overwrites it with 0",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4450"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 32,
+          "name": "difficulty",
+          "eq": 10,
+          "why": "difficulty 10 selects the lilypad/knife case",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4451"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 32,
+          "name": "do_chase",
+          "eq": 0,
+          "why": "Create sets do_chase = true; this is the one branch of the seven that turns it off",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4448"
+        },
+        {
+          "kind": "ivar",
+          "obj": "obj_debug_orangeheartcontroller",
+          "atFrame": 32,
+          "name": "timer_goal",
+          "eq": 28,
+          "why": "Create sets timer_goal = 30 and the branch overwrites it with 28 â the pad cadence",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4452"
+        },
+        {
+          "kind": "absent",
+          "obj": "obj_orangeheart_chaseattack",
+          "byFrame": 62,
+          "why": "do_chase is false, so the chase wall is never created",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:19"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart",
+          "atFrame": 32,
+          "x": 240,
+          "tol": 2,
+          "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
+          "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4444"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_jumppad",
+          "byFrame": 35,
+          "why": "timer starts at 5 and rises 1/frame, so timer > timer_goal (28) first fires around frame 25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:690"
+        },
+        {
+          "kind": "pos",
+          "obj": "obj_orangeheart_jumppad",
+          "atFrame": 32,
+          "y": 170,
+          "tol": 2,
+          "why": "the first pad is created at scr_get_box(5) = obj_growtangle.y and gets no vspeed (wall_counter < 2)",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:690"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_orangeheart_lillypad",
+          "atFrame": 32,
+          "y": 170,
+          "xscale": 2,
+          "yscale": 2,
+          "angle": 0,
+          "why": "the pad is scr_darksize()'d to 2x and drawn unrotated on the box centre line",
+          "src": "gml_Object_obj_orangeheart_jumppad_Create_0.gml:2"
+        },
+        {
+          "kind": "spawns",
+          "obj": "obj_orangeheart_bullet",
+          "byFrame": 62,
+          "why": "the second pad (wall_counter 1) also fires two rows of five knives, about 28 frames after the first",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:712"
+        },
+        {
+          "kind": "count",
+          "obj": "obj_orangeheart_bullet",
+          "atFrame": 62,
+          "min": 5,
+          "max": 10,
+          "why": "two for-loops of 5 knives each, 75px apart, the second row offset by 37.5",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:743"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_attack_knifechain",
+          "atFrame": 62,
+          "xscale": 2,
+          "yscale": 2,
+          "angle": 90,
+          "why": "scr_darksize() puts the knives at 2x and image_angle = sign(-vspeed)*90 = 90 for the odd wall_counter row",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Step_0.gml:722"
+        },
+        {
+          "kind": "draw",
+          "name": "spr_pxwhite",
+          "atFrame": 62,
+          "xscale": 8,
+          "yscale": 217,
+          "angle": 0,
+          "alpha": 0.25,
+          "minCalls": 5,
+          "why": "the parallax runs 680/136 = 5 bars at xscale 8, yscale 40 + 177*scale_factor (settles at 1), alpha do_lines = 0.25",
+          "src": "gml_Object_obj_debug_orangeheartcontroller_Draw_0.gml:10"
+        }
+      ]
     }
   ]
 }

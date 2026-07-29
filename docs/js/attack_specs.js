@@ -20804,15 +20804,15 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type620",
   "name": "FloweryDeflect1",
-  "note": "Thin spawner: obj_orangeheart + obj_debug_orangeheartcontroller. Controller keeps its Create default attacktype = 5, whose Step spawns obj_orangeheart_floweryjarona on its first frame; the jarona's Create then relocates itself onto obj_flowery_enemy (520,180 in the studio) and sits there for waittime = 30 frames before charging.",
+  "note": "Thin spawner: obj_orangeheart + obj_debug_orangeheartcontroller. Controller keeps its Create default attacktype = 5, whose Step spawns obj_orangeheart_floweryjarona on its first frame; the jarona's Create then relocates itself onto obj_flowery_enemy (520,180 in the studio) and sits there for waittime = 30 frames before charging. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75, and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75, and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3790"
    },
    {
@@ -20908,12 +20908,12 @@ window.ATTACK_SPECS = [
     "kind": "draw",
     "name": "spr_orangeheart_outline",
     "atFrame": 40,
-    "x": 245,
+    "x": 240,
     "xscale": 1,
     "yscale": 1,
     "angle": 0,
     "alpha": 1,
-    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated",
+    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
    },
    {
@@ -20928,15 +20928,15 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type634",
   "name": "FloweryDeflect3",
-  "note": "Same spawner shape as type 620, but the branch overwrites three Create defaults on the controller (difficulty 0 -> 1, attack_speed 20 -> 26, do_bullets false -> true) and attacktype 5 copies all three onto the jarona on its first step. Those copies are the load-bearing assertions.",
+  "note": "Same spawner shape as type 620, but the branch overwrites three Create defaults on the controller (difficulty 0 -> 1, attack_speed 20 -> 26, do_bullets false -> true) and attacktype 5 copies all three onto the jarona on its first step. Those copies are the load-bearing assertions. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = 320 - 75, and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = 320 - 75, and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4233"
    },
    {
@@ -21043,12 +21043,12 @@ window.ATTACK_SPECS = [
     "kind": "draw",
     "name": "spr_orangeheart_outline",
     "atFrame": 40,
-    "x": 245,
+    "x": 240,
     "xscale": 1,
     "yscale": 1,
     "angle": 0,
     "alpha": 1,
-    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated",
+    "why": "sprite_index is spr_orangeheart_white so the outline pass draws at (x - 10) + 10 = 245, unrotated [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_orangeheart_Draw_0.gml:123"
    },
    {
@@ -21063,15 +21063,15 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type623",
   "name": "FloweryWallsTutorial",
-  "note": "attacktype 0 / difficulty 0 auto-scroller. The controller's timer starts at 20 and climbs by abs(fakecamxspeedbase/16) = 1 per frame, so the first bamboo wall appears once timer >= 40 (~frame 20). wall_tutorial_counter only advances when the player dashes through a wall, so with no input exactly one wall is alive at a time, always spawned at screenspace + 40 = 720.",
+  "note": "attacktype 0 / difficulty 0 auto-scroller. The controller's timer starts at 20 and climbs by abs(fakecamxspeedbase/16) = 1 per frame, so the first bamboo wall appears once timer >= 40 (~frame 20). wall_tutorial_counter only advances when the player dashes through a wall, so with no input exactly one wall is alive at a time, always spawned at screenspace + 40 = 720. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3863"
    },
    {
@@ -21186,15 +21186,15 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type624",
   "name": "FloweryChase",
-  "note": "attacktype 0 / difficulty 1. Two chains: obj_orangeheart_chaseattack (spawned by the controller because difficulty is truthy) and a stream of vase-topped bamboo walls whose height is 80 - open_chase_difficulty*15. obj_flowery_enemy.open_chase_counter is 0 in its Create, so open_chase_difficulty is 0 and every derived literal keeps its unreduced value. Wall x/y are time- and sine-driven, so only the pinned scales are asserted.",
+  "note": "attacktype 0 / difficulty 1. Two chains: obj_orangeheart_chaseattack (spawned by the controller because difficulty is truthy) and a stream of vase-topped bamboo walls whose height is 80 - open_chase_difficulty*15. obj_flowery_enemy.open_chase_counter is 0 in its Create, so open_chase_difficulty is 0 and every derived literal keeps its unreduced value. Wall x/y are time- and sine-driven, so only the pinned scales are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3888"
    },
    {
@@ -21255,7 +21255,7 @@ window.ATTACK_SPECS = [
     "atFrame": 30,
     "name": "image_xscale",
     "eq": -40,
-    "why": "its Create calls scr_size(-40, 480) — a negative x scale, i.e. a mirrored 40px-wide hitbox",
+    "why": "its Create calls scr_size(-40, 480) â a negative x scale, i.e. a mirrored 40px-wide hitbox",
     "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
    },
    {
@@ -21316,7 +21316,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type630",
   "name": "FloweryBoxesEasy",
-  "note": "attacktype 3 (the boxed dash section). The branch hand-places the whole opening set: a widened first box, a second box registered as new_box, one word manager and one helpful flower keyed off new_box.x = camerax() + 1200. Everything with orangeheartControlled slides left at fakecamxspeed, so x is asserted only where the source pins it before movement; the y-anchored splash draw is the stable visual.",
+  "note": "attacktype 3 (the boxed dash section). The branch hand-places the whole opening set: a widened first box, a second box registered as new_box, one word manager and one helpful flower keyed off new_box.x = camerax() + 1200. Everything with orangeheartControlled slides left at fakecamxspeed, so x is asserted only where the source pins it before movement; the y-anchored splash draw is the stable visual. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "ivar",
@@ -21331,9 +21331,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4046"
    },
    {
@@ -21449,7 +21449,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type631",
   "name": "FloweryBoxesMedium",
-  "note": "The harder twin of type 630: same attacktype 3 scaffold, but difficulty 1, a narrower first box (box_width * 2 instead of * 2.5), new_box seeded 150px closer at camerax() + 1050, and TWO word managers at b_speed 7 / timer_goal 20 instead of one at 6 / 24.",
+  "note": "The harder twin of type 630: same attacktype 3 scaffold, but difficulty 1, a narrower first box (box_width * 2 instead of * 2.5), new_box seeded 150px closer at camerax() + 1050, and TWO word managers at b_speed 7 / timer_goal 20 instead of one at 6 / 24. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "ivar",
@@ -21464,9 +21464,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 5,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path",
+    "why": "created at scr_get_box(4) - 75 = 320 - 75 and its x never moves on the chargetype 1 path [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4096"
    },
    {
@@ -21582,16 +21582,16 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type637",
   "name": "FloweryDashTutorial",
-  "note": "FEWER assertions on purpose. This is a dialogue-driven tutorial, not a bullet pattern: attacktype 0 / difficulty 7 runs a case that is almost entirely msgset_add callbacks, and every wall it eventually creates is gated behind the player charging a dash (scrolling flips from false to true only inside obj_orangeheart's chargetype 1 branch). With no input the attack is a static tableau, so the assertions cover exactly what the branch pins: the soul reskin, the frozen scroll state, and the green backdrop marker. The obj_flowery_towery parallax tower is NOT asserted — it is boss scenery built by obj_flowery_enemy's own Create out of shaders and surfaces, identical across all Flowery attacks and not produced by this branch.",
+  "note": "FEWER assertions on purpose. This is a dialogue-driven tutorial, not a bullet pattern: attacktype 0 / difficulty 7 runs a case that is almost entirely msgset_add callbacks, and every wall it eventually creates is gated behind the player charging a dash (scrolling flips from false to true only inside obj_orangeheart's chargetype 1 branch). With no input the attack is a static tableau, so the assertions cover exactly what the branch pins: the soul reskin, the frozen scroll state, and the green backdrop marker. The obj_flowery_towery parallax tower is NOT asserted â it is boss scenery built by obj_flowery_enemy's own Create out of shaders and surfaces, identical across all Flowery attacks and not produced by this branch. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 20,
-    "x": 245,
+    "x": 240,
     "y": 170,
     "tol": 2,
-    "why": "created at (scr_get_box(4) - 75, scr_get_box(5)) = (245, 170); canmovevertically is false and tutorial_clamp's range [60, 260] leaves 170 untouched",
+    "why": "created at (scr_get_box(4) - 75, scr_get_box(5)) = (245, 170); canmovevertically is false and tutorial_clamp's range [60, 260] leaves 170 untouched [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4315"
    },
    {
@@ -21670,27 +21670,27 @@ window.ATTACK_SPECS = [
     "kind": "draw",
     "name": "spr_battlebg_tiny",
     "atFrame": 20,
-    "x": 255,
+    "x": 250,
     "y": 180,
     "xscale": 1,
     "yscale": 1,
     "angle": 0,
     "alpha": 1,
-    "why": "the green backdrop marker is placed at (obj_orangeheart.x + 10, obj_orangeheart.y + 10) = (255, 180) and its angle/alpha lerps land on 0 and 1 after 5 frames",
+    "why": "the green backdrop marker is placed at (obj_orangeheart.x + 10, obj_orangeheart.y + 10) = (255, 180) and its angle/alpha lerps land on 0 and 1 after 5 frames [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4337"
    },
    {
     "kind": "draw",
     "name": "spr_orangeheart_centered",
     "atFrame": 20,
-    "x": 255,
+    "x": 250,
     "y": 180,
     "xscale": 1,
     "yscale": 1,
     "angle": 0,
     "alpha": 1,
     "maxCalls": 1,
-    "why": "with scrolling false the soul draws once at (x + 10, y + 10 - height) and the local _angle is reset to 0; drawafterimages false means exactly one call, not eleven",
+    "why": "with scrolling false the soul draws once at (x + 10, y + 10 - height) and the local _angle is reset to 0; drawafterimages false means exactly one call, not eleven [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_orangeheart_Draw_0.gml:139"
    },
    {
@@ -21719,7 +21719,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type632",
   "name": "FloweryChase2Random",
-  "note": "attacktype 0 / difficulty 4 = the bamboo-and-cactus runner lane plus the left-edge chase wall. Wall x, the bamboo y and the cactus/bamboo choice are all sin(global.time)/irandom driven, so only the pinned scr_size() dimensions and the draw parameters are asserted.",
+  "note": "attacktype 0 / difficulty 4 = the bamboo-and-cactus runner lane plus the left-edge chase wall. Wall x, the bamboo y and the cactus/bamboo choice are all sin(global.time)/irandom driven, so only the pinned scr_size() dimensions and the draw parameters are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
@@ -21749,9 +21749,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75; chargetype 1 never moves x",
+    "why": "scr_get_box(4) - 75 = obj_growtangle.x - 75 = 320 - 75; chargetype 1 never moves x [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4181"
    },
    {
@@ -21767,7 +21767,7 @@ window.ATTACK_SPECS = [
     "atFrame": 40,
     "name": "image_xscale",
     "eq": -40,
-    "why": "scr_size(-40, 480) — the negative xscale is a deliberate horizontal flip of the 1px mask",
+    "why": "scr_size(-40, 480) â the negative xscale is a deliberate horizontal flip of the 1px mask",
     "src": "gml_Object_obj_orangeheart_chaseattack_Create_0.gml:9"
    },
    {
@@ -21851,7 +21851,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type622",
   "name": "FloweryDeflect2point5",
-  "note": "attacktype stays at Create's 5, so there is NO wall generator at all — the whole attack is the Jarona (Flowery-in-your-face) charging at attack_speed 36. The Jarona's Create overwrites its spawn x/y with obj_flowery_enemy.x/y, so its position is not assertable; its tuning constants are.",
+  "note": "attacktype stays at Create's 5, so there is NO wall generator at all â the whole attack is the Jarona (Flowery-in-your-face) charging at attack_speed 36. The Jarona's Create overwrites its spawn x/y with obj_flowery_enemy.x/y, so its position is not assertable; its tuning constants are. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
@@ -21906,9 +21906,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x is never moved on this attack",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x is never moved on this attack [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:3837"
    },
    {
@@ -21942,7 +21942,7 @@ window.ATTACK_SPECS = [
     "atFrame": 12,
     "name": "image_xscale",
     "eq": 2,
-    "why": "Jarona Create calls scr_size(2, 2) — it is drawn at double size",
+    "why": "Jarona Create calls scr_size(2, 2) â it is drawn at double size",
     "src": "gml_Object_obj_orangeheart_floweryjarona_Create_0.gml:54"
    },
    {
@@ -21978,7 +21978,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type635",
   "name": "FloweryChaseBlueYellow",
-  "note": "difficulty 6 with wall_counter primed to -3 and timer to -12. That priming is what makes the cadence assertable: walls land at timer >= 5 (first at ~frame 17), timer resets to -1 except every 4th which resets to -20, and the blue bomb flower fires on the spawn where wall_counter reaches 0 — the 4th wall.",
+  "note": "difficulty 6 with wall_counter primed to -3 and timer to -12. That priming is what makes the cadence assertable: walls land at timer >= 5 (first at ~frame 17), timer resets to -1 except every 4th which resets to -20, and the blue bomb flower fires on the spawn where wall_counter reaches 0 â the 4th wall. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
@@ -22008,9 +22008,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4259"
    },
    {
@@ -22105,7 +22105,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type636",
   "name": "FloweryDeflectOrange",
-  "note": "attacktype stays at Create's 5, so no wall generator runs; the attack is the Jarona at attack_speed 26 with orange_dopple on, which spawns the tag-in double (obj_marker_fancy, spr_orange_animepunch_finished_cent). The double's position is derived from obj_flowery_enemy.x/y, so only its scale is asserted.",
+  "note": "attacktype stays at Create's 5, so no wall generator runs; the attack is the Jarona at attack_speed 26 with orange_dopple on, which spawns the tag-in double (obj_marker_fancy, spr_orange_animepunch_finished_cent). The double's position is derived from obj_flowery_enemy.x/y, so only its scale is asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
@@ -22151,9 +22151,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4286"
    },
    {
@@ -22223,12 +22223,12 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type638",
   "name": "JustKidding",
-  "note": "FEWER ASSERTIONS ON PURPOSE. The controller branch for 638 is byte-identical to 636 (attack_speed 26 + orange_dopple); the thing that makes it JustKidding is `_jarona.can_kidding = true`, which is set in the boss's turn-setup block (gml_Object_obj_flowery_enemy_Step_0.gml:1129-1130) — a different part of the Step from the dispatcher branch the studio replays. So the fake-out lunge (attack_speed_jk = attack_speed + 8, x *= 0.725 decay, the spr_green_shrug decoy) is not reachable from this dispatcher alone and nothing about it is asserted here.",
+  "note": "FEWER ASSERTIONS ON PURPOSE. The controller branch for 638 is byte-identical to 636 (attack_speed 26 + orange_dopple); the thing that makes it JustKidding is `_jarona.can_kidding = true`, which is set in the boss's turn-setup block (gml_Object_obj_flowery_enemy_Step_0.gml:1129-1130) â a different part of the Step from the dispatcher branch the studio replays. So the fake-out lunge (attack_speed_jk = attack_speed + 8, x *= 0.725 decay, the spr_green_shrug decoy) is not reachable from this dispatcher alone and nothing about it is asserted here. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
     "eq": 3800,
-    "why": "the dispatcher branch calls scr_turntimer(3800) — the longest of the Jarona turns",
+    "why": "the dispatcher branch calls scr_turntimer(3800) â the longest of the Jarona turns",
     "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1367"
    },
    {
@@ -22269,9 +22269,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4360"
    },
    {
@@ -22341,12 +22341,12 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type639",
   "name": "SuperJarona",
-  "note": "difficulty 8 = case 8, a ONE-SHOT corridor: at timer >= 12 a single for-loop fires 9 wall_create calls at x = 660 + running _counter with _add closing 640 -> 290 (step 140) and the gate closing 140 -> 36 (step 30). Each call splits into 3 walls (top / breakable gate / bottom), so the whole lane exists by ~frame 15. The second half of case 8 (timer >= 196, flip to the Jarona) is not covered: that Jarona is created by the boss's turn-setup block, not by this dispatcher branch, so it does not exist here.",
+  "note": "difficulty 8 = case 8, a ONE-SHOT corridor: at timer >= 12 a single for-loop fires 9 wall_create calls at x = 660 + running _counter with _add closing 640 -> 290 (step 140) and the gate closing 140 -> 36 (step 30). Each call splits into 3 walls (top / breakable gate / bottom), so the whole lane exists by ~frame 15. The second half of case 8 (timer >= 196, flip to the Jarona) is not covered: that Jarona is created by the boss's turn-setup block, not by this dispatcher branch, so it does not exist here. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
     "eq": 9999,
-    "why": "the dispatcher branch calls scr_turntimer(9999) — the corridor ends on its own, not on the clock",
+    "why": "the dispatcher branch calls scr_turntimer(9999) â the corridor ends on its own, not on the clock",
     "src": "gml_Object_obj_flowery_enemy_Step_0.gml:1375"
    },
    {
@@ -22385,9 +22385,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 30,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4385"
    },
    {
@@ -22461,7 +22461,7 @@ window.ATTACK_SPECS = [
  {
   "id": "flowery_type641",
   "name": "AquaKnives",
-  "note": "difficulty 10 = case 10, lilypads on a 28-frame beat with knife curtains from the second pad on. timer is primed to 5 and timer_goal cut from Create's 30 to 28, so pad #1 lands around frame 25 and pad #2 plus the ten knives around frame 53. Knife x and y both move (orangeheartControlled drift plus vspeed -5 with a 375px wrap), so only counts, scales and the angle are asserted.",
+  "note": "difficulty 10 = case 10, lilypads on a 28-frame beat with knife curtains from the second pad on. timer is primed to 5 and timer_goal cut from Create's 30 to 28, so pad #1 lands around frame 25 and pad #2 plus the ten knives around frame 53. Knife x and y both move (orangeheartControlled drift plus vspeed -5 with a 375px wrap), so only counts, scales and the angle are asserted. — Corrected: obj_flowery_enemy_Step_0.gml:1119 does `x -= 5` on the growtangle inside the `with` block three lines after creating it at view + 320, so the box sits at 315. Every value derived from the box — obj_orangeheart at scr_get_box(4) - 75, and the draws anchored on the soul at +10 — is 5 lower than first authored.",
   "assertions": [
    {
     "kind": "turntimer",
@@ -22502,7 +22502,7 @@ window.ATTACK_SPECS = [
     "atFrame": 32,
     "name": "timer_goal",
     "eq": 28,
-    "why": "Create sets timer_goal = 30 and the branch overwrites it with 28 — the pad cadence",
+    "why": "Create sets timer_goal = 30 and the branch overwrites it with 28 â the pad cadence",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4452"
    },
    {
@@ -22516,9 +22516,9 @@ window.ATTACK_SPECS = [
     "kind": "pos",
     "obj": "obj_orangeheart",
     "atFrame": 32,
-    "x": 245,
+    "x": 240,
     "tol": 2,
-    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves",
+    "why": "scr_get_box(4) - 75 = 320 - 75; the soul's x never moves [box sits at 315: obj_flowery_enemy_Step_0.gml:1119 does x -= 5]",
     "src": "gml_Object_obj_dbulletcontroller_Step_0.gml:4444"
    },
    {
@@ -28642,7 +28642,7 @@ window.ATTACK_SPECS = [
     "atFrame": 5,
     "name": "type",
     "eq": 0,
-    "why": "type 110 leaves the electric box at type 0 â only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
+    "why": "type 110 leaves the electric box at type 0 Ã¢ÂÂ only type 111 sets it to 1, which is what makes the box spin and halves the spark rate",
     "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:942"
    },
    {
@@ -28683,7 +28683,7 @@ window.ATTACK_SPECS = [
     "atFrame": 60,
     "min": 3,
     "max": 5,
-    "why": "a spark every 8 frames from frame 32 gives four by frame 60 â type 111's 15-frame threshold gives only two",
+    "why": "a spark every 8 frames from frame 32 gives four by frame 60 Ã¢ÂÂ type 111's 15-frame threshold gives only two",
     "src": "gml_Object_obj_growtangle_electric_Step_0.gml:68"
    },
    {
@@ -28721,7 +28721,7 @@ window.ATTACK_SPECS = [
     "name": "image_angle",
     "eq": 0,
     "tol": 3,
-    "why": "at type 0 nothing rotates obj_growtangle â the += 1.9565 sits inside the type == 1 guard â so the electric box copies back a settled image_angle of 0",
+    "why": "at type 0 nothing rotates obj_growtangle Ã¢ÂÂ the += 1.9565 sits inside the type == 1 guard Ã¢ÂÂ so the electric box copies back a settled image_angle of 0",
     "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
    }
   ],
@@ -28768,7 +28768,7 @@ window.ATTACK_SPECS = [
     "atFrame": 5,
     "name": "type",
     "eq": 1,
-    "why": "type 111 is the only branch that sets the electric box to type 1 â the flag that spins the box and slows the spark rate",
+    "why": "type 111 is the only branch that sets the electric box to type 1 Ã¢ÂÂ the flag that spins the box and slows the spark rate",
     "src": "gml_Object_obj_queen_bulletcontroller_Step_0.gml:943"
    },
    {
@@ -28793,7 +28793,7 @@ window.ATTACK_SPECS = [
     "atFrame": 35,
     "min": 0,
     "max": 0,
-    "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 â type 110 already has one at 32",
+    "why": "type 1 raises shotthreshold to 15, so the first spark cannot fire until about frame 39 Ã¢ÂÂ type 110 already has one at 32",
     "src": "gml_Object_obj_growtangle_electric_Step_0.gml:71"
    },
    {
@@ -28851,7 +28851,7 @@ window.ATTACK_SPECS = [
     "src": "gml_Object_obj_growtangle_electric_Step_0.gml:146"
    }
   ],
-  "note": "Same as queen_type110: obj_growtangle_electric shakes and then slides the box (Step_0:33-34, :140, :145), so only the SIZE is assertable. The width is the half that matters anyway — it is what proves the difficulty-1 branch ran."
+  "note": "Box POSITION is not assertable on this attack. The controller branch creates obj_growtangle_electric on top of the box (obj_queen_bulletcontroller_Step_0.gml:934-947), and that object drives the box around BY DESIGN: obj_growtangle_electric_Step_0.gml:33-34 sets obj_growtangle.x = xstart + random_range((-35 + timer) / 2, (35 - timer) / 2) — a decaying RANDOM shake — and :140/:145 then slide it to xstart + moveamount. So x/y have no single right answer once the attack runs; 320,200 is true only at the instant of creation. The SIZE is fully determined and is kept."
  },
  {
   "id": "tasque_manager_type20",

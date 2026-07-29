@@ -2674,6 +2674,30 @@
       bound.$boundTo = target;
       return bound;
     });
+    /**
+     * Does this instance actually HAVE that variable?
+     *
+     * The corpus uses this as a feature flag a dispatcher opts into: type 306's
+     * branch is `if (variable_instance_exists(id, "omega_ex_mode"))` and only
+     * then multiplies the omega book manager's angle_speed_goal by 4 and
+     * angle_speed_change by 2 (obj_dbulletcontroller_Step_0.gml:3445-3451). With
+     * the function missing it resolved to 0, so every such guard took the
+     * negative branch — 148 files in ch5 alone use it.
+     *
+     * `in` is deliberate: the instance Proxy has a `get` trap that MATERIALISES
+     * an auto-array for any unknown property, so reading the variable to test it
+     * would create it. There is no `has` trap, so `in` reaches the target
+     * untouched. (A variable that some earlier read already materialised will
+     * report true — that is the same auto-array trap the rest of the engine
+     * lives with, not something this function can undo.)
+     */
+    def('variable_instance_exists', (inst, name) => {
+      const self = H.d ? H.d(inst) : inst;
+      if (!self || typeof self !== 'object') return false;
+      const key = String(name);
+      if (key.charCodeAt(0) === 36) return false;      // engine internals are invisible to GML
+      try { return key in self; } catch (e) { return false; }
+    });
     def('variable_instance_get_names', inst => {
       const self = H.d ? H.d(inst) : inst;
       if (!self || typeof self !== 'object') return [];

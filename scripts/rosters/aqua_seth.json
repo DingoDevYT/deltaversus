@@ -5,6 +5,9 @@
   "label": "Aqua & Seth",
   "enemy": "obj_aqua_enemy",
   "extraEnemies": ["obj_purple_enemy"],
+
+  "enemySet": { "fight_type": "seth" },
+  "_enemySetWhy": "obj_aqua_enemy Create_0:14 defaults fight_type to \"solo\" and only Other_22:13 flips it to \"seth\", so a studio that just spawns the boss is running the SOLO encounter. The attack code reads the live value: obj_dbulletcontroller_Step_0.gml:3473-3477 is `if (obj_aqua_enemy.fight_type == \"seth\" && obj_aqua_enemy.turns != 5) knife_setup(..., 60, 6, 0.35) else knife_setup(..., 50, 8, 0.35)`. Measured before this was set: knife_number 8 and knife_distance 50 — the solo numbers — against the paired fight's 6 and 60. scanIn already restricts EXTRACTION to the seth arm; this is the runtime half of the same fact.",
   "scanIn": {
     "gml_Object_obj_aqua_enemy_Step_0.gml": {
       "scanFrom": "else if (fight_type == \"seth\")",

@@ -1,7 +1,8 @@
-# Handover — the recursive audit-fix loop, 2026-07-28
+# Handover — the fidelity suite goes fight-wide, 2026-07-29
 
-Picks up from `OVERNIGHT_HANDOVER.md`. That session ended at `3e2485e6`; this one
-runs from `60373208` to HEAD.
+Picks up from the 2026-07-28 session (`7cae9d3e`), which a machine crash ended
+mid-flight. Recovery notes are at the bottom; read them before trusting any
+"it was all lost" instinct.
 
 ## Start here
 
@@ -9,12 +10,12 @@ runs from `60373208` to HEAD.
 node scripts/serve.js          # -> http://localhost:8399/gml_studio.html
 ```
 
-Verification chain, from the repo root. All four must be green before a commit:
+All four must be green before a commit:
 
 ```bash
 node scripts/test_compiler.js   # 154/154, 0 GML parse errors, 0 JS syntax errors
 node scripts/test_semantics.js  # 34/34
-node scripts/test_runtime.js    # hard failures: 0  (and now clean: 154/154)
+node scripts/test_runtime.js    # 154/154 clean, hard failures 0
 node scripts/test_engine.js     # SUCCESS, 7 instances — sets NO exit code, read it
 ```
 
@@ -22,91 +23,136 @@ In the browser (front the tab; `SPEC_CHECK.load` MUST take the array):
 
 ```js
 SPEC_CHECK.load(window.ATTACK_SPECS)
-await SPEC_CHECK.runAll('knight')          // per boss, never the whole roster
-r = await VISUAL_PROBE.runAll()
-await VISUAL_PROBE.saveBaselineToDisk(r.results)   // NEW: writes the file, not just localStorage
+await SPEC_CHECK.runAll('titan')           // per boss, never the whole roster
 ```
 
-## What was wrong, and what it cost
+**Long sweeps must checkpoint to disk.** `scripts/serve.js` now takes
+`POST /specrun` and writes `spec_run.json` (gitignored) at the repo root. Drive a
+sweep from the page, post after each boss, and read progress from the shell —
+a sweep that lives only in page memory is exactly what the crash destroyed.
 
-**The synthesized Draw fallback recursed forever.** The previous session's last
-commit added a fallback that defers to an inherited Draw, and found the parent
-with `Object.getPrototypeOf(Object.getPrototypeOf(this))`. That is computed from
-the *instance*, so it yields the same prototype at every level and never
-advances: when two objects in one chain both landed on it, the parent's copy
-called itself. 1377 RangeErrors per 60-frame sweep across 28 presets in Spamton
-NEO, Gerson and the Roaring Knight. Masked, because `runtime.draw` catches and
-falls back to `drawSelf` — bullets still drew their sprite while every inherited
-Draw behaviour was silently lost. `super.draw` is the construct that walks up one
-level per class.
+## Coverage
 
-**The Pink `instance_create_depth` mystery was a dropped argument.** Not a
-precedence question at all. `createInstance`'s 4th parameter applies the depth
-before Create; the JIT wrapper declared three parameters and forwarded three, so
-that path was unreachable and "before Create" meant "never applied". Depths fell
-back to the object table, `obj_marker`'s entry is 0, and Pink's two full-screen
-black backgrounds (`obj_pink_enemy` Create_0:8,13, made at `depth+999` and
-`depth+9999`) came forward over everything — a black screen still issuing ~1100
-sprite draws with no error. `flight_recorder.js` had the same defect.
-**Wrap engine methods with `.apply(this, arguments)`.**
+**142 -> 276 attacks, 3,577 assertions**, every one carrying the file:line the
+number came from. 134 attacks were authored by one pass of agents and re-checked
+by a second that had to open every citation (158 recorded corrections).
 
-**77 of 194 attacks ran on an invented 90-frame turn.** Six fights had no turn
-block. Two were derived and survived an adversarial audit (Gerson
-`scr_turntimer(999)`, Pink `scr_turntimer(300)`); four were rejected with reasons
-— Queen and Orange & Green admit no valid slice (every one contains the Knight
-trap, and Orange & Green's also writes the fight's own selector), Tenna's carries
-`minigametransition_con = 1` which gates off LIGHT 'EM UP's bullet generation.
-Separately, `gen_attacks` had been emitting 47 per-attack turn values that
-**nothing read**. Coverage is now 193/193.
+Rebuild the merged file with:
 
-**Every probe run launched twice.** Both probes dispatched `change` on
-`#presetSelect` *and* clicked `#btnTranslate`; the change handler already ends in
-`translateAndPlay()`. Sweeps ran at half speed and measured the second spawn.
+```bash
+node scripts/build_attack_specs.js <existing.json> <units>/*.json <journal.jsonl> scripts/spec_overrides.json
+```
 
-## Current state
+Order matters — later sources win the by-id merge, and the overrides go last.
 
-- Turn lengths: **193/193** attacks have a real one; 0 on the invented floor.
-- `test_runtime`: **154/154 clean** (was 113/154).
-- Natives: stubbed builtins **70 -> 58**; unresolved calls in the 194-attack
-  closure **396 -> 323**, distinct names **96 -> 74**.
-- Roster: 294 entries, **193 in-fight / 101 cut** (Tenna corrected 14 -> 13).
+## Engine bugs the suite found
+
+Each was found by an assertion failing, and each is a thing the studio got wrong
+about the game, not a thing the suite got wrong about the studio.
+
+1. **`global.inv` was never maintained.** obj_heart's Step does
+   `global.inv -= 1` unconditionally (obj_heart_Step_0.gml:271), so it is
+   negative for almost a whole turn and the corpus's many `if (global.inv < 0)`
+   tests are true. The studio drives its own soul, so the variable stayed
+   undefined and every one of those tests was false — the Titan's light aura
+   settled at 38.4 instead of 48 across five attacks.
+2. **A pinned difficulty was overridden by the UI selector.** 41 roster entries
+   carry a `difficultyLiteral`; 24 pin a non-zero value. The Queen picks Plug's
+   variant on the boss's own `difficulty` and the box block reads the same
+   variable, so the HARD Plug ran its hard bullets in the EASY 150x150 box.
+3. **Two fallback boxes overruled the game's own answer.** The Titan's heal turn
+   is `if (myattackchoice == 20) { } else { ...box... }` — an empty arm — and
+   the studio fabricated a box anyway. Also `titan.json` anchored its box slice
+   INSIDE the else arm, dropping the guard: an enclosing condition is part of
+   the box logic.
+4. **The default box pre-empted per-attack boxes.** The Chaos King builds his own
+   box per attack (`instance_create(xx + 310, yy + 165, obj_growtangle)`); the
+   studio's box existed first, so `if (!instance_exists(obj_growtangle))` skipped
+   his. Now suppressed when the attack's setup creates one.
+5. **`variable_instance_exists` did not exist** (148 ch5 files use it), so every
+   feature-flag guard took the negative branch. Implemented with `in`, which
+   reaches the target without tripping the instance Proxy's auto-materialising
+   `get` trap.
+6. **String instance variables could never pass.** `spec_check.js`'s `ivar`
+   compared through `Number()`, so `state == "idle"` failed while printing
+   `GOT idle`. Three fights were affected.
+
+## Roster mechanisms added
+
+Data, not special cases. Each is declared in a roster JSON and consumed generically.
+
+- **`enemySet`** — boss state the ENCOUNTER establishes. `obj_aqua_enemy`
+  defaults to `fight_type = "solo"`, and the attack code branches on the live
+  value (`knife_setup(..., 60, 6)` vs `(..., 50, 8)`), so the paired fight was
+  dispatching the SOLO fight's bullets under the paired fight's name.
+- **`call`** -> `controllerCall` — a controller configured by a METHOD, not
+  fields. `obj_susiezilla_gamecontroller.setup(mode)` derives width 640 and
+  bgxoffset 320 and spawns the player; spawned raw it sat at mode 0 / 1280,
+  which is a different minigame, running happily.
+- **`at`** -> `controllerAt` — where the real caller creates the controller.
+  A minigame controller's own x is the playfield origin: obj_tenna_zoom makes it
+  at `camerax(), cameray()` = (0,0), and spawning it at the boss shifted the
+  player, the statue and every background draw by +520.
 
 ## Traps worth keeping
 
-- **A slice is not a pass.** Use `verify_turnblock.js`-style checking: a turn
-  block must set the clock and have NO other side effect. The Knight trap is a
-  slice containing `scr_bulletspawner` (spawns a second controller); the Jevil
-  trap is one containing the boss's own `event_user` attack chooser.
-- **Check the corpus before fixing a "gap".** Constructor inheritance
-  (`function A() : B() constructor`) genuinely failed to parse — and appears
-  **zero** times in all five chapters; an apparent 344 uses was a regex matching
-  ternaries. `#macro Config:NAME` likewise: zero uses, left unfixed on purpose.
-  Template strings `$"{x}"` were worth it: 78 across 41 files.
-- **Prefer a script over a builtin only when the builtin is HOLLOW.** 109 names
-  are both a shipped GlobalScript and a `BUILTIN_FN`; for 106 the native is what
-  we want (`__view_get` is a GM 2.2->2.3 compat shim this engine deliberately
-  bypasses). `GML_STUBBED_BUILTINS` records which are return-0 stubs.
-- **Suspect the checker.** `pink_type210 NO_BOX` was the sixth case of a correct
-  engine looking wrong — it is dispatched inside `obj_date_controller`, which
-  never creates a growtangle, so it correctly has no box.
+- **A cluster of failures is usually ONE cause.** 33 in Aqua & Seth, 34 in
+  Tenna, 23 in Flowery — each was a single fact, not dozens of bugs.
+- **Suspect the spec too.** Flowery's 23 were the SPEC: the box block does
+  `x -= 5` three lines after creating the box at 320
+  (obj_flowery_enemy_Step_0.gml:1119), so the box is at 315 and everything
+  derived from it was 5 too high. The engine was right.
+- **Never fit a spec to the engine.** Corrections go in
+  `scripts/spec_overrides.json`, regenerated by `scripts/make_spec_overrides.js`,
+  and each must cite a line that states the fact. The generator exists because
+  the merge replaces a spec WHOLESALE by id — a hand-written partial override
+  silently deletes every assertion it does not restate.
+- **Measure box presence by CREATIONS, not survivors.** A turn that ends
+  destroys its box in teardown, so an end-of-run count reads 0 for a healthy
+  fight (Lancer's bike attack looked boxless for exactly this reason).
+- **A verifier that changes nothing has not been proven lazy.** An early read of
+  "0 corrections" was wrong: those journal entries were the AUTHORS' (no
+  `changes` field). Check which stage a result came from before concluding.
 
 ## What is still open
 
-1. **135 of 193 in-fight attacks have no fidelity spec.** `attack_specs.js`
-   covers only the 5 original bosses. `VISUAL_PROBE` gives those 135 liveness and
-   render coverage (BLANK/STATIC/WASH/NO_BOX) — it does **not** prove any of them
-   is pixel- or mechanically correct. This is the single biggest gap.
-2. **Native clusters still unimplemented**, ranked by real reach: palette-swap /
-   shader (38 calls — `scr_retro_pal_swapper`, Tenna's channel change: no palette
-   swap happens at all), `animcurve_*` (10, `obj_ripples`), audio streaming (11).
-   The ch3 vertex-buffer cluster (34 calls) reaches ONE attack — `obj_rhythmgame`
-   uses `scr_perspective_shadow_ext` for shadows; every other quad-draw function
-   in that file has zero callers.
-3. **`scr_text` (27 calls) is pruned on purpose** — 616 KB of dialogue. Battle
-   dialogue content is empty everywhere while the typewriter works. Do not let it
-   head a gap list.
-4. **Turn-replacement fights need an ACT driver** to be playable end to end:
-   C. Round's three ACT turns, Orange & Green's HEALING EGG, the Tenna minigames.
-5. **Gerson's 999 is a ceiling, not a duration.** His turn ends dynamically when
-   the chart drains (Step_0:1060-1063 cuts the clock to 10). The studio has no
-   equivalent, so his attacks run long with dead air at the tail.
+1. **Aqua & Seth: 21 failures**, cause known and half-fixed. Attacks dispatched
+   by a CO-BOSS (Seth's live in `obj_purple_enemy_Step_0.gml`) were kept from the
+   boss scan with `setup: null`, throwing away the branch that does
+   `dc.omega_ex_mode = true` and `scr_turntimer(480)`. The dedup now fills that
+   gap FROM A CO-BOSS FILE ONLY — `setupSelf` — and the studio replays the branch
+   as that monster. SupportFire and both Titan spawn-enemy attacks are fixed by
+   it; the two OmegaBook rows still come out setup-less because their duplicate
+   arrives by a different path, which is the next thing to trace.
+   **Do not widen this rule.** Filling from any same-file duplicate was tried and
+   measured: it handed queen_type3 and queen_type113 branches the scan had
+   dropped on purpose and cost 10 assertions (211/211 -> 201/211).
+2. **Flowery: 5 failures** that are NOT the 5px class — `spr_bamboo_wall` and
+   `spr_flowery_vase` are never drawn (they go through `draw_sprite_part_ext`),
+   and `obj_orangeheart_floweryjarona` appears where the branch says it should
+   not.
+3. Small clusters: tasque_manager 6 (quiz difficulty/turnspeed, and
+   obj_tm_quizzap never spawning), lanino_elnina 4 (bullet count 10 vs 4-8),
+   orange_green 2, yellow_blue 1 (box y off by 6).
+4. **Palette swapping is implemented and correct but never fires in-fight.**
+   Verified by pixel conservation on the LUT; a 20-attack ch3 sweep recorded
+   zero binds. `obj_rhythmgame` disables its own palette branch on frame 1 when
+   `bg_con == 1`, and `obj_actor_tenna` only swaps under `golden_mode`.
+   Reachable != executed.
+
+## Recovering from a crash
+
+Both of the previous session's Claude processes died at the same minute. What
+survived, and where:
+
+- **Subagent transcripts** — `~/.claude/projects/<project>/<session>/subagents/`.
+  A dead workflow's agents leave their full reasoning on disk even when the
+  journal has no results.
+- **The workflow journal** — `journal.jsonl`, one `{"type":"result"}` per agent.
+  Check whether a result is an author's or a verifier's before reading meaning
+  into it.
+- **Scratchpad inputs** — the crashed session's `spec_targets.json` and
+  `existing_specs.json` made the re-run cheap to set up.
+- **Nothing uncommitted was lost**, because the work had been committed as it
+  landed. That is the real lesson, and it is why agents in this session
+  checkpoint their output to disk after every attack rather than at the end.

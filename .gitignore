@@ -9,3 +9,6 @@ ref/
 # GitHub Pages directory, and graphify writes its graph next to the sources it
 # indexes, so without this the graph.json and its cache ship to the live site.
 graphify-out/
+
+# Spec-suite run artifact (scripts/serve.js POST /specrun). Progress data, not source.
+/spec_run.json
